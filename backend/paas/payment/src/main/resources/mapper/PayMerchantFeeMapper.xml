@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayMerchantFeeMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayMerchantFeeEntity">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="mchNo" column="mch_no" jdbcType="VARCHAR"/>
+        <result property="productCode" column="product_code" jdbcType="VARCHAR"/>
+        <result property="payMethod" column="pay_method" jdbcType="VARCHAR"/>
+        <result property="feeType" column="fee_type" jdbcType="TINYINT"/>
+        <result property="feeRate" column="fee_rate" jdbcType="DECIMAL"/>
+        <result property="feeFixed" column="fee_fixed" jdbcType="DECIMAL"/>
+        <result property="feeMin" column="fee_min" jdbcType="DECIMAL"/>
+        <result property="feeMax" column="fee_max" jdbcType="DECIMAL"/>
+        <result property="effectiveTime" column="effective_time" jdbcType="TIMESTAMP"/>
+        <result property="expireTime" column="expire_time" jdbcType="TIMESTAMP"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+</mapper>

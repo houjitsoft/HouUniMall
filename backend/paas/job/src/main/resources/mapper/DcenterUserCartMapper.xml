@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterUserCartMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterUserCartEntity">
+            <id property="cartId" column="cart_id" jdbcType="INTEGER"/>
+            <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+            <result property="insertCartTime" column="insert_cart_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        cart_id,common_id,insert_cart_time
+    </sql>
+    <select id="getDecenterUserCartVOList" resultType="com.houjiang.job.vo.DcenterUserCartVO">
+        select
+            cart_id,common_id,insert_cart_time
+        from ${database.prefix.order}hou_order_user_cart limit #{pageNum},#{pageSize}
+
+    </select>
+</mapper>

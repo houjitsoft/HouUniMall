@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.UpdateSalesPromStateMapper">
+
+
+    <update id="updateRedpkTempState">
+        UPDATE ${database.prefix.activity}hou_addon_activity_redpacket_template
+        SET redpacket_t_state = 2
+        WHERE redpacket_t_state = 1
+          AND NOW() > redpacket_t_end_date
+    </update>
+    <update id="updateRedpkBaseState">
+        UPDATE ${database.prefix.activity}hou_addon_activity_redpacket_base
+        SET redpacket_state = 3
+        WHERE redpacket_state = 1
+          AND NOW() > redpacket_end_date
+    </update>
+    <update id="updateVouchrTempState">
+        UPDATE ${database.prefix.activity}hou_addon_activity_voucher_template
+        SET voucher_t_state = 2
+        WHERE voucher_t_state = 1
+          AND NOW() > voucher_t_end_date
+    </update>
+    <update id="updateVouchrBaseState">
+        UPDATE ${database.prefix.activity}hou_addon_activity_voucher_base
+        SET voucher_state = 3
+        WHERE voucher_state = 1
+          AND NOW() > voucher_end_date
+    </update>
+</mapper>

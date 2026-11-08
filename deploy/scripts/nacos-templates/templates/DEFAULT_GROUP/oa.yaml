@@ -1,0 +1,24 @@
+server:
+  port: 8393
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER}
+    password: ${APP_DATASOURCE_PASSWORD}
+    hikari:
+      connection-timeout: 10000
+      validation-timeout: 3000
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 300000
+      pool-name: DateSourceHikariCP
+      max-lifetime: 600000
+      keepalive-time: 30000
+      connection-test-query: SELECT 1
+      connection-init-sql: SELECT 1
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml

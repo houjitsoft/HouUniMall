@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivityVoucherBaseMapper">
+
+    <resultMap type="com.houjiang.activity.entity.ActivityVoucherBaseEntity" id="ActivityVoucherBaseMap">
+        <result property="voucherId" column="voucher_id" jdbcType="INTEGER"/>
+        <result property="voucherTId" column="voucher_t_id" jdbcType="INTEGER"/>
+        <result property="voucherTitle" column="voucher_title" jdbcType="VARCHAR"/>
+        <result property="voucherStartDate" column="voucher_start_date" jdbcType="TIMESTAMP"/>
+        <result property="voucherEndDate" column="voucher_end_date" jdbcType="TIMESTAMP"/>
+        <result property="voucherPrice" column="voucher_price" jdbcType="INTEGER"/>
+        <result property="voucherLimit" column="voucher_limit" jdbcType="NUMERIC"/>
+        <result property="voucherShopId" column="voucher_shop_id" jdbcType="INTEGER"/>
+        <result property="voucherState" column="voucher_state" jdbcType="INTEGER"/>
+        <result property="voucherActiveDate" column="voucher_active_date" jdbcType="TIMESTAMP"/>
+        <result property="voucherOwnerId" column="voucher_owner_id" jdbcType="INTEGER"/>
+        <result property="voucherOwnerName" column="voucher_owner_name" jdbcType="VARCHAR"/>
+        <result property="voucherOrderId" column="voucher_order_id" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Hou_Voucher_Template">
+        voucher_t_id
+        ,voucher_t_title,voucher_t_start_date,voucher_t_end_date,voucher_t_price,voucher_t_limit
+		,shop_id,shop_name,voucher_t_creator_id,voucher_t_state,voucher_t_total
+		,voucher_t_giveout,voucher_t_used,voucher_t_add_date
+		,voucher_t_update_date
+		,voucher_t_eachlimit
+    </sql>
+    <insert id="insertyfVoucherBase">
+        insert into ${database.prefix.activity}hou_addon_activity_voucher_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.voucherTId != null">
+                voucher_t_id,
+            </if>
+            <if test="param.voucherTTitle != null">
+                voucher_title,
+            </if>
+            <if test="param.voucherTStartDate != null">
+                voucher_start_date,
+            </if>
+            <if test="param.voucherTEndDate != null">
+                voucher_end_date,
+            </if>
+            <if test="param.voucherTPrice != null">
+                voucher_price,
+            </if>
+            <if test="param.voucherTLimit != null">
+                voucher_limit,
+            </if>
+            <if test="param.shopId != null">
+                voucher_shop_id,
+            </if>
+            <if test="param.voucherState != null">
+                voucher_state,
+            </if>
+            voucher_active_date,
+            <if test="param.voucherOwnerId != null">
+                voucher_owner_id,
+            </if>
+            <if test="param.voucherOwnerName != null">
+                voucher_owner_name,
+            </if>
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+
+            <if test="param.voucherTId != null">
+                #{param.voucherTId,jdbcType=INTEGER},
+            </if>
+            <if test="param.voucherTTitle != null">
+                #{param.voucherTTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="param.voucherTStartDate != null">
+                #{param.voucherTStartDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.voucherTEndDate != null">
+                #{param.voucherTEndDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.voucherTPrice != null">
+                #{param.voucherTPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="param.voucherTLimit != null">
+                #{param.voucherTLimit,jdbcType=DECIMAL},
+            </if>
+            <if test="param.shopId != null">
+                #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.voucherState != null">
+                #{param.voucherState,jdbcType=TINYINT},
+            </if>
+            now(),
+            <if test="param.voucherOwnerId != null">
+                #{param.voucherOwnerId,jdbcType=INTEGER},
+            </if>
+            <if test="param.voucherOwnerName != null">
+                #{param.voucherOwnerName,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <insert id="addProductVoucherList">
+        insert into ${database.prefix.activity}hou_addon_activity_voucher_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.voucherTId != null">
+                voucher_t_id,
+            </if>
+            <if test="param.voucherTitle != null">
+                voucher_title,
+            </if>
+            <if test="param.voucherStartDate != null">
+                voucher_start_date,
+            </if>
+            <if test="param.voucherEndDate != null">
+                voucher_end_date,
+            </if>
+            <if test="param.voucherPrice != null">
+                voucher_price,
+            </if>
+            <if test="param.voucherLimit != null">
+                voucher_limit,
+            </if>
+            <if test="param.voucherShopId != null">
+                voucher_shop_id,
+            </if>
+            <if test="param.voucherState != null">
+                voucher_state,
+            </if>
+            voucher_active_date,
+            voucher_owner_id,
+            voucher_owner_name
+        </trim>
+        VALUES
+        <foreach item="item" index="index" collection="userList" open="(" separator="),(" close=")" >
+            <if test="param.voucherTId != null">
+                #{param.voucherTId,jdbcType=INTEGER},
+            </if>
+            <if test="param.voucherTitle != null">
+                #{param.voucherTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="param.voucherStartDate != null">
+                #{param.voucherStartDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.voucherEndDate != null">
+                #{param.voucherEndDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.voucherPrice != null">
+                #{param.voucherPrice,jdbcType=INTEGER},
+            </if>
+            <if test="param.voucherLimit != null">
+                #{param.voucherLimit,jdbcType=DECIMAL},
+            </if>
+            <if test="param.voucherShopId != null">
+                #{param.voucherShopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.voucherState != null">
+                #{param.voucherState,jdbcType=TINYINT},
+            </if>
+            now(),
+             #{item.userId},
+             #{item.userName}
+        </foreach>
+
+    </insert>
+    <update id="updateVoucherDetail">
+        update ${database.prefix.activity}hou_addon_activity_voucher_common
+        set voucher_state = #{voucherState}
+        <if test="null != #{orderId}">
+            , voucher_order_id = #{orderId}
+        </if>
+        where voucher_id
+        =#{voucherId}
+    </update>
+    <update id="updateVoucherGiveout">
+        update ${database.prefix.activity}hou_addon_activity_voucher_template
+        set voucher_t_giveout =
+                voucher_t_giveout + 1
+        where voucher_t_id = #{param.voucherTId}
+    </update>
+    <update id="updateVoucherstart">
+        update ${database.prefix.activity}hou_addon_activity_voucher_base set voucher_state = 4  where voucher_t_id = #{param.voucherTId} and voucher_state = 1
+    </update>
+    <update id="updateProductVoucher">
+        update ${database.prefix.activity}hou_addon_activity_voucher_base set voucher_state = 2,voucher_order_id = #{param.orderId}  where voucher_id = #{param.voucherId}
+    </update>
+    <delete id="deleteVoucherBase">
+        delete
+        from ${database.prefix.activity}hou_addon_activity_voucher_base
+        where voucher_t_id = #{voucherTId}
+    </delete>
+    <select id="selectVoucherTempByShopId" resultType="com.houjiang.activity.vo.HouVoucherTemplateVO">
+        SELECT
+        vt.voucher_t_id,
+        vt.voucher_t_title,
+        vt.voucher_t_start_date,
+        vt.voucher_t_end_date,
+        vt.voucher_t_price,
+        vt.voucher_t_limit,
+        vt.shop_id,
+        vt.voucher_t_creator_id,
+        vt.voucher_t_state,
+        vt.voucher_t_total,
+        vt.voucher_t_giveout,
+        vt.voucher_t_used,
+        vt.voucher_t_add_date,
+        vt.voucher_t_update_date,
+        vt.voucher_t_eachlimit,
+        vt.voucher_t_customimg,
+        vt.is_shop_voucher
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_template vt LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_shop vs ON vs.voucher_t_id = vt.voucher_t_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_goods vg ON vg.voucher_t_id = vt.voucher_t_id
+        WHERE
+        NOW() &lt;= vt.voucher_t_end_date
+        AND vt.voucher_t_giveout &lt; vt.voucher_t_total
+        AND vt.voucher_t_state = 1
+        <if test=" param.shopId != null and param.shopId != '' ">
+            and vt.shop_id=
+            #{param.shopId,jdbcType=INTEGER}
+        </if>
+        <if test=" param.commonId != null and param.commonId != '' ">
+            AND ( vg.common_id is null or vg.common_id = #{param.commonId,jdbcType=INTEGER} )
+        </if>
+        ORDER BY
+        vt.voucher_t_update_date desc
+    </select>
+    <select id="checkReceivedOrNot" resultType="java.lang.Integer">
+        select count(voucher_id)
+        from ${database.prefix.activity}hou_addon_activity_voucher_base
+        where voucher_t_id = #{param.voucherTId}
+          and voucher_owner_id = #{param.voucherOwnerId}
+    </select>
+    <select id="getVoucherDetail" resultType="com.houjiang.commons.vo.activity.VoucherBaseVO">
+        SELECT
+            yvb.voucher_id,
+            yvb.voucher_t_id,
+            yvb.voucher_title,
+            yvb.voucher_start_date,
+            yvb.voucher_end_date,
+            yvb.voucher_price,
+            yvb.voucher_limit,
+            yvb.voucher_shop_id,
+            yvb.voucher_state,
+            yvb.voucher_active_date,
+            yvb.voucher_owner_id,
+            yvb.voucher_owner_name,
+            yvb.voucher_order_id,
+            avt.is_shop_voucher
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_base yvb
+                LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_template avt ON avt.voucher_t_id = yvb.voucher_t_id
+        WHERE
+            yvb.voucher_id = #{param.voucherId}
+    </select>
+    <select id="selectAvaliableGoods" resultType="java.lang.Integer">
+        SELECT
+            goods_id
+        FROM
+            ${database.prefix.goods}hou_goods_base
+        WHERE
+            common_id IN (
+                SELECT
+                    common_id
+                FROM ${database.prefix.activity}hou_addon_activity_voucher_goods
+                WHERE
+                    voucher_t_id = (
+                        SELECT
+                            voucher_t_id
+                        FROM ${database.prefix.activity}hou_addon_activity_voucher_base
+                        WHERE
+                            voucher_id = #{voucherId}))
+    </select>
+    <select id="selectVcBase" resultType="com.houjiang.commons.vo.activity.HouVoucherBaseVO">
+        SELECT
+        voucher_id,
+        yvb.voucher_t_id,
+        voucher_title,
+        voucher_start_date,
+        voucher_end_date,
+        voucher_price,
+        gc.common_image,
+        voucher_limit,
+        voucher_shop_id,
+        voucher_state,
+        voucher_active_date,
+        voucher_owner_id,
+        voucher_owner_name,
+        voucher_order_id,
+        gmsb.shop_name,
+        avt.is_shop_voucher
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_base yvb
+        LEFT JOIN ${database.prefix.business}hou_shop_base gmsb ON gmsb.supplier_shop_id = yvb.voucher_shop_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_common gpvc ON gpvc.voucher_t_id = yvb.voucher_t_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_template avt ON avt.voucher_t_id = yvb.voucher_t_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gpvc.common_id
+        WHERE
+        yvb.voucher_owner_id = #{param.voucherOwnerId} and yvb.voucher_state = #{param.voucherState}
+        AND avt.is_shop_voucher = 1
+        <if test="param.commonList != null and param.commonList.size>0">
+            and ((gpvc.common_id in
+            (
+            <foreach collection="param.commonList" separator=","
+                     item="commonId">
+                #{commonId}
+            </foreach>
+            )
+            ) or (gpvc.common_id is null) )
+        </if>
+        <if test=" param.order != null and param.order != '' ">
+            and yvb.voucher_limit &lt;= #{param.order}
+        </if>
+        <if test=" param.voucherShopId != null and param.voucherShopId != '' ">
+            and yvb.voucher_shop_id = #{param.voucherShopId}
+        </if>
+        <if test=" param.now != null and param.now != '' ">
+            and yvb.voucher_start_date &lt;= now()
+        </if>
+        GROUP BY yvb.voucher_id
+        ORDER BY yvb.voucher_price
+    </select>
+    <select id="checkVoucherOrNot" resultType="java.lang.Integer">
+        select count(voucher_id)
+        from ${database.prefix.activity}hou_addon_activity_voucher_base
+        where voucher_t_id = #{param.voucherTId}
+          and voucher_owner_id = #{param.voucherOwnerId}
+    </select>
+    <select id="selectVcTemById" resultType="com.houjiang.activity.vo.UserGetVoucherUpdateParamVO">
+        select
+        <include refid="Hou_Voucher_Template"/>
+        from ${database.prefix.activity}hou_addon_activity_voucher_template
+        where voucher_t_id = #{param.voucherTId}
+    </select>
+    <select id="selectVcBaseByShopBase" resultType="com.houjiang.commons.vo.activity.VoucherBaseVO">
+        SELECT
+        vb.voucher_id,
+        vb.voucher_t_id,
+        vb.voucher_title,
+        vb.voucher_start_date,
+        vb.voucher_end_date,
+        vb.voucher_price,
+        vb.voucher_limit,
+        vb.voucher_shop_id,
+        vb.voucher_state,
+        vb.voucher_active_date,
+        vb.voucher_owner_id,
+        vb.voucher_owner_name,
+        vb.voucher_order_id,
+        avt.is_shop_voucher,
+        gc.goods_id,
+        vg.common_id,
+        sb.shop_name
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_base vb
+        LEFT JOIN ${database.prefix.business}hou_shop_base sb ON sb.supplier_shop_id = vb.voucher_shop_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_template avt ON avt.voucher_t_id = vb.voucher_t_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_goods vg ON vg.voucher_t_id = vb.voucher_t_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = vg.common_id
+        WHERE 1=1
+        <if test=" param.voucherOwnerId != null and param.voucherOwnerId != '' ">
+            and vb.voucher_owner_id = #{param.voucherOwnerId}
+        </if>
+        <if test=" param.voucherState != null and param.voucherState != '' ">
+            and vb.voucher_state = #{param.voucherState}
+        </if>
+        GROUP BY vb.voucher_id
+        ORDER BY vb.voucher_price desc
+    </select>
+    <select id="selectVoucherTIds" resultType="java.lang.Integer">
+        SELECT
+        voucher_t_id
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_goods
+        WHERE
+        1 = 1
+        <if test="param.commonId != null and param.commonId != '' ">
+            and common_id = #{param.commonId}
+        </if>
+    </select>
+    <select id="checkReceivedVcOrNot" resultType="com.houjiang.activity.vo.CheckReceivedVcOrNotResultVO">
+        select vb.voucher_state, vb.voucher_t_id
+        from ${database.prefix.activity}hou_addon_activity_voucher_base vb
+                 LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_template vt ON vb.voucher_t_id
+                 = vt.voucher_t_id
+        where vt.voucher_t_state = 1
+          AND now() &lt;
+              vt.voucher_t_end_date
+          and voucher_owner_id =
+              #{param.voucherOwnerId}
+    </select>
+    <select id="queryShopVoucherTempPort" resultType="com.houjiang.activity.vo.QueryShopVoucherTempResultVO">
+        SELECT
+        a.voucher_t_id,
+        a.voucher_t_title,
+        a.voucher_t_start_date,
+        a.voucher_t_end_date,
+        a.voucher_t_price,
+        a.voucher_t_limit,
+        a.shop_id,
+        a.shop_name,
+        a.voucher_t_creator_id,
+        a.voucher_t_state,
+        a.voucher_t_total,
+        a.voucher_t_giveout,
+        a.voucher_t_used,
+        a.voucher_t_add_date,
+        a.voucher_t_update_date,
+        a.voucher_t_eachlimit,
+        a.voucher_t_customimg,
+        a.voucher_t_remark,
+        a.voucher_b_start_date,
+        a.voucher_b_end_date,
+        a.is_shop_voucher,
+        ifnull(b.shop_logo,(select config_value from ${database.prefix.base}hou_base_sys_configs where config_enable = 1 and config_key
+        = "logo_copywriting_ico_shop")) as shopLogo
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_template a
+        LEFT JOIN ${database.prefix.business}hou_shop_base b ON a.shop_id = b.supplier_shop_id
+        WHERE
+        NOW() &lt;= a.voucher_t_end_date and a.is_shop_voucher != 3
+        AND a.voucher_t_giveout &lt; a.voucher_t_total
+        AND a.voucher_t_state = 1
+        <if test="null !=param.userId and param.userId != ''">
+            and a.voucher_t_id NOT IN (
+            SELECT vb.voucher_t_id FROM ${database.prefix.activity}hou_addon_activity_voucher_base vb
+            LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_template vt ON vt.voucher_t_id = vb.voucher_t_id
+            LEFT JOIN ( SELECT avb.voucher_t_id, count( avb.voucher_t_id ) AS nums FROM ${database.prefix.activity}hou_addon_activity_voucher_base avb
+            WHERE avb.voucher_owner_id = #{param.userId} GROUP BY avb.voucher_t_id ) c ON c.voucher_t_id =
+            vb.voucher_t_id
+            WHERE vb.voucher_owner_id = #{param.userId}
+            AND ( vt.voucher_t_eachlimit != 0 and vt.voucher_t_eachlimit &lt;= c.nums )
+            )
+        </if>
+        <if test="param.shopId != null and param.shopId != ''">
+            and a.shop_id = #{param.shopId}
+        </if>
+        <if test="param.shopId == null or param.shopId == ''">
+            and b.shop_type != 3
+        </if>
+        order by a.voucher_t_end_date
+    </select>
+    <select id="queryShopVoucherGoodsById" resultType="com.houjiang.commons.vo.goods.GdsListQueryResultVO">
+        SELECT
+            avc.common_id,
+            gc.common_name,
+            gc.common_price,
+            gc.common_stock,
+            gc.common_is_xian
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_common avc
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = avc.common_id
+        left JOIN ${database.prefix.activity}hou_addon_activity_voucher_template avt ON avt.voucher_t_id = avc.voucher_t_id
+        WHERE avt.voucher_t_state = 1 AND avc.voucher_t_id = #{voucherTId}
+    </select>
+    <select id="selectGoodsVcBase" resultType="com.houjiang.commons.vo.activity.HouVoucherBaseVO">
+        SELECT
+        voucher_id,
+        yvb.voucher_t_id,
+        voucher_title,
+        voucher_start_date,
+        voucher_end_date,
+        voucher_price,
+        gc.common_image,
+        voucher_limit,
+        voucher_shop_id,
+        voucher_state,
+        voucher_active_date,
+        voucher_owner_id,
+        voucher_owner_name,
+        voucher_order_id,
+        gmsb.shop_name,
+        avt.is_shop_voucher
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_base yvb
+        LEFT JOIN ${database.prefix.business}hou_shop_base gmsb ON gmsb.supplier_shop_id = yvb.voucher_shop_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_common gpvc ON gpvc.voucher_t_id = yvb.voucher_t_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_voucher_template avt ON avt.voucher_t_id = yvb.voucher_t_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gpvc.common_id
+        WHERE
+        yvb.voucher_owner_id = #{userId}
+          and yvb.voucher_state = 1
+          and avt.is_shop_voucher = 2
+          and gpvc.common_id = #{commonId}
+          and yvb.voucher_limit &lt;= #{goodOrderPrice}
+          and yvb.voucher_shop_id = #{shopId}
+          and yvb.voucher_start_date &lt;= now()
+        <if test="voucherIdList != null and voucherIdList.size>0">
+            and yvb.voucher_id not in (
+            <foreach collection="voucherIdList" separator="," item="voucherId">
+                #{voucherId}
+            </foreach>
+            )
+        </if>
+        GROUP BY yvb.voucher_id,gpvc.common_id
+        ORDER BY yvb.voucher_price
+    </select>
+    <select id="queryShopVoucherUser" resultType="com.houjiang.commons.vo.shop.ShopUserVO">
+        select voucher_owner_id as userId,voucher_owner_name as userName
+        from ${database.prefix.activity}hou_addon_activity_voucher_base
+        where voucher_t_id = #{voucherTId}
+        group by voucher_owner_id
+    </select>
+    <select id="queryUserroductVoucherNum" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.activity}hou_addon_activity_voucher_base
+        where voucher_t_id = #{voucherTId} and voucher_owner_id = #{userId}
+        and voucher_state = 1 and voucher_end_date >= now()
+    </select>
+    <select id="queryUserVoucherId" resultType="java.lang.Integer">
+        SELECT
+            voucher_id
+        FROM ${database.prefix.activity}hou_addon_activity_voucher_base
+        WHERE
+            voucher_t_id = #{voucherTId} and voucher_owner_id = #{userId} and voucher_state = 1 and voucher_end_date >= now() limit 1    </select>
+</mapper>

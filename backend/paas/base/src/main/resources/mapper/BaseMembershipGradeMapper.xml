@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseMembershipGradeMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseMembershipGradeEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="gradeName" column="grade_name" jdbcType="VARCHAR"/>
+            <result property="gradeRule" column="grade_rule" jdbcType="INTEGER"/>
+            <result property="gradeDiscount" column="grade_discount" jdbcType="DECIMAL"/>
+            <result property="gradeStart" column="grade_start" jdbcType="INTEGER"/>
+            <result property="gradeUrl" column="grade_url" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,grade_name,grade_rule,
+        grade_discount,grade_start,grade_url
+    </sql>
+    <insert id="MembershipGradeAdd">
+    INSERT into ${database.prefix.userms}hou_base_membership_grade
+    ( grade_name,
+      grade_rule,
+      grade_discount,
+      grade_start,
+      grade_url )
+    VALUES
+	(#{param.gradeName},
+	#{param.gradeRule},
+	#{param.gradeDiscount},
+	1,
+	#{param.gradeUrl})
+    </insert>
+    <update id="MembershipGradeUpdate">
+    UPDATE ${database.prefix.userms}hou_base_membership_grade
+    SET grade_name = #{param.gradeName},
+    grade_rule = #{param.gradeRule},
+    grade_discount = #{param.gradeDiscount},
+    grade_url = #{param.gradeUrl}
+    where id = #{param.id}
+    </update>
+    <select id="getMemberNameByClassId" resultType="java.util.Map">
+        select  grade_name,grade_url,grade_discount  from ${database.prefix.userms}hou_base_membership_grade where id=#{classId} and grade_start = 1
+    </select>
+    <select id="getMaxMemberIntegral" resultType="java.lang.Integer">
+        select Max(grade_rule) from ${database.prefix.userms}hou_base_membership_grade where grade_start = 1
+    </select>
+    <select id="distanceClassIntegral" resultType="java.util.Map">
+        select grade_name,grade_rule from ${database.prefix.userms}hou_base_membership_grade where grade_start = 1 and grade_rule > #{presentInteger} ORDER BY grade_rule limit 1
+    </select>
+    <select id="selectmemberdiscount" resultType="java.lang.String">
+    select grade_discount from ${database.prefix.userms}hou_base_membership_grade where grade_start = 1 order by grade_discount asc limit 1
+    </select>
+</mapper>

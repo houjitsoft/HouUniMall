@@ -1,0 +1,103 @@
+code: mall-distribution
+name: 分销推广
+version: 1.0.2
+author: UniMall
+description: Distributor management, levels, goods, orders, commission rules and records
+category: 营销与客户
+owner: official
+# 部署形态：与 mall-rebate 同构——后端是 mall 主服务的原生 Controller
+# （/mall/distribution/**），不在 PF4J 引擎里。本插件只承载前端页面与菜单声明，
+# 以目录形态落盘（plugins-dir/<code>/frontend），不进 PF4J、不走市场安装。
+# 前端经 BFF 商城模块直通通道 /web/mall/module/distribution/** 访问后端。
+runtime: embedded
+hostService: userms
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - shell:mall-distribution:root
+  - shell:mall-distribution:distributor
+  - shell:mall-distribution:level
+  - shell:mall-distribution:goods
+  - shell:mall-distribution:order
+  - shell:mall-distribution:rule
+  - shell:mall-distribution:commission
+  - shell:mall-distribution:setting
+  - shell:mall-distribution:settle
+  - shell:mall-distribution:withdraw
+menus:
+  - type: M
+    name: 分销推广
+    icon: Share
+    sort: 3050
+    perms: shell:mall-distribution:root
+    path: /plugin/mall-distribution
+    group: market
+    groupSort: 300
+  - type: C
+    name: 分销商品
+    icon: Goods
+    sort: 5
+    perms: shell:mall-distribution:goods
+    path: /plugin/mall-distribution/goods
+    parentPerms: shell:mall-distribution:root
+  - type: C
+    name: 分销商管理
+    icon: User
+    sort: 4
+    perms: shell:mall-distribution:distributor
+    path: /plugin/mall-distribution/distributor
+    parentPerms: shell:mall-distribution:root
+  - type: C
+    name: 分销等级
+    icon: Medal
+    sort: 3
+    perms: shell:mall-distribution:level
+    path: /plugin/mall-distribution/level
+    parentPerms: shell:mall-distribution:root
+  - type: C
+    name: 分销订单
+    icon: Tickets
+    sort: 2
+    perms: shell:mall-distribution:order
+    path: /plugin/mall-distribution/order
+    parentPerms: shell:mall-distribution:root
+  - type: C
+    name: 佣金规则
+    icon: Setting
+    sort: 1
+    perms: shell:mall-distribution:rule
+    path: /plugin/mall-distribution/rule
+    parentPerms: shell:mall-distribution:root
+  - type: C
+    name: 佣金记录
+    icon: Money
+    sort: 0
+    perms: shell:mall-distribution:commission
+    path: /plugin/mall-distribution/commission
+    parentPerms: shell:mall-distribution:root
+  - type: C
+    name: 分销设置
+    icon: Switch
+    sort: -1
+    perms: shell:mall-distribution:setting
+    path: /plugin/mall-distribution/setting
+    parentPerms: shell:mall-distribution:root
+  - type: C
+    name: 佣金结算
+    icon: Coin
+    sort: -2
+    perms: shell:mall-distribution:settle
+    path: /plugin/mall-distribution/settle
+    parentPerms: shell:mall-distribution:root
+  - type: C
+    name: 提现审核
+    icon: Wallet
+    sort: -3
+    perms: shell:mall-distribution:withdraw
+    path: /plugin/mall-distribution/withdraw
+    parentPerms: shell:mall-distribution:root
+frontend:
+  entry: /plugin-assets/mall-distribution/1.0.2/index.mjs

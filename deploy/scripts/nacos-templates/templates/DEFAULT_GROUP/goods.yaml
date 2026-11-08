@@ -1,0 +1,30 @@
+server:
+  port: 8208
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${GOODS_DATASOURCE_PASSWORD} # 数据库密码
+  main:
+    allow-bean-definition-overriding: true
+Vop: 
+  shopId: 14
+# 商品域 ES 业务参数（索引名 / 文档类型）。
+# 连接层（地址、账号、超时、连接池）统一由 es.yaml 的 houcloud.es.* 提供，此处不再重复。
+houcloud:
+  goods:
+    es:
+      index: goods_index_unimall    # 商品索引库
+      index2: shop_index_unimall    # 店铺索引库
+      sensitive: sensitive_index_unimall  # 敏感词索引库
+      type: article
+# 项目部署域名
+domainName: https://admin.xinji365.cn/
+# 字体路径
+fontUrlPath: /www/wwwroot/fontPath
+i18nPath: /www/wwwroot/html
+privateKeyPath: ${GOODS_PRIVATE_KEY}
+system:
+  pcIndexConfig: JAVA_PC_INDEX_CONFIG_TEST # pc首页配置redis key

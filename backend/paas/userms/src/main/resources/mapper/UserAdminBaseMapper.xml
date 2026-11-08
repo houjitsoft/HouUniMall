@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserAdminBaseMapper">
+
+    <resultMap type="com.houjiang.userms.entity.UserAdminBaseEntity" id="UserAdminBaseMap">
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="userAccount" column="user_account" jdbcType="VARCHAR"/>
+        <result property="userPassword" column="user_password" jdbcType="VARCHAR"/>
+        <result property="userRealname" column="user_realname" jdbcType="VARCHAR"/>
+        <result property="userNickname" column="user_nickname" jdbcType="VARCHAR"/>
+        <result property="userMobile" column="user_mobile" jdbcType="VARCHAR"/>
+        <result property="userKey" column="user_key" jdbcType="VARCHAR"/>
+        <result property="userDelete" column="user_delete" jdbcType="INTEGER"/>
+        <result property="rightsGroupId" column="rights_group_id" jdbcType="INTEGER"/>
+        <result property="headPortrait" column="head_portrait" jdbcType="VARCHAR"/>
+        <result property="userPosition" column="user_position" jdbcType="VARCHAR"/>
+        <result property="userDepartment" column="user_department" jdbcType="VARCHAR"/>
+        <result property="userGender" column="user_gender" jdbcType="INTEGER"/>
+        <result property="creatAccountTime" column="creat_account_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="addAdminUser">
+    INSERT INTO ${database.prefix.userms}hou_user_admin_base
+    ( user_account,
+    user_password,
+    user_realname,
+    user_nickname,
+    user_mobile,
+    user_gender,
+    head_portrait,
+    user_key,
+    rights_group_id,
+    user_position,
+    user_department,creat_account_time )
+    VALUES
+    	(#{paraMap.userAccount},
+    #{paraMap.password},
+    #{paraMap.userRealname},
+    #{paraMap.userNickname},
+    #{paraMap.userMobile},
+    #{paraMap.userGender},
+    #{paraMap.headPortrait},
+    '',
+    #{paraMap.rightsGroupId},
+    #{paraMap.userPosition},
+    #{paraMap.userDepartment} ,now())
+    </insert>
+    <update id="updateAdminUser">
+        update ${database.prefix.userms}hou_user_admin_base
+        <set>
+            <if test="null != paraMap.password and '' != paraMap.password ">
+                user_password = #{paraMap.password},
+            </if>
+            <if test="null != paraMap.rightsGroupId and '' != paraMap.rightsGroupId">
+                rights_group_id =#{paraMap.rightsGroupId},
+            </if>
+            <if test="null != paraMap.userRealname and '' != paraMap.userRealname">
+                user_realname=#{paraMap.userRealname},
+            </if>
+            <if test="null != paraMap.userNickname and '' != paraMap.userNickname">
+                user_nickname=#{paraMap.userNickname},
+            </if>
+            <if test="null != paraMap.userMobile">
+                user_mobile=#{paraMap.userMobile},
+            </if>
+            <if test="null != paraMap.userGender and '' != paraMap.userGender">
+                user_gender=#{paraMap.userGender},
+            </if>
+            <if test="null != paraMap.headPortrait and '' != paraMap.headPortrait">
+                head_portrait=#{paraMap.headPortrait},
+            </if>
+            <if test="null != paraMap.userPosition">
+                user_position=#{paraMap.userPosition},
+            </if>
+            <if test="null != paraMap.userDepartment and '' != paraMap.userDepartment">
+                user_department=#{paraMap.userDepartment},
+            </if>
+            <if test="null != paraMap.userAccount and '' != paraMap.userAccount">
+                user_account =#{paraMap.userAccount},
+            </if>
+        </set>
+        where user_id =#{paraMap.userId}
+    </update>
+    <select id="getPlatformUserInfo" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        SELECT
+	    uaub.user_id,
+	    uaub.user_account,
+	    uaub.user_password,
+	    uaub.user_key,
+	    uaub.user_delete,
+	    uaub.rights_group_id,
+	    uarg.rights_group_id,
+	    uarg.rights_group_name,
+	    uarg.rights_group_add_time,
+	    uarg.rights_limits_all,
+	    uaub.head_portrait,
+	    uaub.user_realname
+    FROM
+	${database.prefix.userms}hou_user_admin_base uaub
+	LEFT JOIN ${database.prefix.userms}hou_user_admin_rights_group uarg ON uaub.rights_group_id = uarg.rights_group_id
+	LEFT JOIN hou_${database.prefix.userms}hou_user_info_detail uate ON uate.user_id = uaub.user_id
+    WHERE
+	uaub.user_account = #{userAccount}
+    <if test="null != password">
+        and  uaub.user_password = #{password},
+    </if>
+	 and  uaub.user_delete = 0
+    </select>
+    <select id="queryAdminUserList" resultType="com.houjiang.userms.vo.UserPersonalBaseVO">
+        SELECT
+        uaub.user_account,
+        uaub.user_delete,
+        uaub.rights_group_id,
+        uarg.rights_group_name,
+        uaub.user_realname,
+        uaub.user_nickname,
+        uaub.user_gender,
+        uaub.user_position,
+        uaub.user_department,
+        uad.user_department  as userDepartmentName,
+        uaub.user_mobile,
+        uaub.user_id,
+        uaub.head_portrait
+        FROM
+        ${database.prefix.userms}hou_user_admin_base uaub
+        LEFT JOIN ${database.prefix.userms}hou_user_admin_rights_group uarg ON uaub.rights_group_id = uarg.rights_group_id
+        LEFT JOIN ${database.prefix.userms}hou_user_admin_department uad ON uad.id = uaub.user_department
+        WHERE 1=1
+        <if test="null != param.userAccount ">
+            and uaub.user_account like concat('%',#{param.userAccount},'%')
+        </if>
+        <if test="null != param.rightsGroupId ">
+            and uaub.rights_group_id = #{param.rightsGroupId}
+        </if>
+        order by creat_account_time desc
+    </select>
+
+
+</mapper>

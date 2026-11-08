@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.StorageInventoryFlowMapper">
+
+    <resultMap type="com.houjiang.goods.entity.StorageInventoryFlowEntity" id="StorageInventoryFlowMap">
+        <result property="inventoryFlowId" column="inventory_flow_id" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="putStorageId" column="put_storage_id" jdbcType="INTEGER"/>
+        <result property="outStorageId" column="out_storage_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="typeDetails" column="type_details" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="operatorId" column="operator_id" jdbcType="INTEGER"/>
+        <result property="operatorName" column="operator_name" jdbcType="VARCHAR"/>
+        <result property="operatorTime" column="operator_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="notes" column="notes" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="queryStorageInventoryFlow" resultType="com.houjiang.goods.vo.StorageInventoryFlowVO">
+        select
+        sif.inventory_flow_id,
+        sif.shop_id,
+        sif.put_storage_id,
+        sif.out_storage_id,
+        sif.type,
+        sif.type_details,
+        sif.start_time,
+        sif.end_time,
+        sif.operator_id,
+        sif.operator_name,
+        sif.operator_time,
+        sif.create_time,
+        sif.inventory_flow_num,
+        sif.notes
+        from storage_inventory_flow sif
+            left join storage_inventory_flow_goods sifg on sifg.inventory_flow_id = sif.inventory_flow_id
+        where sif.shop_id = #{param.shopId} and sif.type = #{param.type}
+            <if test="param.inventoryFlowId != null and param.inventoryFlowId != ''">
+                and sif.inventory_flow_id = #{param.inventoryFlowId}
+            </if>
+            <if test="param.typeDetails != null and param.typeDetails != ''">
+                and sif.type_details = #{param.typeDetails}
+            </if>
+            <if test="param.storageIdList != null and param.storageIdList.size() > 0">
+                <if test="param.type != null and param.type != 2">
+                    <foreach collection="param.storageIdList" open="and sif.put_storage_id in (" item="storageId" separator="," close=")">
+                        #{storageId}
+                    </foreach>
+                </if>
+                <if test="param.type != null and param.type == 2">
+                    <foreach collection="param.storageIdList" open="and sif.out_storage_id in (" item="storageId" separator="," close=")">
+                        #{storageId}
+                    </foreach>
+                </if>
+            </if>
+            <if test="param.goodsIdList != null and param.goodsIdList.size() > 0">
+                and sifg.goods_id not in
+                <foreach collection="param.goodsIdList" open="(" item="goodsId" separator="," close=")">
+                    #{goodsId}
+                </foreach>
+            </if>
+            <if test="param.startTime != null and param.endTime != null">
+                and sif.operator_time between #{param.startTime} and #{param.endTime}
+            </if>
+        group by sif.inventory_flow_id
+    </select>
+    <select id="queryTransferOrderGoods" resultType="com.houjiang.goods.vo.StorageInventoryFlowVO">
+        select
+            sif.inventory_flow_id,
+            sif.shop_id,
+            sif.put_storage_id,
+            sif.out_storage_id,
+            sif.type,
+            sif.type_details,
+            sif.start_time,
+            sif.end_time,
+            sif.operator_id,
+            sif.operator_name,
+            sif.operator_time,
+            sif.create_time,
+            sif.inventory_flow_num,
+            sif.notes
+        from storage_inventory_flow sif
+        where sif.shop_id = #{param.shopId} and sif.inventory_flow_id = #{param.inventoryFlowId}
+    </select>
+    <select id="queryStorageInventoryFlowExp" resultType="com.houjiang.goods.vo.StorageInventoryFlowExpVO">
+        select
+            sif.inventory_flow_id,
+            sif.shop_id,
+            sif.put_storage_id,
+            sif.out_storage_id,
+            sif.type,
+            sif.type_details,
+            sif.start_time,
+            sif.end_time,
+            sif.operator_id,
+            sif.operator_name,
+            sif.operator_time,
+            sif.create_time,
+            sif.inventory_flow_num,
+            sif.notes,
+            sifg.goods_id,
+            sifg.goods_num,
+            sifg.buy_num,
+            mgb.goods_name,
+            mgb.goods_spec
+        from storage_inventory_flow_goods sifg
+            left join ${database.prefix.goods}hou_goods_base mgb on sifg.goods_id = mgb.goods_id
+            left join storage_inventory_flow sif on sifg.inventory_flow_id = sif.inventory_flow_id
+        where sif.shop_id = #{param.shopId} and sif.type = #{param.type}
+        <if test="param.page != null and param.limit != null">
+            limit #{param.page}, #{param.limit}
+        </if>
+    </select>
+
+</mapper>

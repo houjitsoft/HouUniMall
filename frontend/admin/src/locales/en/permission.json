@@ -1,0 +1,14 @@
+{
+  "user": {
+    "read": "User Read",
+    "write": "User Write"
+  },
+  "product": {
+    "read": "Product Read",
+    "write": "Product Write"
+  },
+  "order": {
+    "read": "Order Read",
+    "write": "Order Write"
+  }
+}

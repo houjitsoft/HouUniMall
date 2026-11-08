@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivitySeckillGoodsMapper">
+
+    <resultMap type="com.houjiang.activity.entity.ActivitySeckillGoodsEntity" id="ActivitySeckillGoodsMap">
+        <result property="seckillGoodsId" column="seckill_goods_id" jdbcType="INTEGER"/>
+        <result property="seckillId" column="seckill_id" jdbcType="INTEGER"/>
+        <result property="seckillName" column="seckill_name" jdbcType="VARCHAR"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="goodsName" column="goods_name" jdbcType="VARCHAR"/>
+        <result property="goodsPrice" column="goods_price" jdbcType="NUMERIC"/>
+        <result property="seckillPrice" column="seckill_price" jdbcType="NUMERIC"/>
+        <result property="goodsImage" column="goods_image" jdbcType="VARCHAR"/>
+        <result property="goodsStartTime" column="goods_start_time" jdbcType="TIMESTAMP"/>
+        <result property="goodsEndTime" column="goods_end_time" jdbcType="TIMESTAMP"/>
+        <result property="seckillGoodsState" column="seckill_goods_state" jdbcType="INTEGER"/>
+        <result property="goodsUpperLimit" column="goods_upper_limit" jdbcType="INTEGER"/>
+        <result property="seckillNum" column="seckill_num" jdbcType="INTEGER"/>
+    </resultMap>
+    <update id="updateSaleForSeckill">
+          update ${database.prefix.activity}hou_addon_activity_seckill_goods set seckill_num = seckill_num - #{param.goodsNum} where goods_id = #{param.goodsId} and seckill_id = #{param.seckillId}
+    </update>
+    <delete id="deleteSeckillGoods2">
+        delete from ${database.prefix.activity}hou_addon_activity_seckill_goods
+        where 1=1
+        <if test="param.seckillId != null">
+            and seckill_id = #{param.seckillId,jdbcType=INTEGER}
+        </if>
+        <if test="param.commonId != null">
+            and common_id = #{param.commonId,jdbcType=INTEGER}
+        </if>
+    </delete>
+    <select id="selectSeckillByGoodsId"
+            resultType="com.houjiang.commons.vo.activity.AppSeckillGoodsQueryResultVO">
+        SELECT
+        seckill_id,
+        seckill_price,
+        goods_start_time,
+        goods_end_time,
+        goods_upper_limit,
+        seckill_num,
+        (select sum(seckill_num) from ${database.prefix.activity}hou_addon_activity_seckill_goods where seckill_goods_state in(0,1) and common_id = #{param.commonId}) as seckillNums,
+        seckill_goods_state,
+        seckill_name as seckillTitle
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+        WHERE
+        seckill_goods_state in(0,1)
+        <if test="param.sessionTime != null and param.sessionTime!=''">
+            and goods_start_time = #{param.sessionTime}
+        </if>
+        <if test="param.goodsId != null">
+            and goods_id = #{param.goodsId,jdbcType=INTEGER}
+        </if>
+        ORDER BY goods_end_time limit 1
+    </select>
+    <select id="selectSeckillByGoodsId2"
+            resultType="com.houjiang.commons.vo.activity.AppSeckillGoodsQueryResultVO">
+        SELECT
+        seckill_id,
+        seckill_price,
+        goods_start_time,
+        goods_end_time,
+        goods_upper_limit,
+        seckill_num,
+        seckill_goods_state,
+        seckill_name as seckillTitle
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+        WHERE
+        seckill_goods_state in(0,1)
+        <if test="goodsId != null">
+            and goods_id = #{goodsId,jdbcType=INTEGER}
+        </if>
+        limit 1
+    </select>
+    <select id="querySeckillInfo" resultType="com.houjiang.activity.vo.CheckSeckillLimitVO">
+        SELECT
+            goods_upper_limit,
+            seckill_price,
+            goods_start_time,
+            goods_end_time,
+            seckill_num,
+            goods_name,
+            seckill_id,
+            (
+                SELECT
+                    sum( seckill_num )
+                FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+                WHERE
+                    now() BETWEEN goods_start_time
+                        AND goods_end_time
+                  AND seckill_goods_state = 1
+                  AND common_id = #{param.commonId}) as seckillNums
+
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+        WHERE
+            now() BETWEEN goods_start_time
+                AND goods_end_time
+          AND seckill_goods_state = 1
+          AND goods_id = #{param.goodsId}
+    </select>
+    <select id="queryOrderGoodsCount" resultType="java.lang.Integer">
+        SELECT
+        sum( order_goods_num )
+        FROM
+        ${database.prefix.order}hou_order_goods
+        WHERE
+        common_id = #{param.commonId}
+
+        AND order_goods_time BETWEEN #{param.goodsStartTime} and #{param.goodsEndTime}
+
+        AND order_goods_status != 7
+        AND promotion_id = 2
+        AND goods_id IN (
+        SELECT
+        goods_id
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+        WHERE
+        seckill_id = #{param.seckillId} and common_id = #{param.commonId}
+
+        )
+        <if test="param.userId != null">
+            and buyer_user_id = #{param.userId}
+        </if>
+        <if test="param.seckillId != null">
+            and goods_promotion_id = #{param.seckillId}
+        </if>
+    </select>
+    <select id="querySeckillInfoByGoodsId"
+            resultType="com.houjiang.commons.vo.activity.CheckSeckillLimitResultVO">
+        SELECT
+            a.goods_upper_limit AS goodsUpperLimit,
+            a.seckill_id AS seckillId,
+            a.seckill_price AS seckillPrice,
+            a.goods_start_time AS goodsStartTime,
+            a.goods_end_time AS goodsEndTime,
+            a.goods_name AS goodsName,
+            b.cancel_time AS cancelTime
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods a
+                LEFT JOIN ${database.prefix.activity}hou_addon_activity_seckill_base b ON a.seckill_id = b.seckill_id
+        WHERE
+            now() BETWEEN a.goods_start_time
+                AND a.goods_end_time
+          AND a.seckill_goods_state = 1
+          AND a.goods_id = #{goodsId}
+    </select>
+    <select id="querySeckillNum" resultType="java.lang.Integer">
+        SELECT
+            seckill_num
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+        WHERE
+            seckill_id = #{param.seckillId} and goods_id = #{param.goodsId}
+    </select>
+    <select id="selectByGoodsId" resultType="com.houjiang.commons.dto.goods.AppSeckillGoodsVO">
+        SELECT
+        seckill_price,
+        goods_start_time,
+        goods_end_time,
+        goods_upper_limit,
+        seckill_num
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+        WHERE
+        seckill_goods_state = 1
+        AND (
+        now()
+        BETWEEN goods_start_time
+        AND goods_end_time
+        )
+        <if test="goodsId != null">
+            and goods_id = #{goodsId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectSeckillIndexGoods" resultType="com.houjiang.activity.vo.SeckillGoodsListQueryResultVO">
+        SELECT
+        dg.common_id,
+        dg.goods_id,
+        gc.common_name,
+        gc.common_price,
+        gc.common_image,
+        dg.seckill_price,
+        gc.common_salenum,
+        gc.common_promotion_tips,
+        dg.goods_start_time,
+        dg.goods_end_time,
+        dg.seckill_num,
+        dg.seckill_id,
+        dg.goods_upper_limit,
+        IF( isnull( `gc`.`common_evaluate` ), 0, `gc`.`common_evaluate` ) AS commonEvaluate,
+        dg.seckill_goods_state,
+        sb.shop_name,
+        sb.supplier_shop_id AS shop_id
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods dg
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON (gc.common_id = dg.common_id)
+        LEFT JOIN  ${database.prefix.business}hou_shop_base sb ON sb.supplier_shop_id = gc.shop_id
+        WHERE gc.common_stock > 0
+        AND dg.seckill_goods_state in (0,1)
+        AND sb.shop_status = 3
+        AND gc.common_state = 1
+        AND gc.common_verify = 1
+        and gc.common_is_xian = 2
+        and dg.seckill_num > 0
+        and dg.goods_start_time = #{param.goodsStartTime}
+        <if test="param.shopId != null and param.shopId != ''" >
+            and gc.shop_id = #{param.shopId}
+        </if>
+        <if test="param.shopId == null or param.shopId == ''" >
+            and gc.goods_type != 3
+        </if>
+        <if test="param.commonName != null and param.commonName != ''">
+            and common_name LIKE CONCAT('%',#{param.commonName },'%')
+        </if>
+        GROUP BY
+        dg.common_id
+        ORDER BY
+        dg.goods_start_time desc
+    </select>
+    <select id="selectSeckillIndexGoods2" resultType="com.houjiang.activity.vo.SeckillGoodsListQueryResultVO">
+        SELECT
+        dg.common_id,
+        dg.goods_id,
+        gc.common_name,
+        gc.common_price,
+        gc.common_image,
+        dg.seckill_price,
+        gc.common_salenum,
+        gc.common_promotion_tips,
+        dg.goods_start_time,
+        dg.goods_end_time,
+        dg.seckill_num,
+        dg.seckill_id,
+        dg.goods_upper_limit,
+        IF( isnull( `gc`.`common_evaluate` ), 0, `gc`.`common_evaluate` ) AS commonEvaluate,
+        dg.seckill_goods_state,
+        sb.shop_name,
+        sb.supplier_shop_id AS shop_id
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods dg
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON (gc.common_id = dg.common_id)
+        LEFT JOIN ${database.prefix.business}hou_shop_base sb ON sb.supplier_shop_id = gc.shop_id
+        WHERE
+        gc.common_stock > 0
+        AND dg.seckill_goods_state = 1
+        AND sb.shop_status = 3
+        AND gc.common_state = 1
+        and gc.common_is_xian = 2
+        AND gc.common_verify = 1
+        and dg.seckill_num > 0
+        and dg.goods_start_time between #{param.goodsStartTime} and now()
+        <if test="param.shopId != null and param.shopId != ''" >
+             and gc.shop_id = #{param.shopId}
+        </if>
+        <if test="param.shopId == null or param.shopId == ''" >
+            and gc.goods_type != 3
+        </if>
+        <if test="param.commonName != null and param.commonName != ''">
+            and common_name LIKE CONCAT('%',#{param.commonName },'%')
+        </if>
+        GROUP BY
+        dg.common_id
+        ORDER BY
+        dg.goods_start_time desc
+    </select>
+    <select id="seckillGoodsPrice" resultType="com.houjiang.commons.vo.activity.ModularGoodsVO">
+        SELECT seckill_price    as activityPrice,
+			   goods_start_time as startTime,
+			   goods_end_time   as endTime
+		FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+		WHERE seckill_goods_state = 1
+		  AND (
+			now()
+				BETWEEN goods_start_time
+				AND goods_end_time
+			)
+		  AND goods_id = #{goodsId,jdbcType=INTEGER}
+		limit 1;
+    </select>
+    <select id="querySeckillDiffer" resultType="com.houjiang.activity.vo.SeckillGoodsListQueryResultVO">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        dg.common_id,
+        dg.goods_id,
+        gc.common_name,
+        gc.common_price,
+        gc.common_image,
+        dg.seckill_price,
+        gc.common_salenum,
+        gc.common_promotion_tips,
+        dg.goods_start_time,
+        dg.goods_end_time,
+        dg.seckill_num,
+        dg.goods_upper_limit,
+        IF
+        ( isnull( `gc`.`common_evaluate` ), 0, `gc`.`common_evaluate` ) AS commonEvaluate,
+        dg.seckill_goods_state,
+        sb.shop_name,
+        ROUND(( dg.goods_price - dg.seckill_price )/ dg.goods_price, 3 ) AS proportion,
+        sb.supplier_shop_id AS shop_id
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods dg
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON ( gc.common_id = dg.common_id )
+        LEFT JOIN ${database.prefix.business}hou_shop_base sb ON sb.supplier_shop_id = gc.shop_id
+        WHERE
+        gc.common_stock > 0
+        AND dg.seckill_goods_state IN ( 0, 1 )
+        AND sb.shop_status = 3
+        AND gc.common_state = 1
+        AND gc.common_verify = 1
+        AND gc.common_is_xian = 2
+        AND dg.seckill_num > 0
+        <if test="param.shopId != null and param.shopId != ''">
+            and gc.shop_id = #{param.shopId}
+        </if>
+        <if test="param.shopId == null or param.shopId == ''">
+            and gc.goods_type != 3
+        </if>
+        GROUP BY dg.common_id
+        ) a
+        where a.proportion>=0.3
+        ORDER BY proportion desc
+        limit 20
+    </select>
+    <select id="querySeckillGoodsHot" resultType="java.lang.Integer">
+        SELECT
+            goods_id
+        FROM
+            (
+                SELECT
+                    sum( order_goods_num ) AS goodsNum,
+                    goods_id
+                FROM
+                    ${database.prefix.order}hou_order_goods
+                WHERE
+                    order_goods_status NOT IN ( 1, 7 )
+                  AND goods_return_status != 2
+		AND goods_refund_status != 2
+		AND promotion_id = 2
+		AND order_goods_time BETWEEN #{param.startDateTime} and #{param.endDateTime}
+
+                GROUP BY
+                    goods_id
+                ORDER BY
+                    goodsNum DESC
+                    LIMIT 20
+            ) A
+    </select>
+    <select id="querySeckillDifferHot" resultType="com.houjiang.activity.vo.SeckillGoodsListQueryResultVO">
+        SELECT
+        dg.common_id,
+        dg.goods_id,
+        gc.common_name,
+        gc.common_price,
+        gc.common_image,
+        dg.seckill_price,
+        gc.common_salenum,
+        gc.common_promotion_tips,
+        dg.goods_start_time,
+        dg.goods_end_time,
+        dg.seckill_num,
+        dg.goods_upper_limit,
+        IF
+        ( isnull( `gc`.`common_evaluate` ), 0, `gc`.`common_evaluate` ) AS commonEvaluate,
+        dg.seckill_goods_state,
+        sb.shop_name,
+        ROUND(( dg.goods_price - dg.seckill_price )/ dg.goods_price, 3 ) AS proportion,
+        sb.supplier_shop_id AS shop_id
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods dg
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON ( gc.common_id = dg.common_id )
+        LEFT JOIN ${database.prefix.business}hou_shop_base sb ON sb.supplier_shop_id = gc.shop_id
+        WHERE
+        gc.common_stock > 0
+        AND dg.seckill_goods_state IN ( 0, 1 )
+        AND sb.shop_status = 3
+        AND gc.common_state = 1
+        AND gc.common_verify = 1
+        AND gc.common_is_xian = 2
+        AND dg.seckill_num > 0
+        <if test="param.shopId != null and param.shopId != ''">
+            and gc.shop_id = #{param.shopId}
+        </if>
+        <if test="param.shopId == null or param.shopId == ''">
+            and gc.goods_type != 3
+        </if>
+        <if test="param.goodsList != null">
+            and dg.goods_id in (
+            <foreach collection="param.goodsList" item="goodsId" separator=",">
+                #{goodsId}
+            </foreach>
+            )
+        </if>
+    </select>
+    <select id="querySeckillGoodsInfo"
+            resultType="com.houjiang.commons.vo.activity.AppSeckillGoodsQueryResultVO">
+       SELECT
+            a.seckill_goods_id,
+            a.common_id,
+            a.goods_name,
+            a.goods_price,
+            a.seckill_price,
+            a.goods_image,
+            a.seckill_id,
+            a.goods_upper_limit,
+            a.seckill_num,
+            a.goods_id,
+            a.goods_start_time AS startDateTime,
+            b.goods_spec AS specValueName,
+            a.shop_id
+            FROM ${database.prefix.activity}hou_addon_activity_seckill_goods a
+		left join  ${database.prefix.goods}hou_goods_base b on a.goods_id = b.goods_id
+		where
+				a.seckill_id =#{param.seckillId,jdbcType=INTEGER}
+    </select>
+    <select id="selectSeckillGoodsDetail2"
+            resultType="com.houjiang.commons.vo.activity.AppSeckillGoodsQueryResultVO">
+        select
+        dg.seckill_goods_id,dg.goods_id, dg.common_id, dg.shop_id,
+        dg.goods_name,
+        dg.goods_price,
+        dg.seckill_price,
+        gc.goods_image ,
+        dg.seckill_id,gc.goods_spec as specValueName
+        from ${database.prefix.activity}hou_addon_activity_seckill_goods dg
+        LEFT JOIN ${database.prefix.goods}hou_goods_base gc ON gc.goods_id = dg.goods_id
+        where 1=1
+        <if test="param.seckillId != null">
+            and dg.seckill_id = #{param.seckillId,jdbcType=INTEGER}
+        </if>
+        <if test="param.commonId != null">
+            and dg.common_id = #{param.commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectActiveSeckillGoods" resultType="java.lang.Integer">
+        select
+        common_id
+        from ${database.prefix.activity}hou_addon_activity_seckill_goods
+        where
+        seckill_goods_state = 1
+        AND (
+        now()
+        BETWEEN goods_start_time
+        AND
+        goods_end_time
+        )
+        <if test="seckillId != null">
+            and seckill_id != #{seckillId,jdbcType=INTEGER}
+        </if>
+        <if test="commonId != null">
+            and common_id = #{commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="goodsIsRepetition" resultType="java.lang.Integer">
+    select count(1) from ${database.prefix.activity}hou_addon_activity_seckill_goods
+		where seckill_id = #{seckillId} and goods_id = #{goodsId}
+    </select>
+    <select id="selectShopSeckillGoodsList" resultType="com.houjiang.activity.vo.ShopSeckillGoodsListVO">
+        select
+        gc.common_id, gc.goods_id, gc.common_name,
+        gc.common_image,
+        gc.common_state,gb.goods_price as common_price,gc.common_is_xian,gc.common_stock
+        from
+        ${database.prefix.goods}hou_goods_common gc
+        left join ${database.prefix.goods}hou_goods_base gb on gb.goods_id=gc.goods_id
+        where gc.shop_status = 3 and gc.common_state = 1 and gc.dealer_goods_flag != 1
+          and gc.common_verify = 1 and gc.common_is_xian = 0
+        <if test="param.shopId != null">
+            and gc.shop_id = #{param.shopId,jdbcType=INTEGER}
+        </if>
+        <if test="param.virtualGoods != null">
+            and gc.virtual_goods = #{param.virtualGoods,jdbcType=INTEGER}
+        </if>
+        <if test="param.commonName != null and param.commonName != ''">
+            and gc.common_name LIKE CONCAT('%',#{param.commonName },'%')
+        </if>
+    </select>
+
+    <!-- 某商品（commonId）下的全部规格：后台秒杀配置按规格逐条定价的取数来源。
+         秒杀商品表以 goods_id 为粒度，goods_spec 即规格名（如「500g / 礼盒」）。 -->
+    <select id="selectCommonGoodsSpecs" resultType="java.util.Map">
+        select
+            gb.goods_id      as goodsId,
+            gb.goods_spec    as specName,
+            gb.goods_price   as goodsPrice,
+            gb.goods_stock   as goodsStock,
+            gc.common_name   as commonName,
+            gc.common_image  as commonImage
+        from ${database.prefix.goods}hou_goods_base gb
+        left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = gb.common_id
+        where gb.common_id = #{commonId,jdbcType=INTEGER}
+        order by gb.goods_id asc
+    </select>
+
+</mapper>
+

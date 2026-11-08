@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseArticleBaseMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseArticleBaseEntity" id="BaseArticleBaseMap">
+        <result property="articleId" column="article_id" jdbcType="INTEGER"/>
+        <result property="articleDesc" column="article_desc" jdbcType="VARCHAR"/>
+        <result property="articleTitle" column="article_title" jdbcType="VARCHAR"/>
+        <result property="articleUrl" column="article_url" jdbcType="VARCHAR"/>
+        <result property="articleGroupId" column="article_group_id" jdbcType="INTEGER"/>
+        <result property="articleSort" column="article_sort" jdbcType="INTEGER"/>
+        <result property="articleStatus" column="article_status" jdbcType="INTEGER"/>
+        <result property="articleAddTime" column="article_add_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="articleInsert">
+        replace INTO ${database.prefix.userms}hou_base_article_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.articleId != null">
+                article_id,
+            </if>
+            <if test="param.articleTitle != null">
+                article_title,
+            </if>
+            <if test="param.articleUrl != null">
+                article_url,
+            </if>
+            <if test="param.articleGroupId != null">
+                article_group_id,
+            </if>
+            <if test="param.articleSort != null">
+                article_sort,
+            </if>
+            <if test="param.articleStatus != null">
+                article_status,
+            </if>
+            <if test="param.articleDesc != null">
+                article_desc,
+            </if>
+            article_add_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.articleId != null">
+                #{param.articleId,jdbcType=INTEGER},
+            </if>
+            <if test="param.articleTitle != null">
+                #{param.articleTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="param.articleUrl != null">
+                #{param.articleUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="param.articleGroupId != null">
+                #{param.articleGroupId,jdbcType=TINYINT},
+            </if>
+            <if test="param.articleSort != null">
+                #{param.articleSort,jdbcType=INTEGER},
+            </if>
+            <if test="param.articleStatus != null">
+                #{param.articleStatus,jdbcType=INTEGER},
+            </if>
+            <if test="param.articleDesc != null">
+                #{param.articleDesc,jdbcType=LONGVARCHAR},
+            </if>
+            now()
+        </trim>
+    </insert>
+    <select id="selectByGroupId" resultType="com.houjiang.base.vo.index.WebArticleBaseNameVO">
+        select
+        article_id,article_title ,article_url, article_group_id,article_desc,article_status
+        from hou_base_article_base
+        where article_status =1 AND article_group_id = #{articleGroupId,jdbcType=INTEGER}
+        order by article_sort desc
+        <if test="pageSize != null" >
+            limit #{pageSize}
+        </if>
+    </select>
+    <select id="queryArticleBase" resultType="com.houjiang.base.entity.BaseArticleBaseEntity">
+        select
+        article_id,
+        article_title,
+        article_group_id,
+        article_sort,
+        article_status,
+        article_add_time
+        from hou_base_article_base
+        where
+        1=1
+        <if test="param.articleGroupId != null">
+            and article_group_id =#{param.articleGroupId,jdbcType=INTEGER}
+        </if>
+        order by article_sort desc
+    </select>
+
+
+</mapper>
+

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsTagInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.goods.entity.GoodsTagInfoEntity">
+        <id property="tagId" column="tag_id" jdbcType="INTEGER"/>
+        <result property="classId" column="class_id" jdbcType="INTEGER"/>
+        <result property="tagContent" column="tag_content" jdbcType="VARCHAR"/>
+        <result property="tagSubtitle" column="tag_subtitle" jdbcType="VARCHAR"/>
+        <result property="tagCover" column="tag_cover" jdbcType="VARCHAR"/>
+        <result property="isActive" column="is_active" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="lastUpdatedTime" column="last_updated_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        tag_id
+        ,class_id,tag_content,
+        tag_subtitle,tag_cover,is_active,
+        create_time,last_updated_time
+    </sql>
+    <insert id="insertCommunity">
+        INSERT INTO goods_tag_info (tag_content, tag_subtitle, tag_cover, class_id)
+        VALUES (#{param.tagContent}, #{param.tagSubtitle}, #{param.tagCover}, #{param.classId})
+    </insert>
+    <update id="updateCommunity">
+        UPDATE goods_tag_info
+        <set>
+            <if test="param.isActive != null">
+                is_active = #{param.isActive},
+            </if>
+            <if test="param.tagContent != null">
+                tag_content=#{param.tagContent},
+            </if>
+            <if test="param.tagSubtitle != null">
+                tag_subtitle = #{param.tagSubtitle},
+            </if>
+            <if test="param.tagCover != null">
+                tag_cover = #{param.tagCover},
+            </if>
+            <if test="param.classId != null">
+                class_id = #{param.classId}
+            </if>
+        </set>
+        WHERE
+        tag_id =#{param.tagId}
+    </update>
+    <select id="selectCommunity" resultType="com.houjiang.goods.vo.CommunityTopicVO">
+        SELECT
+        gt.tag_id,
+        gt.class_id,
+        gt.tag_content,
+        gt.tag_subtitle,
+        gt.tag_cover,
+        gt.is_active,
+        gtc.class_name
+        FROM
+        goods_tag_info gt
+        LEFT JOIN goods_tag_class_info gtc ON gt.class_id = gtc.class_id
+        where 1=1
+        <if test="null != param.tagContent and !''.equals(param.tagContent)">
+            and tag_content=#{param.tagContent}
+        </if>
+    </select>
+    <select id="queryCount" resultType="java.util.Map">
+        select ti.tag_content  as tagContent,
+               ti.tag_subtitle as tagSubtitle,
+               ti.tag_cover    as tagCover,
+               ai.articleNum,
+               ai.articleReadNum
+        from goods_tag_info ti,
+             (select count(1) as articleNum, sum(read_num) as articleReadNum
+              from ${database.prefix.goods}hou_goods_article_info
+              where tag_id = #{tagId}) as ai
+        where ti.tag_id = #{tagId}
+    </select>
+    <select id="queryTag" resultType="com.houjiang.goods.vo.CommunityArticleTagVO">
+        select tag_id,
+               class_id,
+               tag_content,
+               tag_subtitle,
+               tag_cover
+        from goods_tag_info
+        where class_id = #{param.classId}
+    </select>
+    <select id="queryCommunityClassificationsLimit" resultType="com.houjiang.goods.entity.GoodsTagInfoEntity">
+        SELECT distinct gt.tag_content,
+                        gt.tag_subtitle,
+                        gt.tag_cover,
+                        gt.tag_id
+        FROM goods_tag_info gt
+                 LEFT JOIN goods_article_info ga ON gt.tag_id = ga.tag_id
+        WHERE is_active = 1
+          AND audit_state = 1
+        ORDER BY ga.tag_id desc limit #{param.limit}
+    </select>
+</mapper>

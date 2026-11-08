@@ -1,0 +1,85 @@
+# Workflow服务Nacos配置文件
+spring:
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/workflow${MYSQL_PARAMS}
+    username: ${MYSQL_USER}
+    password: ${WORKFLOW_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    # Druid数据源配置
+    druid:
+      # 初始化大小
+      initial-size: 5
+      # 最小连接池数量
+      min-idle: 5
+      # 最大连接池数量
+      max-active: 20
+      # 获取连接时最大等待时间(毫秒)
+      max-wait: 60000
+      # 间隔多久进行一次检测，检测需要关闭的空闲连接(毫秒)
+      time-between-eviction-runs-millis: 60000
+      # 一个连接在池中最小生存的时间(毫秒)
+      min-evictable-idle-time-millis: 300000
+      # 验证连接有效性SQL
+      validation-query: SELECT 1
+      # 申请连接时执行validationQuery检测连接是否有效
+      test-while-idle: true
+      # 申请连接时执行validationQuery检测连接是否有效
+      test-on-borrow: false
+      # 归还连接时执行validationQuery检测连接是否有效
+      test-on-return: false
+      # 是否缓存preparedStatement
+      pool-prepared-statements: true
+      # 缓存preparedStatement的大小
+      max-pool-prepared-statement-per-connection-size: 20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计
+      filters: stat,wall,slf4j
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      # 合并多个DruidDataSource的监控数据
+      use-global-data-source-stat: true
+
+# MyBatis-Plus配置
+mybatis-plus:
+  # 搜索指定包别名
+  type-aliases-package: com.houjiang.workflow.process.entity
+  # 配置mapper的扫描，找到所有的mapper.xml映射文件
+  mapper-locations: classpath*:/mapper/**/*.xml
+  # 加载全局的配置文件
+  config-location: classpath:mybatis/mybatis-config.xml
+  configuration:
+    # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 配置日志实现类
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启缓存
+    cache-enabled: true
+    # 延迟加载
+    lazy-loading-enabled: true
+    # 按需加载
+    aggressive-lazy-loading: false
+
+# 服务端口配置
+server:
+  port: 8200
+
+# Camunda工作流引擎配置
+camunda:
+  bpm:
+    admin-user:
+      id: admin
+      password: ${WORKFLOW_BPM_ADMINUSER_PASSWORD}
+      firstName: Admin
+    filter:
+      create: All tasks
+    auto-deployment-enabled: true
+    history-level: audit
+    metrics:
+      enabled: true
+
+# 日志配置
+logging:
+  level:
+    com.houjiang.workflow: debug
+    org.springframework: warn
+    org.camunda.bpm: info

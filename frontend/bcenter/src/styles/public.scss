@@ -1,0 +1,70 @@
+body {
+    @apply text-base text-tx-primary overflow-hidden min-w-[375px];
+    font-family: var(--font-sans);
+    letter-spacing: 0.005em;
+    background-color: var(--el-bg-color-page);
+}
+
+.form-tips {
+    @apply text-tx-secondary text-xs leading-6 mt-1;
+}
+
+.clearfix:after {
+    content: '';
+    display: block;
+    clear: both;
+    visibility: hidden;
+}
+
+/* NProgress */
+#nprogress .bar {
+    @apply bg-primary #{!important};
+}
+.line-2 {
+    -webkit-line-clamp: 1;
+}
+
+.line-2 {
+    -webkit-line-clamp: 2;
+}
+
+.line-3 {
+    -webkit-line-clamp: 3;
+}
+
+.line-4 {
+    -webkit-line-clamp: 4;
+}
+.line-1,
+.line-2,
+.line-3,
+.line-4 {
+    overflow: hidden;
+    word-break: break-all;
+    text-overflow: ellipsis;
+    display: -webkit-box; // 弹性伸缩盒
+    -webkit-box-orient: vertical; // 设置伸缩盒子元素排列方式
+}
+//文本超过两行隐藏
+.text_hidden {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+/* ── 外壳公共类：供新版布局与各页面复用 ────────────────────────────────── */
+.surface {
+    background-color: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+}
+
+.num {
+    font-variant-numeric: tabular-nums;
+}
+
+.brand-gradient {
+    background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-400) 55%, var(--accent-400) 100%);
+}

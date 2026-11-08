@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserPlusInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserPlusInfoEntity">
+            <id property="plusId" column="plus_id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="thaliType" column="thali_type" jdbcType="INTEGER"/>
+            <result property="thaliStarttime" column="thali_starttime" jdbcType="TIMESTAMP"/>
+            <result property="thaliEndtime" column="thali_endtime" jdbcType="TIMESTAMP"/>
+            <result property="usedAmount" column="used_amount" jdbcType="DECIMAL"/>
+            <result property="totalAmount" column="total_amount" jdbcType="DECIMAL"/>
+            <result property="creatTime" column="creat_time" jdbcType="TIMESTAMP"/>
+            <result property="earnPoints" column="earn_points" jdbcType="BIGINT"/>
+            <result property="thaliStatus" column="thali_status" jdbcType="INTEGER"/>
+            <result property="renewalDisplay" column="renewal_display" jdbcType="INTEGER"/>
+            <result property="redGrantnum" column="red_grantnum" jdbcType="INTEGER"/>
+            <result property="plusEquity" column="plus_equity" jdbcType="VARCHAR"/>
+            <result property="redGrantmonth" column="red_grantmonth" jdbcType="INTEGER"/>
+            <result property="expirationNotice" column="expiration_notice" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        plus_id,user_id,thali_type,
+        thali_starttime,thali_endtime,used_amount,
+        total_amount,creat_time,earn_points,
+        thali_status,renewal_display,red_grantnum,
+        plus_equity,red_grantmonth,expiration_notice
+    </sql>
+    <insert id="insertplusinfo">
+         insert into ${database.prefix.userms}hou_user_plus_info (user_id,thali_type,thali_starttime,thali_endtime,used_amount,total_amount,creat_time,earn_points,thali_status,red_grantnum,plus_equity)
+        values (#{param.userId},#{param.thaliType},#{param.thaliStarttime},#{param.thaliEndtime},0,0,now(),0,1,#{param.redGrantnum},#{param.plusEquity})
+    </insert>
+    <update id="updateUserPluslimit">
+        update ${database.prefix.userms}hou_user_plus_info set used_amount = used_amount + #{param.usedAmout},total_amount = total_amount + #{param.totalAmount}
+        where user_id = #{param.userId}
+    </update>
+    <update id="updateplusinfo">
+        update ${database.prefix.userms}hou_user_plus_info
+        <set>
+            <if test="param.thaliType != null">
+                thali_type = #{param.thaliType},
+            </if>
+            <if test="param.thaliStarttime != null ">
+                thali_starttime = #{param.thaliStarttime},
+            </if>
+            <if test="param.thaliEndtime != null ">
+                thali_endtime = #{param.thaliEndtime},
+            </if>
+            <if test="param.usedAmount != null and param.usedAmount != ''">
+                used_amount = #{param.usedAmount},
+            </if>
+            <if test="param.totalAmount != null and param.totalAmount != ''">
+                total_amount = #{param.totalAmount},
+            </if>
+            <if test="param.earnPoints != null and param.earnPoints != ''">
+                earn_points = #{param.earnPoints},
+            </if>
+            <if test="param.thaliStatus != null">
+                thali_status = #{param.thaliStatus},
+            </if>
+            <if test="param.redGrantnum != null">
+                red_grantnum = #{param.redGrantnum},
+            </if>
+            <if test="param.plusEquity != null and param.plusEquity != ''">
+                plus_equity = #{param.plusEquity},
+            </if>
+            <if test="param.redGrantmonth != null">
+                red_grantmonth = #{param.redGrantmonth},
+            </if>
+            <if test="param.expirationNotice != null">
+                expiration_notice = #{param.expirationNotice},
+            </if>
+        </set>
+        where user_id = #{param.userId}
+    </update>
+    <update id="updateplusinfo1">
+        update ${database.prefix.userms}hou_user_plus_info set expiration_notice = 0 where user_id = #{userId}
+    </update>
+    <select id="selectplusmember" resultType="com.houjiang.userms.entity.UserPlusInfoEntity">
+        select thali_type,used_amount ,plus_equity  from ${database.prefix.userms}hou_user_plus_info where user_id = #{userId} and thali_status = 1
+    </select>
+    <select id="selectByUserId" resultType="com.houjiang.userms.vo.PlusMemberInfoVO">
+        select plus_id,user_id,thali_starttime ,thali_type,thali_endtime,used_amount,total_amount,
+        creat_time,earn_points,thali_status,plus_equity
+        from ${database.prefix.userms}hou_user_plus_info where user_id = #{userId}
+    </select>
+    <select id="selectplusrule" resultType="com.houjiang.userms.vo.PlusRuleEntityVO">
+          select plus_ruleid,plus_propaganda,plus_signs,plus_monthcardlogo,plus_seasoncardlogo,plus_yearcardlogo,
+           plus_backdrop,plus_memberagreement,plus_merchantnotice,plus_status from ${database.prefix.base}hou_base_merchant_plus_rule
+    </select>
+    <select id="selectthaliList" resultType="com.houjiang.commons.vo.base.PlusThaliEntityVO">
+        select thali_id,thali_type,thali_price,thali_equity,thali_recommend,thali_status,thali_oldPrice
+		from ${database.prefix.base}hou_base_merchant_plus_thali where thali_status = 1
+    </select>
+    <select id="selectthaliId" resultType="com.houjiang.commons.vo.base.PlusThaliEntityVO">
+        select pt.thali_id,pt.thali_type,pt.thali_price,pi.plus_equity as thaliEquity,pt.thali_recommend,pt.thali_status,
+		pi.thali_endtime,pi.total_amount,pi.renewal_display,pi.thali_status as memberStatus,pi.earn_points,ui.user_name,thali_oldPrice,uid.user_avatar
+		from ${database.prefix.base}hou_base_merchant_plus_thali pt
+		left join ${database.prefix.userms}hou_user_plus_info pi on pi.thali_type = pt.thali_type
+		left join ${database.prefix.userms}hou_user_info ui on ui.user_id = pi.user_id
+		left join ${database.prefix.userms}hou_user_info_detail uid on uid.user_id = ui.user_id
+		where pi.user_id = #{userId} and pi.thali_status = 1
+    </select>
+    <select id="selectplus" resultType="com.houjiang.userms.vo.PlusMemberInfoVO">
+        select plus_id,pi.user_id,thali_starttime ,thali_type,thali_endtime,used_amount,total_amount,
+        creat_time,earn_points,thali_status,plus_equity,ui.user_name
+        from ${database.prefix.userms}hou_user_plus_info pi
+        left join ${database.prefix.userms}hou_user_info ui on ui.user_id = pi.user_id
+        where thali_status = 1 and now() >= thali_endtime
+    </select>
+    <select id="selectRenewNewUser" resultType="com.houjiang.userms.vo.PlusRenewEntityVO">
+         select renew_id,thali_type,user_id,renew_starttime,renew_endtime,plus_equity,renew_status,plus_orderid
+        from ${database.prefix.userms}hou_user_plus_renew where user_id = #{userId} and renew_status = 0
+        order by renew_starttime asc limit 1
+    </select>
+    <select id="selectplusequity" resultType="com.houjiang.commons.vo.base.PlusEquityEntityVO">
+        select equity_id,equity_name,equity_type,equity_value,equity_addtime,equity_status,
+        red_effective,red_provide,discount_limit from ${database.prefix.userms}hou_user_plus_equity
+        where equity_id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach> and equity_type in (2,3,4)
+    </select>
+    <select id="selectplusinfo" resultType="com.houjiang.userms.vo.PlusMemberInfoVO">
+         select plus_id,pi.user_id,thali_starttime ,thali_type,thali_endtime,used_amount,total_amount,
+        creat_time,earn_points,thali_status,plus_equity,ui.user_name,red_grantnum,red_grantmonth
+        from ${database.prefix.userms}hou_user_plus_info pi
+        left join ${database.prefix.userms}hou_user_info ui on ui.user_id = pi.user_id
+        where used_amount != 0
+    </select>
+    <select id="selectred" resultType="com.houjiang.userms.vo.PlusMemberInfoVO">
+    SELECT
+    	plus_id,
+    	pi.user_id,
+    	thali_starttime,
+    	thali_type,
+    	thali_endtime,
+    	used_amount,
+    	total_amount,
+    	creat_time,
+    	earn_points,
+    	thali_status,
+    	plus_equity,
+    	ui.user_name,
+    	red_grantnum,
+    	red_grantmonth
+    FROM
+    	${database.prefix.userms}hou_user_plus_info pi
+    	LEFT JOIN ${database.prefix.userms}hou_user_info ui ON ui.user_id = pi.user_id
+    WHERE
+	thali_status = 1
+	AND red_grantnum > 0
+	AND #{month} >= red_grantmonth
+    </select>
+
+    <select id="queryUserName" resultType="java.lang.String">
+        select user_name from ${database.prefix.userms}hou_user_info where user_id = #{userId}
+    </select>
+
+    <select id="selectPhone" resultType="java.lang.String">
+        select user_mobile from ${database.prefix.userms}hou_user_info where user_id = #{userId}
+    </select>
+
+</mapper>

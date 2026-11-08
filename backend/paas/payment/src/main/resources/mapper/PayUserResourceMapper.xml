@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayUserResourceMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayUserResourceEntity">
+        <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="userMoneyPendingSettlement" column="user_money_pending_settlement" jdbcType="DECIMAL"/>
+        <result property="userMoney" column="user_money" jdbcType="DECIMAL"/>
+        <result property="userPackageMoney" column="user_package_money" jdbcType="DECIMAL"/>
+        <result property="userMoneyFrozen" column="user_money_frozen" jdbcType="DECIMAL"/>
+        <result property="userRechargeCard" column="user_recharge_card" jdbcType="DECIMAL"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id
+        ,user_money_pending_settlement,user_money,
+        user_package_money,user_money_frozen,user_recharge_card,
+        ts
+    </sql>
+    <update id="updateUserResource">
+        update ${database.prefix.payment}hou_pay_user_resource
+        set user_money = user_money - #{money}
+        where user_id = #{userId}
+    </update>
+    <update id="updateToMoney">
+        update ${database.prefix.payment}hou_pay_user_resource
+        set user_money = user_money + #{money}
+        where user_id = #{toUserId}
+    </update>
+    <update id="updateMoney">
+        update ${database.prefix.payment}hou_pay_user_resource
+        set user_money = user_money - #{amountActuallyPaids}
+        where user_id = #{userId}
+    </update>
+    <update id="deductBalance">
+        UPDATE ${database.prefix.payment}hou_pay_user_resource
+        SET user_money = user_money - #{amount}
+        WHERE user_id = #{userId} AND user_money &gt;= #{amount}
+    </update>
+    <update id="creditBalance">
+        UPDATE ${database.prefix.payment}hou_pay_user_resource
+        SET user_money = user_money + #{amount}
+        WHERE user_id = #{userId}
+    </update>
+    <update id="updateGiftCardMoney">
+        update ${database.prefix.payment}hou_pay_user_resource
+        set user_recharge_card = user_recharge_card - #{totalPrice}
+        where user_id = #{userId}
+    </update>
+    <update id="updateDeductUserMoney">
+        update ${database.prefix.payment}hou_pay_user_resource
+        set user_money = user_money + #{money}
+        where user_id = #{payUserId}
+    </update>
+    <update id="updateRiderMoney">
+        update `mall-rider`.rider_base set total_price = total_price + #{param.amount} ,  deposit = deposit - #{param.amount} where rider_id =#{param.payUid}
+    </update>
+    <update id="updateCardMemberDetailPortFeign">
+        update  ${database.prefix.payment}hou_pay_user_resource set user_money=#{money} where user_id=#{userId}
+    </update>
+    <update id="updateCardMemberDetailPort2">
+        update ${database.prefix.payment}hou_pay_user_resource set user_money= user_money + #{money} where user_id=#{userId}
+    </update>
+    <select id="queryAccountBalance" resultType="com.houjiang.payment.vo.AccountBalanceDisplayVO">
+        SELECT user_money,
+               user_recharge_card
+        FROM ${database.prefix.payment}hou_pay_user_resource
+        WHERE user_id = #{userId}
+    </select>
+    <select id="queryBalanceMoney" resultType="java.math.BigDecimal">
+        select user_money
+        from ${database.prefix.payment}hou_pay_user_resource
+        where user_id = #{userId}
+    </select>
+    <select id="queryGiftCardMoney" resultType="java.math.BigDecimal">
+        select user_recharge_card
+        from ${database.prefix.payment}hou_pay_user_resource
+        where user_id = #{userId}
+    </select>
+    <select id="query" resultType="com.houjiang.commons.vo.payment.CardMemberservicesVO">
+        SELECT
+        ui.user_id,
+        ui.user_name,
+        ui.user_mobile,
+        ui.user_lastlogin_time,
+        pr.user_id,
+        pr.user_money_pending_settlement,
+        pr.user_money,
+        pr.user_money_frozen,
+        pr.user_recharge_card
+        FROM
+        ${database.prefix.userms}hou_user_info ui
+        LEFT JOIN ${database.prefix.payment}hou_pay_user_resource pr on ui.user_id = pr.user_id
+        where ui.shop_id is null
+            <if test="param.userName != null and param.userName != ''">
+                and ui.user_name like concat('%',#{param.userName},'%')
+            </if>
+            <if test="param.userMobile != null and param.userMobile != ''">
+                and ui.user_mobile like concat('%',#{param.userMobile},'%')
+            </if>
+        order by ui.user_id desc
+    </select>
+    <select id="queryshopIdByOutTradeNo" resultType="java.lang.Integer">
+        SELECT
+            ob.shop_id
+        FROM
+            ${database.prefix.order}hou_order_base ob
+                LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON ob.shop_id = sb.supplier_shop_id
+        WHERE
+           sb.shop_type = 3
+           AND (ob.payment_number = #{outTradeNo} or ob.order_id =  #{outTradeNo})
+        GROUP BY
+            ob.shop_id
+    </select>
+    <select id="queryAccountBalanceFeign" resultType="java.lang.String">
+        select user_money
+        from ${database.prefix.payment}hou_pay_user_resource
+        where user_id = #{userId}
+    </select>
+</mapper>

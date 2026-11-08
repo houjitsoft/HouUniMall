@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.PayFxAccountMapper">
+
+    <update id="updateVkUserFxCommission">
+        update ${database.prefix.userms}hou_user_vk
+        set total_share_commission = #{totalShareCommission},
+            pending_withdrawn_commission = #{pendingWithdrawnCommission}
+        where user_id = #{shareUserId}
+    </update>
+    <update id="updateVkUserTgCommission">
+        update ${database.prefix.userms}hou_user_vk
+        set total_tg_commission = #{totalTgCommission},
+            pending_withdrawn_commission = #{pendingWithdrawnCommission}
+        where user_id = #{userId}
+    </update>
+    <select id="selectVkUserFxCommission" resultType="com.houjiang.commons.vo.order.CommissionSettleVO">
+        select total_tg_commission,
+               total_share_commission,
+               pending_withdrawn_commission,
+               user_id
+        from ${database.prefix.userms}hou_user_vk
+        where user_id = #{userId}
+    </select>
+
+</mapper>

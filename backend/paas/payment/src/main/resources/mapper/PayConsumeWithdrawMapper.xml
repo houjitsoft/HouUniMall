@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayConsumeWithdrawMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayConsumeWithdrawEntity">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="payUid" column="pay_uid" jdbcType="INTEGER"/>
+        <result property="orderid" column="orderid" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="DECIMAL"/>
+        <result property="addTime" column="add_time" jdbcType="TIMESTAMP"/>
+        <result property="censor" column="censor" jdbcType="VARCHAR"/>
+        <result property="checkTime" column="check_time" jdbcType="TIMESTAMP"/>
+        <result property="isSucceed" column="is_succeed" jdbcType="TINYINT"/>
+        <result property="bankflow" column="bankflow" jdbcType="VARCHAR"/>
+        <result property="con" column="con" jdbcType="VARCHAR"/>
+        <result property="bank" column="bank" jdbcType="VARCHAR"/>
+        <result property="bankAddress" column="bank_address" jdbcType="VARCHAR"/>
+        <result property="cardno" column="cardno" jdbcType="VARCHAR"/>
+        <result property="cardname" column="cardname" jdbcType="VARCHAR"/>
+        <result property="fee" column="fee" jdbcType="FLOAT"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="settlementOrderId" column="settlement_order_id" jdbcType="VARCHAR"/>
+        <result property="payAmount" column="pay_amount" jdbcType="DECIMAL"/>
+        <result property="withdrawType" column="withdraw_type" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,pay_uid,orderid,
+        amount,add_time,censor,
+        check_time,is_succeed,bankflow,
+        con,bank,bank_address,
+        cardno,cardname,
+        fee,remark,shop_name,
+        user_name,settlement_order_id,pay_amount,
+        withdraw_type
+    </sql>
+    <insert id="insertConsumeWithdraw">
+        INSERT INTO ${database.prefix.payment}hou_pay_consume_withdraw (pay_uid, orderid, amount, add_time, con, bank, cardno, cardname, user_name)
+        VALUES (#{userId}, #{orderId}, #{money}, #{createTime}, #{con}, #{bankName}, #{bankNum}, #{payee}, #{userName})
+    </insert>
+
+    <select id="querySettlementOrder" resultType="com.houjiang.commons.vo.order.OrderSettlementVO">
+        select consume_record_id,order_id,record_time,plus_or_minus,
+        record_money
+        from ${database.prefix.payment}hou_pay_consume_record
+        where user_id = #{userId} and trade_type_id = 11
+        and record_withdraw = 0 and record_status = 6
+    </select>
+
+    <select id="getSumRecordMoney" resultType="java.math.BigDecimal">
+        SELECT sum(record_money ) AS sumRecordMoney
+        FROM ${database.prefix.payment}hou_pay_consume_record
+        WHERE user_id = #{userId}  AND trade_type_id = 11
+        AND record_withdraw = 0 AND record_status = 6
+    </select>
+
+    <select id="queryAllMoney" resultType="java.math.BigDecimal">
+        select sum(record_money) from ${database.prefix.payment}hou_pay_consume_record
+        where user_id = #{userId} and trade_type_id = 11
+        and record_status = 6 and record_withdraw = 0
+    </select>
+
+    <select id="queryRecordMoney" resultType="java.math.BigDecimal">
+        SELECT
+        sum( record_money ) AS record_money
+        FROM
+        ${database.prefix.payment}hou_pay_consume_record
+        WHERE
+        consume_record_id in
+        <foreach collection="recordIdList" open="(" close=")" separator="," item="userId">
+            #{userId}
+        </foreach>
+        <if test="null != userId">
+            and user_id = #{userId}
+        </if>
+    </select>
+
+    <select id="queryCalculateRecordMoney" resultType="java.math.BigDecimal">
+        SELECT
+        sum(record_money) AS record_money
+        FROM
+        ${database.prefix.payment}hou_pay_consume_record
+        WHERE
+        order_id IN
+        <foreach collection="recordIdList" open="(" close=")" separator="," item="userId">
+            #{userId}
+        </foreach>
+        <if test="null != userId">
+            and user_id = #{userId} and record_withdraw = 0
+        </if>
+    </select>
+
+    <update id="updateRecordWithdraw">
+        update ${database.prefix.payment}hou_pay_consume_record set record_withdraw = 1,record_status = 6 where trade_type_id = 11 and order_id IN
+        <foreach collection="recordIdList" open="(" close=")" separator="," item="userId">
+            #{userId}
+        </foreach>
+    </update>
+    <update id="updateWithdrawAudit">
+    update ${database.prefix.payment}hou_pay_consume_withdraw
+    set is_succeed = #{status},
+    fee = #{fee},
+    check_time = #{time},
+    pay_amount = #{payMoney},
+    censor = #{operator},
+    bankflow = #{accountStatement},
+    remark = #{remark}
+    where id = #{id}
+    </update>
+    <update id="updateOrderRecordWithdraw">
+        update ${database.prefix.payment}hou_pay_consume_record set record_withdraw = 0,record_status = 7 where trade_type_id in (4,11)
+        and record_payorder in
+        <foreach collection="settlementsIds" item="settlementsId" separator="," close=")" open="(">
+            #{settlementsId}
+        </foreach>
+    </update>
+
+    <select id="queryAllStatementNo" resultType="java.lang.String">
+        select order_id from ${database.prefix.payment}hou_pay_consume_record
+        where user_id = #{userId} and trade_type_id = 11
+        and record_withdraw = 0 and record_status = 6
+    </select>
+
+    <insert id="insertConsumeWithdrawBySeller">
+        insert into ${database.prefix.payment}hou_pay_consume_withdraw (pay_uid,orderid,amount,add_time,con,bank,bank_address,cardno,
+        cardname,user_name,settlement_order_id,shop_name,withdraw_type)
+        values (#{param.userId},#{param.orderId},#{param.money},#{param.createTime},#{param.con},#{param.bankName},#{param.bankAddress},
+        #{param.bankNum},#{param.payee},#{param.userName},#{param.statementNo},#{param.shopName},#{param.settleType})
+    </insert>
+
+    <insert id="insertRecord">
+        insert into ${database.prefix.payment}hou_pay_consume_record (order_id,user_id,user_nickname,record_money,record_date,record_year,
+        record_month,record_day,record_title,record_desc,record_time,trade_type_id,user_type,record_status,record_payorder)
+        values (#{param.orderId},#{param.userId},#{param.userName},#{param.money},#{param.recordDate},#{param.recordYear},
+        #{param.recordMonth},#{param.recordDay},#{param.recordTitle},
+        #{param.recordDesc},#{param.createTime},#{param.tradeTypeId},
+        #{param.userType},#{param.recordStatus},#{param.recordPayorder})
+    </insert>
+
+    <insert id="insertDetail">
+        insert into ${database.prefix.payment}hou_pay_asset_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.detailType != null">
+                detail_type,
+            </if>
+            <if test="param.assetType != null">
+                asset_type,
+            </if>
+            <if test="param.assetAmount != null">
+                asset_amount,
+            </if>
+            <if test="param.assetDirection != null and param.assetDirection != ''">
+                asset_direction,
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                order_id,
+            </if>
+            <if test="param.payType != null">
+                pay_type,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.detailComment != null and param.detailComment != ''">
+                detail_comment,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.detailType != null">
+                #{param.detailType,jdbcType=INTEGER},
+            </if>
+            <if test="param.assetType != null">
+                #{param.assetType,jdbcType=INTEGER},
+            </if>
+            <if test="param.assetAmount != null">
+                #{param.assetAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="param.assetDirection != null and param.assetDirection != ''">
+                #{param.assetDirection,jdbcType=VARCHAR},
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                #{param.orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="param.payType != null">
+                #{param.payType,jdbcType=INTEGER},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId},
+            </if>
+            <if test="param.detailComment != null and param.detailComment != ''">
+                #{param.detailComment,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+
+    <select id="queryWithdrawRecord" resultType="com.houjiang.payment.vo.WithdrawRecordVO">
+        SELECT
+        ppcw.id,
+        ppcw.amount,
+        ppcw.add_time,
+        ppcw.is_succeed,
+        ppcw.bankflow,
+        ppcw.con,
+        ppcw.bank,
+        ppcw.cardno,
+        ppcw.cardname,
+        ppcw.fee,
+        ppcw.remark,
+        ppcw.settlement_order_id,
+        ppcw.pay_amount
+        FROM
+        ${database.prefix.payment}hou_pay_consume_withdraw ppcw
+        WHERE
+        ppcw.pay_uid = #{paraMap.userId}
+        <if test="null != paraMap.allStatus and paraMap.allStatus == ''">
+            and ppcw.is_succeed is not null
+        </if>
+        <if test="null != paraMap.otherStatus  and '' != paraMap.otherStatus">
+            and ppcw.is_succeed = #{paraMap.otherStatus}
+        </if>
+        <if test="null != paraMap.statementNo and '' != paraMap.statementNo">
+            and ppcw.settlement_order_id like concat('%' ,#{paraMap.statementNo} ,'%')
+        </if>
+        <if test="null != paraMap.startTime and '' != paraMap.startTime">
+            and ppcw.add_time >= #{paraMap.startTime}
+        </if>
+        <if test="null != paraMap.endTime and '' != paraMap.endTime">
+            and ppcw.add_time &lt;= #{paraMap.endTime}
+        </if>
+        <if test="null != paraMap.settleType">
+            and ppcw.withdraw_type = #{paraMap.settleType}
+        </if>
+        order by ppcw.add_time desc
+    </select>
+    <select id="queryWithdrawRecordListExcel" resultType="com.houjiang.payment.vo.WithdrawRecordVO">
+        SELECT
+        ppcw.id,
+        ppcw.amount,
+        ppcw.add_time,
+        ppcw.censor,
+        ppcw.check_time,
+        ppcw.is_succeed,
+        ppcw.bankflow,
+        ppcw.con,
+        ppcw.bank,
+        ppcw.cardno,
+        ppcw.cardname,
+        ppcw.fee,
+        ppcw.remark,
+        ppcw.shop_name,
+        ppcw.user_name,
+        ppcw.settlement_order_id,
+        ppcw.pay_amount
+        FROM
+        ${database.prefix.payment}hou_pay_consume_withdraw ppcw
+        <where>
+            <if test="param.type != null">
+                and ppcw.is_succeed = #{param.type}
+            </if>
+            <if test="param.userName != null and param.userName != ''">
+                and ppcw.user_name like concat ('%', #{param.userName},'%')
+            </if>
+            <if test="param.shopName != null and param.shopName != ''">
+                and ppcw.shop_name like concat ('%', #{param.shopName},'%')
+            </if>
+            <if test="param.statementNo != null and param.statementNo !=  ''">
+                and ppcw.settlement_order_id like concat ('%', #{param.statementNo},'%')
+            </if>
+            <if test="param.startTime != null and param.startTime != ''">
+                and ppcw.add_time >= #{param.startTime}
+            </if>
+            <if test="param.endTime != null and param.endTime != ''">
+                and ppcw.add_time &lt;= #{param.endTime}
+            </if>
+        </where>
+        order by ppcw.add_time desc
+        limit 6000
+    </select>
+    <select id="queryWithdrawRecordList" resultType="com.houjiang.payment.vo.WithdrawRecordVO">
+        SELECT
+        ppcw.id,
+        ppcw.amount,
+        ppcw.add_time,
+        ppcw.censor,
+        ppcw.check_time,
+        ppcw.is_succeed,
+        ppcw.bankflow,
+        ppcw.con,
+        ppcw.bank,
+        ppcw.cardno,
+        ppcw.cardname,
+        ppcw.fee,
+        ppcw.remark,
+        ppcw.shop_name,
+        ppcw.user_name,
+        ppcw.settlement_order_id,
+        ppcw.pay_amount
+        FROM
+        ${database.prefix.payment}hou_pay_consume_withdraw ppcw
+        <where>
+            <if test="param.type != null">
+                and ppcw.is_succeed = #{param.type}
+            </if>
+            <if test="param.userName != null and param.userName != ''">
+                and ppcw.user_name like concat ('%', #{param.userName},'%')
+            </if>
+            <if test="param.shopName != null and param.shopName != ''">
+                and ppcw.shop_name like concat ('%', #{param.shopName},'%')
+            </if>
+            <if test="param.statementNo != null and param.statementNo !=  ''">
+                and ppcw.settlement_order_id like concat ('%', #{param.statementNo},'%')
+            </if>
+            <if test="param.startTime != null and param.startTime != ''">
+                and ppcw.add_time >= #{param.startTime}
+            </if>
+            <if test="param.endTime != null and param.endTime != ''">
+                and ppcw.add_time &lt;= #{param.endTime}
+            </if>
+        </where>
+        order by ppcw.add_time desc
+    </select>
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserPointsLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserPointsLogEntity">
+            <id property="pointsLogId" column="points_log_id" jdbcType="INTEGER"/>
+            <result property="pointsLogType" column="points_log_type" jdbcType="BOOLEAN"/>
+            <result property="classId" column="class_id" jdbcType="BOOLEAN"/>
+            <result property="pointsLogPoints" column="points_log_points" jdbcType="INTEGER"/>
+            <result property="freezePoints" column="freeze_points" jdbcType="INTEGER"/>
+            <result property="pointsLogTime" column="points_log_time" jdbcType="TIMESTAMP"/>
+            <result property="pointsLogDesc" column="points_log_desc" jdbcType="VARCHAR"/>
+            <result property="pointsLogOperate" column="points_log_operate" jdbcType="VARCHAR"/>
+            <result property="pointsLogFlag" column="points_log_flag" jdbcType="VARCHAR"/>
+            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        points_log_id,points_log_type,class_id,
+        points_log_points,
+        freeze_points,points_log_time,points_log_desc,
+        points_log_operate,points_log_flag,order_id,
+        ts,user_id
+    </sql>
+    <select id="queryIntegralValueListPort" resultType="com.houjiang.userms.vo.IntegralValueListVO">
+        SELECT
+        td.points_log_id,
+        td.user_id,
+        ui.user_name,
+        td.points_log_points,
+        td.points_log_time,
+        td.points_log_desc,
+        td.points_log_operate,
+        td.points_log_type
+        FROM
+        ${database.prefix.userms}hou_user_points_log td
+        LEFT JOIN ${database.prefix.userms}hou_user_info ui ON td.user_id = ui.user_id
+        WHERE 1=1
+        <if test="param.userId != ''">
+            and td.user_id like concat('%',#{param.userId},'%')
+        </if>
+        <if test="null != param.userName and param.userName != ''">
+            and ui.user_name like concat('%',#{param.userName},'%')
+        </if>
+        order by  points_log_time desc
+    </select>
+</mapper>

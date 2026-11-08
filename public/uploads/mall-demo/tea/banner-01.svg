@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <rect width="1200" height="420" fill="#f4f1ea"/>
+  <circle cx="980" cy="210" r="150" fill="#b0805a" fill-opacity="0.10"/>
+  <path d="M900 150 h120 a30 30 0 0 1 0 60 h-8 v70 a52 52 0 0 1 -52 52 h-8 a52 52 0 0 1 -52 -52 z" fill="none" stroke="#9a7048" stroke-width="3" stroke-opacity="0.55"/>
+  <path d="M1040 168 a26 26 0 0 1 0 52" fill="none" stroke="#9a7048" stroke-width="3" stroke-opacity="0.45"/>
+  <path d="M884 342 h180" stroke="#9a7048" stroke-width="2" stroke-opacity="0.4"/>
+  <line x1="72" y1="120" x2="72" y2="300" stroke="#9a7048" stroke-width="1.5" stroke-opacity="0.5"/>
+  <text x="100" y="196" font-family="Georgia, 'Songti SC', serif" font-size="46" fill="#221e17" letter-spacing="6">一盏茶，慢下来</text>
+  <text x="102" y="248" font-family="Georgia, 'Songti SC', serif" font-size="18" fill="#8b8375" letter-spacing="4">SLOW DOWN · TEA CEREMONY</text>
+</svg>

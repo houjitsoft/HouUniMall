@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserInfoDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserInfoDetaileEntity">
+            <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="userAvatar" column="user_avatar" jdbcType="VARCHAR"/>
+            <result property="userGender" column="user_gender" jdbcType="BOOLEAN"/>
+            <result property="userTruename" column="user_truename" jdbcType="VARCHAR"/>
+            <result property="userBirth" column="user_birth" jdbcType="VARCHAR"/>
+            <result property="userRegTime" column="user_reg_time" jdbcType="BIGINT"/>
+            <result property="userRegIp" column="user_reg_ip" jdbcType="VARCHAR"/>
+            <result property="userMobileVerify" column="user_mobile_verify" jdbcType="BOOLEAN"/>
+            <result property="userIdcard" column="user_idcard" jdbcType="VARCHAR"/>
+            <result property="userIdentityType" column="user_identity_type" jdbcType="VARCHAR"/>
+            <result property="userIdentityStatu" column="user_identity_statu" jdbcType="INTEGER"/>
+            <result property="userIdentityFontLogo" column="user_identity_font_logo" jdbcType="VARCHAR"/>
+            <result property="userIdentityFaceLogo" column="user_identity_face_logo" jdbcType="VARCHAR"/>
+            <result property="userIdentityStartTime" column="user_identity_start_time" jdbcType="DATE"/>
+            <result property="userIdentityEndTime" column="user_identity_end_time" jdbcType="DATE"/>
+            <result property="userParentId" column="user_parent_id" jdbcType="INTEGER"/>
+            <result property="userPlatform" column="user_platform" jdbcType="INTEGER"/>
+            <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+            <result property="userBindShopId" column="user_bind_shop_id" jdbcType="INTEGER"/>
+            <result property="userBindStoreId" column="user_bind_store_id" jdbcType="INTEGER"/>
+            <result property="validateLongTerm" column="validate_long_term" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,user_avatar,user_gender,
+        user_truename,user_birth,
+        user_reg_time,user_reg_ip,
+        user_mobile_verify,user_idcard,user_identity_type,
+        user_identity_statu,user_identity_font_logo,user_identity_face_logo,
+        user_identity_start_time,user_identity_end_time,
+        user_parent_id,user_platform,
+        ts,user_bind_shop_id,user_bind_store_id,
+        validate_long_term
+    </sql>
+    <update id="updateUcenterInfo">
+        update ${database.prefix.userms}hou_user_info_detail set
+        <if test="param.userGender!=null and param.userGender!=''">
+            user_gender = #{param.userGender},
+        </if>
+        <if test="param.userTruename!=null and param.userTruename!=''">
+            user_truename = #{param.userTruename},
+        </if>
+        <if test="param.userBirth!=null and param.userBirth!=''">
+            user_birth = #{param.userBirth},
+        </if>
+        <if test="param.userAvatar!=null and param.userAvatar!=''">
+            user_avatar = #{param.userAvatar},
+        </if>
+        <if test="null != param.userTruename and '' != param.userTruename">
+            user_truename =#{param.userTruename},
+        </if>
+        <if test="null != param.userIdentityType  and '' != param.userIdentityType">
+            user_identity_type =#{param.userIdentityType},
+        </if>
+        <if test="null != param.userIdcard and '' != param.userIdcard">
+            user_idcard =#{param.userIdcard},
+        </if>
+        <if test="null != param.userIdentityStartTime and '' != param.userIdentityStartTime ">
+            user_identity_start_time =#{param.userIdentityStartTime},
+        </if>
+        <if test="'' == param.userIdentityStartTime ">
+            user_identity_start_time = null,
+        </if>
+        <if test="null != param.userIdentityEndTime and '' != param.userIdentityEndTime">
+            user_identity_end_time =#{param.userIdentityEndTime},
+        </if>
+        <if test="'' == param.userIdentityEndTime ">
+            user_identity_end_time = null,
+        </if>
+        <if test="null != param.userIdentityFaceLogo and '' != param.userIdentityFaceLogo ">
+            user_identity_face_logo =#{param.userIdentityFaceLogo},
+        </if>
+        <if test="null != param.userIdentityFontLogo and '' != param.userIdentityFontLogo ">
+            user_identity_font_logo =#{param.userIdentityFontLogo},
+        </if>
+        <if test="null != param.validateLongTerm ">
+            validate_long_term =#{param.validateLongTerm}
+        </if>
+        where user_id = #{param.userId}
+    </update>
+    <update id="updateUserAtarUrl">
+        update ${database.prefix.userms}hou_user_info_detail set user_avatar = #{param.avatarUrl} where user_id = #{param.userId}
+    </update>
+    <select id="queryUserGrouping" resultType="java.util.Map">
+    SELECT
+    	DATE_FORMAT( FROM_UNIXTIME( uui.user_reg_time ), '%Y年%m月' ) AS time,
+    	count(*) AS num
+    FROM
+    	${database.prefix.userms}hou_user_info_detail uui
+    WHERE
+    	uui.user_reg_time >= UNIX_TIMESTAMP(
+    	CONCAT( DATE_FORMAT( NOW(), '%Y' ), '-01-01 00:00:00' ))
+    	AND DATE_FORMAT( FROM_UNIXTIME( uui.user_reg_time ), '%Y年' ) IS NOT NULL
+    GROUP BY
+	DATE_FORMAT(FROM_UNIXTIME( uui.user_reg_time ),'%Y%m')
+    </select>
+
+    <select id="queryShiming" resultType="java.lang.Integer">
+        select count(1) from ${database.prefix.userms}hou_user_info_detail where user_id = #{userId}
+        and user_identity_face_logo is not null and user_identity_font_logo is not null
+    </select>
+
+    <select id="queryLoginPassword" resultType="java.lang.Integer">
+        select count(1) from ${database.prefix.userms}hou_user_info where user_id = #{userId} and password is not null and password != ''
+    </select>
+
+    <select id="queryPayPassword" resultType="java.lang.Integer">
+      select count(1) from ${database.prefix.payment}hou_pay_user_base where user_id = #{userId}
+      and user_pay_passwd is not null and user_pay_passwd != ''
+    </select>
+
+    <delete id="deleteUserInfo">
+        delete from ${database.prefix.userms}hou_user_info where user_id = #{userId}
+    </delete>
+    <delete id="deleteUserDetail">
+        delete from ${database.prefix.userms}hou_user_info_detail where user_id = #{userId}
+    </delete>
+    <delete id="deleteUserConnect">
+        delete from ${database.prefix.userms}hou_user_bind_connect where user_id = #{userId}
+    </delete>
+    <delete id="deleteVkUser">
+        delete from ${database.prefix.userms}hou_user_vk where user_id = #{userId}
+    </delete>
+    <update id="updateGender">
+        update ${database.prefix.userms}hou_user_info_detail set user_gender = #{paraMap.userGender}  where user_id = #{paraMap.userId}
+    </update>
+    <update id="updateUserName">
+        update ${database.prefix.userms}hou_user_info set user_name =#{paraMap.userNickname} , user_nickname = #{paraMap.userNickname}  where user_id = #{paraMap.userId}
+    </update>
+    <update id="updateUserBindConnect2">
+        update ${database.prefix.userms}hou_user_bind_connect set bind_nickname = #{paraMap.userNickname}  where user_id = #{paraMap.userId}
+    </update>
+    <select id="getUserInfoByPhoneNumber" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        select uui.user_id,uui.user_name,uui.user_state,uui.user_lastlogin_time,uui.user_lastlogin_ip,uui.user_is_new,
+        uui.is_business,uui.is_delete,uui.user_mobile, uuuid.user_avatar,uui.user_nickname,uuuid.user_gender,uuuid.user_mobile_verify,
+        uusb.seller_id,uusb.seller_name,uusb.shop_id,uusb.seller_is_admin,uusg.limits
+        from ${database.prefix.userms}hou_user_info uui LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+        where uui.user_mobile = #{userMobile} and uui.user_state BETWEEN 0 and 2 limit 1
+    </select>
+    <select id="selectInfo" resultType="java.util.Map">
+        SELECT * from ${database.prefix.userms}hou_user_bind_connect WHERE bind_openid=#{bindOpenid}
+    </select>
+    <select id="queryShopStatus" resultType="java.lang.Integer">
+        select count(*) from ${database.prefix.business}hou_shop_base where user_id=#{userId} and shop_status =3 and shop_type =1
+    </select>
+    <select id="queryShopPersonInfo" resultType="com.houjiang.commons.vo.shop.ShopPersonInfoVO">
+        select (user_identity_type - 1) as idType,
+               user_truename            as trueName,
+               user_idcard              as idNo,
+               user_identity_font_logo  as idPicOne,
+               user_identity_face_logo  as idPicTwo,
+               user_identity_start_time as validateStartTime,
+               user_identity_end_time   as validateEndTime,
+               validate_long_term       as validateLongTerm
+        from ${database.prefix.userms}hou_user_info_detail
+        where user_id = #{param.userId}
+    </select>
+    <select id="queryShopPersonInfoFeign" resultType="java.util.Map">
+        select (user_identity_type)     as idType,
+               user_truename            as trueName,
+               user_idcard              as idNo,
+               user_identity_font_logo  as idPicOne,
+               user_identity_face_logo  as idPicTwo,
+               user_identity_start_time as validateStartTime,
+               user_identity_end_time   as validateEndTime
+        from ${database.prefix.userms}hou_user_info_detail
+        where user_id = #{param.userId}
+    </select>
+</mapper>

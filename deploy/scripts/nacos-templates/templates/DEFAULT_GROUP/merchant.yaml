@@ -1,0 +1,39 @@
+server:
+  port: 8210
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER}
+    password: ${MERCHANT_DATASOURCE_PASSWORD}
+
+mybatis-plus:
+  global-config:
+    db-config:
+      table-prefix: hou_merchant_
+
+# 商家服务业务配置（与 housoft 参考架构保持一致，所有键统一使用 merchant.* 前缀）
+# 注意：ToolUtils.makePassword 使用 unique-identification 计算 MD5(MD5(password+salt))
+# housoft 数据库中 666666/777777/888888 账号的初始密码=123456 依赖该盐才能验证通过
+merchant:
+  unique-identification: ${MERCHANT_IDENTIFIER}
+  # 商家上传根目录（需保证容器/主机存在该路径且商家进程可写）
+  upload-directory: /d/wwwroot/houcloud/public/uploads/merchant/
+  # 演示/生产开关：true=演示环境（部分写操作会被拦截），false=正式生产
+  production: false
+  # 支付宝沙箱网关开关
+  alidebug: false
+  # 图形验证码
+  captcha:
+    status: 0          # 0=关 1=开
+    token: '${MERCHANT_CAPTCHA_TOKEN}'  # Redis key ǰ׺
+    expire: 300        # 过期秒数
+  # Swagger
+  swagger:
+    enabled: true
+    pathMapping: /
+  # 后端请求绝对地址（用于安全十充/插件回调，为空走 Servlet 推断）
+  url: 'https://${MERCHANT_DOMAIN}'
+  # 前台项目首页地址（装修页拼接 /pc /moblie 使用）
+  front-url: https://${MERCHANT_DOMAIN}

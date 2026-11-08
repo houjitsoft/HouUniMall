@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayConfigShopMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayConfigShopEntity">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="appID" column="appID" jdbcType="VARCHAR"/>
+            <result property="appSecret" column="appSecret" jdbcType="VARCHAR"/>
+            <result property="appMCHId" column="appMCHId" jdbcType="VARCHAR"/>
+            <result property="appAPIKey" column="appAPIKey" jdbcType="VARCHAR"/>
+            <result property="refundUrl" column="refundUrl" jdbcType="VARCHAR"/>
+            <result property="notifyUrl" column="notifyUrl" jdbcType="VARCHAR"/>
+            <result property="redirectUrl" column="redirectUrl" jdbcType="VARCHAR"/>
+            <result property="appletNotifyUrl" column="appletNotifyUrl" jdbcType="VARCHAR"/>
+            <result property="weChatWapPath" column="weChatWapPath" jdbcType="VARCHAR"/>
+            <result property="shopId" column="shopId" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,appID,appSecret,
+        appMCHId,appAPIKey,refundUrl,
+        notifyUrl,redirectUrl,appletNotifyUrl,
+        weChatWapPath,shopId
+    </sql>
+    <select id="selectpaymentconfig" resultMap="BaseResultMap">
+        select * from ${database.prefix.payment}hou_pay_config_shop where shopId = #{shopId}
+    </select>
+    <insert id="insertpaymentconfig">
+    INSERT INTO
+    ${database.prefix.payment}hou_pay_config_shop (
+	appID,
+	appSecret,
+	appMCHId,
+	appAPIKey,
+	refundUrl,
+	notifyUrl,
+	redirectUrl,
+	appletNotifyUrl,
+	weChatWapPath,
+    shopId
+    )
+    VALUES
+	(#{param.appID},
+	#{param.appSecret},
+	#{param.appMCHId},
+	#{param.appAPIKey},
+	#{param.refundUrl}
+	,#{param.notifyUrl},
+	#{param.redirectUrl},
+	#{param.appletNotifyUrl},
+	#{param.weChatWapPath},
+	#{param.shopId})
+    </insert>
+    <update id="updatepaymentconfig">
+        update ${database.prefix.payment}hou_pay_config_shop
+        <set>
+            <if test="param.appID != null and param.appID != ''">
+                appID =
+                #{param.appID},
+            </if>
+            <if test="param.appSecret != null and param.appSecret != ''">
+                appSecret =
+                #{param.appSecret},
+            </if>
+            <if test="param.appMCHId != null and param.appMCHId != ''">
+                appMCHId =
+                #{param.appMCHId},
+            </if>
+            <if test="param.appAPIKey != null and param.appAPIKey != ''">
+                appAPIKey =
+                #{param.appAPIKey},
+            </if>
+            <if test="param.refundUrl != null and param.refundUrl != ''">
+                refundUrl =
+                #{param.refundUrl},
+            </if>
+            <if test="param.notifyUrl != null and param.notifyUrl != ''">
+                notifyUrl =
+                #{param.notifyUrl},
+            </if>
+            <if test="param.redirectUrl != null and param.redirectUrl != ''">
+                redirectUrl =
+                #{param.redirectUrl},
+            </if>
+            <if test="param.appletNotifyUrl != null and param.appletNotifyUrl != ''">
+                appletNotifyUrl =
+                #{param.appletNotifyUrl},
+            </if>
+            <if test="param.weChatWapPath != null and param.weChatWapPath != ''">
+                weChatWapPath =
+                #{param.weChatWapPath},
+            </if>
+        </set>
+        where shopId = #{param.shopId}
+    </update>
+</mapper>

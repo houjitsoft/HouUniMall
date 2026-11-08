@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseInformationClassifyMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseInformationClassifyEntity" id="BaseInformationClassifyMap">
+        <result property="classifyId" column="classify_id" jdbcType="INTEGER"/>
+        <result property="classifyName" column="classify_name" jdbcType="VARCHAR"/>
+        <result property="classifyParentId" column="classify_parent_id" jdbcType="INTEGER"/>
+        <result property="classifySort" column="classify_sort" jdbcType="INTEGER"/>
+        <result property="classifyLevel" column="cat_level" jdbcType="INTEGER"/>
+        <result property="classifyShowStatus" column="cat_show_status" jdbcType="INTEGER"/>
+    </resultMap>
+    <delete id="deleteByClassifyIds">
+        delete from ${database.prefix.userms}hou_base_information_classify
+        where classify_id in
+        <foreach collection="classifyIdList" close=")" open="(" separator="," item="classifyId">
+            #{classifyId}
+        </foreach>
+    </delete>
+    <select id="selectClassifyLevel" resultType="java.lang.Integer">
+        SELECT classify_id
+        from ${database.prefix.userms}hou_base_information_classify
+        where classify_parent_id = #{classifyId}
+    </select>
+    <select id="checkSupplySelf" resultType="java.lang.Integer">
+        select count(*)
+        from ${database.prefix.userms}hou_base_dealer_putaway_record
+        where supplier_shop_id = #{param.shopId}
+          and dealer_common_id = #{param.commonId}
+    </select>
+
+</mapper>

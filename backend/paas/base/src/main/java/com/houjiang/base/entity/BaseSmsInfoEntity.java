@@ -1,0 +1,89 @@
+package com.houjiang.base.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 短信配置信息表
+ * @TableName base_sms_info
+ * @author Amos
+ */
+@TableName(value ="hou_base_sms_info")
+@Data
+public class BaseSmsInfoEntity implements Serializable {
+    /**
+     * 主键
+     */
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    /** 所属组织 ID，短信密钥和通道按组织隔离。 */
+    private String orgId;
+
+    /**
+     * 私钥
+     */
+    private String smsSecretId;
+
+    /**
+     * 密钥
+     */
+    private String smsSecretKey;
+
+    /**
+     * 短信工具应用APP的id
+     */
+    private String smsSdkAppId;
+
+    /**
+     * 公司标识
+     */
+    private String smsSign;
+
+    /**
+     * 启用和禁用状态，00禁用  01启用，默认启用
+     */
+    private String smsStatus;
+
+    /**
+     * oss类型
+     */
+    private String smsType;
+
+    /**
+     * 地区类型
+     */
+    private String smsRegion;
+
+    /**
+     * 伪删除标识 00删除 01正常，默认正常
+     */
+    private String smsIsactive;
+
+    /**
+     * 信息配置备注
+     */
+    private String smsRemark;
+
+    /**
+     * 创建时间
+     */
+    private Date smsCreateddate;
+
+    @TableField(exist = false)
+    private Integer flag;
+
+    @TableField(exist = false)
+    private List<Map<String,Object>> templateList;
+
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+}

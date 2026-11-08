@@ -1,0 +1,366 @@
+<template>
+	<!-- 无匹配结果提示 -->
+	<view v-if="hasNoResults" class="empty-container">
+		<text class="empty-text">未找到匹配的直播</text>
+	</view>
+
+	<!-- 直播列表内容 -->
+	<list v-else class="live-list-content" @loadmore="loadMore" :show-scrollbar="false">
+		<cell v-for="(row, rowIndex) in groupedLiveList" :key="`row-${rowIndex}-${row[0]?.liveId || 'empty'}`">
+			<view class="live-row">
+				<view v-for="(live, index) in row" :key="live.liveId" class="live-card" @tap="handleJoinLive(live)">
+					<view class="live-cover">
+						<image :src="live.liveCover || defaultCoverURL" :mode="'aspectFill'" class="cover-image"
+							@error="handleCoverError(live)" />
+						<view class="live-status">
+							<view class="live-bar-container">
+								<view v-if="live.status === 0">
+									<text class="bar bar-1">未开始</text>
+								</view>
+								<view v-if="live.status === 1">
+									<text class="bar bar-2">直播中</text>
+								</view>
+								<view v-if="live.status === 2">
+									<text class="bar bar-3">已结束</text>
+								</view>
+							</view>
+							<!-- <text class="viewer-count">{{ formatViewerCount(live.totalViewerCount) }}人看过</text>-->
+						</view>
+						<!-- 直播信息覆盖在封面图底部 -->
+						<view class="live-info-overlay">
+							<text class="owner-name" :lines="1">{{ live.startTime }}</text>
+							<!-- <view class="live-owner">
+									<image :src="live?.streamerAvatar || defaultAvatarURL" class="owner-avatar"
+										mode="aspectFill" />
+									<text class="owner-name"
+										:numberOfLines="1">{{ live?.streamerName || live?.streamer}}</text>
+								</view> -->
+						</view>
+					</view>
+				</view>
+			</view>
+		</cell>
+	</list>
+</template>
+<script setup>
+	import {
+		ref,
+		onBeforeMount,
+		onMounted,
+		reactive,
+		computed,
+		watch
+	} from 'vue'
+	const props = defineProps({
+		liveList: {
+			type: Array,
+			default: () => []
+		}
+	})
+	const inputLiveId = ref('');
+	const liveList = ref([]);
+	// 默认图片
+	const defaultCoverURL =
+		'https://liteav-test-1252463788.cos.ap-guangzhou.myqcloud.com/voice_room/voice_room_cover1.png';
+	const defaultAvatarURL = 'https://web.sdk.qcloud.com/component/TUIKit/assets/avatar_01.png';
+	watch(() => props.liveList, (newValue) => {
+		liveList.value = newValue;
+	}, {
+		deep: true
+	})
+	// 无匹配结果标记（用于 UI 展示）
+	const hasNoResults = computed(() => {
+		const k = (inputLiveId.value || '').trim();
+		return !!k && ((filteredLiveList.value || []).length === 0);
+	});
+	// 根据输入框的 liveID 关键字过滤直播列表（前端过滤，不请求后端）
+	const filteredLiveList = computed(() => {
+		const keyword = (inputLiveId.value || '').trim().toLowerCase();
+		if (!keyword) return liveList.value;
+		return (liveList.value || []).filter(item => {
+			const id = (item?.liveID || '').toLowerCase();
+			const name = (item?.liveName || '').toLowerCase();
+			const ownerName = (item?.liveOwner?.userName || item?.liveOwner?.userID || '').toLowerCase();
+			return id.includes(keyword) || name.includes(keyword) || ownerName.includes(keyword);
+		});
+	});
+
+	// 将直播列表分组，每行两个元素（对过滤后的结果进行分组）
+	const groupedLiveList = computed(() => {
+		const source = filteredLiveList.value || [];
+		const groups = [];
+		for (let i = 0; i < source.length; i += 2) {
+			const row = source.slice(i, i + 2);
+			groups.push(row);
+		}
+		console.log("直播间列表：", groups);
+		return groups;
+	});
+
+	onMounted(() => {
+
+	})
+
+	const handleCoverError = (live) => {
+		live.coverURL = defaultCoverURL;
+	}
+
+	// 进入直播间
+	const handleJoinLive = async (live) => {
+		if(!uni.$userID){
+			uni.showToast({
+				title:"请先进行登录...",
+				icon:"none"
+			})
+		}
+		if (live.status != 1) {
+			uni.showToast({
+				title: live.status == 0 ? "直播未开始" : '直播已结束',
+				icon:"none"
+			})
+			return
+		}
+		uni.$liveID = live.liveId;
+		try {
+			// #ifdef APP
+			uni.navigateTo({
+				url: `/tuikit/audience/index?liveID=${live.liveId}`
+			});
+			// #endif
+
+			// #ifndef APP
+			uni.navigateTo({
+				url: `/tuikit/webLiveMain/webLiveMain?liveID=${live.liveId}`
+			});
+			// #endif
+		} catch (error) {
+			console.error('进入直播间失败:', error);
+			uni.showToast({
+				title: '进入直播间失败',
+				icon: 'none'
+			});
+		}
+	};
+	// 格式化观看人数
+	const formatViewerCount = (count) => {
+		if (count >= 10000) {
+			return `${(count / 10000).toFixed(1)}万`;
+		}
+		return count.toString();
+	};
+	// 加载更多
+	const loadMore = () => {
+		if (!liveListCursor.value) {
+			uni.showToast({
+				title: "没有更多了",
+				icon: "none"
+			});
+			return;
+		}
+	};
+	/**
+	 * 状态过滤函数
+	 * @param {number} status - 状态码
+	 * @returns {string} 状态描述
+	 */
+	function fliter_status(status) {
+		switch (status) {
+			case 0:
+				return '未开始';
+			case 1:
+				return '直播中';
+			case 2:
+				return '已结束';
+			default:
+				return '未知状态';
+		}
+	}
+</script>
+
+<style>
+	.live-list {
+		width: 750rpx;
+		background-color: #FFFFFF;
+		flex: 1;
+	}
+
+	.live-list-header {
+		padding: 32rpx;
+	}
+
+	.header-title {
+		font-size: 40rpx;
+		font-weight: 600;
+		color: #333333;
+	}
+
+	.live-list-quick-join {
+		flex-direction: row;
+		align-items: center;
+		margin: 0 32rpx 24rpx 32rpx;
+	}
+
+	.quick-join-input {
+		flex: 1;
+		height: 64rpx;
+		border: 1rpx solid #e0e0e0;
+		border-radius: 999rpx;
+		padding: 10rpx 20rpx;
+		margin-top: 20rpx;
+		font-size: 28rpx;
+		background: #fff;
+	}
+
+	.live-list-content {
+		width: 750rpx;
+	}
+
+	.live-row {
+		display: flex;
+		flex-direction: row;
+		padding: 0 32rpx;
+		margin-bottom: 24rpx;
+		justify-content: space-between;
+	}
+
+	.live-card {
+		width: 334rpx;
+		height: 450rpx;
+		border-radius: 16rpx;
+		background-color: #ffffff;
+	}
+
+	.live-cover {
+		position: relative;
+		width: 334rpx;
+		height: 450rpx;
+	}
+
+	.cover-image {
+		width: 334rpx;
+		height: 400rpx;
+		border-radius: 16rpx;
+	}
+
+	.live-status {
+		position: absolute;
+		top: 14rpx;
+		left: 10rpx;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.live-bar-container {
+		/* width: 16rpx; */
+		/* height: 16rpx; */
+		flex-direction: row;
+		justify-content: center;
+		align-items: flex-end;
+		margin-right: 8rpx;
+		font-size: 26rpx;
+	}
+
+	.bar {
+		/* width: 4rpx; */
+		padding: 6rpx 10rpx;
+		border-radius: 5rpx;
+		color: #fff;
+		font-size: 24rpx;
+	}
+
+	.bar-1 {
+		margin-right: 2rpx;
+		background-color: rgba(255, 170, 0, 0.5);
+	}
+
+	.bar-2 {
+		background-color: rgba(0, 170, 0, 0.5);
+	}
+
+	.bar-3 {
+		background-color: rgba(214, 52, 54, 0.5);
+	}
+
+	.viewer-count {
+		color: #ffffff;
+		font-size: 24rpx;
+	}
+
+	/* 新增：直播信息覆盖样式 */
+	.live-info-overlay {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		padding: 16rpx 20rpx;
+		width: 334rpx;
+		background-color: rgba(240, 242, 247, 1);
+		border-bottom-right-radius: 16rpx;
+		border-bottom-left-radius: 16rpx;
+		/* 半透明黑色背景 */
+	}
+
+	.live-info-overlay .live-title {
+		font-size: 32rpx;
+		font-weight: 600;
+		color: rgba(0, 0, 0, 0.9);
+		margin-bottom: 8rpx;
+		lines: 1;
+		max-width: 400rpx;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.live-info-overlay .live-owner {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.live-info-overlay .owner-avatar {
+		width: 40rpx;
+		height: 40rpx;
+		border-radius: 20rpx;
+		margin-right: 8rpx;
+	}
+
+	.live-info-overlay .owner-name {
+		font-size: 24rpx;
+		color: rgba(0, 0, 0, 0.55);
+		font-weight: 500;
+		flex: 1;
+		lines: 1;
+		max-width: 300rpx;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.loading-container,
+	.empty-container,
+	.loading-more {
+		padding: 32rpx;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.loading-icon {
+		width: 36rpx;
+		height: 36rpx;
+		color: #666666;
+	}
+
+	.loading-text,
+	.empty-text {
+		margin-top: 16rpx;
+		font-size: 28rpx;
+		color: #666666;
+	}
+
+	.load-more {
+		padding: 32rpx;
+		justify-content: center;
+	}
+
+	.load-more-text {
+		font-size: 28rpx;
+		color: #666666;
+	}
+</style>

@@ -1,0 +1,113 @@
+# HouCloud Nacos 配置变量表
+# 用法：cp variables.example variables.env -> 填入真实值 -> python3 apply_templates.py -> bash import_to_nacos.sh
+# 说明：值不带引号；# 之后为注释；未赋值的变量会以 ${VAR} 原样保留（对应服务可能起不来）。
+# 注意：同一把口令可能以不同语义各占一个变量（如 APP_/MALL_/USERMS_/WORKFLOW_DATASOURCE_PASSWORD），
+#       单库部署（所有服务连同一个 meoc 库）时它们填同一个值即可。
+
+# ============ 一、基础中间件（必填，否则服务无法启动） ============
+MYSQL_HOST=
+MYSQL_PORT=3306
+# 数据库账号与库名（安装向导 custom 模式可自定义；模板与 mybatis 跨库前缀均引用它们）
+MYSQL_USER=meoc
+MYSQL_DB=meoc
+MYSQL_PARAMS=?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+APP_DATASOURCE_PASSWORD=
+
+REDIS_ADDR=
+REDIS_PASSWORD=
+# redis.yaml 的 host/port 是两个独立字段（host 不能写成 host:port，否则 Lettuce 会把
+# "redis:6379" 当主机名解析，启动即 UnknownHostException），所以模板用 REDIS_HOST /
+# REDIS_PORT 两个占位符。Docker 轨由 nacos-init 从 REDIS_ADDR 自动拆分，无需手填；
+# 手动渲染轨若不填这两项，redis.yaml 会带着 ${REDIS_HOST} 原样进 Nacos，
+# 服务启动报「缺少必要的spring.redis.*配置」。
+REDIS_HOST=
+REDIS_PORT=
+
+NACOS_SERVER_ADDR=
+ROCKETMQ_NAMESERVER=
+ROCKETMQ_ACCESS_KEY=
+ROCKETMQ_SECRET_KEY=
+
+AUTH_JWT_SECRET=
+
+# ============ 二、可选中间件（不用则留空） ============
+ES_ADDR=
+SEATA_SERVER_ADDR=
+BFF_ADDR=
+
+# ============ 三、业务第三方凭据（按需填写，不填则相关功能不可用） ============
+APP_GEO_DIFY_APP_KEY=
+AUTH_DATASOURCE_PASSWORD=
+BASE_DATASOURCE_PASSWORD=
+BFF_FEIGN_PM_ADDR=
+BFF_PM_ADDR=
+DISPOSE_AK_ID=
+DISPOSE_ALIYUN_AK_ID=
+DISPOSE_ALIYUN_SECRET=
+DISPOSE_PAYPAL_CLIENT_CREDENTIAL=
+DISPOSE_PAYPAL_CLIENT_SECRET=
+DISPOSE_PRIVATE_KEY=
+DISPOSE_SECRET=
+DISPOSE_SECRET_2=
+DISPOSE_SIGN_KEY=
+DISPOSE_STRIPE_CREDENTIAL=
+DISPOSE_STRIPE_CREDENTIAL_2=
+DISPOSE_STRIPE_CREDENTIAL_3=
+ES_DATASOURCE_PASSWORD=
+ES_ELASTICSEARCH_PASSWORD=
+GOODS_DATASOURCE_PASSWORD=
+GOODS_ES_CREDENTIAL=
+GOODS_PRIVATE_KEY=
+JOB_DATASOURCE_PASSWORD=
+MALL_DATASOURCE_PASSWORD=
+MERCHANT_CAPTCHA_TOKEN=
+MERCHANT_DATASOURCE_PASSWORD=
+MERCHANT_DOMAIN=
+MERCHANT_IDENTIFIER=
+ORDER_DATASOURCE_PASSWORD=
+PAYMENT_ALIPAY_AK_ID=
+PAYMENT_ALIPAY_PRIVATE_KEY=
+PAYMENT_DATASOURCE_PASSWORD=
+PAYMENT_IDENTIFIER=
+PAYMENT_PAYPAL_CLIENT_CREDENTIAL=
+PAYMENT_PAYPAL_CLIENT_SECRET=
+PAYMENT_PAYPAL_SECRET=
+PAYMENT_PRIVATE_KEY=
+PAYMENT_WECHAT_AK_ID=
+PAYMENT_WECHAT_APP_KEY=
+PAYMENT_WECHAT_MCH_ID=
+PERM_DATASOURCE_PASSWORD=
+SEATA_PASSWORD=
+SEATA_PASSWORD_2=
+SEATA_REGISTRY_NACOS_PASSWORD=
+THIRD_ADDR=
+THIRD_AK_ID=
+THIRD_DATASOURCE_PASSWORD=
+THIRD_SECRET=
+USERMS_DATASOURCE_PASSWORD=
+USERMS_PRIVATE_KEY=
+USERMS_WEIXIN_CREDENTIAL=
+USERMS_WEIXIN_CREDENTIAL_2=
+USERMS_WEIXIN_SECRET=
+USERMS_WEIXIN_TOKEN=
+WORKFLOW_BPM_ADMINUSER_PASSWORD=
+WORKFLOW_DATASOURCE_PASSWORD=
+
+# 服务间内部调用令牌；留空由 nacos-init 自动生成（推荐）
+PLUGIN_INTERNAL_JOB_TOKEN=
+
+# mall → merchant 平台财务接口的签名密钥（两侧读同一个键，源码 fail-closed：
+# 不配就启动失败）。留空由 nacos-init 每次安装随机生成（推荐）；
+# 多实例共用同一把时才手填。
+MALL_PLATFORM_FINANCE_SERVICE_SECRET=
+
+# 平台协议回传（默认开启）：站点用户签署协议的凭据自动回传到 Unimall 官方平台，
+# 平台运营方在后台「协议同意记录 → 站点回传记录」页审计。url/token 预置官方值；
+# site-code 唯一标识本站点，Docker 轨留空由 nacos-init 自动生成并持久沿用，
+# 手动渲染轨须自己填一个不重复的码（如 unimall-site-我的域名）。不想接入置
+# HOUCLOUD_PLATFORM_REPORT_ENABLED=false 即可。
+HOUCLOUD_PLATFORM_REPORT_ENABLED=true
+HOUCLOUD_PLATFORM_URL=https://unimall.houjit.com
+HOUCLOUD_PLATFORM_TOKEN=76d51cbee840f49f5155616170048054830dcbf263af5979f1cfcdd2ceb902bb
+HOUCLOUD_PLATFORM_SITE_CODE=
+HOUCLOUD_PLATFORM_SITE_NAME=

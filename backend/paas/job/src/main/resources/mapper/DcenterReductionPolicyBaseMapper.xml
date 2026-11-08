@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterReductionPolicyBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterReductionPolicyBaseEntity">
+            <id property="promotionId" column="promotion_id" jdbcType="INTEGER"/>
+            <result property="promotionName" column="promotion_name" jdbcType="VARCHAR"/>
+            <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+            <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        promotion_id,promotion_name,start_time,
+        end_time
+    </sql>
+    <select id="getDecenterReductionPolicyBaseVOList"
+            resultType="com.houjiang.job.vo.DcenterReductionPolicyBaseVO">
+        select promotion_id,promotion_name,start_time,
+        end_time from ${database.prefix.activity}hou_addon_activity_reduction_policy_base limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

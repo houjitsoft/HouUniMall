@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseMerchantPlusRuleMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseMerchantPlusRuleEntity" id="BaseMerchantPlusRuleMap">
+        <result property="plusRuleid" column="plus_ruleid" jdbcType="INTEGER"/>
+        <result property="plusPropaganda" column="plus_propaganda" jdbcType="VARCHAR"/>
+        <result property="plusSigns" column="plus_signs" jdbcType="VARCHAR"/>
+        <result property="plusMonthcardlogo" column="plus_monthcardlogo" jdbcType="VARCHAR"/>
+        <result property="plusSeasoncardlogo" column="plus_seasoncardlogo" jdbcType="VARCHAR"/>
+        <result property="plusYearcardlogo" column="plus_yearcardlogo" jdbcType="VARCHAR"/>
+        <result property="plusBackdrop" column="plus_backdrop" jdbcType="VARCHAR"/>
+        <result property="plusMemberagreement" column="plus_memberagreement" jdbcType="VARCHAR"/>
+        <result property="plusMerchantnotice" column="plus_merchantnotice" jdbcType="VARCHAR"/>
+        <result property="plusStatus" column="plus_status" jdbcType="INTEGER"/>
+        <result property="plusUpdatetime" column="plus_updatetime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="insertplusrule">
+        insert into ${database.prefix.userms}hou_base_merchant_plus_rule
+        <trim prefix="(plus_updatetime," suffix=")" suffixOverrides=",">
+            <if test="param.plusPropaganda != null ">
+                plus_propaganda ,
+            </if>
+            <if test="param.plusSigns != null ">
+                plus_signs ,
+            </if>
+            <if test="param.plusMonthcardlogo != null and param.plusMonthcardlogo != ''">
+                plus_monthcardlogo,
+            </if>
+            <if test="param.plusSeasoncardlogo != null and param.plusSeasoncardlogo != ''">
+                plus_seasoncardlogo ,
+            </if>
+            <if test="param.plusYearcardlogo != null and param.plusYearcardlogo != ''">
+                plus_yearcardlogo ,
+            </if>
+            <if test="param.plusBackdrop != null and param.plusBackdrop != ''">
+                plus_backdrop ,
+            </if>
+            <if test="param.plusMemberagreement != null ">
+                plus_memberagreement ,
+            </if>
+            <if test="param.plusMerchantnotice != null ">
+                plus_merchantnotice ,
+            </if>
+            <if test="param.plusStatus != null ">
+                plus_status ,
+            </if>
+        </trim>
+        <trim prefix="values (now()," suffix=")" suffixOverrides=",">
+            <if test="param.plusPropaganda != null ">
+                #{param.plusPropaganda},
+            </if>
+            <if test="param.plusSigns != null ">
+                #{param.plusSigns},
+            </if>
+            <if test="param.plusMonthcardlogo != null and param.plusMonthcardlogo != ''">
+                #{param.plusMonthcardlogo},
+            </if>
+            <if test="param.plusSeasoncardlogo != null and param.plusSeasoncardlogo != ''">
+                #{param.plusSeasoncardlogo},
+            </if>
+            <if test="param.plusYearcardlogo != null and param.plusYearcardlogo != ''">
+                #{param.plusYearcardlogo},
+            </if>
+            <if test="param.plusBackdrop != null and param.plusBackdrop != ''">
+                #{param.plusBackdrop},
+            </if>
+            <if test="param.plusMemberagreement != null ">
+                #{param.plusMemberagreement},
+            </if>
+            <if test="param.plusMerchantnotice != null ">
+                #{param.plusMerchantnotice},
+            </if>
+            <if test="param.plusStatus != null ">
+                #{param.plusStatus},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateplusrule">
+        UPDATE ${database.prefix.userms}hou_base_merchant_plus_rule
+        <set>
+            plus_updatetime = now(),
+            <if test="param.plusPropaganda != null ">
+                plus_propaganda = #{param.plusPropaganda},
+            </if>
+            <if test="param.plusSigns != null ">
+                plus_signs = #{param.plusSigns},
+            </if>
+            <if test="param.plusMonthcardlogo != null and param.plusMonthcardlogo != ''">
+                plus_monthcardlogo = #{param.plusMonthcardlogo},
+            </if>
+            <if test="param.plusSeasoncardlogo != null and param.plusSeasoncardlogo != ''">
+                plus_seasoncardlogo = #{param.plusSeasoncardlogo},
+            </if>
+            <if test="param.plusYearcardlogo != null and param.plusYearcardlogo != ''">
+                plus_yearcardlogo = #{param.plusYearcardlogo},
+            </if>
+            <if test="param.plusBackdrop != null and param.plusBackdrop != ''">
+                plus_backdrop = #{param.plusBackdrop},
+            </if>
+            <if test="param.plusMemberagreement != null ">
+                plus_memberagreement = #{param.plusMemberagreement},
+            </if>
+            <if test="param.plusMerchantnotice != null ">
+                plus_merchantnotice = #{param.plusMerchantnotice},
+            </if>
+            <if test="param.plusStatus != null ">
+                plus_status = #{param.plusStatus},
+            </if>
+        </set>
+        where plus_ruleid = #{param.plusRuleid}
+    </update>
+    <select id="queryMerchantPlusRule" resultType="java.lang.Integer">
+        select plus_status from ${database.prefix.userms}hou_base_merchant_plus_rule
+        order by plus_ruleid asc
+        limit 1
+    </select>
+    <select id="selectplusrule1" resultType="java.lang.String">
+        select plus_memberagreement from ${database.prefix.userms}hou_base_merchant_plus_rule where plus_status = 1
+    </select>
+    <select id="getBusinessRule" resultType="java.lang.String">
+        select plus_merchantnotice from ${database.prefix.userms}hou_base_merchant_plus_rule where plus_status = 1
+    </select>
+    <select id="selectplus" resultType="java.lang.Integer">
+        select plus_status
+        from ${database.prefix.userms}hou_base_merchant_plus_rule
+    </select>
+
+</mapper>
+

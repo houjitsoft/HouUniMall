@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsJingdongDropshippingMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsJingdongDropshippingEntity" id="GoodsJingdongDropshippingMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="spuId" column="spu_id" jdbcType="VARCHAR"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="skuId" column="sku_id" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+    </resultMap>
+    <delete id="deleteGoodsRecord">
+        delete from ${database.prefix.order}hou_goods_jingdong_dropshipping
+        where common_id in (
+        <foreach collection="commonIds" separator="," item="commonId">
+            #{commonId}
+        </foreach>
+        )
+    </delete>
+    <select id="selectBySupplierGoodsId" resultType="java.lang.Boolean">
+        select count(1) from ${database.prefix.order}hou_goods_jingdong_dropshipping where sku_id = #{supplierGoodsId} and shop_id = #{shopId} and is_delete = 0
+    </select>
+    <select id="selectBySupplierGoodsIdBySpuId"
+            resultType="com.houjiang.goods.entity.GoodsJingdongDropshippingEntity">
+        select common_id,spu_id,goods_id,sku_id,shop_id,is_delete from ${database.prefix.order}hou_goods_jingdong_dropshipping where sku_id = #{commonIdStr} and shop_id = #{shopId}  and is_delete = 0
+    </select>
+    <select id="selectDropshippingInfoByGoodsId"
+            resultType="com.houjiang.goods.vo.GoodsJingdongDropshippingVO">
+        select gjd.common_id,gjd.spu_id,gjd.goods_id,gjd.sku_id,gjd.shop_id,gb.goods_name
+        from ${database.prefix.order}hou_goods_jingdong_dropshipping gjd left join ${database.prefix.goods}hou_goods_base gb
+        on gjd.goods_id = gb.goods_id
+        where gjd.goods_id = #{goodsId} and gjd.is_delete = 0
+    </select>
+    <select id="selectJingDongGoodsInfoByOrderId" resultType="com.houjiang.goods.vo.JingDongGoodsVO">
+        select
+            og.order_goods_num as goodsNum,
+            gjd.sku_id as supplierGoodsId
+        from
+        ${database.prefix.order}hou_order_goods og
+        left join ${database.prefix.order}hou_goods_jingdong_dropshipping gjd on og.goods_id = gjd.goods_id
+        where og.order_id = #{orderId}
+    </select>
+    <select id="selectAllByJingDongSkuId"
+            resultType="com.houjiang.goods.entity.GoodsJingdongDropshippingEntity">
+        select common_id,spu_id,goods_id,sku_id,shop_id,is_delete
+        from ${database.prefix.order}hou_goods_jingdong_dropshipping
+        where sku_id in
+        <foreach collection="skuIds" item="skuId" open="(" close=")" separator=",">
+            #{skuId}
+        </foreach>
+
+    </select>
+    <select id="selectByJingDongSkuId" resultType="java.lang.Integer">
+        select common_id
+        from ${database.prefix.order}hou_goods_jingdong_dropshipping
+        where sku_id in
+        <foreach collection="skuIds" item="skuId" open="(" close=")" separator=",">
+            #{skuId}
+        </foreach>
+    </select>
+    <select id="queryMallGoodsIdByJingDongOrderId" resultType="java.lang.String">
+        select gjd.goods_id
+        from ${database.prefix.order}hou_goods_jingdong_dropshipping gjd
+        left join ${database.prefix.order}hou_order_goods og on gjd.goods_id = og.goods_id
+        left join ${database.prefix.order}hou_order_base ob on ob.order_id = og.order_id
+        where
+          ob.jd_order_id = #{param.parentJdOrderId}
+          and gjd.sku_id = #{param.skuId}
+          and ob.shop_id = gjd.shop_id
+    </select>
+    <select id="queryOrderReturnMethodType" resultType="java.lang.Integer">
+        select
+               oor.return_method_status
+        from ${database.prefix.order}hou_order_base og
+                 left join ${database.prefix.order}hou_order_return oor on og.order_id = oor.order_id
+        where ob.jd_order_id = #{jdOrderId} or jd_son_order_id = #{jdOrderId} limit 1
+    </select>
+    <select id="platFormQueryDealerGoods" resultType="com.houjiang.goods.vo.QueryDealerGoodsVO">
+        select gc.common_name,gc.common_image,gc.cat_name,gjd.spu_id as supplyCommonId from ${database.prefix.order}hou_goods_jingdong_dropshipping gjd left join ${database.prefix.goods}hou_goods_common gc on gjd.common_id = gc.common_id
+        where gc.common_name is not null
+        <if test="param.commonName != null and param.commonName != ''">
+            and gc.common_name like CONCAT('%',#{param.commonName},'%')
+        </if>
+        group by gjd.spu_id
+    </select>
+    <select id="getDealerGoodsNum" resultType="java.lang.Integer">
+        select count(1) from ${database.prefix.order}hou_goods_jingdong_dropshipping where spu_id = #{supplyCommonId}
+    </select>
+    <select id="platFormQueryDealerShop" resultType="com.houjiang.goods.vo.QueryDealerGoodsVO">
+        select gc.shop_id,gc.shop_name
+        from ${database.prefix.order}hou_goods_jingdong_dropshipping gjd left join ${database.prefix.goods}hou_goods_common gc on gjd.common_id = gc.common_id
+        where gc.common_name is not null and gjd.spu_id = #{param.supplyCommonId}
+        <if test="param.shopName != null and param.shopName != ''">
+            and gc.shop_name like CONCAT('%',#{param.shopName},'%')
+        </if>
+        group by gc.shop_id
+    </select>
+</mapper>
+
+

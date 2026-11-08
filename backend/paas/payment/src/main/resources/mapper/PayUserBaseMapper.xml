@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayUserBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayUserBaseEntity">
+            <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="userPayPasswd" column="user_pay_passwd" jdbcType="VARCHAR"/>
+            <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,user_pay_passwd,ts
+    </sql>
+    <update id="modifyPasswd">
+        update ${database.prefix.payment}hou_pay_user_base set user_pay_passwd = #{passwd}  WHERE user_id = #{userId}
+    </update>
+    <select id="isPasswd" resultType="java.lang.String">
+        SELECT user_pay_passwd
+        FROM ${database.prefix.payment}hou_pay_user_base
+        WHERE user_id = #{fromUserId}
+    </select>
+    <select id="checkPayPassword" resultType="java.lang.Integer">
+        select count(*) from ${database.prefix.payment}hou_pay_user_base where user_id = #{userId} and user_pay_passwd != ''
+    </select>
+    <select id="plusMemberPayPasswd" resultType="java.lang.Integer">
+        select count(user_pay_passwd) from ${database.prefix.payment}hou_pay_user_base where user_id= #{userId} and user_pay_passwd=#{passwd}
+    </select>
+    <select id="selectOrderMap" resultType="java.util.Map">
+        SELECT
+            oob.order_id AS orderId,
+            oob.buyer_user_name AS buyerUserName,
+            oob.order_receiver_name AS orderReceiverName,
+            oob.order_receiver_address AS orderReceiverAddress,
+            oob.order_receiver_contact AS orderReceiverContact,
+            pbd.district_code AS provinceCode,
+            cbd.district_code AS cityCode,
+            abd.district_code AS areaCode,
+            oob.order_source AS orderSource
+        FROM
+            ${database.prefix.order}hou_order_base oob
+                LEFT JOIN ${database.prefix.base}hou_base_district pbd ON oob.order_receiver_province_id = pbd.district_id
+                LEFT JOIN ${database.prefix.base}hou_base_district cbd ON oob.order_receiver_city_id = cbd.district_id
+                LEFT JOIN ${database.prefix.base}hou_base_district abd ON oob.order_receiver_area_id = abd.district_id
+        where (oob.payment_number = #{orderId} or oob.order_id = #{orderId})
+    </select>
+    
+    <select id="selectOrderGoodsList" resultType="com.houjiang.commons.dto.yiyatong.GoodsDTO">
+        SELECT
+            og.order_goods_num AS goodsQty,
+            sgy.sku_id AS skuId
+        from
+            ${database.prefix.order}hou_order_goods og
+                left join ${database.prefix.goods}hou_supplier_goods_yiyatong sgy on sgy.goods_id=og.goods_id and sgy.shop_id = og.shop_id
+        where  og.order_id=#{orderId} and sgy.is_delete=0
+    </select>
+</mapper>

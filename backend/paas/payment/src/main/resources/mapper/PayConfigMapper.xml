@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayConfigMapper">
+
+    <resultMap type="com.houjiang.payment.entity.PayConfigEntity" id="PayConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="paymentMode" column="paymentMode" jdbcType="VARCHAR"/>
+        <result property="appID" column="appID" jdbcType="VARCHAR"/>
+        <result property="appSecret" column="appSecret" jdbcType="VARCHAR"/>
+        <result property="appMCHId" column="appMCHId" jdbcType="VARCHAR"/>
+        <result property="appAPIKey" column="appAPIKey" jdbcType="VARCHAR"/>
+        <result property="refundUrl" column="refundUrl" jdbcType="VARCHAR"/>
+        <result property="notifyUrl" column="notifyUrl" jdbcType="VARCHAR"/>
+        <result property="redirectUrl" column="redirectUrl" jdbcType="VARCHAR"/>
+        <result property="weChatPcPath" column="weChatPcPath" jdbcType="VARCHAR"/>
+        <result property="gatewayURL" column="gatewayURL" jdbcType="VARCHAR"/>
+        <result property="gatewayURL" column="shoppingNotifyUrl" jdbcType="VARCHAR"/>
+        <result property="shoppingNotifyUrl" column="rechargeNotifyUrl2" jdbcType="VARCHAR"/>
+        <result property="shoppingReturnUrl" column="shoppingReturnUrl" jdbcType="VARCHAR"/>
+        <result property="shoppingReturnUrlPc" column="shoppingReturnUrlPc" jdbcType="VARCHAR"/>
+        <result property="paymentStatus" column="paymentStatus" jdbcType="VARCHAR"/>
+        <result property="paymentIsActive" column="paymentIsActive" jdbcType="VARCHAR"/>
+        <result property="paymentUpdateDate" column="paymentUpdateDate" jdbcType="TIMESTAMP"/>
+        <result property="certPublicKeyRes2" column="cert_public_key_res2" jdbcType="VARCHAR"/>
+        <result property="certRootKey" column="cert_root_key" jdbcType="VARCHAR"/>
+        <result property="certAppPublicKey" column="cert_app_public_key" jdbcType="VARCHAR"/>
+        <result property="plusNotifyUrl" column="plusNotifyUrl" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id,paymentMode,appID,
+        appSecret,appMCHId,appAPIKey,
+        refundUrl,notifyUrl,redirectUrl,
+        weChatPcPath,gatewayURL,shoppingNotifyUrl,
+        rechargeNotifyUrl2,shoppingReturnUrl,shoppingReturnUrlPc,
+        paymentStatus,
+        paymentIsActive,paymentUpdateDate,cert_public_key_res2,
+        cert_root_key,cert_app_public_key,plusNotifyUrl
+    </sql>
+    <insert id="insertPayInfo">
+   INSERT into hou_pay_config (paymentStatus) VALUES ('01')
+    </insert>
+    <update id="updatePayConfigWap">
+    UPDATE hou_pay_config
+    SET appAPIKey = #{appAPIKey,jdbcType=VARCHAR},
+    appID = #{appID,jdbcType=VARCHAR},
+    appMCHId = #{appMCHId,jdbcType=VARCHAR},
+    appSecret = #{appSecret,jdbcType=VARCHAR},
+    notifyUrl = #{notifyUrl,jdbcType=VARCHAR},
+    paymentStatus = #{paymentStatus,jdbcType=VARCHAR},
+    refundUrl = #{refundUrl,jdbcType=VARCHAR},
+    weChatPcPath = #{weChatPcPath,jdbcType=VARCHAR}
+    WHERE
+	paymentMode = #{paymentMode,jdbcType=VARCHAR}
+    </update>
+    <update id="updatePayConfigAPP">
+    UPDATE hou_pay_config
+    SET appAPIKey = #{appAPIKey,jdbcType=VARCHAR},
+    appID = #{appID,jdbcType=VARCHAR},
+    appMCHId = #{appMCHId,jdbcType=VARCHAR},
+    appSecret = #{appSecret,jdbcType=VARCHAR},
+    notifyUrl = #{notifyUrl,jdbcType=VARCHAR},
+    paymentStatus = #{paymentStatus,jdbcType=VARCHAR},
+    refundUrl = #{refundUrl,jdbcType=VARCHAR},
+    weChatPcPath = #{weChatPcPath,jdbcType=VARCHAR}
+    WHERE paymentMode = #{paymentMode,jdbcType=VARCHAR}
+    </update>
+    <update id="updatePayConfigAPPlet">
+    UPDATE hou_pay_config
+    SET appAPIKey = #{appAPIKey,jdbcType=VARCHAR},
+    appID = #{appID,jdbcType=VARCHAR},
+    appMCHId = #{appMCHId,jdbcType=VARCHAR},
+    appSecret = #{appSecret,jdbcType=VARCHAR},
+    paymentStatus = #{paymentStatus,jdbcType=VARCHAR},
+    refundUrl = #{refundUrl,jdbcType=VARCHAR}
+    WHERE paymentMode = #{paymentMode,jdbcType=VARCHAR}
+    </update>
+    <update id="updatePayConfigALi">
+    UPDATE hou_pay_config
+    SET appAPIKey = #{appAPIKey,jdbcType=VARCHAR},
+    appID = #{appID,jdbcType=VARCHAR},
+    appMCHId = #{appMCHId,jdbcType=VARCHAR},
+    appSecret = #{appSecret,jdbcType=VARCHAR},
+    gatewayURL = #{gatewayURL,jdbcType=VARCHAR},
+    paymentStatus = #{paymentStatus,jdbcType=VARCHAR},
+    shoppingNotifyUrl = #{shoppingNotifyUrl,jdbcType=VARCHAR},
+    plusNotifyUrl = #{plusNotifyUrl,jdbcType=VARCHAR},
+    rechargeNotifyUrl2 = #{rechargeNotifyUrl2,jdbcType=VARCHAR},
+    shoppingReturnUrlPc = #{shoppingReturnUrlPc,jdbcType=VARCHAR},
+    cert_public_key_res2 =#{cert_public_key_res2,jdbcType=VARCHAR},
+    cert_root_key = #{cert_root_key,jdbcType=VARCHAR},
+    cert_app_public_key = #{cert_app_public_key,jdbcType=VARCHAR},
+    balanceRechargeNotifyUrl = #{balanceRechargeNotifyUrl,jdbcType=VARCHAR}
+    WHERE paymentMode = #{paymentMode,jdbcType=VARCHAR}
+    </update>
+    <update id="updateWXPayConfig">
+    update hou_pay_config
+    set appID = #{appID},
+    appSecret= #{appSecret},
+    appMCHId= #{appMCHId},
+    appAPIKey= #{appAPIKey},
+    notifyUrl= #{notifyUrl},
+    redirectUrl = #{redirectUrl},
+    weChatPcPath= #{weChatPcPath},
+    plusNotifyUrl= #{plusNotifyUrl},
+    balanceRechargeNotifyUrl = #{balanceRechargeNotifyUrl,jdbcType=VARCHAR}
+    where paymentMode = '00'
+    </update>
+    <update id="updateWXPayConfig2">
+        update hou_pay_config set appID = #{miniAppId},appSecret= #{miniAppSecret}   where paymentMode = '02'
+    </update>
+    <update id="updateWXPayConfig3">
+        update hou_pay_config set appID = #{GzAppId},appSecret= #{GzAppSecret}   where paymentMode = '04'
+    </update>
+    <select id="selectPayConfig" resultType="java.util.Map">
+        select *
+        from hou_pay_config
+        where paymentMode = #{paymentMode,jdbcType=VARCHAR}
+    </select>
+    <select id="selectYfPayConfigShop" resultType="java.util.Map">
+        Select appID as Applet_APP_ID,appSecret as Applet_APP_SECRET,appMCHId as MCH_ID,
+        appAPIKey as API_KEY,notifyUrl as NOTIFY_URL,weChatWapPath
+        from hou_pay_config_shop
+        where shopId =#{shopId}
+    </select>
+    <select id="getPayConfigID" resultType="java.lang.Integer">
+        select LAST_INSERT_ID()
+    </select>
+
+    <select id="queryWithdrawConfig" resultType="java.math.BigDecimal">
+        select price from hou_pay_withdraw_config
+    </select>
+
+    <select id="selectPayConfigEntity" resultType="com.houjiang.payment.entity.PayConfigEntity">
+        select *
+        from hou_pay_config
+        where paymentMode = #{paymentMode,jdbcType=VARCHAR}
+    </select>
+    <select id="selectYfPayConfig" resultType="java.util.Map">
+    select * from hou_pay_config where paymentMode =#{paymentMode,jdbcType=VARCHAR} and paymentStatus=1
+    </select>
+
+    <delete id="deletePdbFxAccount">
+        delete from hou_pay_fx_account where user_id = #{userId}
+    </delete>
+    <delete id="deletePdbFxRecord">
+        delete from hou_pay_fx_record where user_id = #{userId}
+    </delete>
+    <delete id="deletePdbFxTrade">
+        delete from hou_pay_fx_trade where user_id = #{userId}
+    </delete>
+</mapper>
+

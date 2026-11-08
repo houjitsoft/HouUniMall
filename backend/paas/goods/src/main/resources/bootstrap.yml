@@ -1,0 +1,30 @@
+# =====================================================================
+# 【为什么必须有这个文件】pom 里带着 spring-cloud-starter-bootstrap 时，
+# Spring Cloud 会在主上下文之前先起一个 legacy bootstrap 子上下文，而该子上下文
+# **只加载 bootstrap.yml，不加载 application.yml**。缺本文件时 Nacos 客户端拿不到
+# server-addr，回落到内置默认 127.0.0.1:8848，容器内表现为
+#   Connection refused (connect failed): /127.0.0.1:9848
+# 重试 14 次后所有远端配置都拉不到，服务启动即崩（goods/base/order/payment/
+# permission/userms/auth/bff-web 实测一致，日志里 `[fixed-127.0.0.1_8848]`）。
+#
+# 本文件只放 Nacos 坐标；具体 dataId 清单仍由 application.yml 的
+# spring.config.import 维护，避免同一份清单两处维护。
+# =====================================================================
+spring:
+  application:
+    name: goods
+  cloud:
+    config:
+      enabled: false
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:houeoc}
+        username: ${NACOS_USER:nacos}
+        password: ${NACOS_PASSWORD:}
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:houeoc}
+        username: ${NACOS_USER:nacos}
+        password: ${NACOS_PASSWORD:}
+        file-extension: yaml

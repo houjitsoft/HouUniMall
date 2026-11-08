@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.JobOrderNotCompletedMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.JobOrderNotCompletedEntity">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="buyerUserId" column="buyer_user_id" jdbcType="INTEGER"/>
+        <result property="orderCreateTime" column="order_create_time" jdbcType="TIMESTAMP"/>
+        <result property="orderPaymentTime" column="order_payment_time" jdbcType="TIMESTAMP"/>
+        <result property="importTime" column="import_time" jdbcType="TIMESTAMP"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,order_id,buyer_user_id,
+        order_create_time,order_payment_time,import_time,
+        goods_id
+    </sql>
+    <select id="queryNotCompletedparam" resultType="java.util.Map">
+        SELECT order_id,
+               buyer_user_id,
+               order_create_time,
+               payment_time
+        FROM ${database.prefix.order}hou_order_base
+        WHERE DATE_FORMAT(payment_time, '%Y-%m') = #{finishTime}
+          and order_status in (2, 3, 4, 5, 6)
+    </select>
+</mapper>

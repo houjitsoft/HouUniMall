@@ -1,0 +1,1400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserInfoEntity">
+        <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="userMobile" column="user_mobile" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="CHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="userState" column="user_state" jdbcType="BOOLEAN"/>
+        <result property="userIntegral" column="user_integral" jdbcType="INTEGER"/>
+        <result property="userLastloginTime" column="user_lastlogin_time" jdbcType="TIMESTAMP"/>
+        <result property="userLastloginIp" column="user_lastlogin_ip" jdbcType="VARCHAR"/>
+        <result property="userCountLogin" column="user_count_login" jdbcType="INTEGER"/>
+        <result property="userIsNew" column="user_is_new" jdbcType="INTEGER"/>
+        <result property="userNickname" column="user_nickname" jdbcType="VARCHAR"/>
+        <result property="createUser" column="create_user" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+        <result property="communityBackground" column="community_background" jdbcType="VARCHAR"/>
+        <result property="userSignature" column="user_signature" jdbcType="VARCHAR"/>
+        <result property="isBusiness" column="is_business" jdbcType="INTEGER"/>
+        <result property="followerNum" column="follower_num" jdbcType="INTEGER"/>
+        <result property="followNum" column="follow_num" jdbcType="INTEGER"/>
+        <result property="gradeId" column="grade_id" jdbcType="INTEGER"/>
+        <result property="memberCreateTime" column="member_create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id
+        ,user_mobile,password,
+        user_name,user_state,user_integral,user_lastlogin_time,user_lastlogin_ip,
+        user_count_login,user_is_new,user_nickname,create_user,
+        create_time,update_user,update_time,
+        is_delete,ts,community_background,user_signature,
+        is_business,follower_num,follow_num,
+        grade_id,member_create_time
+    </sql>
+    <insert id="addPointsLog">
+        insert into ${database.prefix.userms}hou_user_points_log(points_log_type, class_id, user_id, points_log_desc, points_log_operate,
+                                    points_log_flag, points_log_time, points_log_points, order_id)
+        values (#{param.pointsLogType}, #{param.classId}, #{param.userId}, #{param.pointsLogDesc},
+                #{param.pointsLogOperate},
+                #{param.pointsLogFlag}, #{param.pointsLogTime}, #{param.pointsLogPoints}, #{param.orderId})
+    </insert>
+    <insert id="registerGateStore">
+        insert into ${database.prefix.business}hou_shop_gate
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.shopId != null">
+                shop_id,
+            </if>
+            <if test="param.loginName != null">
+                login_name,
+            </if>
+            <if test="param.gatestoreName != null">
+                shop_gate_name,
+            </if>
+            <if test="param.province != null">
+                province,
+            </if>
+            <if test="param.city != null">
+                city,
+            </if>
+            <if test="param.county != null">
+                county,
+            </if>
+            <if test="param.detailAddress != null">
+                detail_address,
+            </if>
+            <if test="param.longitude != null">
+                longitude,
+            </if>
+            <if test="param.latitude != null">
+                latitude,
+            </if>
+            <if test="param.gatePhone != null">
+                gate_phone,
+            </if>
+            <if test="param.businessTime != null">
+                business_time,
+            </if>
+            <if test="param.trafficRoute != null">
+                traffic_route,
+            </if>
+            <if test="param.gatePic != null">
+                gate_pic,
+            </if>
+            <if test="param.state != null">
+                state,
+            </if>
+            <if test="param.limits != null">
+                limits,
+            </if>
+            <if test="param.shopType != null">
+                shop_type,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shopId != null">
+                #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.loginName != null">
+                #{param.loginName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.gatestoreName != null">
+                #{param.gatestoreName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.province != null">
+                #{param.province,jdbcType=VARCHAR},
+            </if>
+            <if test="param.city != null">
+                #{param.city,jdbcType=VARCHAR},
+            </if>
+            <if test="param.county != null">
+                #{param.county,jdbcType=VARCHAR},
+            </if>
+            <if test="param.detailAddress != null">
+                #{param.detailAddress,jdbcType=VARCHAR},
+            </if>
+            <if test="param.longitude != null">
+                #{param.longitude,jdbcType=VARCHAR},
+            </if>
+            <if test="param.latitude != null">
+                #{param.latitude,jdbcType=VARCHAR},
+            </if>
+            <if test="param.gatePhone != null">
+                #{param.gatePhone,jdbcType=VARCHAR},
+            </if>
+            <if test="param.businessTime != null">
+                #{param.businessTime,jdbcType=VARCHAR},
+            </if>
+            <if test="param.trafficRoute != null">
+                #{param.trafficRoute,jdbcType=VARCHAR},
+            </if>
+            <if test="param.gatePic != null">
+                #{param.gatePic,jdbcType=VARCHAR},
+            </if>
+            <if test="param.state != null">
+                #{param.state,jdbcType=INTEGER},
+            </if>
+            <if test="param.limits != null">
+                #{param.limits,jdbcType=VARCHAR},
+            </if>
+            <if test="param.shopType != null">
+                #{param.shopType},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateUserIsNew">
+        update ${database.prefix.userms}hou_user_info
+        set user_is_new = 0
+        where user_id = #{userId}
+    </update>
+    <update id="updateUserBindShop">
+        update ${database.prefix.userms}hou_user_info_detail
+        set user_bind_shop_id  = #{shopId},
+            user_bind_store_id = #{storeId}
+        where user_id = #{userId}
+    </update>
+    <update id="businessUpdate">
+        update ${database.prefix.userms}hou_user_info
+        set is_business = 1,
+            user_state  = 0
+        where user_id = #{userId}
+    </update>
+    <update id="updateBusinessUserStatus">
+        update ${database.prefix.userms}hou_user_business_info
+        set is_approved   = #{isApproved},
+            audit_comment = #{auditComment,jdbcType=VARCHAR}
+        where user_id = #{userId}
+    </update>
+    <update id="updateUserInfoStatus">
+        update ${database.prefix.userms}hou_user_info
+        set user_state = #{userState}
+        where user_id = #{userId}
+    </update>
+    <update id="updateArticleUserInfo">
+        update ${database.prefix.userms}hou_user_info
+        <set>
+            <if test="param.communityBackground != null">
+                community_background=#{param.communityBackground,jdbcType=VARCHAR},
+            </if>
+            <if test="param.userSignature != null">
+                user_signature=#{param.userSignature,jdbcType=VARCHAR},
+            </if>
+            update_time=NOW(),
+        </set>
+        where user_id = #{param.userId,jdbcType=INTEGER}
+    </update>
+    <update id="updateuserPa">
+        UPDATE ${database.prefix.payment}hou_pay_user_base
+        SET user_pay_passwd = #{userPayPasswd}
+        where user_id = #{userId}
+    </update>
+    <update id="updateuserInfoPort">
+        UPDATE ${database.prefix.userms}hou_user_info
+        SET user_name             = #{userName},
+            user_mobile=#{userMobile}
+        where user_id = #{userId}
+    </update>
+    <update id="updateTag">
+        UPDATE ${database.prefix.base}hou_base_tag_class
+        SET tag_id =#{tagId}
+        WHERE member_id = #{memberId}
+    </update>
+    <update id="updatePersonalBase">
+        UPDATE user_admin_base
+        SET user_realname  = #{userRealname},
+            user_nickname=#{userNickname},
+            user_mobile=#{userMobile},
+            user_gender=#{userGender},
+            head_portrait=#{headPortrait},
+            user_position=#{userPosition},
+            user_department=#{userDepartment}
+        where user_id = #{userId}
+    </update>
+    <update id="updateUserNickName">
+        update ${database.prefix.userms}hou_user_info
+        set user_name     =#{param.nickname},
+            user_nickname = #{param.nickname}
+        where user_id = #{param.userId}
+    </update>
+    <update id="updateUserIsShop">
+        update ${database.prefix.userms}hou_user_info
+        set is_shop = #{isShop}
+        where user_id = #{userId}
+    </update>
+    <update id="updateLoginTimeCount">
+        UPDATE ${database.prefix.userms}hou_user_info
+        SET user_lastlogin_time = NOW(),
+            user_count_login    = user_count_login + 1
+        WHERE user_id = #{userId}
+    </update>
+    <update id="updateUserStart">
+        update ${database.prefix.userms}hou_user_info
+        set user_state = 2
+        where user_id = #{userId}
+    </update>
+    <delete id="deleteUserInfo">
+        delete
+        from ${database.prefix.userms}hou_user_info
+        where user_id = #{userId}
+    </delete>
+    <delete id="deleteUserDetailInfo">
+        delete
+        from ${database.prefix.userms}hou_user_info_detail
+        where user_id = #{userId}
+    </delete>
+    <delete id="deleteUserBindConnect">
+        delete
+        from ${database.prefix.userms}hou_user_bind_connect
+        where user_id = #{userId}
+    </delete>
+    <delete id="deleteUserSellerBase">
+        delete
+        from ${database.prefix.userms}hou_user_seller_base
+        where user_id = #{userId}
+    </delete>
+    <delete id="deleteShopVkUser">
+        delete
+        from ${database.prefix.userms}hou_user_vk
+        where user_id = #{userId}
+    </delete>
+    <delete id="deleteBusinessInfo">
+        delete
+        from ${database.prefix.userms}hou_user_business_info
+        where user_id = #{userId}
+    </delete>
+    <select id="getUserInfoByPhoneNumber" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        SELECT 
+               uuuid.user_parent_id,
+               uuubc.bind_openid,
+               uui.user_nickname,
+               uui.user_id,
+               uui.user_name,
+               uui.password,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_is_new,
+               uui.is_business,
+               uui.user_mobile,
+               uuuid.user_avatar,
+               uuuid.user_gender,
+               uuuid.user_mobile_verify,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_type,
+               uusg.limits,
+               uusb.seller_is_admin,
+               uui.is_delete
+        FROM ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+        WHERE uui.user_mobile = #{userMobile}
+          and uui.user_state BETWEEN 0 and 2
+        ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="querUserInfoByParams" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        SELECT
+        uuuid.user_parent_id,
+        uuubc.bind_openid,
+        uui.user_nickname,
+        uui.user_id,
+        uui.user_name,
+        uui.PASSWORD,
+        uui.user_state,
+        uui.user_lastlogin_time,
+        uui.user_lastlogin_ip,
+        uui.user_is_new,
+        uui.is_business,
+        uui.user_mobile,
+        uuuid.user_avatar,
+        uuuid.user_gender,
+        uuuid.user_mobile_verify,
+        uusb.seller_id,
+        uusb.seller_name,
+        uusb.seller_is_admin,
+        uusg.limits,
+        uusb.shop_type,
+        uui.is_delete,
+        uui.international_dialing_code
+        FROM
+        ${database.prefix.userms}hou_user_info uui
+        LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+        <where>
+            <if test="param.userMobile != null or param.userName != null">
+                <trim prefix="and (" suffix=")" suffixOverrides="OR">
+                    <if test="param.userMobile != null">
+                        uui.user_mobile = #{param.userMobile} OR
+                    </if>
+                    <if test="param.userName != null">
+                        uui.user_name = #{param.userName} OR
+                    </if>
+                </trim>
+            </if>
+            and uui.user_state BETWEEN 0 and 2
+        </where>
+        ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="queryMemberMessageListIntegral" resultType="java.lang.Integer">
+        select user_integral
+        from ${database.prefix.userms}hou_user_info
+        where user_id = #{userId}
+    </select>
+    <select id="getUserInfoDetail" resultType="com.houjiang.userms.vo.UserInfoDetailVO">
+        select 
+               uuuid.user_parent_id,
+               uui.user_is_new,
+               uuuid.user_mobile_verify,
+               uuubc.bind_openid,
+               uui.user_nickname,
+               uui.user_id,
+               uui.user_name,
+               uui.password,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_mobile,
+               uuuid.user_avatar,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_id,
+               uusb.shop_type,
+               uusb.seller_is_admin,
+               uusg.limits,
+               uuuid.user_gender,
+               uuuid.user_truename,
+               if(uusb.shop_id is NULL, uuuid.user_bind_shop_id, uusb.shop_id) as userBindShopId,
+               uuuid.user_bind_store_id,
+               sg.shop_gate_name                                               as userBindStoreName
+        from ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.business}hou_shop_gate sg on uuuid.user_bind_store_id = sg.shop_gate_id
+        where uui.user_id = #{userId}
+        ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="queryPersonalDiscount" resultType="java.util.Map">
+        select tag_id          as tagId,
+               member_class_id as memberClassId,
+               grade_name      as gradeName,
+               grade_rule      as gradeRule,
+               grade_discount  as gradeDiscount
+        from ${database.prefix.base}hou_base_tag_class tc
+                 left join ${database.prefix.base}hou_base_membership_grade mg on tc.member_class_id = mg.id
+        where tc.member_id = #{userId}
+    </select>
+    <select id="checkPhoneNumber" resultType="java.lang.String">
+        select user_id from ${database.prefix.userms}hou_user_info 
+        where user_state BETWEEN 0 and 2
+        and user_mobile = #{param.userMobile}
+        limit 1
+    </select>
+    <select id="queryVkUserInfo" resultType="com.houjiang.commons.vo.fx.VKUserInfoVO">
+        SELECT vk.user_id,
+               vk.user_name,
+               vk.mobile,
+               vk.id
+        FROM ${database.prefix.userms}hou_user_vk vk
+        WHERE vk.user_id = #{userId}
+        LIMIT 1
+    </select>
+    <select id="queryUserId" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        SELECT uuui.user_id,
+               uuui.user_mobile,
+               uuui.user_name,
+               uuuid.user_avatar
+        FROM ${database.prefix.userms}hou_user_info uuui
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuui.user_id = uuuid.user_id
+        WHERE user_mobile = #{userMobile}
+          and user_state BETWEEN 0 and 2
+    </select>
+    <select id="getUserInfoByUserId2" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        select 
+               uuuid.user_parent_id,
+               uui.user_is_new,
+               uuuid.user_mobile_verify,
+               uuubc.bind_openid,
+               uui.user_nickname,
+               uui.user_id,
+               uui.user_name,
+               uui.password,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_mobile,
+               uuuid.user_avatar,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_id,
+               uusb.shop_type,
+               uusb.seller_is_admin,
+               uusg.limits,
+               uui.is_business,
+               uui.is_delete
+        from ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+        where uui.user_id = #{userId}
+        ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="getUserInfoByUserId" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        SELECT uui.user_id,
+               uui.user_name,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_is_new,
+               uui.user_mobile,
+               uuuid.user_avatar,
+               uui.user_nickname,
+               uuuid.user_gender,
+               uuuid.user_mobile_verify,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_id,
+               uusb.seller_is_admin,
+               uusg.limits
+        FROM ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+        WHERE uui.user_id = #{userId}
+          and uui.user_state != 3 limit 1
+    </select>
+    <select id="queryPayeeAccountUserId" resultType="java.lang.String">
+        select user_id
+        from ${database.prefix.userms}hou_user_info
+        where user_mobile = #{userMobile}
+          and user_state BETWEEN 0 and 2
+    </select>
+    <select id="getUcenterSettingByUserId" resultType="com.houjiang.userms.vo.UserSettingVO">
+        SELECT uuui.user_lastlogin_ip,
+               uuui.user_name,
+               uuui.user_mobile,
+               uuuid.user_idcard,
+               uuuid.user_truename,
+               uuuid.user_identity_type,
+               uuuid.user_identity_font_logo,
+               uuuid.user_identity_start_time,
+               uuuid.user_identity_end_time,
+               uuuid.user_identity_face_logo,
+               uuuid.validate_long_term,
+               uuui.international_dialing_code
+        FROM ${database.prefix.userms}hou_user_info uuui
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuui.user_id = uuuid.user_id
+        WHERE uuui.user_id = #{userId}
+    </select>
+    <select id="listCustomerByShopId" resultType="com.houjiang.userms.vo.MyCustomerVO">
+        SELECT DISTINCT
+        uuuid.user_id,
+        user_mobile,
+        user_reg_time,
+        uuuid.user_avatar,
+        uubc.bind_nickname AS user_name
+        FROM
+        ${database.prefix.userms}hou_user_info uuui
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuui.user_id = uuuid.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uubc ON uubc.user_id = uuui.user_id
+        WHERE
+
+        <if test="null != param.userStartRegTime and !''.equals(param.userStartRegTime)">
+            and user_reg_time &gt;= #{param.userStartRegTime}
+        </if>
+        <if test="null != param.userEndRegTime and !''.equals(param.userEndRegTime)">
+            and user_reg_time &lt;= #{param.userEndRegTime}
+        </if>
+        <if test="null != param.userName and !''.equals(param.userName)">
+            and uubc.bind_nickname like concat('%', #{param.userName} ,'%')
+        </if>
+        <if test="null != param.userParentId  and !''.equals(param.userParentId)">
+            and user_parent_id = #{param.userParentId}
+        </if>
+    </select>
+    <select id="getUserInfo" resultType="com.houjiang.userms.vo.UserInfoForUpdateVO">
+        SELECT uuui.user_nickname,
+               uuuid.user_gender,
+               uuui.user_mobile,
+               uuuid.user_truename,
+               uuuid.user_birth,
+               uuui.user_lastlogin_time,
+               uuuid.user_avatar,
+               uuui.international_dialing_code
+        FROM ${database.prefix.userms}hou_user_info uuui
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuui.user_id = uuuid.user_id
+        WHERE uuui.user_id = #{userId}
+    </select>
+    <select id="queryShopJoinBase" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.business}hou_supplier_shop_join_base
+        where user_id = #{userId}
+    </select>
+    <select id="queryGatePhoneNumCount" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.business}hou_shop_gate
+        where login_name = #{phone}
+    </select>
+    <select id="queryShopUserInfo" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        select 
+               uuuid.user_parent_id,
+               uui.user_is_new,
+               uuuid.user_mobile_verify,
+               uuubc.bind_openid,
+               uui.user_nickname,
+               uui.user_id,
+               uui.user_name,
+               uui.password,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_mobile,
+               uuuid.user_avatar,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_id,
+               uusb.shop_type,
+               uusb.seller_is_admin,
+               uusg.limits
+        from ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+        where uusb.shop_id = #{shopId}
+          and uusb.seller_is_admin = 1
+        ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="queryAuditList" resultType="com.houjiang.userms.vo.BusinessUserListVO">
+        select uui.user_id
+        , uui.user_name
+        , uui.create_time
+        , uubi.company_name
+        , uubi.tax_id
+        , uubi.business_license
+        from ${database.prefix.userms}hou_user_info uui
+        left join ${database.prefix.userms}hou_user_info_detail uuid on uui.user_id = uuid.user_id
+        left join ${database.prefix.userms}hou_user_business_info uubi on uui.user_id = uubi.user_id
+        where uui.is_business = 1 and uui.user_state =0 and uubi.is_approved = 0
+        <if test="param.userName!= null and param.userName!= ''">
+            and uui.user_name = #{param.userName}
+        </if>
+        <if test="param.companyName!= null and param.companyName!= ''">
+            and uubi.company_name like concat('%' ,#{param.companyName} ,'%')
+        </if>
+        order by uui.create_time desc
+    </select>
+    <select id="queryAllUserCount" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM ${database.prefix.userms}hou_user_info where shop_id is null
+    </select>
+    <select id="queryTodayUserCount" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.userms}hou_user_info_detail uui
+        left join ${database.prefix.userms}hou_user_info ui on uui.user_id = ui.user_id
+        where uui.user_reg_time >= UNIX_TIMESTAMP(CONCAT(DATE_FORMAT(NOW(), '%Y%m%d'), ''))
+          and DATE_FORMAT(FROM_UNIXTIME(uui.user_reg_time), '%Y年%m月%d') is not null and  ui.shop_id is null
+    </select>
+    <select id="queryWeekUserCount" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.userms}hou_user_info_detail uui
+        left join ${database.prefix.userms}hou_user_info ui on uui.user_id = ui.user_id
+        where YEARWEEK(date_format(FROM_UNIXTIME(uui.user_reg_time), '%Y-%m-%d')) = YEARWEEK(now())
+          and uui.user_reg_time >= (UNIX_TIMESTAMP(NOW()) - 604800) and  ui.shop_id is null
+    </select>
+    <select id="queryMonthUserCount" resultType="java.lang.Integer">
+        select DATE_FORMAT(FROM_UNIXTIME(uui.user_reg_time), '%Y年%m月'), count(1)
+        from ${database.prefix.userms}hou_user_info_detail uui
+        left join ${database.prefix.userms}hou_user_info ui on uui.user_id = ui.user_id
+        where uui.user_reg_time >= UNIX_TIMESTAMP(CONCAT(DATE_FORMAT(NOW(), '%Y%m'), '-01 00:00:00'))
+          and DATE_FORMAT(FROM_UNIXTIME(uui.user_reg_time), '%Y年%m月') is not null and  ui.shop_id is null
+    </select>
+    <select id="queryYearUserCount" resultType="java.lang.Integer">
+        select DATE_FORMAT(FROM_UNIXTIME(uui.user_reg_time), '%Y年'), count(1)
+        from ${database.prefix.userms}hou_user_info_detail uui
+        left join ${database.prefix.userms}hou_user_info ui on uui.user_id = ui.user_id
+        where uui.user_reg_time >= UNIX_TIMESTAMP(CONCAT(DATE_FORMAT(NOW(), '%Y'), '-01-01 00:00:00'))
+          and DATE_FORMAT(FROM_UNIXTIME(uui.user_reg_time), '%Y年') is not null and  ui.shop_id is null
+    </select>
+    <select id="queryUserTurePort" resultType="com.houjiang.userms.vo.MemberMessageListVO">
+        SELECT
+        ta.user_id,
+        ta.user_name,
+        ta.user_mobile
+        FROM
+        ${database.prefix.userms}hou_user_info ta
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail b ON ta.user_id = b.user_id
+        WHERE
+        1 = 1
+        <if test="null != param.userName and !''.equals(param.userName)">
+            and ta.user_name like concat('%' ,#{param.userName} ,'%')
+        </if>
+        <if test="null != param.userMobile and !''.equals(param.userMobile)">
+            and ta.user_mobile like concat('%' ,#{param.userMobile} ,'%')
+        </if>
+    </select>
+    <select id="queryShareUserListPort" resultType="com.houjiang.userms.vo.MemberMessageListVO">
+        SELECT
+        ta.user_id,
+        ta.user_name,
+        ta.user_mobile,
+        b.user_gender,
+        b.user_truename,
+        b.user_birth,
+        b.user_reg_time,
+        ta.user_lastlogin_time
+        FROM
+        ${database.prefix.userms}hou_user_info ta
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail b ON ta.user_id = b.user_id
+        <where>
+            <if test="null != param.finishTime and !''.equals(param.finishTime)">
+                and b.user_reg_time &lt;= #{param.finishTime}
+            </if>
+            <if test="null != param.startTime and !''.equals(param.startTime)">
+                and b.user_reg_time &gt;= #{param.StartTime}
+            </if>
+            <if test="null != param.shareUserId and !''.equals(param.shareUserId)">
+                and b.user_parent_id = #{param.shareUserId}
+            </if>
+        </where>
+        order by ta.user_id desc limit
+    </select>
+    <select id="getUserInfoByPhoneNum" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        select
+        uuuid.user_parent_id,uuubc.bind_openid,uui.user_nickname,uui.user_id,uui.user_name,
+        uui.password,uui.user_state,uui.user_lastlogin_time,uui.user_lastlogin_ip,uui.user_is_new,uui.is_business,
+        uui.user_mobile,uuuid.user_avatar,uuuid.user_gender,uuuid.user_mobile_verify,uusb.seller_id,uusb.seller_name,
+        uusb.shop_id,uusb.seller_is_admin,uusg.limits,uusb.shop_type
+        from ${database.prefix.userms}hou_user_info uui
+        LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+        where uui.user_state BETWEEN 0 and 2
+        <if test="param.userMobile != null">
+            and uui.user_mobile = #{param.userMobile}
+        </if>
+        ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="getUserInfoByUserIdNoState" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        SELECT 
+               uuuid.user_parent_id,
+               uuubc.bind_openid,
+               uui.user_nickname,
+               uui.user_id,
+               uui.user_name,
+               uui.password,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_is_new,
+               uui.is_business,
+               uui.user_mobile,
+               uuuid.user_avatar,
+               uuuid.user_gender,
+               uuuid.user_mobile_verify,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_id,
+               uusb.seller_is_admin,
+               uusg.limits,
+               uusb.shop_type,
+               uui.is_delete,
+               uui.create_user
+        FROM ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+        WHERE uui.user_id = #{userId}
+        ORDER BY uuubc.bind_openid DESC LIMIT 1
+    </select>
+    <select id="queryUserTrueListPort" resultType="com.houjiang.userms.vo.MemberMessageListVO">
+        SELECT
+        ta.user_id,
+        ta.user_name,
+        ta.user_mobile,
+        b.user_gender,
+        b.user_truename,
+        b.user_birth,
+        b.user_reg_time,
+        ta.user_lastlogin_time
+        FROM
+        ${database.prefix.userms}hou_user_info ta
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail b ON ta.user_id = b.user_id
+        where 1=1
+        <if test="null != param.userId and !''.equals(param.userId)">
+            and ta.user_id = #{param.userId}
+        </if>
+        <if test="null != param.userName and !''.equals(param.userName)">
+            and ta.user_name = #{param.userName}
+        </if>
+        <if test="null != param.finishTime  and !''.equals(param.finishTime)">
+            and b.user_reg_time &lt;= #{param.finishTime}
+        </if>
+        <if test="null != param.startTime and !''.equals(param.startTime)">
+            and b.user_reg_time >= #{param.startTime}
+        </if>
+        <if test="null != param.userMobile and !''.equals(param.userMobile)">
+            and ta.user_mobile like concat('%',#{param.userMobile},'%')
+        </if>
+        <if test="null != param.birthDate and !''.equals(param.birthDate)">
+            and b.user_birth = #{param.birthDate}
+        </if>
+        order by ta.user_lastlogin_time desc
+    </select>
+    <select id="queryMemberMessageDetailPort" resultType="com.houjiang.commons.vo.user.MemberMessageDetailVO">
+        SELECT a.PASSWORD,
+               a.user_id,
+               b.user_avatar,
+               a.user_name,
+               b.user_reg_time,
+               a.user_lastlogin_time,
+               a.user_lastlogin_ip,
+               c.user_pay_passwd,
+               b.user_gender,
+               a.user_mobile,
+               pi.thali_status,
+               a.is_business
+        FROM ${database.prefix.userms}hou_user_info a
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail b ON a.user_id = b.user_id
+                 LEFT JOIN ${database.prefix.payment}hou_pay_user_base c ON c.user_id = a.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_plus_info pi ON pi.user_id = a.user_id
+        WHERE a.user_id = #{userId}
+    </select>
+    <select id="getTagId" resultType="java.lang.String">
+        select tag_id
+        from ${database.prefix.base}hou_base_tag_class
+        where member_id = #{memberId}
+    </select>
+    <select id="getTagInfoByid" resultType="com.houjiang.commons.vo.user.TagInfoVO">
+        select tag_id, tag_name, tag_weight, tag_image, tag_describe
+        from ${database.prefix.userms}hou_user_tag_info
+        where tag_id = #{id}
+    </select>
+    <select id="queryMemberMessageListPortExp" resultType="com.houjiang.userms.vo.MemberMessageListVO">
+        SELECT
+        ta.user_id,
+        ta.user_name,
+        ta.user_mobile,
+        b.user_gender,
+        b.user_truename,
+        b.user_birth,
+        b.user_reg_time,
+        ta.user_lastlogin_time,
+        count( ba.order_id ) AS orderCount,
+        sum( ba.order_payment_amount ) AS sumAmount
+        FROM
+        ${database.prefix.userms}hou_user_info ta
+        LEFT JOIN ${database.prefix.base}hou_base_tag_class tc ON tc.member_id = ta.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail b ON ta.user_id = b.user_id
+        LEFT JOIN (SELECT * FROM ${database.prefix.order}hou_order_base WHERE order_status NOT IN ( 1, 7 )) ba ON ta.user_id =
+        ba.buyer_user_id
+        left join ${database.prefix.userms}hou_user_plus_info pi on ta.user_id = pi.user_id
+        left join (select user_id,sum(pay_price) as plusPrice from ${database.prefix.userms}hou_user_plus_order GROUP BY user_id) lishi on ta.user_id
+        = lishi.user_id
+        left join ${database.prefix.business}hou_shop_base sb on ta.user_id = sb.user_id
+        <where>
+            <if test="null != param.shopBusiness and 1 == param.shopBusiness">
+                and sb.shop_business in (0,1)
+            </if>
+            <if test="null != param.shopBusiness and 1 != param.shopBusiness">
+                and sb.shop_business = #{param.shopBusiness}
+            </if>
+            <if test="null != param.shopSelfSupport">
+                and sb.shop_self_support = #{param.shopSelfSupport}
+            </if>
+            <if test="null != param.userId and '' != param.userId">
+                and ta.user_id = #{param.userId}
+            </if>
+            <if test="param.thaliType == 1">
+                and pi.thali_type is not null
+            </if>
+            <if test="param.thaliType == 0">
+                and pi.thali_type is null
+            </if>
+            <if test="null != param.isBusiness and '' != param.isBusiness">
+                and ta.is_business = #{param.isBusiness}
+            </if>
+            <if test="null != param.userName and !''.equals(param.userName)">
+                and ta.user_name like concat('%',#{param.userName},'%')
+            </if>
+            <if test="null != param.finishTime and !''.equals(param.finishTime)">
+                and b.user_reg_time &lt;= #{param.finishTime}
+            </if>
+            <if test="null != param.startTime and !''.equals(param.startTime)">
+                and b.user_reg_time >= #{param.startTime}
+            </if>
+            <if test="null != param.userMobile and !''.equals(param.userMobile)">
+                and ta.user_mobile like concat('%',#{param.userMobile},'%')
+            </if>
+            <if test="null != param.birthDate and !''.equals(param.birthDate)">
+                and b.user_birth = #{param.birthDate}
+            </if>
+            <if test="null != param.memberClassId and !''.equals(param.memberClassId)">
+                and tc.member_class_id = #{param.memberClassId}
+            </if>
+        </where>
+        group by ta.user_id order by b.user_reg_time desc
+    </select>
+    <select id="queryMemberMessageListPort" resultType="com.houjiang.userms.vo.MemberMessageListVO">
+        SELECT
+        ta.user_id,
+        ta.user_name,
+        ta.user_mobile,
+        b.user_gender,
+        b.user_truename,
+        b.user_birth,
+        b.user_reg_time,
+        b.out_shop_id,
+        b.out_shop_name,
+        b.out_shop_type,
+        b.out_shop_code,
+        b.region_name,
+        b.office_name,
+        b.zone_name,
+        b.province,
+        b.city,
+        b.area,
+        b.relation_sale_name,
+        b.shop_detail_address,
+        ta.user_integral,
+        ta.is_business,
+        ta.user_lastlogin_time,
+        ta.currency_id,
+        ta.currency_name,
+        ta.balance,
+        ta.customer_type_name,
+        ta.user_state,
+        tc.tag_id,
+        tc.member_class_id,
+        count( ba.order_id ) AS orderCount,
+        sum( ba.order_payment_amount ) AS sumAmount,
+        pi.thali_type,
+        lishi.plusPrice as plusPrice,
+        usb.shop_type as shopBusiness,
+        sb.shop_self_support,
+        b.is_black,
+        b.place_order_status
+
+        FROM
+        ${database.prefix.userms}hou_user_info ta
+        LEFT JOIN ${database.prefix.base}hou_base_tag_class tc ON tc.member_id = ta.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail b ON ta.user_id = b.user_id
+        LEFT JOIN (SELECT * FROM ${database.prefix.order}hou_order_base WHERE order_status NOT IN ( 1, 7 )) ba
+            ON ta.user_id = ba.buyer_user_id
+        left join ${database.prefix.userms}hou_user_plus_info pi on ta.user_id = pi.user_id
+        left join (select user_id,sum(pay_price) as plusPrice from ${database.prefix.userms}hou_user_plus_order GROUP BY user_id) lishi
+            on ta.user_id = lishi.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_seller_base usb ON ta.user_id = usb.user_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON usb.shop_id = sb.supplier_shop_id
+        <where>
+            ta.shop_id is null
+            <if test="null != param.shopBusiness and '' != param.shopBusiness">
+                and usb.shop_type = #{param.shopBusiness}
+            </if>
+            <if test="null != param.shopSelfSupport">
+                and sb.shop_self_support = #{param.shopSelfSupport}
+            </if>
+            <if test="null != param.userId and '' != param.userId">
+                and ta.user_id = #{param.userId}
+            </if>
+            <if test="param.thaliType == 1">
+                and pi.thali_type is not null
+            </if>
+            <if test="param.thaliType == 0">
+                and pi.thali_type is null
+            </if>
+            <if test="null != param.isBusiness and '' != param.isBusiness">
+                and ta.is_business = #{param.isBusiness}
+            </if>
+            <if test="null != param.userName and !''.equals(param.userName)">
+                and ta.user_name like concat('%',#{param.userName},'%')
+            </if>
+            <if test="null != param.finishTime and !''.equals(param.finishTime)">
+                and b.user_reg_time &lt;= #{param.finishTime}
+            </if>
+            <if test="null != param.startTime and !''.equals(param.startTime)">
+                and b.user_reg_time >= #{param.startTime}
+            </if>
+            <if test="null != param.userMobile and !''.equals(param.userMobile)">
+                and ta.user_mobile like concat('%',#{param.userMobile},'%')
+            </if>
+            <if test="null != param.birthDate and !''.equals(param.birthDate)">
+                and b.user_birth = #{param.birthDate}
+            </if>
+            <if test="null != param.memberClassId and !''.equals(param.memberClassId)">
+                and tc.member_class_id = #{param.memberClassId}
+            </if>
+
+            <if test="null != param.outShopName and !''.equals(param.outShopName)">
+                and b.out_shop_name like concat('%',#{param.outShopName},'%')
+            </if>
+
+            <if test="null != param.customerTypeName and !''.equals(param.customerTypeName)">
+                and ta.customer_type_name = #{param.customerTypeName}
+            </if>
+
+            <if test="null != param.userState and !''.equals(param.userState)">
+                and ta.user_state = #{param.userState}
+            </if>
+
+            <if test="null != param.isBlack and !''.equals(param.isBlack)">
+                and b.is_black = #{param.isBlack}
+            </if>
+        </where>
+        group by ta.user_id order by b.user_reg_time desc
+    </select>
+    <select id="queryMemberMessageListPort1" resultType="com.houjiang.userms.vo.MemberMessageListVO">
+        SELECT
+        ta.user_id,
+        ta.user_name,
+        ta.user_mobile,
+        b.user_gender,
+        b.user_truename,
+        b.user_birth,
+        b.user_reg_time,
+        b.out_shop_id,
+        b.out_shop_name,
+        b.out_shop_type,
+        b.out_shop_code,
+        b.region_name,
+        b.office_name,
+        b.zone_name,
+        b.province,
+        b.city,
+        b.area,
+        b.relation_sale_name,
+        b.shop_detail_address,
+        b.biz_shop_code,
+        b.is_black,
+        b.place_order_status,
+        ta.user_integral,
+        ta.is_business,
+        ta.user_lastlogin_time,
+        tc.tag_id,
+        tc.member_class_id,
+        ta.currency_id,
+        ta.currency_name,
+        ta.balance,
+        ta.customer_type_name,
+        ta.user_state,
+        count( ba.order_id ) AS orderCount,
+        sum( ba.order_payment_amount ) AS sumAmount
+        FROM
+        ${database.prefix.userms}hou_user_info ta
+        LEFT JOIN ${database.prefix.base}hou_base_tag_class tc ON tc.member_id = ta.user_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail b ON ta.user_id = b.user_id
+        LEFT JOIN (SELECT * FROM ${database.prefix.order}hou_order_base WHERE order_status NOT IN ( 1, 7 )) ba ON ta.user_id =
+        ba.buyer_user_id
+        where ta.user_id not in (select user_id from ${database.prefix.userms}hou_user_business_info where is_approved!=1) and ta.shop_id =
+        #{param.shopId}
+        <if test="null != param.userId and '' != param.userId">
+            and ta.user_id = #{param.userId}
+        </if>
+        <if test="null != param.isBusiness and '' != param.isBusiness">
+            and ta.is_business = #{param.isBusiness}
+        </if>
+        <if test="null != param.userName and !''.equals(param.userName)">
+            and ta.user_name like concat('%',#{param.userName},'%')
+        </if>
+        <if test="null != param.finishTime and !''.equals(param.finishTime)">
+            and b.user_reg_time &lt;= #{param.finishTime}
+        </if>
+        <if test="null != param.startTime and !''.equals(param.startTime)">
+            and b.user_reg_time >= #{param.startTime}
+        </if>
+        <if test="null != param.userMobile and !''.equals(param.userMobile)">
+            and ta.user_mobile like concat('%',#{param.userMobile},'%')
+        </if>
+        <if test="null != param.birthDate and !''.equals(param.birthDate)">
+            and b.user_birth = #{param.birthDate}
+        </if>
+        <if test="null != param.memberClassId and !''.equals(param.memberClassId)">
+            and tc.member_class_id = #{param.memberClassId}
+        </if>
+
+        <if test="null != param.outShopName and !''.equals(param.outShopName)">
+            and b.out_shop_name like concat('%',#{param.outShopName},'%')
+        </if>
+
+        <if test="null != param.customerTypeName and !''.equals(param.customerTypeName)">
+            and ta.customer_type_name = #{param.customerTypeName}
+        </if>
+
+        <if test="null != param.userState and !''.equals(param.userState)">
+            and ta.user_state = #{param.userState}
+        </if>
+
+        <if test="null != param.isBlack and !''.equals(param.isBlack)">
+            and b.is_black = #{param.isBlack}
+        </if>
+        group by ta.user_id order by ta.user_id desc
+    </select>
+    <select id="queryMembershipGradeById" resultType="com.houjiang.commons.vo.user.MembershipGradeVO">
+        select id, grade_name, grade_rule, grade_discount
+        from ${database.prefix.base}hou_base_membership_grade
+        where grade_start = 1
+          and id = #{param.id}
+        order by grade_rule asc
+    </select>
+    <select id="queryGatePhoneNumCount1" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.business}hou_shop_gate
+        where login_name = #{phone}
+          and shop_type = 3
+          and shop_id = #{shopId}
+    </select>
+    <select id="queryGatePhoneNumCount2" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.business}hou_shop_gate
+        where login_name = #{phone}
+          and shop_type != 3
+    </select>
+    <select id="querymember" resultType="com.houjiang.userms.vo.BrandMemberVO">
+        SELECT
+        sum( oob.order_payment_amount ) AS totalAmount,
+        uui.user_id,
+        max( oob.order_create_time ) AS userLastShopTime,
+        uui.user_lastlogin_time,
+        uui.create_time AS memberCreateTime,
+        uui.is_delete,
+        uui.user_mobile,
+        uui.user_name,
+        uui.is_business
+        FROM
+        ${database.prefix.userms}hou_user_info uui
+        LEFT JOIN ${database.prefix.order}hou_order_base oob ON uui.user_id = oob.buyer_user_id
+        AND oob.order_status != 1
+        where uui.shop_id = #{param.shopId}
+        <if test="param.userMobile != null and param.userMobile != ''">
+            and uui.user_mobile = #{param.userMobile}
+        </if>
+        <if test="param.userName != null and param.userName != ''">
+            and uui.user_name = #{param.userName}
+        </if>
+        <if test="param.isBusiness != null and param.isBusiness != ''">
+            and uui.is_business = #{param.isBusiness}
+        </if>
+        <if test="param.shopStart != null and param.shopEnd != null and param.shopStart != '' and param.shopEnd != ''">
+            and oob.order_create_time between #{param.shopStart} and #{param.shopEnd}
+        </if>
+        GROUP BY uui.user_id
+    </select>
+    <select id="querymember1" resultType="com.houjiang.userms.vo.MemberMessageListVO">
+        SELECT
+        sum( oob.order_payment_amount ) AS sumAmount,
+        uui.user_id,
+        max( oob.order_create_time ) AS userLastShopTime,
+        uui.user_lastlogin_time,
+        uui.create_time AS userRegTime,
+        uui.is_delete,
+        uui.user_mobile,
+        uui.user_name,
+        uui.is_business
+        FROM
+        ${database.prefix.userms}hou_user_info uui
+        LEFT JOIN ${database.prefix.order}hou_order_base oob ON uui.user_id = oob.buyer_user_id
+        WHERE
+        uui.shop_id = #{param.shopId} and oob.order_status != 1
+        <if test="param.userMobile != null and param.userMobile != ''">
+            and uui.user_mobile = #{param.userMobile}
+        </if>
+        <if test="param.userName != null and param.userName != ''">
+            and uui.user_name = #{param.userName}
+        </if>
+        <if test="param.isBusiness != null and param.isBusiness != ''">
+            and uui.is_business = #{param.isBusiness}
+        </if>
+        <if test="param.shopStart != null and param.shopEnd != null and param.shopStart != '' and param.shopEnd != ''">
+            and oob.order_create_time between #{param.shopStart} and #{param.shopEnd}
+        </if>
+        GROUP BY uui.user_id
+    </select>
+    <select id="checkphone" resultType="java.util.Map">
+        select user_state, user_id
+        from ${database.prefix.userms}hou_user_info
+        where user_mobile = #{userMobile}
+          and shop_id is null
+    </select>
+    <select id="checkbusinessphone" resultType="java.lang.Integer">
+        select is_approved
+        from ${database.prefix.userms}hou_user_business_info
+        where user_id = #{userId}
+    </select>
+    <select id="selectOldPasswordByUserMobile" resultType="java.lang.String">
+        select password from ${database.prefix.userms}hou_user_info where 1 = 1
+        <if test="param.userMobile != null  and param.shopId != null and param.shopId != ''">
+            and user_mobile = #{param.userMobile} and shop_id = #{param.shopId}
+        </if>
+        <if test="null != param.userMobile and (param.shopId == null or param.shopId == '')">
+            and user_mobile = #{param.userMobile}
+        </if>
+        limit 1
+    </select>
+    <select id="getUserInfoDetail2" resultType="com.houjiang.userms.vo.UserInfoDetailVO">
+        SELECT 
+               uuuid.user_parent_id,
+               uui.user_is_new,
+               uuuid.user_mobile_verify,
+               uuubc.bind_openid,
+               uui.user_nickname,
+               uui.user_id,
+               uui.user_name,
+               uui.PASSWORD,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_mobile,
+               uuuid.user_avatar,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_id,
+               uusb.shop_type,
+               uusb.seller_is_admin,
+               uusg.limits,
+               uuuid.user_gender,
+               uuuid.user_truename
+        FROM ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+        WHERE uui.user_id = #{userId}
+        ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="queryPhoneNumCount" resultType="java.lang.String">
+        select user_id
+        from ${database.prefix.userms}hou_user_info
+        where user_mobile = #{phone} and shop_id is null
+    </select>
+    <select id="queryUserInfoByjob" resultType="com.houjiang.commons.vo.job.AcquiescenceVO">
+        SELECT i.user_name,
+               l.user_avatar
+        FROM ${database.prefix.userms}hou_user_info i
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail l ON i.user_id = l.user_id
+        WHERE i.user_id = #{userId}
+    </select>
+    <select id="selectByShopInfo" resultType="java.util.Map">
+        select shop_type as shopType
+        from ${database.prefix.business}hou_shop_base
+        where supplier_shop_id = #{shopId}
+    </select>
+    <select id="getUserInfoByPhoneNumber1" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        SELECT 
+               uuuid.user_parent_id,
+               uuubc.bind_openid,
+               uui.user_nickname,
+               uui.user_id,
+               uui.user_name,
+               uui.PASSWORD,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_is_new,
+               uui.is_business,
+               uui.user_mobile,
+               uuuid.user_avatar,
+               uuuid.user_gender,
+               uuuid.user_mobile_verify,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_id,
+               uusb.seller_is_admin,
+               uusg.limits,
+               uusb.shop_type
+        FROM ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+        WHERE uui.user_mobile = #{userMobile}
+          and uui.user_state BETWEEN 0 and 2
+        ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="getShreUserInfoDetail" resultType="com.houjiang.userms.vo.UserInfoDetailVO">
+        SELECT
+            uui.user_is_new,
+            uui.user_nickname,
+            uui.user_id,
+            uui.user_name,
+            uui.user_state,
+            uui.user_lastlogin_time,
+            uui.user_lastlogin_ip,
+            uui.user_mobile,
+            IF ( uvk.shop_id  IS NULL, sb.supplier_shop_id, uvk.shop_id ) AS userBindShopId
+        FROM ${database.prefix.userms}hou_user_info uui
+            LEFT JOIN ${database.prefix.business}hou_shop_base sb ON sb.user_id = uui.user_id
+            LEFT JOIN ${database.prefix.userms}hou_user_vk uvk ON uvk.user_id = uui.user_id
+        where uui.user_id = #{userId}
+        limit 1
+    </select>
+    <select id="queryGateUserId" resultType="java.lang.String">
+        select user_id  from ${database.prefix.userms}hou_user_info where user_mobile =#{phone}
+    </select>
+    <select id="checkUserIsRegister" resultType="java.lang.Integer">
+        select count(1) from ${database.prefix.userms}hou_user_info where user_state BETWEEN 0 and 2
+        <if test="userMobile != null  and shopId != null and shopId != '' ">
+            and user_mobile = #{userMobile} and shop_id = #{shopId}
+        </if>
+        <if test=" null != userMobile and (shopId == null or shopId == '')">
+            and user_mobile = #{userMobile}
+        </if>
+    </select>
+    <select id="queryshopRiderSupport" resultType="java.lang.Boolean">
+        select shop_rider_support from ${database.prefix.business}hou_shop_base where  supplier_shop_id =#{shopId}
+    </select>
+    <select id="queryMemberFrozenIntegral" resultType="java.lang.Integer">
+        select sum(points_log_points)
+        from ${database.prefix.userms}hou_user_points_log ul LEFT JOIN ${database.prefix.order}hou_order_base ob on ul.order_id = ob.order_id
+        where ul.class_id = 4 and order_last_return_time > now()  and user_id = #{userId} and ob.order_status != 9
+    </select>
+    <select id="shopUserQueryUserInfo" resultType="com.houjiang.commons.dto.shop.ShopUserDTO">
+        select user_mobile,user_name,is_business from ${database.prefix.userms}hou_user_info where user_id = #{param.userId}
+    </select>
+    <select id="queryUserMobileByuserId" resultType="java.util.Map">
+        select user_mobile as userMobile,international_dialing_code as interDialingCode  from ${database.prefix.userms}hou_user_info where user_id = #{userId}
+    </select>
+    <select id="imQueryUserInfo" resultType="com.houjiang.userms.vo.ImUserInfoVO">
+        select ui.user_mobile,ui.user_name,uid.user_avatar,uid.user_gender,ui.create_time as userRegTime  from ${database.prefix.userms}hou_user_info ui LEFT JOIN ${database.prefix.userms}hou_user_info_detail uid on ui.user_id = uid.user_id where ui.user_id = #{mallUserId}
+    </select>
+    <select id="queryUserInfoUserId" resultType="java.lang.String">
+        SELECT user_id
+        FROM ${database.prefix.userms}hou_user_info
+        WHERE user_mobile = #{userMobile}
+          and shop_id is null
+    </select>
+    <select id="getUserInfoByPhoneNumberFeign" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        select uui.user_nickname,
+               uui.user_id,
+               uui.user_name,
+               uui.password,
+               uui.user_state,
+               uui.user_lastlogin_time,
+               uui.user_lastlogin_ip,
+               uui.user_is_new,
+               uui.user_mobile,
+               uui.is_business,
+               uuuid.user_avatar,
+               uuuid.user_gender,
+               uuuid.user_mobile_verify,
+               uusb.seller_id,
+               uusb.seller_name,
+               uusb.shop_id,
+               uusb.seller_is_admin,
+               uusg.limits,
+               uui.is_delete,
+               uusb.shop_type
+        from ${database.prefix.userms}hou_user_info uui
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+        where uui.user_id = #{userId}
+          and uui.user_state != 3
+    </select>
+    <select id="checkPhoneNumberFeign" resultType="java.lang.Integer">
+        select count(*)
+        from ${database.prefix.userms}hou_user_info
+        where user_mobile = #{param.userMobile}
+          and shop_id is null
+    </select>
+    <select id="getPrimaryAccountId" resultType="java.lang.String">
+        select create_user
+        from ${database.prefix.userms}hou_user_info
+        where user_id = #{userId}
+    </select>
+    <select id="selectuserphone" resultType="java.lang.String">
+        select user_mobile
+        from ${database.prefix.userms}hou_user_info
+        where user_id = #{param}
+    </select>
+    <select id="getUserInfoByMobileFeign" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        SELECT uuui.user_id,
+               uuui.user_mobile,
+               uuui.user_name,
+               uuuid.user_avatar
+        FROM ${database.prefix.userms}hou_user_info uuui
+                 LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuui.user_id = uuuid.user_id
+        WHERE user_mobile = #{userMobile}
+          and user_state BETWEEN 0 and 2
+    </select>
+    <select id="queryUserNameByUserId" resultType="java.lang.String">
+        select ifnull(user_nickname,user_name)
+        from ${database.prefix.userms}hou_user_info
+        where user_id = #{userId}
+    </select>
+    <update id="updateUserPassword">
+        update ${database.prefix.userms}hou_user_info set password = #{daoMap.password} where 1 = 1
+        <if test="daoMap.userMobile != null and daoMap.shopId != null and daoMap.shopId != ''">
+            and user_mobile = #{daoMap.userMobile} and shop_id = #{daoMap.shopId}
+        </if>
+        <if test="null != daoMap.userMobile and (daoMap.shopId == null or daoMap.shopId == '')">
+            and user_mobile = #{daoMap.userMobile}
+        </if>
+    </update>
+    <update id="updateIsNewFeign">
+        update ${database.prefix.userms}hou_user_info set user_is_new = 0 where user_id =#{userId}
+    </update>
+    <update id="forgotPasswordFeign">
+        update ${database.prefix.userms}hou_user_info
+        set password = #{password}
+        where user_mobile = #{userMobile}
+    </update>
+
+    <!-- 根据组织ID获取组织信息 -->
+    <select id="getOrgInfoById" resultType="java.util.Map">
+        SELECT 
+            org_id,
+            org_name,
+            org_code,
+            org_type,
+            parent_org_id,
+            org_level,
+            org_status,
+            create_time,
+            update_time
+        FROM ${database.prefix.base}hou_base_organization
+        WHERE org_id = #{orgId}
+        LIMIT 1
+    </select>
+
+    <!-- 根据用户ID获取用户的所有组织信息 -->
+    <select id="getUserOrgList" resultType="java.util.Map">
+        SELECT 
+            o.org_id,
+            o.org_name,
+            o.org_code,
+            o.org_type,
+            o.org_status,
+            o.create_time,
+            o.update_time,
+            uo.is_primary,
+            uo.create_time as join_time
+        FROM ${database.prefix.base}hou_base_organization o
+        INNER JOIN ${database.prefix.base}hou_user_organization uo ON o.org_id = uo.org_id
+        WHERE uo.user_id = #{userId}
+        ORDER BY uo.is_primary DESC, uo.create_time DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,35 @@
+.nuxt-ui-pagination {
+    .nuxt-ui-pagination__items {
+        gap: 5px;
+    }
+
+    .nuxt-ui-pagination__item {
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        min-width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #666;
+        background-color: #fff;
+        transition: all 0.3s;
+
+        &:hover:not(:disabled) {
+            border-color: var(--color);
+            color: var(--color);
+        }
+
+        &.nuxt-ui-pagination__item--active {
+            background-color: var(--color);
+            color: #fff;
+            border-color: var(--color);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}

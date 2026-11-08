@@ -1,0 +1,18 @@
+code: unipay
+name: 支付中心
+version: 1.0.0
+author: UniMall
+description: 支付中心已回归 payment 独立服务，本清单不再注册插件菜单或插件页面
+category: 财务 / 办公
+owner: official
+runtime: embedded
+hostService: payment
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - payment:read
+  - payment:write
+# 2026-11-02：后台页面由宿主静态路由 /payment/** 提供，接口走 /web/payment/**。
+# 这里不再声明 menus。插件同步若仍被调用，PluginMenuSyncPort 会直接跳过 unipay。

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserBindConnectMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserBindConnectEntity">
+            <id property="bindId" column="bind_id" jdbcType="VARCHAR"/>
+            <id property="bindType" column="bind_type" jdbcType="TINYINT"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="bindTime" column="bind_time" jdbcType="TIMESTAMP"/>
+            <result property="bindNickname" column="bind_nickname" jdbcType="VARCHAR"/>
+            <result property="bindAvator" column="bind_avator" jdbcType="VARCHAR"/>
+            <result property="bindOpenid" column="bind_openid" jdbcType="VARCHAR"/>
+            <result property="bindUnionid" column="bind_unionid" jdbcType="VARCHAR"/>
+            <result property="createUser" column="create_user" jdbcType="VARCHAR"/>
+            <result property="isAutoLogin" column="is_auto_login" jdbcType="INTEGER"/>
+            <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        bind_id,bind_type,user_id,
+        bind_time,bind_nickname,bind_avator,
+        bind_openid,bind_unionid,
+        create_user,is_auto_login,ts
+    </sql>
+    <insert id="insertUserThreeBindMap">
+        insert into ${database.prefix.userms}hou_user_bind_connect(bind_id,bind_type,user_id,bind_time,bind_nickname,bind_avator,bind_unionid,bind_openid,official_account_openid)
+        value(#{bindId},#{bind_type},#{user_id},now(),#{bind_nickname},#{bind_avator},#{bind_unionid},#{bind_openid},#{officialAccountOpenid})
+    </insert>
+    <update id="updateAotuLogin">
+        update ${database.prefix.userms}hou_user_bind_connect
+        <set>
+            <if test="param.start != null">
+                is_auto_login =#{param.start},
+            </if>
+            <if test="param.unionid">
+                bind_unionid = #{param.unionid},
+            </if>
+            <if test="param.officialAccountOpenid">
+                official_account_openid = #{param.officialAccountOpenid},
+            </if>
+        </set>
+        where  bind_unionid = #{param.openid}
+    </update>
+    <update id="updateUserNickNameAndAvatarUrl">
+        update ${database.prefix.userms}hou_user_bind_connect set bind_avator = #{param.avatarUrl} ,bind_nickname = #{param.nickname}  where user_id = #{param.userId}
+    </update>
+    <select id="selectUserIdByOpenid" resultType="java.lang.String">
+        select uuubc.user_id from ${database.prefix.userms}hou_user_bind_connect uuubc where uuubc.bind_id = #{bindOpenid}
+    </select>
+    <select id="getUserInfoByUserId" resultType="com.houjiang.commons.vo.user.UserInfoVO">
+        select uuuid.user_parent_id,uui.user_is_new,uuuid.user_mobile_verify, uuubc.bind_openid,uui.user_nickname,uui.user_id,
+        uui.user_name,uui.password,uui.user_state,uui.user_lastlogin_time,uui.user_lastlogin_ip,
+		uui.user_mobile, uuuid.user_avatar,uusb.seller_id,uusb.seller_name,uusb.shop_id,uusb.shop_type,uusb.seller_is_admin,uusg.limits
+		from ${database.prefix.userms}hou_user_info uui LEFT JOIN ${database.prefix.userms}hou_user_seller_base uusb ON uusb.user_id = uui.user_id
+		LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg ON uusg.group_id = uusb.seller_group_id
+		LEFT JOIN ${database.prefix.userms}hou_user_bind_connect uuubc ON uuubc.user_id = uui.user_id
+		LEFT JOIN ${database.prefix.userms}hou_user_info_detail uuuid ON uuuid.user_id = uui.user_id
+		where uui.user_id = #{bindId} ORDER BY uuubc.bind_openid desc limit 1
+    </select>
+    <select id="selectUserIdByBindId" resultType="java.lang.String">
+        select uuubc.user_id from ${database.prefix.userms}hou_user_bind_connect uuubc
+        where uuubc.bind_id = #{bindId}
+    </select>
+    <select id="queryAutoLogin" resultType="java.lang.Integer">
+        select is_auto_login from ${database.prefix.userms}hou_user_bind_connect where bind_unionid = #{openId}
+    </select>
+</mapper>

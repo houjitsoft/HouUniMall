@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserPlusEquityMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserPlusEquityEntity">
+            <id property="equityId" column="equity_id" jdbcType="INTEGER"/>
+            <result property="equityName" column="equity_name" jdbcType="VARCHAR"/>
+            <result property="equityType" column="equity_type" jdbcType="INTEGER"/>
+            <result property="equityValue" column="equity_value" jdbcType="VARCHAR"/>
+            <result property="equityAddtime" column="equity_addtime" jdbcType="TIMESTAMP"/>
+            <result property="equityStatus" column="equity_status" jdbcType="INTEGER"/>
+            <result property="redEffective" column="red_effective" jdbcType="INTEGER"/>
+            <result property="redProvide" column="red_provide" jdbcType="INTEGER"/>
+            <result property="discountLimit" column="discount_limit" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        equity_id,equity_name,equity_type,
+        equity_value,equity_addtime,equity_status,
+        red_effective,red_provide,discount_limit
+    </sql>
+    <insert id="insertPlusEquity">
+        insert into ${database.prefix.userms}hou_user_plus_equity
+        <trim prefix="(equity_addtime," suffix=")" suffixOverrides=",">
+            <if test="param.equityName != null and param.equityName != ''">
+                equity_name,
+            </if>
+            <if test="param.equityType != null and param.equityType != ''">
+                equity_type,
+            </if>
+            <if test="param.equityValue != null and param.equityValue != ''">
+                equity_value,
+            </if>
+            <if test="param.equityStatus != null and param.equityStatus != ''">
+                equity_status,
+            </if>
+            <if test="param.redEffective != null and param.redEffective != ''">
+                red_effective,
+            </if>
+            <if test="param.redProvide != null and param.redProvide != ''">
+                red_provide,
+            </if>
+            <if test="param.discountLimit != null ">
+                discount_limit,
+            </if>
+        </trim>
+        <trim prefix="values (now()," suffix=")" suffixOverrides=",">
+            <if test="param.equityName != null and param.equityName != ''">
+                #{param.equityName},
+            </if>
+            <if test="param.equityType != null and param.equityType != ''">
+                #{param.equityType},
+            </if>
+            <if test="param.equityValue != null and param.equityValue != ''">
+                #{param.equityValue},
+            </if>
+            <if test="param.equityStatus != null and param.equityStatus != ''">
+                #{param.equityStatus},
+            </if>
+            <if test="param.redEffective != null and param.redEffective != ''">
+                #{param.redEffective},
+            </if>
+            <if test="param.redProvide != null and param.redProvide != ''">
+                #{param.redProvide},
+            </if>
+            <if test="param.discountLimit != null ">
+                #{param.discountLimit},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertplusequityTemp">
+        insert into ${database.prefix.userms}hou_user_plus_equity_temp
+        <trim prefix="(equity_addtime," suffix=")" suffixOverrides=",">
+            <if test="param.equityId != null and param.equityId != ''">
+                equity_id,
+            </if>
+            <if test="param.equityName != null and param.equityName != ''">
+                equity_name,
+            </if>
+            <if test="param.equityType != null and param.equityType != ''">
+                equity_type,
+            </if>
+            <if test="param.equityValue != null and param.equityValue != ''">
+                equity_value,
+            </if>
+            <if test="param.equityStatus != null and param.equityStatus != ''">
+                equity_status,
+            </if>
+            <if test="param.redEffective != null and param.redEffective != ''">
+                red_effective,
+            </if>
+            <if test="param.redProvide != null and param.redProvide != ''">
+                red_provide,
+            </if>
+            <if test="param.discountLimit != null ">
+                discount_limit,
+            </if>
+        </trim>
+        <trim prefix="values (now()," suffix=")" suffixOverrides=",">
+            <if test="param.equityId != null and param.equityId != ''">
+                #{param.equityId},
+            </if>
+            <if test="param.equityName != null and param.equityName != ''">
+                #{param.equityName},
+            </if>
+            <if test="param.equityType != null and param.equityType != ''">
+                #{param.equityType},
+            </if>
+            <if test="param.equityValue != null and param.equityValue != ''">
+                #{param.equityValue},
+            </if>
+            <if test="param.equityStatus != null and param.equityStatus != ''">
+                #{param.equityStatus},
+            </if>
+            <if test="param.redEffective != null and param.redEffective != ''">
+                #{param.redEffective},
+            </if>
+            <if test="param.redProvide != null and param.redProvide != ''">
+                #{param.redProvide},
+            </if>
+            <if test="param.discountLimit != null ">
+                #{param.discountLimit},
+            </if>
+        </trim>
+    </insert>
+    <select id="selectplusequitys" resultType="com.houjiang.commons.vo.base.PlusEquityEntityVO">
+        select equity_id ,equity_name ,equity_type ,equity_value ,equity_addtime,
+        equity_status ,
+        red_effective ,red_provide ,discount_limit from ${database.prefix.userms}hou_user_plus_equity
+        where equity_status = 1 and equity_id in
+        <foreach collection="list" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+    </select>
+    <select id="selectthalitypes" resultType="java.lang.String">
+        select thali_equity
+		from hou_base_merchant_plus_thali
+    </select>
+    <select id="selectPlusEquityByPage" resultType="com.houjiang.userms.entity.UserPlusEquityEntity">
+    SELECT
+    	equity_id,
+    	equity_name,
+    	equity_type,
+    	equity_value,
+    	equity_addtime,
+    	equity_status,
+    	red_effective,
+    	red_provide,
+    	discount_limit
+    FROM
+	${database.prefix.userms}hou_user_plus_equity
+        <where>
+            <if test="param.equityType != null and param.equityType != ''">
+                equity_type = #{param.equityType}
+            </if>
+            <if test="param.equityName != null and param.equityName != ''">
+                and equity_name like CONCAT('%',#{param.equityName },'%')
+            </if>
+            <if test="param.equityStatus != null and param.equityStatus != ''">
+                and equity_status = #{param.equityStatus}
+            </if>
+        </where>
+        order by equity_addtime desc
+    </select>
+    <select id="selectplusequity" resultType="com.houjiang.commons.vo.base.PlusEquityEntityVO">
+        select equity_id,equity_name,equity_type,equity_value,equity_addtime,equity_status,
+        red_effective,red_provide,discount_limit from ${database.prefix.userms}hou_user_plus_equity
+        where equity_id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach> and equity_type in (2,3,4)
+    </select>
+    <select id="selectplusequitysTmp" resultType="com.houjiang.commons.vo.base.PlusEquityEntityVO">
+        select equity_id,equity_name,equity_type,equity_value,equity_addtime,equity_status,
+        red_effective,red_provide,discount_limit from ${database.prefix.userms}hou_user_plus_equity_temp
+        where equity_status = 1 and equity_id in
+        <foreach collection="list" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+        order by equity_type desc
+    </select>
+</mapper>

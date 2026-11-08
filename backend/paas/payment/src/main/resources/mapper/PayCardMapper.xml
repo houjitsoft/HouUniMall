@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayCardMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayCardEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="cardNum" column="card_num" jdbcType="VARCHAR"/>
+            <result property="totalPrice" column="total_price" jdbcType="INTEGER"/>
+            <result property="givePrice" column="give_price" jdbcType="FLOAT"/>
+            <result property="password" column="password" jdbcType="VARCHAR"/>
+            <result property="statut" column="statut" jdbcType="TINYINT"/>
+            <result property="useName" column="use_name" jdbcType="VARCHAR"/>
+            <result property="creatTime" column="creat_time" jdbcType="INTEGER"/>
+            <result property="stime" column="stime" jdbcType="INTEGER"/>
+            <result property="etime" column="etime" jdbcType="INTEGER"/>
+            <result property="cardDesc" column="card_desc" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,card_num,total_price,
+        give_price,password,statut,
+        use_name,creat_time,stime,
+        etime,card_desc
+    </sql>
+    <insert id="addPayCardtew" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into ${database.prefix.payment}hou_pay_card
+        (card_num,
+        total_price,
+        password,
+        statut,
+        use_name,
+        creat_time,
+        card_desc)
+        values
+        <foreach collection="list" separator="," item="item">
+            (#{item.cardNum},
+            #{item.totalPrice},
+            #{item.password},
+            #{item.statut},
+            #{item.useName},
+            #{item.creatTime},
+            #{item.cardDesc})
+        </foreach>
+    </insert>
+    <update id="updateRechargeCardPort">
+           update ${database.prefix.payment}hou_pay_card
+        set stime=#{startTime},
+            etime=#{finishTime}
+        where total_price = #{totalPrice}
+          and id &lt;= #{finishCard}
+          and id >= #{startCard}
+    </update>
+    <select id="queryPayBaseParam" resultType="com.houjiang.payment.vo.PayCardInfoVO">
+    SELECT
+        card_num AS card_code,
+	    `password` AS card_password,
+	    id AS card_id,
+	    creat_time AS card_fetch_time,
+	    '0' AS card_media_id,
+	    '13962' AS server_id,
+	    '0' AS user_id,
+	    '' AS user_account,
+	    '0000-00-00 00:00:00' AS card_time,
+	    total_price AS card_money,
+	    '0.00' AS card_froze_money
+        FROM ${database.prefix.payment}hou_pay_card
+        WHERE id BETWEEN #{startCard} and #{finishCard}
+    </select>
+    <select id="query" resultType="com.houjiang.payment.entity.PayCardEntity">
+        SELECT
+            <include refid="Base_Column_List" />
+        from ${database.prefix.payment}hou_pay_card
+        <where>
+         <if test="param.totalPrice != null and param.totalPrice != ''">
+             and total_price = #{param.totalPrice}
+         </if>
+         <if test="param.startCard != null and param.startCard != ''">
+             and id >= #{param.startCard}
+         </if>
+         <if test="param.finishCard != null and param.finishCard != ''">
+             and id &lt;= #{param.finishCard}
+         </if>
+        </where>
+    </select>
+</mapper>

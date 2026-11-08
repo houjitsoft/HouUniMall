@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BasePlatformBrankMapper">
+
+    <resultMap type="com.houjiang.base.entity.BasePlatformBrankEntity" id="BasePlatformBrankMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="bankCardId" column="bank_card_id" jdbcType="VARCHAR"/>
+        <result property="bankCardName" column="bank_card_name" jdbcType="VARCHAR"/>
+        <result property="bankName" column="bank_name" jdbcType="VARCHAR"/>
+        <result property="brankNote" column="brank_note" jdbcType="VARCHAR"/>
+        <result property="brankUpdateTime" column="brank_update_time" jdbcType="VARCHAR"/>
+        <result property="brankUnionpayGood" column="brank_unionpay_good" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="insertBrank">
+        replace into ${database.prefix.userms}hou_base_platform_brank
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.id != null ">
+                id,
+            </if>
+            <if test="param.bankCardId != null ">
+                bank_card_id,
+            </if>
+            <if test="param.bankCardName != null  ">
+                bank_card_name,
+            </if>
+            <if test="param.bankName != null  ">
+                bank_name,
+            </if>
+            <if test="param.brankNote != null  ">
+                brank_note,
+            </if>
+            <if test="param.brankUnionpayGood != null  ">
+                brank_unionpay_good,
+            </if>
+            brank_update_time,
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.id != null ">
+                #{param.id},
+            </if>
+            <if test="param.bankCardId != null">
+                #{param.bankCardId},
+            </if>
+            <if test="param.bankCardName != null  ">
+                #{param.bankCardName},
+            </if>
+            <if test="param.bankName != null  ">
+                #{param.bankName},
+            </if>
+            <if test="param.brankNote != null  ">
+                #{param.brankNote},
+            </if>
+            <if test="param.brankUnionpayGood != null  ">
+                #{param.brankUnionpayGood},
+            </if>
+            now(),
+        </trim>
+    </insert>
+    <select id="queryBrank" resultType="com.houjiang.base.entity.BasePlatformBrankEntity">
+         select id,bank_card_id,bank_card_name,bank_name,brank_note,brank_update_time,brank_unionpay_good from ${database.prefix.userms}hou_base_platform_brank
+    </select>
+
+
+</mapper>

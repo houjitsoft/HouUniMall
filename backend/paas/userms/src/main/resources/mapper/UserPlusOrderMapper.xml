@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserPlusOrderMapper">
+
+    <resultMap type="com.houjiang.userms.entity.UserPlusOrderEntity" id="UserPlusOrderMap">
+        <result property="plusOrderid" column="plus_orderid" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="payPrice" column="pay_price" jdbcType="NUMERIC"/>
+        <result property="payType" column="pay_type" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="thaliType" column="thali_type" jdbcType="INTEGER"/>
+        <result property="creatTime" column="creat_time" jdbcType="TIMESTAMP"/>
+        <result property="plusEquity" column="plus_equity" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        plus_orderid,user_id,pay_price,
+        pay_type,start_time,end_time,
+        thali_type,creat_time,plus_equity
+    </sql>
+    <insert id="insertplusorder">
+        replace into ${database.prefix.userms}hou_user_plus_order (plus_orderid,user_id,pay_price,pay_type,start_time,end_time,thali_type,creat_time,plus_equity,is_pay)
+        values (#{param.plusOrderid},#{param.userId},#{param.payPrice},#{param.payType},
+        #{param.startTime},#{param.endTime},#{param.thaliType},now(),#{param.plusEquity},#{param.isPay})
+    </insert>
+    <select id="selectplusorder" resultType="com.houjiang.userms.vo.PlusOrderEntityVO">
+        select po.user_id,po.plus_orderid,po.pay_price,po.pay_type,po.start_time,po.end_time,
+        po.thali_type,po.creat_time,ui.user_name,ui.user_mobile,pr.renew_status
+        from ${database.prefix.userms}hou_user_plus_order po
+        left join ${database.prefix.userms}hou_user_info ui on po.user_id = ui.user_id
+        left join ${database.prefix.userms}hou_user_plus_renew pr on po.plus_orderid = pr.plus_orderid
+        where  1 = 1 and po.is_pay = 1
+        <if test="param.userId != null and param.userId != ''">
+            and po.user_id = #{param.userId}
+        </if>
+        order by po.creat_time desc
+    </select>
+    <select id="selectrechargelistexp" resultType="com.houjiang.userms.vo.PlusOrderEntityExpVO">
+        SELECT
+        po.user_id,
+        po.plus_orderid,
+        po.pay_price,
+        po.pay_type,
+        po.start_time,
+        po.end_time,
+        po.thali_type,
+        po.creat_time,
+        ui.user_name,
+        ui.user_mobile
+        FROM
+        ${database.prefix.userms}hou_user_plus_order po
+        LEFT JOIN ${database.prefix.userms}hou_user_info ui ON po.user_id = ui.user_id
+        WHERE 1 = 1
+        <if test="param.userId != null and param.userId != ''">
+            and po.user_id = #{param.userId}
+        </if>
+        <if test="param.userName != null and param.userName != ''">
+            and ui.user_name = #{param.userName}
+        </if>
+        <if test="param.userMobile != null and param.userMobile != ''">
+            and ui.user_mobile = #{param.userMobile}
+        </if>
+        <if test="param.payType != null and param.payType != ''">
+            and po.pay_type = #{param.payType}
+        </if>
+        <if test="param.thaliType != null and param.thaliType != ''">
+            and po.thali_type = #{param.thaliType}
+        </if>
+        <if test="param.timeType == 1 and param.startTime != null and param.endTime != null">
+            and po.start_time between #{param.startTime} and #{param.endTime}
+        </if>
+        <if test="param.timeType == 2 and param.startTime != null and param.endTime != null">
+            and po.end_time between #{param.startTime} and #{param.endTime}
+        </if>
+        <if test="param.plusOrderid != null ">
+            and po.plus_orderid in
+            <foreach collection="param.plusOrderid" item="id" close=")" open="(" separator=",">
+                #{id}
+            </foreach>
+
+        </if>
+        order by po.creat_time desc
+    </select>
+    <select id="selectplusorderMap" resultType="java.util.Map">
+        SELECT
+        po.user_id as userId,
+        po.plus_orderid as plusOrderid,
+        po.pay_price as payPrice,
+        po.pay_type as payType,
+        date_format(po.start_time, '%Y-%m-%d %H:%i:%s' )  as startTime,
+        date_format(po.end_time, '%Y-%m-%d %H:%i:%s' ) as endTime,
+        po.thali_type as thaliType,
+        date_format(po.creat_time, '%Y-%m-%d %H:%i:%s' ) as creatTime,
+        ifnull(ui.user_name,null) as userName,
+        ifnull(ui.user_mobile,null) as userMobile
+        FROM
+        ${database.prefix.userms}hou_user_plus_order po
+        LEFT JOIN ${database.prefix.userms}hou_user_info ui ON po.user_id = ui.user_id
+        WHERE 1 = 1 and po.is_pay  = 1
+        <if test="param.userId != null and param.userId != ''">
+            and po.user_id = #{param.userId}
+        </if>
+        <if test="param.userName != null and param.userName != ''">
+            and ui.user_name = #{param.userName}
+        </if>
+        <if test="param.userMobile != null and param.userMobile != ''">
+            and ui.user_mobile = #{param.userMobile}
+        </if>
+        <if test="param.payType != null and param.payType != ''">
+            and po.pay_type = #{param.payType}
+        </if>
+        <if test="param.thaliType != null and param.thaliType != ''">
+            and po.thali_type = #{param.thaliType}
+        </if>
+        <if test="param.timeType == 1 and param.startTime != null and param.endTime != null">
+            and po.start_time between #{param.startTime} and #{param.endTime}
+        </if>
+        <if test="param.timeType == 2 and param.startTime != null and param.endTime != null">
+            and po.end_time between #{param.startTime} and #{param.endTime}
+        </if>
+        order by po.creat_time desc
+    </select>
+    <select id="selectPriceTotal" resultType="java.util.Map">
+        select (SELECT
+        	IFNULL(sum( pay_price ),0)  AS pricetotal
+        FROM
+        	${database.prefix.userms}hou_user_plus_order
+        WHERE
+        	creat_time between #{param.startTime} and #{param.endTime}) as pricetotal
+        ,
+        (SELECT
+        	IFNULL(sum( pay_price ),0) AS price
+        FROM
+        	${database.prefix.userms}hou_user_plus_order) as price,
+
+        (SELECT
+        	IFNULL(count( 1 ),0) AS membertotal
+        FROM
+        	${database.prefix.userms}hou_user_plus_order
+        WHERE
+        	creat_time between #{param.startTime} and #{param.endTime}) as membertotal,
+        (
+        SELECT
+        	IFNULL(count( 1 ),0) AS member
+        FROM
+	        ${database.prefix.userms}hou_user_plus_order) as member
+    </select>
+    <select id="queryplusorder" resultType="java.lang.Integer">
+        select count(1) from ${database.prefix.userms}hou_user_plus_order where plus_orderid = #{plusOrder} and user_id = #{userId}
+    </select>
+    <select id="queryStatusByPlus" resultType="java.lang.Integer">
+        select is_pay from ${database.prefix.userms}hou_user_plus_order where user_id = #{userId}  ORDER BY creat_time desc limit 1
+    </select>
+
+</mapper>

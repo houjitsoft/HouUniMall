@@ -1,0 +1,95 @@
+/* ==========================================================================
+   令牌 → Element Plus / Tailwind 变量映射层
+   ========================================================================== */
+
+:root:root {
+    /* ── 字体 ────────────────────────────────────────────────────────── */
+    --el-font-family: var(--font-sans);
+    --el-font-weight-primary: 400;
+
+    /* 字号阶梯 */
+    --el-font-size-extra-large: 18px;
+    --el-font-size-large: 16px;
+    --el-font-size-medium: 15px;
+    --el-font-size-base: 14px;
+    --el-font-size-small: 13px;
+    --el-font-size-extra-small: 12px;
+
+    /* ── 圆角：全站统一抬升一档 ───────────────────────────────────────── */
+    --el-border-radius-base: 8px;
+    --el-border-radius-small: 6px;
+    --el-border-radius-round: 999px;
+    --el-border-radius-circle: 100%;
+
+    /* ── 布局尺度 ────────────────────────────────────────────────────── */
+    --el-menu-item-height: 44px;
+    --el-menu-sub-item-height: 40px;
+    --el-menu-icon-width: 18px;
+    --el-menu-base-level-padding: 14px;
+    --el-menu-level-padding: 22px;
+    --aside-width: var(--rail-width);
+    --navbar-height: var(--topbar-height);
+    --color-white: #ffffff;
+    --table-header-bg-color: var(--neutral-75);
+
+    /* ── 主题色（运行时由 utils/theme.ts 依据 setting.theme 覆盖） ────── */
+    --el-color-primary: var(--brand-500);
+    --el-color-success: var(--state-success);
+    --el-color-warning: var(--state-warning);
+    --el-color-danger: var(--state-danger);
+    --el-color-error: var(--state-danger);
+    --el-color-info: var(--state-info);
+
+    /* ── 文本 ────────────────────────────────────────────────────────── */
+    --el-text-color-primary: var(--neutral-800);
+    --el-text-color-regular: var(--neutral-600);
+    --el-text-color-secondary: var(--neutral-500);
+    --el-text-color-placeholder: var(--neutral-400);
+    --el-text-color-disabled: var(--neutral-300);
+
+    /* ── 背景 ────────────────────────────────────────────────────────── */
+    --el-bg-color: var(--neutral-0);
+    --el-bg-color-page: var(--neutral-50);
+    --el-bg-color-overlay: var(--neutral-0);
+
+    /* ── 描边 ────────────────────────────────────────────────────────── */
+    --el-border-color: var(--neutral-200);
+    --el-border-color-light: var(--neutral-100);
+    --el-border-color-lighter: var(--neutral-75);
+    --el-border-color-extra-light: var(--neutral-50);
+    --el-border-color-dark: var(--neutral-300);
+    --el-border-color-darker: var(--neutral-400);
+
+    /* ── 填充 ────────────────────────────────────────────────────────── */
+    --el-fill-color: var(--neutral-75);
+    --el-fill-color-light: var(--neutral-50);
+    --el-fill-color-lighter: var(--neutral-25);
+    --el-fill-color-extra-light: #fdfcfa;
+    --el-fill-color-dark: var(--neutral-100);
+    --el-fill-color-darker: var(--neutral-200);
+    --el-fill-color-blank: var(--neutral-0);
+
+    /* ── 遮罩 ────────────────────────────────────────────────────────── */
+    --el-mask-color: rgba(28, 26, 24, 0.55);
+    --el-mask-color-extra-light: rgba(28, 26, 24, 0.24);
+
+    /* ── 阴影 ────────────────────────────────────────────────────────── */
+    --el-box-shadow: var(--shadow-md);
+    --el-box-shadow-light: var(--shadow-sm);
+    --el-box-shadow-lighter: var(--shadow-xs);
+    --el-box-shadow-dark: var(--shadow-lg);
+
+    /* ── 过渡 ────────────────────────────────────────────────────────── */
+    --el-transition-duration: 0.24s;
+    --el-transition-duration-fast: 0.16s;
+    --el-transition-function-ease-in-out-bezier: var(--ease-out);
+    --el-transition-function-fast-bezier: var(--ease-out);
+}
+
+/* 文本渲染：更稳的字重与抗锯齿，数字统一等宽对齐 */
+:root:root {
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

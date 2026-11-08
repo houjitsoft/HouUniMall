@@ -1,0 +1,6 @@
+# 二开专属配置装载器注册（二开五件套之「配置」，方案 a：EnvironmentPostProcessor）。
+# Spring Boot 在「ApplicationEnvironmentPreparedEvent」阶段通过 SpringFactoriesLoader 读取本键并回调，
+# 在环境就绪、Bean 定义加载之前，把 classpath 上的 houcloud-ext-{code}.yml 并入 Environment。
+# 详见 com.houjiang.mall.service.plugin.ExtensionConfigEnvironmentPostProcessor。
+org.springframework.boot.env.EnvironmentPostProcessor=\
+com.houjiang.mall.service.plugin.ExtensionConfigEnvironmentPostProcessor

@@ -1,0 +1,34 @@
+package com.houjiang.merchant.validate.mall;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.io.Serializable;
+
+/**
+ * @author Amos
+ */
+@Data
+public class MallShopJobSearchValidate implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Schema(description = "店铺id")
+    private Integer shopId;
+
+    @Schema(description = "岗位编码")
+    private String code;
+
+    @Schema(description = "岗位名称")
+    private String name;
+
+    @Schema(description = "排序")
+    private Integer sort;
+
+    @Schema(description = "备注")
+    private String remark;
+
+    @Schema(description = "状态 1正常 0 禁用")
+    private Integer status;
+
+}

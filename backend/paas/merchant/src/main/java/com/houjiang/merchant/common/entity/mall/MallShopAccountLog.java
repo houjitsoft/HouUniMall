@@ -1,0 +1,66 @@
+package com.houjiang.merchant.common.entity.mall;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * @author Amos
+ */
+@Data
+public class MallShopAccountLog implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @TableId(value="id", type= IdType.AUTO)
+    @Schema(description = "ID")
+    private Integer id;
+
+    @Schema(description = "创建时间")
+    private Long createTime;
+
+    @Schema(description = "修改时间")
+    private Long updateTime;
+
+    @Schema(description = "删除时间")
+    private Long deleteTime;
+
+    @Schema(description = "店铺id")
+    private Integer shopId;
+
+    @Schema(description = "流水号")
+    private String sn;
+
+    @Schema(description = "变动对象 0余额")
+    private Integer changeObject;
+
+    @Schema(description = "变动类型")
+    private Integer changeType;
+
+    @Schema(description = "账户状态 0无变化 1增益 2减益")
+    private Integer accountStatus;
+
+    @Schema(description = "来源id")
+    private Integer fromId;
+
+    @Schema(description = "来源单号")
+    private String fromSn;
+
+    @Schema(description = "变动金额")
+    private BigDecimal changeAmount;
+
+    @Schema(description = "剩余金额")
+    private BigDecimal leftAmount;
+
+    @Schema(description = "备注")
+    private String remark;
+
+    @Schema(description = "记录参数")
+    private String params;
+
+
+}

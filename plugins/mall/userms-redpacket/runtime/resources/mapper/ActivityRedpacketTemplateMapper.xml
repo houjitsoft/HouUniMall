@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivityRedpacketTemplateMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.activity.entity.ActivityRedpacketTemplateEntity">
+            <id property="redpacketTId" column="redpacket_t_id" jdbcType="INTEGER"/>
+            <result property="redpacketTType" column="redpacket_t_type" jdbcType="BOOLEAN"/>
+            <result property="redpacketTTitle" column="redpacket_t_title" jdbcType="VARCHAR"/>
+            <result property="redpacketTDesc" column="redpacket_t_desc" jdbcType="VARCHAR"/>
+            <result property="redpacketTStartDate" column="redpacket_t_start_date" jdbcType="TIMESTAMP"/>
+            <result property="redpacketTEndDate" column="redpacket_t_end_date" jdbcType="TIMESTAMP"/>
+            <result property="redpacketTPrice" column="redpacket_t_price" jdbcType="INTEGER"/>
+            <result property="redpacketTOrderlimit" column="redpacket_t_orderlimit" jdbcType="DECIMAL"/>
+            <result property="redpacketTState" column="redpacket_t_state" jdbcType="TINYINT"/>
+            <result property="redpacketTTotal" column="redpacket_t_total" jdbcType="INTEGER"/>
+            <result property="redpacketTGiveout" column="redpacket_t_giveout" jdbcType="INTEGER"/>
+            <result property="redpacketTAddDate" column="redpacket_t_add_date" jdbcType="TIMESTAMP"/>
+            <result property="redpacketTUpdateDate" column="redpacket_t_update_date" jdbcType="TIMESTAMP"/>
+            <result property="redpacketTEachlimit" column="redpacket_t_eachlimit" jdbcType="INTEGER"/>
+            <result property="orderOperator" column="order_operator" jdbcType="VARCHAR"/>
+            <result property="orderOperatorTime" column="order_operator_time" jdbcType="TIMESTAMP"/>
+            <result property="redpacketRemark" column="redpacket_remark" jdbcType="VARCHAR"/>
+            <result property="redpacketIsBooking" column="redpacket_is_booking" jdbcType="TINYINT"/>
+            <result property="robRedpacketStartDate" column="rob_redpacket_start_date" jdbcType="TIMESTAMP"/>
+            <result property="robRedpacketEndDate" column="rob_redpacket_end_date" jdbcType="TIMESTAMP"/>
+            <result property="redTermofvalidity" column="red_termofvalidity" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        redpacket_t_id,redpacket_t_type,redpacket_t_title,
+        redpacket_t_desc,redpacket_t_start_date,redpacket_t_end_date,
+        redpacket_t_price,
+        redpacket_t_orderlimit,redpacket_t_state,
+        redpacket_t_total,redpacket_t_giveout,
+        redpacket_t_add_date,redpacket_t_update_date,
+        redpacket_t_eachlimit,order_operator,order_operator_time,redpacket_remark,
+        redpacket_is_booking,rob_redpacket_start_date,rob_redpacket_end_date,
+        red_termofvalidity
+    </sql>
+    <insert id="insertRedpacketTemp">
+        insert into activity_redpacket_template (
+        <if test="param.redTermofvalidity != null and param.redTermofvalidity != ''">
+            red_termofvalidity,
+        </if>
+        redpacket_t_type,redpacket_t_title,redpacket_t_desc,redpacket_t_start_date,
+        redpacket_t_end_date,redpacket_t_price,redpacket_t_orderlimit,
+        redpacket_t_total,redpacket_t_giveout, redpacket_t_add_date,redpacket_t_update_date,
+        redpacket_t_eachlimit, order_operator,order_operator_time,
+        redpacket_remark,redpacket_is_booking,rob_redpacket_start_date,rob_redpacket_end_date)
+        values(
+        <if test="param.redTermofvalidity != null and param.redTermofvalidity != ''">
+            #{param.redTermofvalidity},
+        </if>
+        #{param.redpacketTType},
+        #{param.redpacketTTitle},
+        #{param.redpacketTDesc},
+        #{param.redpacketTStartDate},
+        #{param.redpacketTEndDate},
+        #{param.redpacketTPrice},
+        #{param.redpacketTOrderlimit},
+        #{param.redpacketTTotal},
+        #{param.redpacketTGiveout},
+        now(),
+        now(),
+        #{param.redpacketTEachlimit},
+        #{param.orderOperator},
+        #{param.orderOperatorTime},
+        #{param.redpacketRemark},
+        #{param.redpacketIsBooking},
+        #{param.robRedpacketStartDate},
+        #{param.robRedpacketEndDate})
+    </insert>
+    <update id="updateRedpacketTGiveout">
+    update activity_redpacket_template
+    set redpacket_t_giveout = redpacket_t_giveout + #{num} where redpacket_t_id = #{redpacketTId}
+    </update>
+    <update id="updateRedpacketTemp">
+     update activity_redpacket_template
+        <set>
+            <if test="param.redpacketTTitle != null and param.redpacketTTitle != ''">
+                redpacket_t_title =#{param.redpacketTTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="param.redpacketTDesc != null and param.redpacketTDesc != ''">
+                redpacket_t_desc =#{param.redpacketTDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="param.redpacketTState != null and param.redpacketTState != ''">
+                redpacket_t_state =#{param.redpacketTState,jdbcType=TINYINT},
+            </if>
+            <if test="param.redpacketTTotal != null and param.redpacketTTotal != ''">
+                redpacket_t_total =#{param.redpacketTTotal,jdbcType=VARCHAR},
+            </if>
+            <if test="param.robRedpacketStartDate != null and param.robRedpacketStartDate != ''">
+                rob_redpacket_start_date =#{param.robRedpacketStartDate,jdbcType=VARCHAR},
+            </if>
+            <if test="param.robRedpacketEndDate != null and param.robRedpacketEndDate != ''">
+                rob_redpacket_end_date =#{param.robRedpacketEndDate,jdbcType=VARCHAR},
+            </if>
+        </set>
+    where
+        redpacket_t_id =#{param.redpacketTId}
+    </update>
+    <select id="selectNewRedpacketTem"
+            resultType="com.houjiang.commons.vo.activity.ActivityRedpacketTemplateVO">
+        select
+        <include refid="Base_Column_List" />
+        from
+        activity_redpacket_template
+        where  redpacket_t_type = 7
+        and redpacket_t_id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    <select id="available"
+            resultType="com.houjiang.activity.entity.ActivityRedpacketTemplateEntity">
+        select
+        <include refid="Base_Column_List" />
+        from
+        activity_redpacket_template 1=1
+        <if test="param.redpacketTTitle != null and param.redpacketTTitle != ''">
+            and redpacket_t_title LIKE CONCAT('%',#{param.redpacketTTitle },'%')
+        </if>
+        and NOW() &lt;= redpacket_t_end_date and redpacket_t_giveout &lt; redpacket_t_total
+        order by redpacket_t_add_date desc
+    </select>
+    <select id="selectByRedpacketTId" resultType="com.houjiang.activity.dto.UserRedpacketSendDTO">
+        select
+        <include refid="Base_Column_List" />
+        from
+        activity_redpacket_template
+        where redpacket_t_id = #{redpacketTId}
+    </select>
+    <select id="giveList" resultType="com.houjiang.activity.entity.ActivityRedpacketTemplateEntity">
+        SELECT
+        redpacket_t_id,
+        redpacket_t_title
+        FROM
+        activity_redpacket_template
+        WHERE
+         NOW() &lt;= redpacket_t_end_date and redpacket_t_giveout &lt; redpacket_t_total
+         AND redpacket_t_state = 1
+    </select>
+    <select id="selectRedpacketTime" resultType="java.lang.Integer">
+     select
+        count(1)
+      from activity_redpacket_template
+      where redpacket_t_id = #{param.redpacketTId}
+      and now() BETWEEN redpacket_t_start_date AND redpacket_t_end_date
+    </select>
+    <select id="checkReceivedRp" resultType="java.lang.Integer">
+        select redpacket_t_eachlimit
+		from activity_redpacket_template
+		where
+		redpacket_t_id = #{redpacketTId}
+    </select>
+    <select id="selectRpTemById" resultType="com.houjiang.commons.vo.activity.HouRedpacketTemplateVO">
+        SELECT
+            redpacket_t_id,
+            redpacket_t_type,
+            redpacket_t_title,
+            redpacket_t_desc,
+            redpacket_t_start_date,
+            redpacket_t_end_date,
+            redpacket_t_price,
+            redpacket_t_orderlimit,
+            redpacket_t_state,
+            redpacket_t_total,
+            redpacket_t_giveout,
+            redpacket_t_add_date,
+            redpacket_t_update_date,
+            redpacket_t_eachlimit,
+            rob_redpacket_start_date,
+            rob_redpacket_end_date,
+            redpacket_is_booking
+        FROM
+            activity_redpacket_template
+        WHERE
+            redpacket_t_id = #{redpacketTId}
+    </select>
+    <select id="selectBookingRpList" resultType="com.houjiang.commons.vo.activity.HouRedpacketTemplateVO">
+        SELECT
+            redpacket_t_id,
+            redpacket_t_type,
+            redpacket_t_title,
+            redpacket_t_desc,
+            rob_redpacket_start_date AS redpacket_t_start_date,
+            rob_redpacket_end_date AS redpacket_t_end_date,
+            redpacket_t_price,
+            redpacket_t_orderlimit,
+            redpacket_t_state,
+            redpacket_t_total,
+            redpacket_t_giveout,
+            redpacket_t_add_date,
+            redpacket_t_update_date,
+            redpacket_t_eachlimit
+        FROM
+            activity_redpacket_template
+        WHERE
+            redpacket_t_giveout &lt;= redpacket_t_total
+        AND redpacket_t_state = 1
+        AND redpacket_t_type NOT IN ( 6, 7 )
+        AND redpacket_is_booking = 2
+         AND NOW() &lt;= rob_redpacket_end_date
+        ORDER BY
+	redpacket_t_start_date ASC
+    </select>
+    <select id="selectredtemplateId" resultType="java.lang.Integer">
+        SELECT
+        redpacket_t_id
+        FROM
+        activity_redpacket_template
+        WHERE
+        redpacket_t_state = 1
+        AND redpacket_t_start_date &lt;= now()
+        AND NOW() &lt;= redpacket_t_end_date
+        AND redpacket_t_giveout &lt;= redpacket_t_total
+        AND redpacket_t_type not in(1,7)
+    </select>
+</mapper>

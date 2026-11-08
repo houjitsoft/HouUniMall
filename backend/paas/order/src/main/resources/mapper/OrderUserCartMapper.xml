@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderUserCartMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderUserCartEntity" id="OrderUserCartMap">
+        <result property="cartId" column="cart_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="goodsName" column="goods_name" jdbcType="VARCHAR"/>
+        <result property="goodsImage" column="goods_image" jdbcType="VARCHAR"/>
+        <result property="goodsNum" column="goods_num" jdbcType="INTEGER"/>
+        <result property="goodsPrice" column="goods_price" jdbcType="NUMERIC"/>
+        <result property="goodsStock" column="goods_stock" jdbcType="INTEGER"/>
+        <result property="goodsType" column="goods_type" jdbcType="INTEGER"/>
+        <result property="goodsSpec" column="goods_spec" jdbcType="VARCHAR"/>
+        <result property="goodsSpecChineseValue" column="goods_spec_chineseValue" jdbcType="VARCHAR"/>
+        <result property="goodsMoq" column="goods_moq" jdbcType="VARCHAR"/>
+        <result property="insertCartTime" column="insert_cart_time" jdbcType="TIMESTAMP"/>
+        <result property="cartStatus" column="cart_status" jdbcType="INTEGER"/>
+    </resultMap>
+    <update id="batchDeleteGoods">
+        update ${database.prefix.order}hou_order_user_cart set cart_status = 1 WHERE user_id = #{userId} and goods_id IN (
+        <foreach collection="goodsIdList" separator=","
+                 item="goodsId">
+            #{goodsId}
+        </foreach>
+        )
+        <if test="shopGateId != null">
+            and shop_gate_id = #{shopGateId}
+        </if>
+        <if test="shopGateId == null">
+            and shop_gate_id is null
+        </if>
+    </update>
+    <update id="changeGoodsNum">
+        update ${database.prefix.order}hou_order_user_cart
+        set goods_num = #{goodsNum}
+        where user_id = #{userId}
+          and goods_id = #{goodsId}
+          and cart_status = 0
+        <if test="shopGateId != null">
+            and shop_gate_id = #{shopGateId}
+        </if>
+        <if test="shopGateId == null">
+            and shop_gate_id is null
+        </if>
+    </update>
+    <update id="updateOrderUserCarByMap">
+        update ${database.prefix.order}hou_order_user_cart
+        <set>
+            <if test="param.shopName != null and param.shopName != ''">
+                shop_name = #{param.shopName}
+            </if>
+        </set>
+        where shop_id = #{param.shopId}
+    </update>
+    <update id="updateGoodsNum">
+        update ${database.prefix.order}hou_order_user_cart
+        SET goods_num        = goods_num + #{goodsNum},
+            insert_cart_time = #{insertCartTime}
+        where user_id = #{userId}
+          and goods_id = #{goodsId}
+    </update>
+    <delete id="deleteUserCat">
+        delete FROM ${database.prefix.order}hou_order_user_cart where shop_id = #{shopId}
+    </delete>
+    <select id="selectCurrentCartQuantity" resultType="java.lang.Integer">
+        select ouc.goods_num
+        FROM ${database.prefix.order}hou_order_user_cart ouc
+        where user_id = #{userId}
+          and goods_id = #{goodsId}
+          and cart_status = 0
+    </select>
+    <select id="queryShoppingCartByShopName" resultType="com.houjiang.order.dto.EntityObjectsDTO">
+        SELECT a.shop_id,
+               b.shop_name,
+               b.shop_self_support
+        FROM ${database.prefix.order}hou_order_user_cart a
+                 LEFT JOIN ${database.prefix.supplier}hou_shop_base b ON a.shop_id = b.supplier_shop_id
+        WHERE a.user_id = #{userId}
+          and a.cart_status = 0
+        group by a.shop_id
+        order by a.insert_cart_time desc
+    </select>
+    <select id="getShoppongCartList" resultType="com.houjiang.commons.vo.order.ShoppingCartVO">
+        SELECT
+        o.shop_name,
+        o.goods_name,
+        o.goods_image,
+        o.goods_num,
+        o.goods_price,
+        o.goods_stock,
+        o.goods_spec_chinese_value,
+        o.insert_cart_time,
+        u.user_mobile,
+        u.user_name
+        FROM
+        ${database.prefix.order}hou_order_user_cart o
+        LEFT JOIN ${database.prefix.userms}hou_user_info u ON o.user_id = u.user_id
+        WHERE
+        o.cart_status = 0
+        <if test="param.userName !=null and !''.equals(param.userName)">
+            and u.user_name like concat('%',#{param.userName},'%')
+        </if>
+        <if test="param.userMobile !=null and !''.equals(param.userMobile)">
+            and u.user_mobile like concat('%',#{param.userMobile},'%')
+        </if>
+    </select>
+    <select id="selectCommonNumByUserId" resultType="java.lang.Integer">
+        SELECT
+            sum(goods_num)
+        FROM
+            ${database.prefix.order}hou_order_user_cart
+        WHERE
+            cart_status = 0 and user_id = #{userId} and common_id = #{commonId}
+    </select>
+    <select id="selectpGateShopStock" resultType="java.lang.Integer">
+        select shop_gate_goods_stock from ${database.prefix.business}hou_shop_gate_goods_base where shop_gate_id = #{shopGateId} and goods_id = #{goodsId}
+    </select>
+    <select id="queryShoppingCartGoodsExist" resultType="com.houjiang.order.entity.OrderUserCartEntity">
+        select cart_id,goods_num,goods_id FROM ${database.prefix.order}hou_order_user_cart where 1 = 1
+        <if test="userId != null">
+            and user_id = #{userId}
+        </if>
+        <if test="goodsId != null">
+            and goods_id = #{goodsId}
+        </if>
+        <if test="shoppingCartStatus != null">
+            and cart_status = #{shoppingCartStatus}
+        </if>
+        <if test="shopGateId != null">
+            and shop_gate_id = #{shopGateId}
+        </if>
+        <if test="shopGateId == null">
+            and shop_gate_id is null
+        </if>
+    </select>
+    <select id="queryUserShoppingCart" resultType="com.houjiang.order.entity.OrderUserCartEntity">
+        select * FROM ${database.prefix.order}hou_order_user_cart where 1 = 1
+        <if test="userId != null">
+            and user_id = #{userId}
+        </if>
+        <!--<if test="goodsType != null">-->
+            <!--and goods_type = #{goodsType}-->
+        <!--</if>-->
+        <if test="shoppingCartStatus != null">
+            and cart_status = #{shoppingCartStatus}
+        </if>
+        <if test="shopGateId != null">
+            and shop_gate_id = #{shopGateId}
+        </if>
+        <if test="shopGateId == null">
+            and shop_gate_id is null
+        </if>
+        order by insert_cart_time desc
+    </select>
+    <update id="updateShoppingCartGoodsNum">
+        update ${database.prefix.order}hou_order_user_cart
+        set goods_num = #{param.goodsNum}
+        where cart_id = #{param.cartId}
+        <if test="shopGateId != null">
+            and shop_gate_id = #{shopGateId}
+        </if>
+        <if test="shopGateId == null">
+            and shop_gate_id is null
+        </if>
+    </update>
+
+
+</mapper>
+

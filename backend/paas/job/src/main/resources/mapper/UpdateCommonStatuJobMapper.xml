@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.UpdateCommonStatuJobMapper">
+    <update id="updateCommonStatu">
+        update ${database.prefix.goods}hou_goods_common set common_state = 0 where common_id =#{commomId}
+    </update>
+    <update id="updateGoodsStatu">
+        update${database.prefix.goods}hou_goods_base set goods_is_shelves = 2 where common_id =#{commomId}
+    </update>
+    <update id="updateGoodsStatuGoodsId">
+        update${database.prefix.goods}hou_goods_base set goods_is_shelves = 2 where goods_id =#{goodsId}
+    </update>
+    <select id="queryCommonIdBystock" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM ${database.prefix.goods}hou_goods_base b
+                 LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on b.goods_id = gs.goods_id
+        WHERE gs.goods_stock > 0
+          AND b.goods_is_shelves = 1 and b.common_id = #{commomId}
+    </select>
+    <select id="queryGoodsIdByBase" resultType="java.util.Map">
+        SELECT b.goods_id   as goodsId, b.common_id as commonId
+        FROM ${database.prefix.goods}hou_goods_base b
+                 LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on b.goods_id = gs.goods_id
+        WHERE gs.goods_stock = 0
+          AND b.goods_is_shelves = 1
+    </select>
+</mapper>

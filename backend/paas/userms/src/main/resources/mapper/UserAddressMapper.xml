@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserAddressMapper">
+
+    <resultMap type="com.houjiang.userms.entity.UserAddressEntity" id="UserAddressMap">
+        <result property="userAddressId" column="user_address_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="userAddressContact" column="user_address_contact" jdbcType="VARCHAR"/>
+        <result property="userAddressProvinceId" column="user_address_province_id" jdbcType="INTEGER"/>
+        <result property="userAddressCityId" column="user_address_city_id" jdbcType="INTEGER"/>
+        <result property="userAddressAreaId" column="user_address_area_id" jdbcType="INTEGER"/>
+        <result property="userAddressArea" column="user_address_area" jdbcType="VARCHAR"/>
+        <result property="userAddressAddress" column="user_address_address" jdbcType="VARCHAR"/>
+        <result property="userAddressPhone" column="user_address_phone" jdbcType="VARCHAR"/>
+        <result property="userAddressDefault" column="user_address_default" jdbcType="INTEGER"/>
+        <result property="userAddressTime" column="user_address_time" jdbcType="TIMESTAMP"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="addAddress">
+           INSERT INTO ${database.prefix.userms}hou_user_address
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="userAddressContact != null">
+                user_address_contact,
+            </if>
+            <if test="userAddressProvinceId != null">
+                user_address_province_id,
+            </if>
+            <if test="userAddressCityId != null">
+                user_address_city_id,
+            </if>
+            <if test="userAddressAreaId != null">
+                user_address_area_id,
+            </if>
+            <if test="userAddressArea != null">
+                user_address_area,
+            </if>
+            <if test="userAddressAddress != null">
+                user_address_address,
+            </if>
+            <if test="userAddressPhone != null">
+                user_address_phone,
+            </if>
+            <if test="userAddressDefault != null">
+                user_address_default,
+            </if>
+            <if test="internationalType != null">
+                international_type,
+            </if>
+            <if test="countryId != null">
+                country_id,
+            </if>
+            <if test="countryName != null">
+                country_name,
+            </if>
+            <if test="internationalDialingCode != null">
+                international_dialing_code,
+            </if>
+            user_address_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId},
+            </if>
+            <if test="userAddressContact != null">
+                #{userAddressContact},
+            </if>
+            <if test="userAddressProvinceId != null">
+                #{userAddressProvinceId},
+            </if>
+            <if test="userAddressCityId != null">
+                #{userAddressCityId},
+            </if>
+            <if test="userAddressAreaId != null">
+                #{userAddressAreaId},
+            </if>
+            <if test="userAddressArea != null">
+                #{userAddressArea},
+            </if>
+            <if test="userAddressAddress != null">
+                #{userAddressAddress},
+            </if>
+            <if test="userAddressPhone != null">
+                #{userAddressPhone},
+            </if>
+            <if test="userAddressDefault != null">
+                #{userAddressDefault},
+            </if>
+            <if test="internationalType != null">
+                #{internationalType},
+            </if>
+            <if test="countryId != null">
+                #{countryId},
+            </if>
+            <if test="countryName != null">
+                #{countryName},
+            </if>
+            <if test="internationalDialingCode != null">
+                #{internationalDialingCode},
+            </if>
+            now(),
+        </trim>
+    </insert>
+    <update id="updateAddress">
+        update ${database.prefix.userms}hou_user_address
+        set
+        <if test="paraMap.userAddressContact != null and paraMap.userAddressContact != ''">
+            user_address_contact = #{paraMap.userAddressContact},
+        </if>
+        <if test="paraMap.userAddressProvinceId != null and paraMap.userAddressProvinceId != ''">
+            user_address_province_id = #{paraMap.userAddressProvinceId},
+        </if>
+        <if test="paraMap.userAddressCityId != null and paraMap.userAddressCityId != ''">
+            user_address_city_id = #{paraMap.userAddressCityId},
+        </if>
+        <if test="paraMap.userAddressAreaId != null and paraMap.userAddressAreaId != ''">
+            user_address_area_id = #{paraMap.userAddressAreaId},
+        </if>
+        <if test="paraMap.userAddressArea != null and paraMap.userAddressArea != ''">
+            user_address_area = #{paraMap.userAddressArea},
+        </if>
+        <if test="paraMap.userAddressAddress != null and paraMap.userAddressAddress != ''">
+            user_address_address = #{paraMap.userAddressAddress},
+        </if>
+        <if test="paraMap.userAddressPhone != null and paraMap.userAddressPhone != ''">
+            user_address_phone = #{paraMap.userAddressPhone},
+        </if>
+        <if test="paraMap.userAddressDefault != null and paraMap.userAddressDefault != ''">
+            user_address_default = #{paraMap.userAddressDefault},
+        </if>
+        <if test="paraMap.internationalType != null and paraMap.internationalType != ''">
+            international_type = #{paraMap.internationalType},
+        </if>
+        <if test="paraMap.countryId != null and paraMap.countryId != ''">
+            country_id = #{paraMap.countryId},
+        </if>
+        <if test="paraMap.countryName != null and paraMap.countryName != ''">
+            country_name = #{paraMap.countryName},
+        </if>
+        <if test="paraMap.internationalDialingCode != null and paraMap.internationalDialingCode != ''">
+            international_dialing_code = #{paraMap.internationalDialingCode},
+        </if>
+        user_address_time = now()
+        where user_address_id = #{paraMap.userAddressId}
+        and user_id = #{paraMap.userId}
+    </update>
+    <select id="getDefAddresses" resultType="com.houjiang.userms.vo.UserAddressVO">
+            select uuua.user_address_id,uuua.user_id,uuua.user_address_contact,uuua.user_address_province_id,uuua.user_address_city_id,
+            uuua.user_address_area_id,uuua.user_address_area,uuua.user_address_address,uuua.user_address_phone,
+            uuua.user_address_default,uuua.user_address_time,international_type,country_id,country_name,international_dialing_code
+            from ${database.prefix.userms}hou_user_address uuua where user_id = #{userId} and user_address_default = 1
+    </select>
+    <select id="getAddresses" resultType="com.houjiang.userms.vo.UserAddressVO">
+         select uuua.user_address_id,uuua.user_id,uuua.user_address_contact,uuua.user_address_province_id,uuua.user_address_city_id,
+            uuua.user_address_area_id,uuua.user_address_area,uuua.user_address_address,uuua.user_address_phone,
+            uuua.user_address_default,uuua.user_address_time,international_type,country_id,country_name,international_dialing_code
+            from ${database.prefix.userms}hou_user_address uuua where user_id = #{userId} ORDER BY user_address_default DESC
+    </select>
+
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserLogActionMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserLogActionEntity">
+            <id property="logId" column="log_id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+            <result property="method" column="method" jdbcType="VARCHAR"/>
+            <result property="logParam" column="log_param" jdbcType="VARCHAR"/>
+            <result property="operation" column="operation" jdbcType="VARCHAR"/>
+            <result property="logIp" column="log_ip" jdbcType="VARCHAR"/>
+            <result property="logDate" column="log_date" jdbcType="DATE"/>
+            <result property="logTime" column="log_time" jdbcType="TIMESTAMP"/>
+            <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        log_id,user_id,
+        user_name,method,log_param,operation,
+        log_ip,log_date,log_time,
+        ts
+    </sql>
+    <select id="queryUserOperateLog" resultType="java.util.Map">
+        select a.log_id as LogId,
+        a.user_id as  userId,
+        a.user_name as  userName,
+        a.method,log_param as  logParam,
+        a.operation as  operation,
+        a.log_ip as  logIp,
+        DATE_FORMAT(a.log_time,'%Y-%m-%d %H:%i:%s') as logTime,
+        b.user_mobile as  userMobile,
+        b.user_nickname as  userNickname
+        from `user_log_action` a
+        left join ${database.prefix.userms}hou_user_info b on a.user_id=b.user_id
+        where 1=1 and a.method is not null
+        <if test="param.userName != null and param.userName != ''">
+            and a.user_name like concat('%',#{param.userName},'%')
+        </if>
+        <if test="param.userNickName != null and param.userNickName != ''">
+            and a.user_nickname like concat('%',#{param.userNickName},'%')
+        </if>
+        <if test="param.userMobile != null and param.userMobile != ''">
+            and b.user_mobile like concat('%',#{param.userMobile},'%')
+        </if>
+        order by a.log_time DESC
+    </select>
+</mapper>

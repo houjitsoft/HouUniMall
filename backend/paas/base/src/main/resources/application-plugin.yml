@@ -1,0 +1,212 @@
+# 插件宿主接线（P0-2）：base 作为插件中心控制面，插件装载【以安装状态驱动】——
+# 由 PluginRuntimeBootstrap 在 ApplicationReadyEvent 时查询 hou_addon_plugin_install(installed=1)，
+# 按每条安装记录登记的 jar_path 精确装载并恢复启停态；未安装的插件即便存在于目录也不会被启动；
+# 无已安装插件时干净跳过（宿主只跑核心服务，不报错、不空转）。
+#
+# boot-enabled=false：Base 不执行引擎的全目录扫描；插件中心按安装表精确恢复
+#   已安装制品，避免未购买/已卸载的 JAR 被自动启动。插件后端仍由各自独立服务或
+#   已授权的 embedded 制品承载，base 负责插件状态、前端产物和生命周期编排。
+# plugins-dir：相对 base 工作目录（启动脚本使用 jar/）的安装产物根目录，避免重复拼接 jar/jar/plugins。
+#   与市场在线安装写入、hou_addon_plugin_install.jar_path 指向一致；不是启动扫描源。
+# 生产若由 Nacos base.yaml 提供同名配置，则以此处为本地兜底。
+houcloud:
+  plugin:
+    enabled: true
+    classpath-extensions-enabled: true
+    # 运行期恢复由 plugin-center 按 hou_addon_plugin_install 驱动；
+    # 禁止引擎启动时扫描整个目录，避免未购买/已卸载的 JAR 被自动加载。
+    boot-enabled: false
+    plugins-dir: plugins
+    data-dir: plugin-data
+    # 插件发布管控（M1 收口）：true 表示只有 ROLE_MALL_ADMIN 能调用发布侧写接口
+    # （上传/提交审核/审核/下架/重新上架），第三方自助发布暂不放开。
+    # 放开时机与第三方入驻流程绑定，届时在 Nacos base.yaml 覆盖为 false。
+    admin-only: true
+    # 内部定时任务令牌：job 服务无用户 Token 调用 /plugin/{code}/job/** 时凭
+    # X-Internal-Job-Token 头通过本宿主认证（PluginInternalJobTokenFilter）。
+    # 生产真实值由 Nacos base.yaml 提供（job.yaml 需配置相同值）；本地/默认留空，
+    # 未配置时该链路自动退回原有鉴权（401），不静默放行。禁止把真实值提交到 git。
+    internal-job-token: ${HOU_INTERNAL_JOB_TOKEN:}
+    # 跨宿主安装地址兜底（优先于注册中心 DiscoveryClient）。
+    # Docker Compose 同网络下用服务名即可；留空则只走注册中心。
+    # 宿主进程重启瞬间注册中心可能短暂查不到实例，静态地址可避免误报「未部署该服务」。
+    host-endpoints:
+      userms: ${HOU_PLUGIN_HOST_USERMS:}
+      goods: ${HOU_PLUGIN_HOST_GOODS:}
+      order: ${HOU_PLUGIN_HOST_ORDER:}
+      cms: ${HOU_PLUGIN_HOST_CMS:}
+      tool: ${HOU_PLUGIN_HOST_TOOL:}
+      payment: ${HOU_PLUGIN_HOST_PAYMENT:}
+      auth: ${HOU_PLUGIN_HOST_AUTH:}
+    # 调用方白名单兜底策略：true = fail-closed，未在 @HouRoute(allowCallers) /
+    # @HouCaller 上声明调用方的路由，一律拒绝「非浏览器」调用方（插件间调用、内部链路）。
+    # 只影响非宿主调用方：浏览器登录用户（host）的调用完全不受影响。
+    #
+    # 【开启的前置条件】存量内部链路必须先声明，否则会被 403 打断：
+    #   job 服务 → 插件的 /plugin/{code}/job/** 已由
+    #   GeoJobFeignController / OaJobFeignController 类级 @HouCaller({"internal"}) 声明放行。
+    # 若将来新增内部链路，必须同步补 @HouCaller / allowCallers 声明，不能只关开关。
+    enforce-caller-whitelist: true
+    host-service: base
+    route-strip-prefixes: []
+  # 插件分发（M2）：制品下载链路配置
+  artifact:
+    # 存储类型：local（默认，开发机）| minio（自建 MinIO）| cos（腾讯云 COS S3 API）
+    # 生产切对象存储后制品落 bucket=unimall；密钥只走环境变量，禁止写入 git。
+    type: ${HOU_ARTIFACT_TYPE:local}
+    minio:
+      # S3 API（不是 Console）。本站实测：Console=https://fss.shangliansoft.cn ，S3 API=主机:19000
+      endpoint: ${HOU_ARTIFACT_MINIO_ENDPOINT:}
+      access-key: ${HOU_ARTIFACT_MINIO_ACCESS_KEY:}
+      secret-key: ${HOU_ARTIFACT_MINIO_SECRET_KEY:}
+      bucket: ${HOU_ARTIFACT_MINIO_BUCKET:unimall-plugins}
+      key-prefix: ${HOU_ARTIFACT_MINIO_KEY_PREFIX:}
+      region: ${HOU_ARTIFACT_MINIO_REGION:}
+    cos:
+      # 腾讯云 COS S3 兼容 endpoint，例如 https://cos.ap-guangzhou.myqcloud.com
+      endpoint: ${HOU_ARTIFACT_COS_ENDPOINT:}
+      access-key: ${HOU_ARTIFACT_COS_SECRET_ID:}
+      secret-key: ${HOU_ARTIFACT_COS_SECRET_KEY:}
+      bucket: ${HOU_ARTIFACT_COS_BUCKET:unimall}
+      key-prefix: ${HOU_ARTIFACT_COS_KEY_PREFIX:}
+      region: ${HOU_ARTIFACT_COS_REGION:}
+      secure: true
+    # 下载令牌 HMAC-SHA256 签名密钥。生产真实值由 Nacos base.yaml 提供；
+    # 本地/默认留空，未配置时 /base/plugin-center/artifact/download-url 直接抛错拒绝签发，
+    # 不静默放行（fail-closed）。禁止把真实值提交到 git。
+    download-token-secret: ${HOU_ARTIFACT_DOWNLOAD_TOKEN_SECRET:}
+    # 下载令牌有效期（秒），默认 600（10 分钟）。
+    download-token-ttl-seconds: 600
+    # 单张令牌最大下载次数，默认 5。
+    download-token-max-hits: 5
+    sign:
+      # 当前生效 kid；公钥表与私钥路径由 Nacos / 环境变量注入。
+      active-kid: ${HOU_ARTIFACT_SIGN_ACTIVE_KID:k2026}
+      # 格式 kid=base64(X.509),kid2=...；生产必须非空且与 require-signature 同时开启。
+      # 生成：java -cp plugin-signature.jar com.houjiang.plugin.signature.Ed25519KeyGen .unimall/secrets k2026
+      public-keys: ${HOU_ARTIFACT_SIGN_PUBLIC_KEYS:}
+      private-key-path: ${HOU_ARTIFACT_SIGN_PRIVATE_KEY_PATH:}
+  # 插件安装编排（M3）
+  update:
+    # 宿主框架版本：与 hou_market_plugin.min_framework_version 比较，
+    # 低于插件要求时安装被 3014 拦下（不是装完再炸）。宿主升级后由部署方维护此值。
+    framework-version: 1.0.0
+    # 制品体积上限（字节），与 houcloud.plugin.max-artifact-bytes 对齐，默认 64MB。
+    max-artifact-bytes: 67108864
+    # 是否强制要求制品签名（fail-closed）：开启后未签名或 kid 未登记的制品一律 3011。
+    #
+    # 【为什么仓库默认仍是 false】公钥未配时开启 = 线上安装 100% 返 3011。
+    # 【生产上线前】配好 HOU_ARTIFACT_SIGN_PUBLIC_KEYS 后，必须把本项置为 true：
+    #   HOU_PLUGIN_REQUIRE_SIGNATURE=true
+    require-signature: ${HOU_PLUGIN_REQUIRE_SIGNATURE:false}
+    # base 对外地址：留空表示进程内取制品（不经自环 HTTP）。
+    # 需要端到端验证 raw 回源链路时才配置，例如 http://127.0.0.1:8214。
+    public-base-url: ${HOU_BASE_PUBLIC_BASE_URL:}
+    # ---- 以下为 M4 升级 / 回滚编排参数 ----
+    # 升级排空窗口（毫秒）：撤路由后给在途请求的缓冲时间，期间请求返回 503 + Retry-After:10。
+    drain-window-ms: 5000
+    # Windows jar 句柄释放重试次数（含首次），配合下面的退避做指数退避。
+    # 三次（200ms → 400ms）足以覆盖 ClassLoader 异步释放；仍失败就放弃升级并恢复流量。
+    handle-retry-attempts: 3
+    handle-retry-backoff-ms: 200
+    # 版本目录保留数量（不含当前版本与回滚锚点）。
+    retain-versions: 3
+    # 备份点（.backup-{ts}）保留数量。
+    retain-backups: 3
+    # 孤儿任务判定阈值（分钟）：启动时仍非终态且已开始超过该时长的任务视为进程被杀的残留。
+    orphan-timeout-minutes: 30
+  # 授权心跳（M5b）：扫描「过期 / 被吊销」的授权并把插件软停（软停 = 停用插件但保留数据与安装包）
+  license:
+    # 是否自动排程。关闭后仍可手动调用 PluginLicenseHeartbeat#sweep() 触发。
+    heartbeat-enabled: true
+    # 首次扫描延迟（毫秒）：给启动期的类加载与数据源预热留出时间。
+    heartbeat-initial-delay-ms: 60000
+    # 扫描间隔（毫秒）：默认 30 分钟。授权过期不是秒级事件，过密只会白扫库。
+    heartbeat-fixed-delay-ms: 1800000
+    # 单次扫描上限：限制单轮的行数，避免长事务。
+    heartbeat-limit: 200
+  # ============================================================
+  # 插件市场 · 收费闭环（下单 → 支付 → 回调 → 自动发证 → 安装门控）
+  # ------------------------------------------------------------
+  # ⚠️ 标记【需你填写】的项必须按实际商户与定价配置，否则：
+  #    - 未配 enabled=true      → 下单直接被拒（不会下出付不掉的单）
+  #    - 未配 public-base-url   → 渠道回调打不进来，订单一直停在「待支付」
+  #    - 未配 CASHIER.api-key   → 回调一律拒收（不验签就结算等于谁都能刷成已支付）
+  #    - 未配 plans             → 回落到商品表 price_cents 标价
+  # 生产请用 Nacos base.yaml 覆盖同名键（改完无需重新打包），禁止把真实密钥提交到 git。
+  # ============================================================
+  # 🔴 2026-10-27 装机实测：这里曾写成「market: → pay:」两级，实际绑定路径成了
+  #    houcloud.market.pay.*，而 PluginMarketPayProperties 及 20+ 处 @Value/文档
+  #    全是 houcloud.plugin.market.pay.* —— enabled 永远绑不上，环境变量怎么设
+  #    都是「在线购买未开启」。改用点号键补齐层级（Spring 松弛绑定按完整路径展开）。
+  plugin.market.pay:
+      # 【需你填写】是否开启在线购买。false 时 /base/plugin-center/market/order/create 直接拒绝。
+      enabled: ${HOU_PLUGIN_PAY_ENABLED:false}
+      # 【需你填写】收款渠道：CASHIER（复用商城收银台，推荐）/ MOCK（沙箱）。
+      # WECHAT_V3、ALIPAY 直连尚未内置，配了会在下单时报「渠道未接入」。
+      channel: ${HOU_PLUGIN_PAY_CHANNEL:CASHIER}
+      # 【需你填写】沙箱开关。true = 模拟支付不碰真实资金，且开放 /base/plugin-center/market/pay/sandbox/confirm。
+      # 上线前必须置 false，否则任何人都能把订单刷成已支付并领走授权。
+      # 默认值取 false（安全侧）：忘了显式关掉、或 Nacos 配置丢失回落到默认值时，必须是「不能刷单」。
+      sandbox: ${HOU_PLUGIN_PAY_SANDBOX:false}
+      # 默认币种（套餐未单独声明时使用）。跨境收款改成目标币种。
+      currency: ${HOU_PLUGIN_PAY_CURRENCY:CNY}
+      # 订单支付窗口（分钟），超时未付自动关闭。
+      pay-window-minutes: ${HOU_PLUGIN_PAY_WINDOW_MINUTES:30}
+      # 【需你填写】本站点对外可访问地址，用于拼回调地址，例如 https://unimall.houjit.com
+      public-base-url: ${HOU_BASE_PUBLIC_BASE_URL:}
+      # 回调路径（公网可达，且要在微信/支付宝商户后台登记一致地址）
+      notify-path: /web/plugin-center/market/pay/notify
+      # 支付完成后前端跳转地址，可留空。
+      return-url: ${HOU_PLUGIN_PAY_RETURN_URL:}
+      # 回调时间戳容忍窗口（分钟），超出视为重放攻击。
+      notify-tolerance-minutes: 5
+      # 【需你填写】运营侧管理令牌（/web/plugin-center/market/pay/admin/** 的准入凭据）。
+      # 留空时管理接口全部 403（fail-closed）——改支付配置等于改收款商户号，
+      # 不能只靠「已登录」把关。用随机长串，环境变量注入，禁止进 git。
+      admin-token: ${HOU_PLUGIN_PAY_ADMIN_TOKEN:}
+      # 超时订单自动关闭扫描（驱动 PluginOrderService#closeExpired）。
+      # 关掉会让超时未付订单永远停在「待支付」，前端列表堆废单且无法重新下单。
+      expire-sweep-enabled: ${HOU_PLUGIN_PAY_EXPIRE_SWEEP_ENABLED:true}
+      expire-sweep-initial-delay-ms: ${HOU_PLUGIN_PAY_EXPIRE_SWEEP_INITIAL_DELAY_MS:60000}
+      # 默认 5 分钟扫一次；订单支付窗口默认 30 分钟，足够及时。
+      expire-sweep-fixed-delay-ms: ${HOU_PLUGIN_PAY_EXPIRE_SWEEP_FIXED_DELAY_MS:300000}
+      channels:
+        # CASHIER 走商城内部收银台，不需要商户号；但回调验签密钥必须有。
+        CASHIER:
+          # 【需你填写】回调验签密钥，需与 order 服务下发回调时的签名密钥一致。
+          api-key: ${HOU_PLUGIN_PAY_CASHIER_API_KEY:}
+        # 以下为直连渠道的参数位（代码尚未内置实现，填了也不会生效）：
+        # WECHAT_V3:
+        #   app-id: ${HOU_PLUGIN_PAY_WX_APP_ID:}        # 【需你填写】应用号
+        #   mch-id: ${HOU_PLUGIN_PAY_WX_MCH_ID:}        # 【需你填写】商户号（钱结算到这里）
+        #   api-key: ${HOU_PLUGIN_PAY_WX_API_V3_KEY:}   # 【需你填写】APIv3 密钥
+        #   public-key: ${HOU_PLUGIN_PAY_WX_PUB_KEY:}   # 【需你填写】平台证书公钥
+        #   cert-serial-no: ${HOU_PLUGIN_PAY_WX_SERIAL:}
+        #   private-key-path: ${HOU_PLUGIN_PAY_WX_KEY_PATH:}
+        # ALIPAY:
+        #   app-id: ${HOU_PLUGIN_PAY_ALI_APP_ID:}
+        #   mch-id: ${HOU_PLUGIN_PAY_ALI_PID:}
+        #   api-key: ${HOU_PLUGIN_PAY_ALI_PRIVATE_KEY:} # 应用私钥（PKCS#8）
+        #   public-key: ${HOU_PLUGIN_PAY_ALI_PUB_KEY:}  # 支付宝公钥
+      # ----------------------------------------------------------
+      # 【需你填写】价格套餐：pluginCode → planCode → 套餐
+      # 配了套餐，下单必须传 planCode；没配则回落商品表 hou_market_plugin.price_cents。
+      # 示例（按需放开并改成你的真实售价）：
+      # plans:
+      #   geo:
+      #     TRIAL:
+      #       name: 7 天试用
+      #       price: 0.00
+      #       license-type: TRIAL
+      #       valid-days: 7
+      #       enabled: true
+      #     YEARLY:
+      #       name: 年度版
+      #       price: 1999.00
+      #       currency: CNY
+      #       license-type: PAID
+      #       valid-days: 365
+      #       enabled: true
+      # ----------------------------------------------------------
+      plans: {}

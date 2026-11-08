@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseSensitiveMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseSensitiveEntity" id="BaseSensitiveMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sensitiveName" column="sensitive_name" jdbcType="VARCHAR"/>
+        <result property="sensitiveClassificationId" column="sensitive_classification_id" jdbcType="INTEGER"/>
+        <result property="sensitiveAddTime" column="sensitive_add_time" jdbcType="TIMESTAMP"/>
+        <result property="sensitiveState" column="sensitive_state" jdbcType="INTEGER"/>
+    </resultMap>
+    <update id="updateSensitiveStart">
+        update hou_base_sensitive
+        set sensitive_state = 0
+        where 1=1
+        and id in (
+        <foreach collection="sensitiveIdList" separator=","
+                 item="sensitiveId">
+            #{sensitiveId}
+        </foreach>
+        )
+    </update>
+    <select id="querySensitive" resultType="com.houjiang.commons.vo.sensitive.BaseSensitiveVO">
+        select bs.id,bs.sensitive_name,bs.sensitive_state,bs.sensitive_classification_id,bs.sensitive_add_time,bsc.classification_name,bsc.classification_state
+        from hou_base_sensitive bs
+        LEFT JOIN hou_base_sensitive_classification bsc on bs.sensitive_classification_id = bsc.classification_id
+        where  1 = 1
+        <if test="param.sensitiveClassificationId != null">
+            and bsc.classification_id =  #{param.sensitiveClassificationId}
+        </if>
+        <if test="param.sensitiveName != null">
+            and bs.sensitive_name LIKE CONCAT('%',#{param.sensitiveName},'%')
+        </if>
+        order by bs.sensitive_add_time desc
+    </select>
+    <select id="queryAllSensitive" resultType="java.lang.String">
+        select bs.sensitive_name
+        from hou_base_sensitive bs
+        where  1 = 1 and bs.sensitive_state = 1
+        order by bs.sensitive_add_time desc
+    </select>
+    <select id="selectAllSensitive" resultType="com.houjiang.commons.vo.sensitive.BaseSensitiveVO">
+        select bs.id,bs.sensitive_name,bs.sensitive_state,bs.sensitive_classification_id,bs.sensitive_add_time,bsc.classification_name,bsc.classification_state
+        from hou_base_sensitive bs
+        LEFT JOIN hou_base_sensitive_classification bsc on bs.sensitive_classification_id = bsc.classification_id
+        where  1 = 1 and bs.sensitive_state = 1 and bsc.classification_state = 1
+    </select>
+    <select id="querySensitiveByIdList" resultType="java.lang.String">
+        select sensitive_name from hou_base_sensitive where id in
+        <foreach item="sensitiveId" index="index" collection="sensitiveIdList" open="(" separator="," close=")">
+            #{sensitiveId}
+        </foreach>
+    </select>
+
+
+</mapper>

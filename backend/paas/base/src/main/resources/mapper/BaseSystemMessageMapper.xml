@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseSystemMessageMapper">
+    <insert id="insertSysMessage">
+        insert into ${database.prefix.userms}hou_base_system_message
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.orderId != null">
+                message_order_id,
+            </if>
+            <if test="param.userId != null">
+                message_user_id,
+            </if>
+            <if test="param.userName != null">
+                message_user_name,
+            </if>
+            <if test="param.messageType != null">
+                message_type,
+            </if>
+            <if test="param.messageTitle != null">
+                message_title,
+            </if>
+            <if test="param.messageContent != null">
+                message_content,
+            </if>
+            <if test="param.shopId != null">
+                shop_id,
+            </if>
+            message_create_time,
+            message_processing_status
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.orderId != null">
+                #{param.orderId},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId},
+            </if>
+            <if test="param.userName != null">
+                #{param.userName},
+            </if>
+            <if test="param.messageType != null">
+                #{param.messageType},
+            </if>
+            <if test="param.messageTitle != null">
+                #{param.messageTitle},
+            </if>
+            <if test="param.messageContent != null">
+                #{param.messageContent},
+            </if>
+            <if test="param.shopId != null">
+                #{param.shopId},
+            </if>
+            now(),
+            1
+        </trim>
+    </insert>
+
+    <select id="querySysOrderMessage" resultType="com.houjiang.base.entity.BaseSystemMessageEntity">
+        select message_id,
+               message_user_id,
+               message_user_name,
+               message_type,
+               message_title,
+               message_content,
+               message_islook,
+               message_create_time,
+               message_isdel,
+               shop_id,
+               create_user,
+               create_time,
+               ts,
+               message_order_id,
+               message_processing_status
+        from ${database.prefix.userms}hou_base_system_message
+        where message_isdel = 0
+          and shop_id = #{param.shopId}
+        order by message_id desc ,message_create_time desc
+    </select>
+</mapper>

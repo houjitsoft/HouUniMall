@@ -1,0 +1,410 @@
+{
+  "welcome": {
+    "title": "欢迎使用 UniMall 管理系统",
+    "description": "一站式企业管理平台，助力企业数字化转型"
+  },
+  "stats": {
+    "users": "用户总数",
+    "products": "商品数量",
+    "orders": "订单数量",
+    "revenue": "今日收入",
+    "todo": "每日待办",
+    "contracts": "合同总数",
+    "revenueToday": "今日销售额"
+  },
+  "kpi": {
+    "gmvToday": "今日成交额",
+    "orderToday": "今日订单量",
+    "gmv7d": "近7日成交额",
+    "order7d": "近7日订单量",
+    "buyersToday": "下单用户数",
+    "avgOrderValue": "客单价",
+    "payRate": "支付转化率",
+    "refundToday": "今日退款金额",
+    "compareYesterday": "较昨日",
+    "comparePrev7d": "较上7日",
+    "noCompare": "暂无环比",
+    "todayOnly": "当日值"
+  },
+  "alerts": {
+    "title": "运营待办与预警",
+    "pendingTotal": "待处理",
+    "pendingShip": "待发货订单",
+    "pendingPay": "待付款订单",
+    "refundAfterSale": "待处理退款/售后",
+    "lowStock": "库存预警商品",
+    "offShelf": "已下架商品",
+    "riskGoods": "违规/审核不通过",
+    "pendingMerchant": "待审商家入驻",
+    "hint": {
+      "pendingShip": "已付款等待发货，超时会影响体验分",
+      "pendingPay": "已下单未付款，可催付或关闭",
+      "refundAfterSale": "退款与退货申请待审核",
+      "lowStock": "库存低于预警线，及时补货",
+      "offShelf": "当前处于下架状态",
+      "riskGoods": "审核未通过或涉嫌违规",
+      "pendingMerchant": "商家入驻申请待审核"
+    }
+  },
+  "rank": {
+    "title": "热销排行",
+    "empty": "暂无销量数据",
+    "mode": {
+      "goods": "热销商品",
+      "category": "品类排行"
+    },
+    "unit": {
+      "sales": "销量"
+    }
+  },
+  "toolbar": {
+    "refresh": "刷新",
+    "notifications": "通知中心",
+    "settings": "仪表盘设置",
+    "open": "打开",
+    "loading": "加载中...",
+    "refreshOk": "已刷新",
+    "moduleUnavailable": "该模块页面暂不可用，请确认对应插件已安装或联系管理员",
+    "moduleNotInstalled": "该模块所属插件尚未安装，已跳转到插件中心"
+  },
+  "editMode": {
+    "edit": "编辑",
+    "done": "完成",
+    "editModeSwitch": "编辑模式",
+    "hide": "隐藏",
+    "drag": "拖拽",
+    "dragSection": "拖拽调整区块顺序",
+    "hideSection": "隐藏该区块",
+    "cols": "栅格列数",
+    "refresh": "自动刷新",
+    "refreshOff": "关闭",
+    "sections": "页面区块",
+    "modules": "模块显示",
+    "reset": "重置",
+    "save": "保存",
+    "saveOk": "保存成功",
+    "saveLocalOnly": "已保存到本地（后端暂不可用）",
+    "resetOk": "已重置为默认",
+    "empty": "没有可显示的模块，请在设置中开启",
+    "allSectionsHidden": "所有区块都被隐藏了，请在设置中开启"
+  },
+  "sections": {
+    "hero": {
+      "title": "欢迎区",
+      "hint": "顶部问候语与工具栏按钮",
+      "showGreeting": "显示问候语",
+      "showDescription": "显示欢迎描述",
+      "showRefresh": "显示刷新按钮",
+      "showNotification": "显示通知按钮",
+      "showSettings": "显示设置按钮",
+      "showEdit": "显示编辑按钮"
+    },
+    "stats": {
+      "title": "商城核心指标",
+      "hint": "首屏经营指标卡（成交额 / 订单量 / 客单价 / 转化率），可按需取舍",
+      "cards": "显示哪些指标"
+    },
+    "alerts": {
+      "title": "运营待办与预警",
+      "hint": "待发货、退款售后、库存与违规预警，点击直达处理页",
+      "items": "显示哪些待办项"
+    },
+    "rank": {
+      "title": "热销排行",
+      "hint": "热销商品与品类销量排行",
+      "modes": "排行维度",
+      "limit": "显示条数"
+    },
+    "quick": {
+      "title": "快捷操作",
+      "hint": "常用入口快捷方式",
+      "actions": "显示哪些操作"
+    },
+    "todo": {
+      "title": "我的每日待办",
+      "hint": "需安装 OA 插件，未安装时显示提示",
+      "showMoreLink": "显示「更多」按钮"
+    },
+    "trend": {
+      "title": "交易趋势",
+      "hint": "成交额 / 订单量走势图",
+      "days": "默认天数",
+      "series": "显示哪些曲线"
+    },
+    "widgets": {
+      "title": "工作台模块",
+      "hint": "可拖拽的业务卡片网格",
+      "showTitle": "显示区块标题"
+    }
+  },
+  "quickActions": {
+    "title": "快捷操作",
+    "newGoods": "发布商品",
+    "orderShip": "订单发货",
+    "refundAudit": "退款审核",
+    "stockCheck": "库存盘点",
+    "goodsCategory": "商品分类",
+    "storeManage": "店铺管理"
+  },
+  "charts": {
+    "trend": "交易趋势",
+    "last7": "近7天",
+    "last30": "近30天",
+    "order": "订单量",
+    "revenue": "成交额",
+    "empty": "暂无交易数据",
+    "emptyHint": "产生成交后这里会显示每日走势"
+  },
+  "notification": {
+    "title": "消息通知",
+    "empty": "暂无通知"
+  },
+  "more": "更多",
+  "dailyTodo": {
+    "title": "我的每日待办",
+    "subtitle": "仅自己可见，用于记录今天最重要的事项"
+  },
+  "moreModules": "更多模块",
+  "modules": {
+    "comingSoon": "功能开发中，敬请期待",
+    "oaNoTitle": "(无标题)",
+    "oaNoTodos": "暂无待办事项",
+    "oaMine": "我的",
+    "oaPriority": "优先",
+    "oaDone": "已完成",
+    "oaTypes": {
+      "approval": "审批",
+      "hr": "人事",
+      "project": "项目",
+      "meeting": "会议",
+      "other": "其他"
+    },
+    "paymentTodayAmount": "今日金额",
+    "paymentTransactions": "今日交易",
+    "paymentSuccessRate": "成功率",
+    "paymentNoData": "暂无支付数据",
+    "orderToday": "今日订单",
+    "orderPending": "待处理",
+    "orderRevenue": "今日销售额",
+    "orderRecent": "最近订单",
+    "orderNoData": "暂无订单",
+    "orderStatusPending": "待处理",
+    "orderStatusShipped": "已发货",
+    "orderStatusCompleted": "已完成",
+    "orderStatusCancelled": "已取消",
+    "goodsTotal": "商品总数",
+    "goodsOnSale": "在售",
+    "goodsLowStock": "低库存",
+    "goodsTopSales": "销量 TOP",
+    "goodsNoData": "暂无商品",
+    "oa": {
+      "title": "OA待办事项",
+      "noTodos": "暂无待办事项",
+      "types": {
+        "approval": "审批",
+        "hr": "人事",
+        "project": "项目",
+        "meeting": "会议",
+        "other": "其他"
+      }
+    },
+    "erp": {
+      "title": "ERP发货物流",
+      "noShipments": "暂无发货信息",
+      "trackingNumber": "运单号",
+      "estimatedArrival": "预计到达",
+      "statuses": {
+        "shipping": "运输中",
+        "shipped": "已发货",
+        "pending": "待发货",
+        "delivered": "已签收",
+        "exception": "异常"
+      }
+    },
+    "project": {
+      "title": "项目管理",
+      "noProjects": "暂无项目信息",
+      "statuses": {
+        "completed": "已完成",
+        "pending": "待处理",
+        "inProgress": "进行中"
+      }
+    },
+    "auth": {
+      "title": "认证管理",
+      "users": "用户总数",
+      "roles": "角色数量",
+      "permissions": "权限数量",
+      "recentActions": "最近操作",
+      "noActions": "暂无操作记录"
+    },
+    "setting": {
+      "title": "系统设置",
+      "noCategories": "暂无设置分类",
+      "systemStatus": "系统状态",
+      "database": "数据库连接",
+      "cache": "缓存服务",
+      "storage": "文件存储",
+      "statuses": {
+        "normal": "正常",
+        "warning": "警告"
+      },
+      "categories": {
+        "basic": {
+          "title": "基础设置",
+          "description": "系统基本信息配置"
+        },
+        "user": {
+          "title": "用户管理",
+          "description": "用户权限和角色设置"
+        },
+        "finance": {
+          "title": "财务设置",
+          "description": "支付和财务相关配置"
+        },
+        "notification": {
+          "title": "通知设置",
+          "description": "消息推送和邮件配置"
+        }
+      }
+    },
+    "goods": {
+      "title": "商品管理",
+      "total": "商品总数",
+      "onSale": "在售商品",
+      "outOfStock": "缺货商品",
+      "recentGoods": "最近商品",
+      "stock": "库存",
+      "noGoods": "暂无商品信息"
+    },
+    "order": {
+      "title": "订单管理",
+      "today": "今日订单",
+      "pending": "待处理",
+      "revenue": "今日收入",
+      "recentOrders": "最近订单",
+      "orderNumber": "订单号",
+      "noOrders": "暂无订单信息",
+      "statuses": {
+        "pending": "待处理",
+        "shipped": "已发货",
+        "completed": "已完成",
+        "cancelled": "已取消"
+      }
+    },
+    "activity": {
+      "title": "活动管理",
+      "active": "进行中活动",
+      "upcoming": "即将开始",
+      "participants": "参与人数",
+      "recentActivities": "最近活动",
+      "noActivities": "暂无活动信息",
+      "statuses": {
+        "active": "进行中",
+        "upcoming": "即将开始",
+        "completed": "已结束"
+      }
+    },
+    "ai": {
+      "title": "AI智能",
+      "requests": "今日请求",
+      "models": "活跃模型",
+      "successRate": "成功率",
+      "recentActions": "最近操作",
+      "noActions": "暂无操作记录"
+    },
+    "cms": {
+      "title": "内容管理",
+      "articles": "文章总数",
+      "published": "已发布",
+      "comments": "待审核评论",
+      "recentArticles": "最近文章",
+      "noArticles": "暂无文章信息",
+      "statuses": {
+        "published": "已发布",
+        "draft": "草稿",
+        "pending": "待审核"
+      }
+    },
+    "crm": {
+      "title": "客户关系",
+      "customers": "客户总数",
+      "newCustomers": "本月新增",
+      "revenue": "本月收入",
+      "recentCustomers": "最近客户",
+      "noCustomers": "暂无客户信息"
+    },
+    "dcenter": {
+      "title": "数据中心",
+      "dataVolume": "数据量",
+      "reports": "报告数",
+      "storage": "存储使用",
+      "recentReports": "最近报告",
+      "noReports": "暂无报告信息"
+    },
+    "im": {
+      "title": "即时通讯",
+      "onlineUsers": "在线用户",
+      "messages": "消息数",
+      "groups": "群组数",
+      "recentMessages": "最近消息",
+      "noMessages": "暂无消息"
+    },
+    "workflow": {
+      "title": "工作流管理",
+      "processes": "流程数",
+      "running": "运行中",
+      "completed": "今日完成",
+      "recentWorkflows": "最近工作流",
+      "noWorkflows": "暂无工作流"
+    },
+    "payment": {
+      "title": "支付管理",
+      "todayAmount": "今日金额",
+      "transactions": "交易数",
+      "successRate": "成功率",
+      "recentTransactions": "最近交易",
+      "noTransactions": "暂无交易"
+    },
+    "lowcode": {
+      "title": "低代码平台",
+      "applications": "应用数",
+      "components": "组件数",
+      "templates": "模板数",
+      "recentProjects": "最近项目",
+      "noProjects": "暂无项目"
+    },
+    "mes": {
+      "title": "制造执行系统",
+      "productionLines": "生产线数",
+      "equipment": "设备数",
+      "oee": "设备综合效率",
+      "productionStatus": "生产状态",
+      "noProduction": "暂无生产数据"
+    },
+    "orderfood": {
+      "title": "点餐系统",
+      "todayOrders": "今日订单",
+      "revenue": "今日收入",
+      "venues": "活跃餐厅",
+      "recentOrders": "最近订单",
+      "noOrders": "暂无订单"
+    },
+    "rider": {
+      "title": "骑手管理",
+      "activeRiders": "活跃骑手",
+      "todayOrders": "今日订单",
+      "avgDeliveryTime": "平均配送时间",
+      "riderStatus": "骑手状态",
+      "noRiders": "暂无骑手"
+    },
+    "supplier": {
+      "title": "供应商管理",
+      "suppliers": "供应商数",
+      "cooperations": "合作数",
+      "qualityScore": "质量评分",
+      "recentSuppliers": "最近供应商",
+      "noSuppliers": "暂无供应商"
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "properties": [
+    {
+      "name": "merchant.upload-directory",
+      "type": "java.lang.String",
+      "description": "商家文件上传根目录"
+    },
+    {
+      "name": "merchant.production",
+      "type": "java.lang.String",
+      "description": "是否演示/生产环境（true=演示，部分写操作会被拦截）"
+    },
+    {
+      "name": "merchant.captcha.status",
+      "type": "java.lang.String",
+      "description": "图形验证码开关"
+    },
+    {
+      "name": "merchant.captcha.expire",
+      "type": "java.lang.String",
+      "description": "图形验证码过期时间（秒）"
+    },
+    {
+      "name": "merchant.captcha.token",
+      "type": "java.lang.String",
+      "description": "图形验证码 Redis key 前缀"
+    },
+    {
+      "name": "merchant.swagger.enabled",
+      "type": "java.lang.String",
+      "description": "Swagger 开关"
+    },
+    {
+      "name": "merchant.swagger.pathMapping",
+      "type": "java.lang.String",
+      "description": "Swagger 路径映射"
+    },
+    {
+      "name": "merchant.unique-identification",
+      "type": "java.lang.String",
+      "description": "密码盐（与初始数据 hash 保持一致，禁止修改）"
+    },
+    {
+      "name": "merchant.alidebug",
+      "type": "java.lang.String",
+      "description": "支付宝沙箱网关开关（true=沙箱，false=正式）"
+    },
+    {
+      "name": "merchant.url",
+      "type": "java.lang.String",
+      "description": "后端绝对请求地址（为空则用 Servlet uri 推断）"
+    },
+    {
+      "name": "merchant.front-url",
+      "type": "java.lang.String",
+      "description": "前台项目首页地址（装修页拼接使用）"
+    }
+  ]
+}

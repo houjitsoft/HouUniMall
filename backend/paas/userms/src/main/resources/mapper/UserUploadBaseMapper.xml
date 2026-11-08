@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserUploadBaseMapper">
+
+    <resultMap id="ImageSpaceResultMap"
+               type="com.houjiang.userms.vo.ManageUploadBaseQueryResultVO">
+        <id column="upload_id" property="uploadId" jdbcType="BIGINT" />
+        <result column="upload_path" property="uploadPath" jdbcType="VARCHAR" />
+        <result column="upload_name" property="uploadName" jdbcType="LONGVARCHAR" />
+    </resultMap>
+    <sql id="Image_Space_Column_List">
+        upload_id, upload_path, upload_name
+    </sql>
+    <select id="selectByAlbumId" resultMap="ImageSpaceResultMap"
+            parameterType="com.houjiang.userms.dto.ManageImageSpaceQueryDTO">
+        select
+        <include refid="Image_Space_Column_List" />
+        from ${database.prefix.userms}hou_user_upload_base
+        where shop_id = #{param.shopId,jdbcType=INTEGER}
+        and upload_type = #{param.uploadType}
+        <if test="param.albumId != null">
+            and album_id = #{param.albumId}
+        </if>
+        <if test="param.uploadName != null and param.uploadName != ''">
+            and upload_name like concat('%',#{param.uploadName},'%')
+        </if>
+    </select>
+    <select id="selectByAlbumIdCount2" resultType="java.lang.Integer">
+        select
+        count(1)
+        from ${database.prefix.userms}hou_user_upload_base
+        where shop_id = #{param.shopId,jdbcType=INTEGER}
+        and upload_type = #{param.uploadType}
+
+        <if test="param.albumId != null">
+            and album_id = #{param.albumId,jdbcType=BIGINT}
+        </if>
+
+
+    </select>
+    <select id="selectShopImageSpaceCount" resultType="java.lang.Integer">
+        select count(1) from ${database.prefix.userms}hou_user_upload_base where shop_id = #{shopId} and upload_type = #{type}
+    </select>
+    <select id="selectImageSpaceList" resultType="com.houjiang.commons.dto.shop.ManageShopVideoDTO">
+        select
+        upload_id, upload_path, upload_name, upload_type, upload_time
+        from ${database.prefix.userms}hou_user_upload_base
+        where shop_id = #{shopId}
+        and upload_type = 'image'
+    </select>
+    <delete id="deleteImageBatch" parameterType="java.lang.Integer">
+        delete from ${database.prefix.userms}hou_user_upload_base
+        where
+        <if test="uploadIds != null">
+            upload_id in
+            (
+            <foreach collection="uploadIds" separator="," item="uploadId">
+                #{uploadId}
+            </foreach>
+            )
+        </if>
+    </delete>
+    <update id="updateImageName"
+            parameterType="com.houjiang.userms.dto.ManageImageNameUpdateParamDTO">
+        update ${database.prefix.userms}hou_user_upload_base
+        <set>
+            <if test="param.uploadName != null">
+                upload_name = #{param.uploadName,jdbcType=LONGVARCHAR},
+            </if>
+        </set>
+        where upload_id = #{param.uploadId,jdbcType=BIGINT}
+    </update>
+    <insert id="insertImage"
+            parameterType="com.houjiang.userms.dto.ManageImageUploadParamDTO">
+        insert into ${database.prefix.userms}hou_user_upload_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.uploadId != null">
+                upload_id,
+            </if>
+            <if test="param.albumId != null">
+                album_id,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.shopId != null">
+                shop_id,
+            </if>
+            <if test="param.uploadUrlPrefix != null">
+                upload_url_prefix,
+            </if>
+            <if test="param.path != null">
+                upload_path,
+            </if>
+            <if test="param.uploadType != null">
+                upload_type,
+            </if>
+            <if test="param.uploadSize != null">
+                upload_size,
+            </if>
+            <if test="param.uploadTime != null">
+                upload_time,
+            </if>
+            <if test="param.uploadName != null">
+                upload_name,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.uploadId != null">
+                #{param.uploadId,jdbcType=BIGINT},
+            </if>
+            <if test="param.albumId != null">
+                #{param.albumId,jdbcType=BIGINT},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shopId != null">
+                #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.uploadUrlPrefix != null">
+                #{param.uploadUrlPrefix,jdbcType=VARCHAR},
+            </if>
+            <if test="param.path != null">
+                #{param.path,jdbcType=VARCHAR},
+            </if>
+            <if test="param.uploadType != null">
+                #{param.uploadType,jdbcType=CHAR},
+            </if>
+            <if test="param.uploadSize != null">
+                #{param.uploadSize,jdbcType=INTEGER},
+            </if>
+            <if test="param.uploadTime != null">
+                #{param.uploadTime,jdbcType=INTEGER},
+            </if>
+            <if test="param.uploadName != null">
+                #{param.uploadName,jdbcType=LONGVARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertVideo">
+        INSERT INTO ${database.prefix.userms}hou_user_upload_base ( user_id,album_id,shop_id, upload_path, upload_type)
+        VALUES
+            (#{userId},#{albumId},#{shopId},#{uploadPath},#{uploadType})
+    </insert>
+    <update id="updateVideo">
+        UPDATE ${database.prefix.userms}hou_user_upload_base
+        SET shop_id = #{shopId},upload_path=#{uploadPath} where upload_id=#{videoId}
+    </update>
+    <update id="uploadImage"
+            parameterType="com.houjiang.userms.dto.ManageImageUploadParamDTO">
+        update ${database.prefix.userms}hou_user_upload_base
+        <set>
+            <if test="param.albumId != null">
+                album_id = #{param.albumId,jdbcType=BIGINT},
+            </if>
+            <if test="param.userId != null">
+                user_id = #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shopId != null">
+                shop_id = #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.uploadUrlPrefix != null">
+                upload_url_prefix = #{param.uploadUrlPrefix,jdbcType=VARCHAR},
+            </if>
+            <if test="param.uploadPath != null">
+                upload_path = #{param.uploadPath,jdbcType=VARCHAR},
+            </if>
+            <if test="param.uploadType != null">
+                upload_type = #{param.uploadType,jdbcType=CHAR},
+            </if>
+            <if test="param.uploadSize != null">
+                upload_size = #{param.uploadSize,jdbcType=INTEGER},
+            </if>
+            <if test="param.uploadTime != null">
+                upload_time = #{param.uploadTime,jdbcType=INTEGER},
+            </if>
+            <if test="param.uploadName != null">
+                upload_name = #{param.uploadName,jdbcType=LONGVARCHAR},
+            </if>
+        </set>
+        where upload_id = #{param.uploadId,jdbcType=BIGINT}
+    </update>
+
+</mapper>

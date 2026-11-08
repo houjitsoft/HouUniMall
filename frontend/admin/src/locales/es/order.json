@@ -1,0 +1,6 @@
+{
+  "orderNo": "N.º de pedido",
+  "customer": "Cliente",
+  "amount": "Importe",
+  "status": "Estado"
+}

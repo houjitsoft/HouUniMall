@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayReconFileMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayReconFileEntity">
+        <id column="id" property="id"/>
+        <result column="channel_code" property="channelCode"/>
+        <result column="bill_date" property="billDate"/>
+        <result column="bill_type" property="billType"/>
+        <result column="file_url" property="fileUrl"/>
+        <result column="file_md5" property="fileMd5"/>
+        <result column="total_count" property="totalCount"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="status" property="status"/>
+        <result column="error_msg" property="errorMsg"/>
+        <result column="pull_time" property="pullTime"/>
+        <result column="match_time" property="matchTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+</mapper>

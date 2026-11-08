@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <rect width="1200" height="420" fill="#efe9dd"/>
+  <rect x="880" y="90" width="220" height="240" fill="none" stroke="#9a7048" stroke-width="2" stroke-opacity="0.45"/>
+  <rect x="908" y="118" width="164" height="184" fill="#b0805a" fill-opacity="0.07"/>
+  <circle cx="990" cy="210" r="46" fill="none" stroke="#9a7048" stroke-width="2.5" stroke-opacity="0.6"/>
+  <line x1="72" y1="120" x2="72" y2="300" stroke="#9a7048" stroke-width="1.5" stroke-opacity="0.5"/>
+  <text x="100" y="196" font-family="Georgia, 'Songti SC', serif" font-size="46" fill="#221e17" letter-spacing="6">春日新茶</text>
+  <text x="102" y="248" font-family="Georgia, 'Songti SC', serif" font-size="18" fill="#8b8375" letter-spacing="4">SPRING HARVEST · 2026</text>
+</svg>

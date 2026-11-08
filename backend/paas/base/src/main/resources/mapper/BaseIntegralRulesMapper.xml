@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseIntegralRulesMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseIntegralRulesEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="ruleLogin" column="rule_login" jdbcType="INTEGER"/>
+            <result property="ruleRegister" column="rule_register" jdbcType="INTEGER"/>
+            <result property="ruleConsume" column="rule_consume" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,rule_login,rule_register,
+        rule_consume
+    </sql>
+    <insert id="integralRulesAdd">
+        insert into ${database.prefix.userms}hou_base_integral_rules(rule_login,rule_register,rule_consume)
+        values (#{param.ruleLogin},#{param.ruleRegister},#{param.ruleConsume})
+    </insert>
+</mapper>

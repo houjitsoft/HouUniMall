@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserDeptMapper">
+
+    <!-- 根据组织ID查询部门列表（hou_base_department 为主数据表） -->
+    <select id="selectDeptsByOrgId" resultType="com.houjiang.userms.entity.UserDeptEntity">
+        SELECT
+            bd.id AS id,
+            CAST(#{orgId} AS UNSIGNED) AS org_id,
+            bd.department_code AS dept_code,
+            bd.department_name AS dept_name,
+            bd.parent_id AS parent_id,
+            bd.department_type AS dept_type,
+            bd.manager_id AS manager_id,
+            bd.manager_name AS manager_name,
+            bd.department_level AS level,
+            bd.sort_order AS sort_order,
+            CASE WHEN bd.department_status = '正常' THEN 1 ELSE 0 END AS status,
+            bd.remarks AS remark,
+            bd.create_time AS create_time,
+            bd.update_time AS update_time
+        FROM ${database.prefix.base}hou_base_department bd
+        WHERE bd.del_flag = 0
+          AND (
+            bd.org_id = CAST(#{orgId} AS CHAR)
+            OR FIND_IN_SET(CAST(#{orgId} AS CHAR), bd.org_id) > 0
+          )
+        ORDER BY bd.sort_order ASC, bd.create_time ASC
+    </select>
+
+    <!-- 根据组织ID查询部门树结构 -->
+    <select id="selectDeptTreeByOrgId" resultType="java.util.Map">
+        SELECT
+            bd.id AS dept_id,
+            bd.org_id,
+            bd.department_code AS dept_code,
+            bd.department_name AS dept_name,
+            bd.parent_id,
+            bd.department_type AS dept_type,
+            bd.manager_id,
+            bd.manager_name,
+            bd.department_level AS level,
+            bd.sort_order,
+            CASE WHEN bd.department_status = '正常' THEN 1 ELSE 0 END AS status,
+            bd.remarks AS remark,
+            bd.create_time,
+            bd.update_time,
+            bd.department_full_name,
+            bd.department_path,
+            bd.department_type,
+            bd.department_status,
+            bd.employee_count,
+            bd.office_location,
+            bd.office_phone,
+            bd.office_email,
+            bd.description,
+            bd.responsibilities
+        FROM ${database.prefix.base}hou_base_department bd
+        WHERE bd.del_flag = 0
+          AND (
+            bd.org_id = CAST(#{orgId} AS CHAR)
+            OR FIND_IN_SET(CAST(#{orgId} AS CHAR), bd.org_id) > 0
+          )
+        ORDER BY bd.sort_order ASC, bd.create_time ASC
+    </select>
+
+    <!-- 根据部门ID查询部门详细信息 -->
+    <select id="selectDeptDetailById" resultType="java.util.Map">
+        SELECT
+            bd.id AS dept_id,
+            bd.org_id,
+            bd.department_code AS dept_code,
+            bd.department_name AS dept_name,
+            bd.parent_id,
+            bd.department_type AS dept_type,
+            bd.manager_id,
+            bd.manager_name,
+            bd.department_level AS level,
+            bd.sort_order,
+            CASE WHEN bd.department_status = '正常' THEN 1 ELSE 0 END AS status,
+            bd.remarks AS remark,
+            bd.create_time,
+            bd.update_time,
+            bd.department_full_name,
+            bd.department_path,
+            bd.department_type,
+            bd.department_status,
+            bd.employee_count,
+            bd.budget_amount,
+            bd.cost_center_code,
+            bd.office_location,
+            bd.office_phone,
+            bd.office_email,
+            bd.establishment_date,
+            bd.description,
+            bd.responsibilities,
+            bd.remarks
+        FROM ${database.prefix.base}hou_base_department bd
+        WHERE bd.id = #{deptId}
+          AND bd.del_flag = 0
+        LIMIT 1
+    </select>
+
+    <!-- 从用户部门关联表解析组织ID（兼容未写入 hou_user_organization 的用户） -->
+    <select id="selectOrgIdsByUserId" resultType="java.lang.String">
+        SELECT DISTINCT org_id
+        FROM ${database.prefix.userms}hou_user_dept
+        WHERE user_id = #{userId}
+          AND org_id IS NOT NULL
+          AND org_id != ''
+    </select>
+
+</mapper>

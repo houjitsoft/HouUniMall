@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.ShopTransportAreaMapper">
+
+    <resultMap id="ManageResultMap"
+               type="com.houjiang.commons.vo.goods.ManageTransportAreaVO">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+    </resultMap>
+    <sql id="Manage_Column_List">
+        id,name
+    </sql>
+
+    <select id="selectById" resultMap="ManageResultMap"
+            parameterType="java.lang.Integer">
+        select
+        <include refid="Manage_Column_List" />
+        from ${database.prefix.business}hou_shop_transport_area
+        where id =
+        #{transportAreaId,jdbcType=INTEGER}
+    </select>
+
+</mapper>

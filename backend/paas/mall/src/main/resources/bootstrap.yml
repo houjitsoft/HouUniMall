@@ -1,0 +1,66 @@
+# naocs 配置
+# 优先级 共享配置 < 扩展配置 < 服务名 < 服务名.文件扩展名 < 服务名-环境.文件扩展名
+server:
+  port: 8220
+  tomcat:
+    # 插件制品上传（BFF 流转发到 mall）上限 64MB，Tomcat 默认 2MB 的 swallow 阈值会让超限请求直接断连
+    max-swallow-size: 104857600
+
+spring:
+  application:
+    name: mall
+  servlet:
+    multipart:
+      # 与 bff-web 对齐：64MB 制品 + multipart 开销取 100MB（原未配置，默认仅 1MB）
+      max-file-size: 104857600
+      max-request-size: 104857600
+  # 本地兜底：与 Nacos mall.yaml 对齐，避免失效连接校验拖死首页接口
+  datasource:
+    hikari:
+      connection-timeout: 10000
+      validation-timeout: 3000
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      max-lifetime: 600000
+      keepalive-time: 30000
+      connection-test-query: SELECT 1
+      connection-init-sql: SELECT 1
+  config:
+    import: optional:classpath:application-feign.yml,optional:nacos:mutual.yaml,optional:nacos:mybatis.yaml,optional:nacos:redis.yaml,optional:nacos:sentinel.yaml,optional:nacos:seata.yaml,optional:nacos:dispose.yaml,optional:nacos:mall.yaml
+  profiles:
+    include: feign
+  cloud:
+    config:
+      enabled: false
+    nacos:
+      alibaba:
+        seata:
+          tx-service-group: my_test_tx_group
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}  # naocs 作为注册中心地址
+        namespace: ${NACOS_NAMESPACE:houeoc} #指定服务注册进nacos 所在的命名空间pro test dev uat
+        username: nacos
+        password: ${NACOS_PASSWORD}
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848} # naocs 作为配置中心地址
+        username: nacos
+        password: ${NACOS_PASSWORD}
+        namespace: ${NACOS_NAMESPACE:houeoc} #指定服务读取nacos 配置所在的命名空间 pro test dev uat
+        file-extension: yaml
+        # 扩展配置
+        extension-configs:
+          - data-id: mutual.yaml
+            refresh: true
+          - data-id: mybatis.yaml
+            refresh: true
+          - data-id: redis.yaml
+            refresh: true
+          - data-id: sentinel.yaml
+            refresh: true
+          - data-id: seata.yaml
+            refresh: true
+          - data-id: dispose.yaml
+            refresh: true
+  main:
+    allow-bean-definition-overriding: true

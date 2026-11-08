@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.SeckillGoodsMapper">
+    <update id="updateSkillGoods1">
+    UPDATE ${database.prefix.activity}hou_addon_activity_seckill_goods SET seckill_goods_state= 2 where goods_id = #{goodsId}
+    </update>
+    <update id="updateSkillGoodsStatus">
+    UPDATE ${database.prefix.goods}hou_goods_common a,
+    ${database.prefix.activity}hou_addon_activity_seckill_goods b
+    SET a.common_is_xian = 0
+    WHERE
+	a.common_id = b.common_id
+	AND a.common_id = #{commonId} AND b.seckill_goods_state= 1 AND a.common_is_xian = 2
+    </update>
+    <update id="updateSkillGoods">
+    UPDATE ${database.prefix.activity}hou_addon_activity_seckill_goods SET seckill_goods_state= 2 where seckill_id = #{seckillId}
+    </update>
+    <update id="updateGoodsStatus">
+    UPDATE ${database.prefix.activity}hou_addon_activity_seckill_base SET	 seckill_state= 2 WHERE seckill_id = #{seckillId}
+    </update>
+
+    <select id="selectSeckillNum" resultType="com.houjiang.commons.dto.goods.AppSeckillGoodsVO">
+    select
+			a.seckill_goods_id,
+			a.common_id, a.goods_name,
+			a.goods_price,
+			a.seckill_price,
+			a.goods_image,a.seckill_id,a.goods_upper_limit,a.seckill_num,a.goods_id,a.goods_start_time as startDateTime,a.shop_id
+		from
+			${database.prefix.activity}hou_addon_activity_seckill_goods a where seckill_num = 0 and seckill_goods_state = 1
+    </select>
+    <select id="selectSeckillGoods" resultType="com.houjiang.commons.dto.goods.AppSeckillGoodsVO">
+    	select
+			a.seckill_goods_id,
+			a.common_id, a.goods_name,
+			a.goods_price,
+			a.seckill_price,
+			a.goods_image,a.seckill_id,a.goods_upper_limit,a.seckill_num,a.goods_id,a.goods_start_time as startDateTime,a.shop_id
+		from
+			${database.prefix.activity}hou_addon_activity_seckill_goods a where seckill_num != 0 and seckill_id = #{seckillId}
+    </select>
+</mapper>

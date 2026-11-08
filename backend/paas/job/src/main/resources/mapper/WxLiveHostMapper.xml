@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.WxLiveHostMapper">
+
+	<update id="upLiveGoodsiIsverify">
+		update ${database.prefix.base}hou_base_wx_live_goods
+		set isverify = #{isverify},operation = 0,cause = #{cause}
+		where wx_goods_id in
+		<foreach item="goodsId" index="index" collection="goodsIds" open="("
+				 close=")" separator=",">
+			#{goodsId.goodsId}
+		</foreach>
+	</update>
+
+</mapper>

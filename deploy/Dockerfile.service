@@ -1,0 +1,40 @@
+# =====================================================================
+# HouCloud 后端服务通用运行镜像（14 个服务共用这一个 Dockerfile）
+#
+# 用法（一般由 docker-compose 调用，无需手工执行）：
+#   docker build -f deploy/Dockerfile.service \
+#     --build-arg BUILDER_IMAGE=unimall/builder:latest \
+#     --build-arg JAR_NAME=base \
+#     -t unimall/base:latest .
+#
+# JAR_NAME 取值：bff-web auth permission base userms goods order payment
+#                mall merchant supplier thirdparty job aicode
+#
+# 特殊说明：mall 需要运行 Playwright（GEO 等平台授权自动登录），可传入
+#   RUNTIME_IMAGE=mcr.microsoft.com/playwright/java:v1.61.0-jammy
+#   使其自带 Chromium 浏览器及依赖库；其余服务保持默认 eclipse-temurin。
+# =====================================================================
+ARG BUILDER_IMAGE=unimall/builder:latest
+ARG RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy
+FROM ${BUILDER_IMAGE} AS jars
+
+FROM ${RUNTIME_IMAGE}
+
+ARG JAR_NAME=base
+
+ENV LANG=C.UTF-8 \
+    TZ=Asia/Shanghai \
+    JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8"
+
+# 说明：以 root 运行，避免插件目录 / 日志目录写权限问题（容器已是隔离环境）。
+#       需要非 root 运行时，在 docker-compose 里加 `user: "1000:1000"` 并把挂载目录授权给该 uid。
+COPY --from=jars /jars/${JAR_NAME}.jar /app/app.jar
+COPY deploy/entrypoint-service.sh /app/entrypoint-service.sh
+
+WORKDIR /app
+
+RUN chmod +x /app/entrypoint-service.sh
+
+# entrypoint 负责拉起 Xvfb 虚拟显示后再启动 Java：
+# GEO 平台扫码登录需要有头浏览器才能拿到微信公众号等平台下发的二维码。
+ENTRYPOINT ["sh", "/app/entrypoint-service.sh"]

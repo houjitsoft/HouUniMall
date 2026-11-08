@@ -1,0 +1,14 @@
+{
+  "user": {
+    "read": "Benutzer lesen",
+    "write": "Benutzer schreiben"
+  },
+  "product": {
+    "read": "Produkt lesen",
+    "write": "Produkt schreiben"
+  },
+  "order": {
+    "read": "Bestellung lesen",
+    "write": "Bestellung schreiben"
+  }
+}

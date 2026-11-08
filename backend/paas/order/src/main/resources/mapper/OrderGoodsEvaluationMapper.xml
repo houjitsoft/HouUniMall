@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderGoodsEvaluationMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderGoodsEvaluationEntity" id="OrderGoodsEvaluationMap">
+        <result property="evaluationGoodsId" column="evaluation_goods_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="userAvatar" column="user_avatar" jdbcType="VARCHAR"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="goodsName" column="goods_name" jdbcType="VARCHAR"/>
+        <result property="goodsSpec" column="goods_spec" jdbcType="VARCHAR"/>
+        <result property="scores" column="scores" jdbcType="INTEGER"/>
+        <result property="result" column="result" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="additionalContentTime" column="additional_content_time" jdbcType="TIMESTAMP"/>
+        <result property="image" column="image" jdbcType="VARCHAR"/>
+        <result property="isanonymous" column="isanonymous" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="explainContent" column="explain_content" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="additionalReplyTime" column="additional_reply_time" jdbcType="TIMESTAMP"/>
+        <result property="evaluationFrom" column="evaluation_from" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="commentsInsertByGoods">
+    INSERT INTO ${database.prefix.order}hou_order_goods_evaluation (user_id,
+                                            user_name,
+                                            user_avatar,
+                                            order_id,
+                                            shop_id,
+                                            shop_name,
+                                            common_id,
+                                            goods_id,
+                                            goods_name,
+                                            goods_spec,
+                                            scores,
+                                            result,
+                                            content,
+                                            isanonymous,
+                                            create_time,
+                                            STATUS,
+                                            image,
+                                            evaluation_from)
+        VALUES (#{userId}, #{userName}, #{userAvatar}, #{orderId}, #{shopId}, #{shopName}, #{commonId}, #{goodsId},
+                #{goodsName}, #{goodsSpec}, #{score}, #{result}, #{feedBack}, #{isAnonymous}, #{createTime}, #{status},
+                #{images}, #{evaluationFrom})
+    </insert>
+    <delete id="deleteShopComments">
+        delete from ${database.prefix.business}hou_shop_evaluation where evaluation_id = #{map.evaluationId}
+    </delete>
+    <select id="queryCommentsCount" resultType="java.lang.Integer">
+        select count(*) FROM ${database.prefix.order}hou_order_goods_evaluation where common_id = #{commonId}
+    </select>
+    <select id="commentsQuery" resultType="com.houjiang.order.vo.CommentsEntityVO">
+        select
+        oge.order_id,
+        oge.user_avatar,
+        oge.user_name,
+        oge.goods_name,
+        oge.goods_id,
+        oge.create_time,
+        oge.goods_spec,
+        oge.content,
+        oge.additional_content_time,
+        oge.scores,
+        oge.image,
+        oge.explain_content,
+        oge.update_time,
+        oge.additional_reply_time,
+        oge.isanonymous
+        FROM ${database.prefix.order}hou_order_goods_evaluation oge
+        LEFT join ${database.prefix.order}hou_order_base oob ON oge.order_id = oob.order_id
+        LEFT join ${database.prefix.order}hou_order_goods oog ON oge.order_id = oog.order_id
+        <where>
+            <if test="map.commonId != null and map.commonId != ''">
+                and oge.common_id = #{map.commonId}
+            </if>
+            <if test="map.buyerEvaluationStatus != null and map.buyerEvaluationStatus != '' and map.buyerEvaluationStatus == 0 ">
+                and oge.explain_content is null
+            </if>
+            <if test="map.shopId != null and map.shopId != ''">
+                and oge.shop_id = #{map.shopId}
+            </if>
+            <if test="null != map.resultNum and map.resultNum != '' ">
+                and oge.result  = #{map.resultNum}
+            </if>
+            <if test="map.imageNum != null">
+                and (oge.image is not null and oge.image !=#{map.imageNum})
+            </if>
+        </where>
+        group by oge.evaluation_goods_id
+        order by oge.create_time desc
+    </select>
+    <select id="getEvaluationTotalCount" resultType="java.lang.Integer">
+        select count(*) FROM ${database.prefix.order}hou_order_goods_evaluation where common_id = #{commonId}
+        <if test="null != evaluation and evaluation == 'good' ">
+            and result = 'good'
+        </if>
+        <if test="null != evaluation and evaluation == 'neutral' ">
+            and result = 'neutral'
+        </if>
+        <if test="null != evaluation and evaluation == 'bad' ">
+            and result = 'bad'
+        </if>
+        <if test="null != evaluation and evaluation == 'image' ">
+            and (image is not null and image !='')
+        </if>
+    </select>
+
+    <select id="selectGoodsComments" resultType="com.houjiang.order.vo.GoodsCommentsVO">
+        SELECT
+        oge.evaluation_goods_id,oge.order_id,oge.user_name,oge.scores,oge.content,oge.image,
+        oge.create_time,oge.goods_name,oge.shop_name
+        FROM ${database.prefix.order}hou_order_goods_evaluation oge
+        <where>
+            <if test=" param.userName!= null and param.userName!= ''">
+                AND oge.user_name like CONCAT('%',#{param.userName},'%')
+            </if>
+            <if test=" param.score!= null and param.score!= ''">
+                AND oge.scores = #{param.score}
+            </if>
+            <if test=" param.goodsName!= null and param.goodsName!= ''">
+                AND oge.goods_name like  CONCAT('%',#{param.goodsName},'%')
+            </if>
+            <if test=" param.shopName!= null and param.shopName!= ''">
+                AND oge.shop_name like  CONCAT('%',#{param.shopName},'%')
+            </if>
+            <if test="param.startTime!= null ">
+                AND oge.create_time &gt;= #{param.startTime}
+            </if>
+            <if test="param.endTime!= null">
+                AND oge.create_time &lt;= #{param.endTime}
+            </if>
+        </where>
+        order by oge.create_time desc
+    </select>
+
+    <select id="selectShopComments" resultType="com.houjiang.order.vo.ShopCommentsVO">
+        SELECT
+        ose.evaluation_id,ose.shop_id,sb.shop_name,ui.user_name,ose.order_id,
+        ose.evaluation_desccredit,ose.evaluation_servicecredit,ose.evaluation_deliverycredit,ose.evaluation_create_time
+        FROM ${database.prefix.business}hou_shop_evaluation ose
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb on sb.supplier_shop_id = ose.shop_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info ui on ui.user_id = ose.user_id
+        <where>
+            <if test="param.describeScore!= null and param.describeScore!= ''">
+                AND ose.evaluation_desccredit = #{param.describeScore}
+            </if>
+            <if test="param.serviceScore!= null and param.serviceScore!= ''">
+                AND evaluation_servicecredit = #{param.serviceScore}
+            </if>
+            <if test="param.deliveryScore!= null and param.deliveryScore!= ''">
+                AND ose.evaluation_deliverycredit = #{param.deliveryScore}
+            </if>
+            <if test="param.startTime!= null and param.endTime!= null">
+                AND ose.evaluation_create_time between  #{param.startTime} and #{param.endTime}
+            </if>
+        </where>
+        order by ose.evaluation_create_time desc
+    </select>
+
+    <update id="updateForReply">
+        update ${database.prefix.order}hou_order_goods_evaluation
+        set explain_content = #{param.explainContent},update_time = #{param.updateTime}
+        where order_id = #{param.orderId} and goods_id = #{param.goodsId}
+    </update>
+
+    <update id="updateForAdditionalReply">
+        update ${database.prefix.order}hou_order_goods_evaluation
+        set additional_reply_time = #{param.updateTime}
+        where order_id = #{param.orderId} and goods_id = #{param.goodsId}
+    </update>
+    <insert id="insertRiberEvaluated">
+        insert into `mall-rider`.rider_evaluation (
+       <if test="param.userId != null">
+           user_id,
+       </if>
+        <if test="param.orderId != null">
+            order_id,
+        </if>
+        <if test="param.shopId != null">
+            shop_id,
+        </if>
+        <if test="param.riderId != null">
+            rider_id,
+        </if>
+        <if test="param.scores != null">
+            scores,
+        </if>
+        <if test="param.content != null">
+            content,
+        </if>
+        status,
+        create_time
+        )
+        values (
+        <if test="param.userId != null">
+            #{param.userId },
+        </if>
+        <if test="param.orderId != null">
+            #{param.orderId},
+        </if>
+        <if test="param.shopId != null">
+            #{param.shopId},
+        </if>
+        <if test="param.riderId != null">
+            #{param.riderId},
+        </if>
+        <if test="param.scores != null">
+            #{param.scores},
+        </if>
+        <if test="param.content != null">
+            #{param.content},
+        </if>
+        1,
+        now()
+        )
+    </insert>
+
+</mapper>

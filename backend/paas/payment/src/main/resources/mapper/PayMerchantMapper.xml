@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayMerchantMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayMerchantEntity">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="mchNo" column="mch_no" jdbcType="VARCHAR"/>
+        <result property="appId" column="app_id" jdbcType="VARCHAR"/>
+        <result property="mchType" column="mch_type" jdbcType="TINYINT"/>
+        <result property="companyName" column="company_name" jdbcType="VARCHAR"/>
+        <result property="mchShortName" column="mch_short_name" jdbcType="VARCHAR"/>
+        <result property="uniCredit" column="uni_credit" jdbcType="VARCHAR"/>
+        <result property="licenseImg" column="license_img" jdbcType="VARCHAR"/>
+        <result property="legalName" column="legal_name" jdbcType="VARCHAR"/>
+        <result property="legalIdType" column="legal_id_type" jdbcType="TINYINT"/>
+        <result property="legalIdNo" column="legal_id_no" jdbcType="VARCHAR"/>
+        <result property="legalPhone" column="legal_phone" jdbcType="VARCHAR"/>
+        <result property="legalEmail" column="legal_email" jdbcType="VARCHAR"/>
+        <result property="legalIdFront" column="legal_id_front" jdbcType="VARCHAR"/>
+        <result property="legalIdBack" column="legal_id_back" jdbcType="VARCHAR"/>
+        <result property="contactName" column="contact_name" jdbcType="VARCHAR"/>
+        <result property="contactPhone" column="contact_phone" jdbcType="VARCHAR"/>
+        <result property="contactEmail" column="contact_email" jdbcType="VARCHAR"/>
+        <result property="provinceCode" column="province_code" jdbcType="VARCHAR"/>
+        <result property="cityCode" column="city_code" jdbcType="VARCHAR"/>
+        <result property="districtCode" column="district_code" jdbcType="VARCHAR"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="businessScope" column="business_scope" jdbcType="VARCHAR"/>
+        <result property="industryCode" column="industry_code" jdbcType="VARCHAR"/>
+        <result property="loginUsername" column="login_username" jdbcType="VARCHAR"/>
+        <result property="cusid" column="cusid" jdbcType="VARCHAR"/>
+        <result property="agencyNo" column="agency_no" jdbcType="VARCHAR"/>
+        <result property="orgId" column="org_id" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="statusRemark" column="status_remark" jdbcType="VARCHAR"/>
+        <result property="approvedTime" column="approved_time" jdbcType="TIMESTAMP"/>
+        <result property="approvedBy" column="approved_by" jdbcType="VARCHAR"/>
+        <result property="frozenTime" column="frozen_time" jdbcType="TIMESTAMP"/>
+        <result property="frozenReason" column="frozen_reason" jdbcType="VARCHAR"/>
+        <result property="settleType" column="settle_type" jdbcType="TINYINT"/>
+        <result property="settleBankCode" column="settle_bank_code" jdbcType="VARCHAR"/>
+        <result property="settleBankName" column="settle_bank_name" jdbcType="VARCHAR"/>
+        <result property="settleBranchName" column="settle_branch_name" jdbcType="VARCHAR"/>
+        <result property="settleAccountName" column="settle_account_name" jdbcType="VARCHAR"/>
+        <result property="settleAccountNo" column="settle_account_no" jdbcType="VARCHAR"/>
+        <result property="settleReservedMobile" column="settle_reserved_mobile" jdbcType="VARCHAR"/>
+        <result property="settleCycle" column="settle_cycle" jdbcType="TINYINT"/>
+        <result property="creatorId" column="creator_id" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+</mapper>

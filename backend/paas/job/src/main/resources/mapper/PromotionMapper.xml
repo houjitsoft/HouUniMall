@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.PromotionMapper">
+
+    <select id="getPromotionByOrder" resultType="com.houjiang.job.dto.PromotionDTO">
+        SELECT
+            ui.user_id,
+            ui.user_integral
+        FROM ${database.prefix.userms}hou_user_info ui
+            LEFT JOIN ${database.prefix.base}hou_base_tag_class btg ON btg.member_id = ui.user_id
+        WHERE
+            btg.member_class_id in (SELECT id FROM ${database.prefix.base}hou_base_membership_grade WHERE grade_start = 0) or btg.member_class_id is null
+    </select>
+
+    <select id="getGradeIdByUserIntegral" resultType="java.lang.Integer">
+        SELECT id FROM ${database.prefix.base}hou_base_membership_grade where grade_rule &lt; #{userIntegral} and grade_start = 1
+        ORDER BY grade_rule desc limit 1
+    </select>
+    <select id="getUserIntegralByOrder" resultType="java.lang.Integer">
+        select sum(total_integral) from ${database.prefix.order}hou_order_base
+        where integral_goods = 0 and order_status in (5,6) and buyer_user_id = #{userId}
+    </select>
+
+    <update id="updateGradeId">
+        update ${database.prefix.base}hou_base_tag_class set member_class_id = #{gradeId}
+        where member_id = #{userId}
+    </update>
+</mapper>

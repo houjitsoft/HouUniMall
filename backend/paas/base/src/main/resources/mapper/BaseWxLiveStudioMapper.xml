@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseWxLiveStudioMapper">
+
+    <insert id="addLiveRoom" useGeneratedKeys="true" keyProperty="param.id" keyColumn="id">
+        insert into ${database.prefix.userms}hou_base_wx_live_studio
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.shopId != null and param.shopId != ''">
+                shop_id,
+            </if>
+            <if test="param.name != null and param.name != ''">
+                name,
+            </if>
+            <if test="param.coverImg != null and param.coverImg != '' ">
+                coverImg,
+            </if>
+            <if test="param.startTime != null and param.startTime != ''">
+                startTime,
+            </if>
+            <if test="param.endTime != null and param.endTime != ''">
+                endTime,
+            </if>
+            <if test="param.anchorName != null and param.anchorName != ''">
+                anchorName,
+            </if>
+            <if test="param.anchorWechat != null and param.anchorWechat != ''">
+                anchorWechat,
+            </if>
+            <if test="param.subAnchorWechat != null and param.subAnchorWechat != ''">
+                subAnchorWechat,
+            </if>
+            <if test="param.createrWechat != null and param.createrWechat != ''">
+                createrWechat,
+            </if>
+            <if test="param.shareImg != null and param.shareImg != ''">
+                shareImg,
+            </if>
+            <if test="param.feedsImg != null and param.feedsImg != ''">
+                feedsImg,
+            </if>
+            <if test="param.isFeedsPublic != null">
+                isFeedsPublic,
+            </if>
+            <if test="param.type != null">
+                type,
+            </if>
+            <if test="param.closeLike != null">
+                closeLike,
+            </if>
+            <if test="param.closeGoods != null">
+                closeGoods,
+            </if>
+            <if test="param.closeComment != null">
+                closeComment,
+            </if>
+            <if test="param.closeReplay != null">
+                closeReplay,
+            </if>
+            <if test="param.closeShare != null">
+                closeShare,
+            </if>
+            <if test="param.closeKf != null ">
+                closeKf,
+            </if>
+            isverify
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.shopId != null and param.shopId != ''">
+                #{param.shopId},
+            </if>
+            <if test="param.name != null and param.name != ''">
+                #{param.name},
+            </if>
+            <if test="param.coverImg != null and param.coverImg != '' ">
+                #{param.coverImg},
+            </if>
+            <if test="param.startTime != null and param.startTime != ''">
+                #{param.startTime},
+            </if>
+            <if test="param.endTime != null and param.endTime != ''">
+                #{param.endTime},
+            </if>
+            <if test="param.anchorName != null and param.anchorName != ''">
+                #{param.anchorName},
+            </if>
+            <if test="param.anchorWechat != null and param.anchorWechat != ''">
+                #{param.anchorWechat},
+            </if>
+            <if test="param.subAnchorWechat != null and param.subAnchorWechat != ''">
+                #{param.subAnchorWechat},
+            </if>
+            <if test="param.createrWechat != null and param.createrWechat != ''">
+                #{param.createrWechat},
+            </if>
+            <if test="param.shareImg != null and param.shareImg != ''">
+                #{param.shareImg},
+            </if>
+            <if test="param.feedsImg != null and param.feedsImg != ''">
+                #{param.feedsImg},
+            </if>
+            <if test="param.isFeedsPublic != null">
+                #{param.isFeedsPublic},
+            </if>
+            <if test="param.type != null ">
+                #{param.type},
+            </if>
+            <if test="param.closeLike != null">
+                #{param.closeLike},
+            </if>
+            <if test="param.closeGoods != null">
+                #{param.closeGoods},
+            </if>
+            <if test="param.closeComment != null">
+                #{param.closeComment},
+            </if>
+            <if test="param.closeReplay != null">
+                #{param.closeReplay},
+            </if>
+            <if test="param.closeShare != null">
+                #{param.closeShare},
+            </if>
+            <if test="param.closeKf != null ">
+                #{param.closeKf},
+            </if>
+            2
+        </trim>
+    </insert>
+    <select id="queryLiveRoom" resultType="com.houjiang.base.dto.WxEstablishLiveRoomDTO">
+        select wls.name,wls.coverImg,
+        UNIX_TIMESTAMP(wls.startTime)as startTime,
+        UNIX_TIMESTAMP(wls.endTime)as endTime,
+        wls.anchorName,wls.anchorWechat,wls.subAnchorWechat,wls.createrWechat,
+        wls.shareImg,wls.feedsImg,wls.isFeedsPublic,wls.type,wls.closeLike,wls.closeGoods,
+        wls.closeComment,wls.closeReplay,wls.closeShare,wls.closeKf
+         from ${database.prefix.userms}hou_base_wx_live_studio wls
+        where wls.id=#{id}
+    </select>
+
+    <select id="queryLiveRoomId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select wx_goods_id
+         from ${database.prefix.userms}hou_base_wx_live_goods
+        where shop_id=#{shopId} and wx_goods_id is not null
+    </select>
+</mapper>

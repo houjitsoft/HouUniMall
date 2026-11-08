@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsAttributeContentMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsAttributeContentEntity" id="GoodsAttributeContentMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="attributeContent" column="attribute_content" jdbcType="VARCHAR"/>
+        <result property="attributeContentId" column="attribute_content_id" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertContent">
+        insert into goods_attribute_content (attribute_content_id, attribute_content)
+		values (#{attributeContentId,jdbcType=INTEGER}, #{attriContent,jdbcType=VARCHAR})
+    </insert>
+    <delete id="deleteContent">
+        delete from
+		goods_attribute_content
+		where id =
+		#{id,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteAttriContents">
+        delete from
+		goods_attribute_content
+		where attribute_content_id =
+		#{attriConId,jdbcType=INTEGER}
+    </delete>
+    <select id="selectAttContentId" resultType="com.houjiang.goods.vo.GoodsAttributeVO">
+        select
+		attribute_content as attriContent
+		from goods_attribute_content
+		where id = #{id,jdbcType=INTEGER}
+    </select>
+    <select id="selectAttContents" resultType="java.util.Map">
+        select ac.id,ac.attribute_content as attributeContent
+		from goods_attribute_content ac LEFT JOIN goods_common_attribute_association
+		aa on ac.id = aa.attribute_content_id
+		where ac.attribute_content_id = #{id,jdbcType=INTEGER}
+    </select>
+    <select id="queryAttributeContentList" resultType="com.houjiang.goods.entity.GoodsAttributeContentEntity">
+        select id,attribute_content from goods_attribute_content where attribute_content_id = #{id}
+    </select>
+
+
+</mapper>

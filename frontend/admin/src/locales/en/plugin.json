@@ -1,0 +1,20 @@
+{
+  "plugin": {
+    "activity": { "name": "Marketing Activities" },
+    "aicode": { "name": "AI Development" },
+    "cms": { "name": "Content Management" },
+    "crm": { "name": "CRM" },
+    "erp": { "name": "ERP" },
+    "finance": { "name": "Finance Center" },
+    "geo": { "name": "GEO" },
+    "im": { "name": "IM" },
+    "logging": { "name": "Logging" },
+    "mes": { "name": "MES Manufacturing" },
+    "oa": { "name": "OA Office" },
+    "orderfood": { "name": "Restaurant Management" },
+    "pm": { "name": "Project Management" },
+    "supplier": { "name": "Supplier Management" },
+    "webpos": { "name": "WebPOS" },
+    "demo-coupon": { "name": "Coupon Demo" }
+  }
+}

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsBrandMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.goods.entity.GoodsBrandEntity">
+            <id property="brandId" column="brand_id" jdbcType="INTEGER"/>
+            <result property="brandName" column="brand_name" jdbcType="VARCHAR"/>
+            <result property="brandInitial" column="brand_initial" jdbcType="VARCHAR"/>
+            <result property="brandPic" column="brand_pic" jdbcType="VARCHAR"/>
+            <result property="brandHf" column="brand_hf" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        brand_id,brand_name,
+        brand_initial,brand_pic,brand_hf
+    </sql>
+    <insert id="insertBrand">
+        insert into goods_brand
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.brandId != null">
+                brand_id,
+            </if>
+            <if test="param.brandName != null">
+                brand_name,
+            </if>
+            <if test="param.brandInitial != null">
+                brand_initial,
+            </if>
+            <if test="param.brandPic != null">
+                brand_pic,
+            </if>
+            <if test="param.brandHf != null">
+                brand_hf,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.brandId != null">
+                #{param.brandId,jdbcType=INTEGER},
+            </if>
+            <if test="param.brandName != null">
+                #{param.brandName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.brandInitial != null">
+                #{param.brandInitial,jdbcType=VARCHAR},
+            </if>
+            <if test="param.brandPic != null">
+                #{param.brandPic,jdbcType=VARCHAR},
+            </if>
+            <if test="param.brandHf != null">
+                #{param.brandHf,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateBrand">
+        update goods_brand
+        <set>
+            <if test="param.brandName != null">
+                brand_name = #{param.brandName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.brandInitial != null">
+                brand_initial = #{param.brandInitial,jdbcType=VARCHAR},
+            </if>
+            <if test="param.brandPic != null">
+                brand_pic = #{param.brandPic,jdbcType=VARCHAR},
+            </if>
+            <if test="param.brandHf != null">
+                brand_hf = #{param.brandHf,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where brand_id = #{param.brandId,jdbcType=INTEGER}
+    </update>
+    <select id="selectBrandCats" resultType="com.houjiang.goods.vo.GoodsBrandCatParamVO">
+        select
+        brand_id,brand_name,brand_pic,brand_hf
+        from goods_brand_cat
+        where cat_id in (
+        <foreach collection="list" item="webCatMenu" separator=",">
+            #{webCatMenu.catId}
+        </foreach>
+        )
+    </select>
+    <select id="queryBrandList" resultType="com.houjiang.goods.entity.GoodsBrandEntity">
+        select brand_id,brand_name,brand_initial,brand_pic,brand_hf from goods_brand
+        where 1 = 1
+        <if test="param.brandId != null">
+            and brand_id = #{param.brandId,jdbcType=INTEGER}
+        </if>
+        <if test="param.brandName != null">
+            and brand_name like CONCAT(CONCAT('%',#{param.brandName}),'%')
+        </if>
+    </select>
+    <select id="selectByShopId" resultType="com.houjiang.goods.entity.GoodsBrandEntity">
+        select
+        brand_id, brand_name, brand_pic
+        from goods_brand
+        where 1=1
+        <if test="param.brandName != null and param.brandName != ''" >
+            AND brand_name = #{param.brandName,jdbcType=VARCHAR}
+        </if>
+    </select>
+    <select id="selectGoodsBrandList" resultType="com.houjiang.commons.vo.goods.GoodsBrandVO">
+        SELECT mgb.brand_id, mgb.brand_name, mgb.brand_pic
+        FROM ${database.prefix.goods}hou_goods_brand mgb
+        where mgb.brand_id in
+        <foreach collection="brandIdList" item="brandId" open="(" separator="," close=")">
+            #{brandId}
+        </foreach>
+    </select>
+    <select id="selectAllBrand" resultType="com.houjiang.goods.vo.GoodsBrandByCatIdVO">
+        select
+            brand_id, brand_name
+        from goods_brand
+    </select>
+    <select id="findListByName" resultType="com.houjiang.commons.vo.goods.GoodsBrandVO">
+        SELECT mgb.brand_id,mgb.brand_name, mgc.cat_id, mgc.cat_name, mgb.brand_pic
+        FROM ${database.prefix.goods}hou_goods_brand mgb
+        LEFT JOIN goods_type_brand mtb ON mtb.brand_id = mgb.brand_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_cat mgc ON mgc.type_id = mtb.type_id
+        <where>
+            <if test="catId != null">
+                AND mgc.cat_id = #{catId}
+            </if>
+            <if test="brandName != null">
+                AND (mgb.brand_name like concat('%', #{brandName}, '%')
+                or mgb.brand_initial like concat('%', #{brandName}, '%'))
+            </if>
+        </where>
+        order by mgb.brand_name
+    </select>
+</mapper>

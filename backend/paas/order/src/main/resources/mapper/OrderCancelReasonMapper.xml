@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderCancelReasonMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.order.entity.OrderCancelReasonEntity">
+            <id property="cancelReasonId" column="cancel_reason_id" jdbcType="INTEGER"/>
+            <result property="cancelReasonContent" column="cancel_reason_content" jdbcType="VARCHAR"/>
+            <result property="cancelIdentity" column="cancel_identity" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        cancel_reason_id,cancel_reason_content,cancel_identity
+    </sql>
+    <insert id="addCancelreason">
+         insert INTO ${database.prefix.order}hou_order_cancel_reason (cancel_reason_content,cancel_identity)
+         values(#{cancelReason},#{cancelType})
+    </insert>
+    <update id="updateCancelreason">
+        update ${database.prefix.order}hou_order_cancel_reason set cancel_reason_content = #{cancelReason}
+        where cancel_reason_id = #{cancelReasonId}
+    </update>
+</mapper>

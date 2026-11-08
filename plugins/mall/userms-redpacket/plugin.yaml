@@ -1,0 +1,35 @@
+code: userms-redpacket
+name: 红包
+version: 1.0.0
+author: UniMall
+description: 红包（activity 拆分，归属 userms 宿主）
+category: 营销 / 运营
+owner: official
+runtime: embedded
+hostService: mall
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - userms-redpacket:root
+  - userms-redpacket:root:index
+menus:
+  - type: M
+    name: 红包
+    icon: Wallet
+    sort: 3280
+    perms: userms-redpacket:root
+    path: /plugin/userms-redpacket
+    group: growth
+    groupSort: 100
+  - type: C
+    name: 红包管理
+    icon: Wallet
+    sort: 1
+    perms: userms-redpacket:root:index
+    path: /plugin/userms-redpacket/index
+    parentPerms: userms-redpacket:root
+frontend:
+  entry: /plugin-assets/userms-redpacket/1.0.0/index.mjs

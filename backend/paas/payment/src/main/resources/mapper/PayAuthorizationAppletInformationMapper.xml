@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayAuthorizationAppletInformationMapper">
+
+    <resultMap type="com.houjiang.payment.entity.PayAuthorizationAppletInformationEntity" id="PayAuthorizationAppletInformationMap">
+        <result property="authorizerId" column="authorizer_id" jdbcType="INTEGER"/>
+        <result property="authorizerAppid" column="authorizer_appid" jdbcType="VARCHAR"/>
+        <result property="secret" column="secret" jdbcType="VARCHAR"/>
+        <result property="authorizerRefreshToken" column="authorizer_refresh_token" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="videoIdList" column="video_id_list" jdbcType="VARCHAR"/>
+        <result property="picIdList" column="pic_id_list" jdbcType="VARCHAR"/>
+        <result property="auditId" column="audit_id" jdbcType="VARCHAR"/>
+    </resultMap>
+    <update id="updatesecret">
+    UPDATE ${database.prefix.payment}hou_pay_authorization_applet_information
+    SET secret = #{param.secret},
+        authorizer_appid = #{param.authorizerAppid}
+        where shop_id = #{param.shopId}
+    </update>
+    <select id="queryShopAppletConfigFeign" resultType="java.util.Map">
+        select authorizer_appid as AUTHAPPID,secret as AUTHSECRET from ${database.prefix.payment}hou_pay_authorization_applet_information where shop_id =  #{shopId}
+    </select>
+
+
+</mapper>

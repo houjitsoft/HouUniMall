@@ -1,0 +1,225 @@
+{
+  "welcome": {
+    "title": "Bienvenue dans le système de gestion UniMall",
+    "description": "Plateforme de gestion d'entreprise tout-en-un pour aider la transformation numérique"
+  },
+  "stats": {
+    "users": "Total des utilisateurs",
+    "products": "Nombre de produits",
+    "orders": "Nombre de commandes",
+    "revenue": "Revenus d'aujourd'hui"
+  },
+  "more": "Plus",
+  "moreModules": "Plus de modules",
+  "modules": {
+    "oa": {
+      "title": "Tâches OA",
+      "noTodos": "Aucune tâche",
+      "types": {
+        "approval": "Approbation",
+        "hr": "RH",
+        "project": "Projet",
+        "meeting": "Réunion",
+        "other": "Autre"
+      }
+    },
+    "erp": {
+      "title": "Logistique d'expédition ERP",
+      "noShipments": "Aucune information d'expédition",
+      "trackingNumber": "Numéro de suivi",
+      "estimatedArrival": "Arrivée estimée",
+      "statuses": {
+        "shipping": "Expédition",
+        "shipped": "Expédié",
+        "pending": "En attente",
+        "delivered": "Livré",
+        "exception": "Exception"
+      }
+    },
+    "project": {
+      "title": "Gestion de projet",
+      "noProjects": "Aucune information de projet",
+      "statuses": {
+        "completed": "Terminé",
+        "pending": "En attente",
+        "inProgress": "En cours"
+      }
+    },
+    "auth": {
+      "title": "Gestion d'authentification",
+      "users": "Total des utilisateurs",
+      "roles": "Nombre de rôles",
+      "permissions": "Nombre d'autorisations",
+      "recentActions": "Actions récentes",
+      "noActions": "Aucun enregistrement d'action"
+    },
+    "setting": {
+      "title": "Paramètres système",
+      "noCategories": "Aucune catégorie de paramètres",
+      "systemStatus": "Statut système",
+      "database": "Connexion base de données",
+      "cache": "Service de cache",
+      "storage": "Stockage de fichiers",
+      "statuses": {
+        "normal": "Normal",
+        "warning": "Avertissement"
+      },
+      "categories": {
+        "basic": {
+          "title": "Paramètres de base",
+          "description": "Configuration des informations de base du système"
+        },
+        "user": {
+          "title": "Gestion des utilisateurs",
+          "description": "Paramètres des autorisations et rôles utilisateur"
+        },
+        "finance": {
+          "title": "Paramètres financiers",
+          "description": "Configuration liée aux paiements et finances"
+        },
+        "notification": {
+          "title": "Paramètres de notification",
+          "description": "Configuration des notifications push et email"
+        }
+      }
+    },
+    "goods": {
+      "title": "Gestion des produits",
+      "total": "Total des produits",
+      "onSale": "En vente",
+      "outOfStock": "Rupture de stock",
+      "recentGoods": "Produits récents",
+      "stock": "Stock",
+      "noGoods": "Aucune information produit"
+    },
+    "order": {
+      "title": "Gestion des commandes",
+      "today": "Commandes d'aujourd'hui",
+      "pending": "En attente",
+      "revenue": "Revenus d'aujourd'hui",
+      "recentOrders": "Commandes récentes",
+      "orderNumber": "Numéro de commande",
+      "noOrders": "Aucune information de commande",
+      "statuses": {
+        "pending": "En attente",
+        "shipped": "Expédié",
+        "completed": "Terminé",
+        "cancelled": "Annulé"
+      }
+    },
+    "activity": {
+      "title": "Gestion des activités",
+      "active": "Activités actives",
+      "upcoming": "À venir",
+      "participants": "Participants",
+      "recentActivities": "Activités récentes",
+      "noActivities": "Aucune information d'activité",
+      "statuses": {
+        "active": "Actif",
+        "upcoming": "À venir",
+        "completed": "Terminé"
+      }
+    },
+    "ai": {
+      "title": "Intelligence IA",
+      "requests": "Demandes d'aujourd'hui",
+      "models": "Modèles actifs",
+      "successRate": "Taux de succès",
+      "recentActions": "Actions récentes",
+      "noActions": "Aucun enregistrement d'action"
+    },
+    "cms": {
+      "title": "Gestion de contenu",
+      "articles": "Total des articles",
+      "published": "Publié",
+      "comments": "Commentaires en attente",
+      "recentArticles": "Articles récents",
+      "noArticles": "Aucune information d'article",
+      "statuses": {
+        "published": "Publié",
+        "draft": "Brouillon",
+        "pending": "En attente"
+      }
+    },
+    "crm": {
+      "title": "Relation client",
+      "customers": "Total des clients",
+      "newCustomers": "Nouveaux ce mois",
+      "revenue": "Revenus mensuels",
+      "recentCustomers": "Clients récents",
+      "noCustomers": "Aucune information client"
+    },
+    "dcenter": {
+      "title": "Centre de données",
+      "dataVolume": "Volume de données",
+      "reports": "Rapports",
+      "storage": "Stockage utilisé",
+      "recentReports": "Rapports récents",
+      "noReports": "Aucune information de rapport"
+    },
+    "im": {
+      "title": "Messagerie instantanée",
+      "onlineUsers": "Utilisateurs en ligne",
+      "messages": "Messages",
+      "groups": "Groupes",
+      "recentMessages": "Messages récents",
+      "noMessages": "Aucun message"
+    },
+    "workflow": {
+      "title": "Gestion des workflows",
+      "processes": "Processus",
+      "running": "En cours",
+      "completed": "Terminé aujourd'hui",
+      "recentWorkflows": "Workflows récents",
+      "noWorkflows": "Aucun workflow"
+    },
+    "payment": {
+      "title": "Gestion des paiements",
+      "todayAmount": "Montant d'aujourd'hui",
+      "transactions": "Transactions",
+      "successRate": "Taux de succès",
+      "recentTransactions": "Transactions récentes",
+      "noTransactions": "Aucune transaction"
+    },
+    "lowcode": {
+      "title": "Plateforme Low-Code",
+      "applications": "Applications",
+      "components": "Composants",
+      "templates": "Modèles",
+      "recentProjects": "Projets récents",
+      "noProjects": "Aucun projet"
+    },
+    "mes": {
+      "title": "Système d'exécution de fabrication",
+      "productionLines": "Lignes de production",
+      "equipment": "Équipement",
+      "oee": "OEE",
+      "productionStatus": "Statut de production",
+      "noProduction": "Aucune donnée de production"
+    },
+    "orderfood": {
+      "title": "Système de commande de nourriture",
+      "todayOrders": "Commandes d'aujourd'hui",
+      "revenue": "Revenus d'aujourd'hui",
+      "venues": "Établissements actifs",
+      "recentOrders": "Commandes récentes",
+      "noOrders": "Aucune commande"
+    },
+    "rider": {
+      "title": "Gestion des livreurs",
+      "activeRiders": "Livreurs actifs",
+      "todayOrders": "Commandes d'aujourd'hui",
+      "avgDeliveryTime": "Temps de livraison moyen",
+      "riderStatus": "Statut des livreurs",
+      "noRiders": "Aucun livreur"
+    },
+    "supplier": {
+      "title": "Gestion des fournisseurs",
+      "suppliers": "Fournisseurs",
+      "cooperations": "Coopérations",
+      "qualityScore": "Score de qualité",
+      "recentSuppliers": "Fournisseurs récents",
+      "noSuppliers": "Aucun fournisseur"
+    }
+  }
+}

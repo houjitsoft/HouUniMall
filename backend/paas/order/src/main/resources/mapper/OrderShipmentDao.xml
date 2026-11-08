@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderShipmentMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderShipmentEntity" id="OrderShipmentMap">
+        <result property="shipmentId" column="shipment_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="goodsIds" column="goods_ids" jdbcType="VARCHAR"/>
+        <result property="goodsNums" column="goods_nums" jdbcType="VARCHAR"/>
+        <result property="orderShippingTime" column="order_shipping_time" jdbcType="TIMESTAMP"/>
+        <result property="orderShippingExpressId" column="order_shipping_express_id" jdbcType="VARCHAR"/>
+        <result property="orderShippingCode" column="order_shipping_code" jdbcType="VARCHAR"/>
+        <result property="orderShippingMessage" column="order_shipping_message" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="queryLogisticsMessage" resultType="com.houjiang.order.vo.LogisticsMessageVO">
+        select shipment_id,
+               order_id,
+               order_shipping_express_id,
+               order_shipping_code,
+               order_shipping_message,
+               order_shipping_time,
+               goods_ids,
+               goods_nums,
+               shipment_type,
+               delivery_person,
+               delivery_telephone,
+               delivery_certificate,
+               sender_address
+        FROM ${database.prefix.order}hou_order_shipment
+        where order_id = #{orderId}
+    </select>
+    <select id="queryStorageId" resultType="java.lang.Integer">
+        select storage_id FROM ${database.prefix.order}hou_order_shipment where order_id = #{orderId} limit 1
+    </select>
+    <select id="selectListByGoodsId" resultType="com.houjiang.order.entity.OrderShipmentEntity">
+        SELECT shipment_id,order_id,order_shipping_express_id,order_shipping_code,order_shipping_message,sender_address
+        FROM ${database.prefix.order}hou_order_shipment
+        WHERE order_id = #{orderId} and shipment_type = 1 and JSON_CONTAINS(goods_ids, #{goodsId})
+    </select>
+
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.ActivityNoneGoodsMapper">
+
+
+    <delete id="deleteNoneGoods" parameterType="com.houjiang.goods.dto.NoneGoodsUpdateDTO">
+        delete from ${database.prefix.activity}hou_addon_activity_none_goods
+        where
+        common_id in (
+        <foreach collection="param.commonIdList" item="commonId"
+                 index="index" separator=",">
+            #{commonId}
+        </foreach>
+        )
+    </delete>
+
+</mapper>

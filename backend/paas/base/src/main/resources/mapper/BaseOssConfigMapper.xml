@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseOssConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseOssConfigEntity">
+        <id property="ossId" column="oss_id" jdbcType="INTEGER"/>
+        <result property="ossBacketName" column="oss_backetName" jdbcType="VARCHAR"/>
+        <result property="ossFolder" column="oss_folder" jdbcType="VARCHAR"/>
+        <result property="ossRegion" column="oss_region" jdbcType="VARCHAR"/>
+        <result property="ossEndpoint" column="oss_endpoint" jdbcType="VARCHAR"/>
+        <result property="ossAccessKeyId" column="oss_accessKeyId" jdbcType="VARCHAR"/>
+        <result property="ossAccessKeySecret" column="oss_accessKeySecret" jdbcType="VARCHAR"/>
+        <result property="ossStates" column="oss_states" jdbcType="VARCHAR"/>
+        <result property="ossIsActive" column="oss_isActive" jdbcType="VARCHAR"/>
+        <result property="ossCreatedDate" column="oss_createdDate" jdbcType="TIMESTAMP"/>
+        <result property="ossUpdateDate" column="oss_updateDate" jdbcType="TIMESTAMP"/>
+        <result property="ossRemark" column="oss_remark" jdbcType="VARCHAR"/>
+        <result property="ossType" column="oss_type" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <update id="updateOssConfig">
+        REPLACE into ${database.prefix.userms}hou_base_oss_config
+        (oss_id,oss_backetName,oss_folder,oss_region,oss_endpoint,oss_accessKeyId,oss_accessKeySecret,oss_states
+        ,oss_isActive,oss_createdDate,oss_updateDate,oss_remark,oss_type)
+        values (#{param.ossId},#{param.ossBacketName},#{param.ossFolder},#{param.ossRegion},#{param.ossEndpoint},#{param.ossAccessKeyId}
+        ,#{param.ossAccessKeySecret},#{param.ossStates},1,now(),now(),#{param.ossRemark},#{param.ossType});
+    </update>
+
+    <select id="selectOSSInfo" resultMap="BaseResultMap">
+        select oss_id, oss_backetName, oss_folder, oss_endpoint, oss_accessKeyId, oss_accessKeySecret, oss_states,
+        oss_isActive, oss_createdDate, oss_updateDate, oss_remark, oss_region, oss_type
+        from ${database.prefix.userms}hou_base_oss_config
+        <where>
+            <if test="ossType != null and ossType != ''">
+                and oss_type = #{ossType}
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="insertOSSInfo">
+        INSERT into ${database.prefix.userms}hou_base_oss_config (oss_states,oss_isActive) VALUES ('01','00')
+    </insert>
+    <select id="getOSSConfigbyId" resultType="java.lang.Integer">
+        select LAST_INSERT_ID()
+    </select>
+
+</mapper>

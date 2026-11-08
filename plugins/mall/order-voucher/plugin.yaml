@@ -1,0 +1,35 @@
+code: order-voucher
+name: 优惠券
+version: 1.0.0
+author: UniMall
+description: 优惠券（activity 拆分，归属 order 宿主）
+category: 营销与客户
+owner: official
+runtime: embedded
+hostService: mall
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - order-voucher:root
+  - order-voucher:root:index
+menus:
+  - type: M
+    name: 优惠券
+    icon: Ticket
+    sort: 3210
+    perms: order-voucher:root
+    path: /plugin/order-voucher
+    group: growth
+    groupSort: 100
+  - type: C
+    name: 优惠券管理
+    icon: Ticket
+    sort: 1
+    perms: order-voucher:root:index
+    path: /plugin/order-voucher/index
+    parentPerms: order-voucher:root
+frontend:
+  entry: /plugin-assets/order-voucher/1.0.0/index.mjs

@@ -1,0 +1,105 @@
+/* ==========================================================================
+   bcenter 设计令牌层
+   --------------------------------------------------------------------------
+   全站视觉的唯一事实来源。所有颜色 / 圆角 / 阴影 / 尺度都先在这里定义，
+   再由 var.css 映射到 Element Plus 变量、由 tailwind.config.js 映射成工具类。
+   改视觉请改这里，不要在页面里写死色值。
+   ========================================================================== */
+
+:root {
+    /* ── UniMall 品牌红 ───────────────────────────────────────────────── */
+    --brand-50: #fff0f1;
+    --brand-100: #ffe0e2;
+    --brand-200: #f9c2c5;
+    --brand-300: #f49398;
+    --brand-400: #f06b71;
+    --brand-500: #ef4f55; /* 主色 */
+    --brand-600: #d93d45;
+    --brand-700: #b92f37;
+    --brand-800: #94262d;
+    --brand-900: #761f25;
+
+    /* ── 强调色：琥珀 Amber（用于焦点提示 / 高亮标记 / 数据强调） ───────── */
+    --accent-50: #fdf6ea;
+    --accent-100: #fbeedc;
+    --accent-200: #f5d9ac;
+    --accent-300: #f0c98a;
+    --accent-400: #e5ab55;
+    --accent-500: #d98a2b;
+    --accent-600: #be7418;
+
+    /* ── 中性色：暖灰 Stone（区别于常见的冷蓝灰） ───────────────────────── */
+    --neutral-0: #ffffff;
+    --neutral-25: #fbfbfc;
+    --neutral-50: #f5f6f8;
+    --neutral-75: #f0f1f3;
+    --neutral-100: #e9eaed;
+    --neutral-200: #dfe1e5;
+    --neutral-300: #c8cbd1;
+    --neutral-400: #a2a7b0;
+    --neutral-500: #7a808b;
+    --neutral-600: #5d636d;
+    --neutral-700: #41464f;
+    --neutral-800: #292d34;
+    --neutral-900: #1d2026;
+
+    /* ── 外壳深色：导航与侧栏的深夜墨绿 ────────────────────────────────── */
+    --shell-900: #171a20;
+    --shell-800: #23272e;
+    --shell-700: #2d323a;
+    --shell-600: #3b414b;
+    --shell-500: #535a66;
+
+    /* ── 语义色 ────────────────────────────────────────────────────────── */
+    --state-success: #17855c;
+    --state-success-bg: #e7f4ee;
+    --state-warning: #c0780e;
+    --state-warning-bg: #fdf1de;
+    --state-danger: #cf4a4a;
+    --state-danger-bg: #fbeced;
+    --state-info: #3c7ca0;
+    --state-info-bg: #ecf3f8;
+
+    /* ── 圆角：统一放大一档，形成柔和厚实的观感 ────────────────────────── */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-pill: 999px;
+
+    /* ── 阴影：暖调、低透明度、双层柔光 ────────────────────────────────── */
+    --shadow-xs: 0 1px 2px rgba(28, 26, 24, 0.05);
+    --shadow-sm: 0 1px 3px rgba(28, 26, 24, 0.06), 0 1px 2px rgba(28, 26, 24, 0.04);
+    --shadow-md: 0 6px 16px -6px rgba(28, 26, 24, 0.12), 0 2px 6px -2px rgba(28, 26, 24, 0.06);
+    --shadow-lg: 0 18px 44px -14px rgba(28, 26, 24, 0.22), 0 6px 14px -6px rgba(28, 26, 24, 0.1);
+    --shadow-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    --shadow-focus: 0 0 0 3px rgba(239, 79, 85, 0.14);
+    --shadow-focus-danger: 0 0 0 3px rgba(207, 74, 74, 0.14);
+
+    /* ── 布局尺度 ──────────────────────────────────────────────────────── */
+    --topbar-height: 60px;
+    --tabsbar-height: 44px;
+    --rail-width: 232px;
+    --rail-width-collapsed: 76px;
+    --navbar-height: 60px; /* 兼容旧引用 */
+    --aside-width: 232px; /* 兼容旧引用 */
+    --content-max: 1600px;
+
+    /* ── 内容节奏 ──────────────────────────────────────────────────────── */
+    --space-page: 20px; /* 页面外边距 */
+    --space-card: 20px; /* 卡片内边距 */
+    --space-block: 16px; /* 区块间距 */
+    --space-field: 12px; /* 表单/元素间距 */
+
+    /* ── 字体 ──────────────────────────────────────────────────────────── */
+    --font-sans: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'HarmonyOS Sans SC',
+        'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+    --font-number: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', var(--font-sans);
+
+    /* ── 动效 ──────────────────────────────────────────────────────────── */
+    --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+    --duration-fast: 0.16s;
+    --duration-base: 0.24s;
+}

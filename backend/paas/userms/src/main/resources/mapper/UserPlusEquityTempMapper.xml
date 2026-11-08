@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserPlusEquityTempMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserPlusEquityTempEntity">
+            <id property="equityId" column="equity_id" jdbcType="INTEGER"/>
+            <result property="equityName" column="equity_name" jdbcType="VARCHAR"/>
+            <result property="equityType" column="equity_type" jdbcType="INTEGER"/>
+            <result property="equityValue" column="equity_value" jdbcType="VARCHAR"/>
+            <result property="equityAddtime" column="equity_addtime" jdbcType="TIMESTAMP"/>
+            <result property="equityStatus" column="equity_status" jdbcType="INTEGER"/>
+            <result property="redEffective" column="red_effective" jdbcType="INTEGER"/>
+            <result property="redProvide" column="red_provide" jdbcType="INTEGER"/>
+            <result property="discountLimit" column="discount_limit" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        equity_id,equity_name,equity_type,
+        equity_value,equity_addtime,equity_status,
+        red_effective,red_provide,discount_limit
+    </sql>
+    <select id="selectplusequitys" resultType="com.houjiang.commons.vo.base.PlusEquityEntityVO">
+        select equity_id ,equity_name ,equity_type ,equity_value ,equity_addtime ,
+        equity_status ,
+        red_effective ,red_provide,discount_limit from ${database.prefix.userms}hou_user_plus_equity_temp
+        where equity_status = 1 and equity_id in
+        <foreach collection="list" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+    </select>
+</mapper>

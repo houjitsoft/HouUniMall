@@ -1,0 +1,69 @@
+server:
+  port: 8207
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${PAYMENT_DATASOURCE_PASSWORD} # 数据库密码
+  main:
+    allow-bean-definition-overriding: true
+
+houjiang:
+  pay:
+    crypto:
+      key: ${PAY_AES_KEY:houjiangPayKey16}
+      iv: ${PAY_AES_IV:houjiangPayIv016}
+
+#微信证书编号 用于微信提现
+wechatPayserialNo: ${PAYMENT_IDENTIFIER}
+privatekeypath: ${PAYMENT_PRIVATE_KEY}
+paypal:
+  client:
+    mode: sandbox
+    app: ${PAYMENT_PAYPAL_CLIENT_CREDENTIAL}
+    secret: ${PAYMENT_PAYPAL_CLIENT_SECRET}
+
+# ==================== 域名配置 ====================
+# payment 服务自身对外域名（生产环境请改为真实公网域名，确保微信/支付宝可达）
+domainName: http://localhost:8207
+
+# ==================== 收银台 · Task 1 微信 JSAPI 配置 ====================
+# 微信支付异步通知回调地址，必须是 payment 服务自己对外可访问的 URL
+# 对应 CashierCallbackController 的 POST /api/payment/callback/wx/jsapi
+cashier:
+  wx:
+    jsapi:
+      notify-url: http://localhost:8207/api/payment/callback/wx/jsapi
+
+# ==================== 支付渠道配置（预留：Task 2~7 逐步替换为真实值） ====================
+payment:
+  # 微信支付（WXPayConfig 默认从 pay_config 表动态读取，以下仅为允许覆盖的预留字段）
+  wechat:
+    app-id: ${PAYMENT_WECHAT_AK_ID}
+    mch-id: ${PAYMENT_WECHAT_MCH_ID}
+    api-key: ${PAYMENT_WECHAT_APP_KEY}
+    notify-url: http://localhost:8207/api/payment/callback/wx/jsapi
+  # 支付宝（Task 2 接入）
+  alipay:
+    app-id: ${PAYMENT_ALIPAY_AK_ID}
+    private-key: ${PAYMENT_ALIPAY_PRIVATE_KEY}
+    public-key: your-alipay-public-key
+    notify-url: http://localhost:8207/api/payment/callback/ali/notify
+  # PayPal（Task 3 接入）
+  paypal:
+    client-id: your-paypal-client-id
+    client-secret: ${PAYMENT_PAYPAL_SECRET}
+    mode: sandbox
+
+# ==================== Stripe 配置（海外信用卡 Task 待定） ====================
+stripe:
+  key: your-stripe-publishable-key
+  sectret: your-stripe-secret-key
+  webhooksKey: your-stripe-webhooks-key
+  merchantName: your-merchant-name
+
+# ==================== 层级配置（微信分销层级） ====================
+firstLevel: 1
+

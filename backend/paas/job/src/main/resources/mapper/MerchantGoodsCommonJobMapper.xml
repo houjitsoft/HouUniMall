@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.MerchantGoodsCommonJobMapper">
+
+    <select id="queryGoodsTimeShelf" parameterType="java.util.Date" resultType="java.util.Map">
+		select gc.common_id as commonId, gc.common_sell_time as commonSellTime
+		from ${database.prefix.goods}hou_goods_common gc
+				 LEFT JOIN ${database.prefix.goods}hou_goods_base gb ON gc.common_id = gb.common_id
+				 LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON gc.shop_id = sb.supplier_shop_id
+		where gc.common_state = 4
+		  AND gc.common_verify = 1
+		  AND gc.common_is_screen = 1
+		  AND sb.shop_status = 3
+		  AND gc.common_price != 0
+	</select>
+
+    <update id="updateGoodsPutaway">
+		update ${database.prefix.goods}hou_goods_common set common_state = 1 where common_id = #{commonId}
+	</update>
+
+	<update id="updateGoodsBase">
+		update ${database.prefix.goods}hou_goods_base
+		set goods_is_shelves = 1
+		where common_id = #{commonId}
+	</update>
+</mapper>

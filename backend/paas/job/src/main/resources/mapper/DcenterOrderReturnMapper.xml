@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterOrderReturnMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterOrderReturnEntity">
+            <id property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="returnReasonId" column="return_reason_id" jdbcType="INTEGER"/>
+            <result property="returnCash" column="return_cash" jdbcType="DECIMAL"/>
+            <result property="returnAddTime" column="return_add_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        order_id,return_reason_id,return_cash,
+        return_add_time
+    </sql>
+    <select id="getDecenterOrderReturnVOList" resultType="com.houjiang.job.vo.DcenterOrderReturnVO">
+        select
+            order_id,
+            return_reason_id,
+            return_cash,
+            return_add_time
+        from ${database.prefix.order}hou_order_return
+        limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

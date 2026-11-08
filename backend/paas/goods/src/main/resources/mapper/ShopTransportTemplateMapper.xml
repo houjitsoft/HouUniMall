@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.ShopTransportTemplateMapper">
+
+    <resultMap id="Manage2ResultMap"
+               type="com.houjiang.commons.vo.goods.ManageTransportTemplateVO">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+    </resultMap>
+    <sql id="Manage2_Column_List">
+        id, name
+    </sql>
+    <select id="selectById" resultMap="Manage2ResultMap"
+            parameterType="java.lang.Integer">
+        select
+        <include refid="Manage2_Column_List" />
+        FROM
+        ${database.prefix.business}hou_shop_transport_template
+        WHERE
+        1=1
+        <if test="transportTemplate != null">
+            and id = #{transportTemplate,jdbcType=INTEGER}
+        </if>
+    </select>
+
+</mapper>

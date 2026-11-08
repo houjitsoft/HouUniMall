@@ -1,0 +1,644 @@
+/**
+ * UniMall 移动端全局样式增强
+ * 与 design-system.css 配合，统一窄屏下的间距、字号与溢出处理
+ */
+
+@media (max-width: 992px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  /* 顶栏：压缩控件，避免 F2C / 组织名挤在一起 */
+  .layout-container.is-mobile .header {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .layout-container.is-mobile .header-left {
+    flex: 0 1 auto;
+    max-width: 38%;
+  }
+
+  .layout-container.is-mobile .header-right {
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .layout-container.is-mobile .header-toolbar {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    max-width: 100%;
+  }
+
+  .layout-container.is-mobile .hc-header-chip--org {
+    max-width: 96px;
+    padding: 0 6px;
+  }
+
+  .layout-container.is-mobile .hc-header-chip--lang {
+    min-width: 0;
+    padding: 0 8px;
+  }
+
+  /* 二级菜单条：轻量胶囊样式 */
+  .layout-container.is-mobile .mobile-secondary-bar {
+    padding: 6px 12px;
+    background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+    border-bottom: 1px solid var(--hc-border);
+  }
+
+  .layout-container.is-mobile .mobile-secondary-btn {
+    height: 36px;
+    border-radius: 10px;
+    font-weight: 500;
+    border-color: #c6e2ff;
+    background: #f0f7ff;
+  }
+
+  /* 内容区安全边距（刘海屏） */
+  .layout-container.is-mobile .content-body {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* 统计数字：防止金额截断 */
+  .hc-stat-value,
+  .metric-value,
+  .stat-value,
+  .kpi-value,
+  .new-metric-number,
+  .footer-value {
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+    line-height: 1.2;
+  }
+
+  /* ── 页面容器：App 级内边距 ── */
+  .layout-container.is-mobile .page-container,
+  .layout-container.is-mobile .shop-theme,
+  .layout-container.is-mobile .logistics-management-container,
+  .layout-container.is-mobile .goods-list-container,
+  .layout-container.is-mobile .theme-config-container,
+  .layout-container.is-mobile .evaluation-management-container,
+  .layout-container.is-mobile .invoice-management-container,
+  .layout-container.is-mobile .settlement-management-container,
+  .layout-container.is-mobile .complaint-management-container,
+  .layout-container.is-mobile .exchange-management-container,
+  .layout-container.is-mobile .platform-rights-container {
+    padding: 12px !important;
+    box-sizing: border-box;
+  }
+
+  /* ── KPI 统计卡片：2×2 网格，避免四列挤成竖条 ── */
+  .layout-container.is-mobile .stats-row .el-col-6,
+  .layout-container.is-mobile .stats-row .el-col-6.is-guttered,
+  .layout-container.is-mobile .stats-cards .el-col-6 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  .layout-container.is-mobile .stats-row {
+    margin-bottom: 12px !important;
+  }
+
+  .layout-container.is-mobile .stats-row .el-col-6,
+  .layout-container.is-mobile .stats-cards .el-col-6 {
+    margin-bottom: 8px;
+  }
+
+  .layout-container.is-mobile .stat-card {
+    height: auto !important;
+    min-height: 96px;
+    border-radius: 12px;
+  }
+
+  .layout-container.is-mobile .stat-card :deep(.el-card__body) {
+    padding: 12px !important;
+  }
+
+  .layout-container.is-mobile .stat-card .stat-content {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    height: auto !important;
+  }
+
+  .layout-container.is-mobile .stat-card .stat-icon {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px;
+    border-radius: 10px;
+    margin-right: 0 !important;
+  }
+
+  .layout-container.is-mobile .stat-card .stat-icon .el-icon {
+    font-size: 22px !important;
+  }
+
+  .layout-container.is-mobile .stat-card .stat-label {
+    font-size: 12px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .layout-container.is-mobile .stat-card .stat-value {
+    font-size: clamp(16px, 4.2vw, 22px) !important;
+    margin-bottom: 2px;
+  }
+
+  .layout-container.is-mobile .stat-card .stat-desc {
+    font-size: 11px;
+  }
+
+  .layout-container.is-mobile .stat-card .stat-info {
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* ── 双栏布局（表格/图表）纵向堆叠 ── */
+  .layout-container.is-mobile .section-card .el-col-12,
+  .layout-container.is-mobile .chart-card .el-col-12,
+  .layout-container.is-mobile .el-row:not(.stats-row) > .el-col-12 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ── 卡片标题区：纵向排列 ── */
+  .layout-container.is-mobile .card-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  .layout-container.is-mobile .card-header .el-radio-group {
+    width: 100%;
+    display: flex;
+  }
+
+  .layout-container.is-mobile .card-header .el-radio-button {
+    flex: 1;
+  }
+
+  .layout-container.is-mobile .card-header .el-radio-button__inner {
+    width: 100%;
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  /* ── 筛选表单：纵向堆叠 + 全宽控件 ── */
+  .layout-container.is-mobile .search-card .el-form--inline,
+  .layout-container.is-mobile .filter-card .el-form--inline,
+  .layout-container.is-mobile .filter-form.el-form--inline {
+    display: block;
+  }
+
+  .layout-container.is-mobile .search-card .el-form-item,
+  .layout-container.is-mobile .filter-card .el-form-item,
+  .layout-container.is-mobile .filter-form .el-form-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-right: 0 !important;
+    margin-bottom: 12px;
+  }
+
+  .layout-container.is-mobile .search-card .el-form-item__label,
+  .layout-container.is-mobile .filter-card .el-form-item__label,
+  .layout-container.is-mobile .filter-form .el-form-item__label {
+    justify-content: flex-start;
+    text-align: left;
+    padding-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .layout-container.is-mobile .search-card .el-form-item__content,
+  .layout-container.is-mobile .filter-card .el-form-item__content,
+  .layout-container.is-mobile .filter-form .el-form-item__content {
+    width: 100%;
+  }
+
+  .layout-container.is-mobile .search-card .el-select,
+  .layout-container.is-mobile .search-card .el-input,
+  .layout-container.is-mobile .search-card .el-date-editor,
+  .layout-container.is-mobile .filter-card .el-select,
+  .layout-container.is-mobile .filter-card .el-input,
+  .layout-container.is-mobile .filter-card .el-date-editor,
+  .layout-container.is-mobile .filter-form .el-select,
+  .layout-container.is-mobile .filter-form .el-input,
+  .layout-container.is-mobile .filter-form .el-date-editor {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  .layout-container.is-mobile .search-card .el-form-item:last-child .el-form-item__content,
+  .layout-container.is-mobile .filter-card .el-form-item:last-child .el-form-item__content,
+  .layout-container.is-mobile .filter-form .el-form-item:last-child .el-form-item__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .layout-container.is-mobile .search-card .el-form-item:last-child .el-button,
+  .layout-container.is-mobile .filter-card .el-form-item:last-child .el-button,
+  .layout-container.is-mobile .filter-form .el-form-item:last-child .el-button {
+    width: 100%;
+    margin: 0 !important;
+    min-height: 40px;
+  }
+
+  .layout-container.is-mobile .search-card .el-form-item:last-child .el-button--success,
+  .layout-container.is-mobile .filter-card .el-form-item:last-child .el-button--success,
+  .layout-container.is-mobile .filter-form .el-form-item:last-child .el-button--success {
+    grid-column: 1 / -1;
+  }
+
+  /* ── 表格横向滚动 ── */
+  .layout-container.is-mobile .hc-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -2px;
+  }
+
+  .layout-container.is-mobile .hc-table-wrap .el-table {
+    min-width: 640px;
+  }
+
+  /* ── 固定底栏（保存等）App 风格 ── */
+  .layout-container.is-mobile .footer-btns {
+    left: 0 !important;
+    right: 0;
+    height: auto;
+    min-height: 56px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  .layout-container.is-mobile .footer-btns .el-button {
+    flex: 1;
+    max-width: 280px;
+    min-height: 44px;
+    border-radius: 10px;
+    font-size: 15px;
+  }
+
+  /* ── 分页精简 ── */
+  .layout-container.is-mobile .pagination-container,
+  .layout-container.is-mobile .pagination {
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout-container.is-mobile .hc-header-chip--org {
+    max-width: 72px;
+  }
+
+  .layout-container.is-mobile .hc-header-chip--lang .hc-header-chip__text {
+    max-width: 3em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Element 行间距在窄屏收紧 */
+  .el-row {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+  }
+
+  .el-col {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-container.is-mobile .header {
+    padding: 0 8px;
+  }
+
+  .layout-container.is-mobile .hc-header-chip--org {
+    max-width: 56px;
+  }
+
+  /* 极窄屏隐藏语言下拉文字，仅保留箭头区域可点 */
+  .layout-container.is-mobile .hc-header-chip--lang .hc-header-chip__text {
+    display: none;
+  }
+
+  .layout-container.is-mobile .hc-header-chip--lang {
+    min-width: 32px;
+    padding: 0 6px;
+    justify-content: center;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   全站移动端通用适配（与 Layout MOBILE_BREAKPOINT 991px 对齐）
+   覆盖未单独写 @media 的页面，避免 min-width 导致内容被裁切
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 991px) {
+  /* ── 装修编辑器 / 底部导航编辑器：解除桌面 min-width 锁死 ── */
+  .page-editor-container,
+  .tabbar-editor {
+    min-width: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    height: auto !important;
+    min-height: 0;
+    overflow-x: hidden;
+  }
+
+  .page-editor-container .editor-body,
+  .tabbar-editor .editor-body {
+    flex-direction: column !important;
+    overflow: visible !important;
+    height: auto !important;
+    gap: 12px;
+    padding: 8px 0 !important;
+  }
+
+  .page-editor-container .editor-left,
+  .page-editor-container .editor-center,
+  .page-editor-container .editor-right {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    min-height: 160px;
+    overflow: visible !important;
+  }
+
+  .page-editor-container .editor-left {
+    order: 1;
+  }
+
+  .page-editor-container .editor-center {
+    order: 2;
+    min-height: 280px;
+  }
+
+  .page-editor-container .editor-right {
+    order: 3;
+  }
+
+  .page-editor-container .editor-footer,
+  .tabbar-editor .editor-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    margin-top: 8px;
+  }
+
+  .tabbar-editor .editor-body {
+    align-items: stretch !important;
+  }
+
+  .tabbar-editor .phone-preview-wrapper {
+    padding: 12px !important;
+    width: 100%;
+  }
+
+  .tabbar-editor .phone-preview {
+    transform: scale(0.85);
+    transform-origin: top center;
+    margin: 0 auto;
+  }
+
+  .tabbar-editor .attr-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ── 列表页工具栏：按钮 + 筛选表单纵向堆叠 ── */
+  .page-list-toolbar,
+  .list-toolbar,
+  .table-toolbar,
+  .hc-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .el-card__body > .flex,
+  .el-card > .flex {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .el-card__body > .flex.justify-between,
+  .el-card > .flex.justify-between,
+  .flex.justify-between.items-center {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .flex.justify-between.items-center > .el-button {
+    width: 100%;
+  }
+
+  .flex.justify-between.items-center > .el-form,
+  .flex.justify-between.items-center .el-form--inline {
+    width: 100%;
+  }
+
+  /* ── 行内表单 → 纵向全宽 ── */
+  .el-form--inline {
+    display: block;
+  }
+
+  .el-form--inline .el-form-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-right: 0 !important;
+    margin-bottom: 12px;
+  }
+
+  .el-form--inline .el-form-item__label {
+    justify-content: flex-start;
+    text-align: left;
+    padding-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .el-form--inline .el-form-item__content {
+    width: 100%;
+  }
+
+  .el-form--inline .el-input,
+  .el-form--inline .el-select,
+  .el-form--inline .el-date-editor {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  /* label-width 固定表单在窄屏顶置标签 */
+  .el-form:not(.el-form--inline) .el-form-item {
+    flex-wrap: wrap;
+  }
+
+  .theme-form.el-form .el-form-item,
+  .hc-form-stack.el-form .el-form-item {
+    display: block;
+  }
+
+  .theme-form.el-form .el-form-item__label,
+  .hc-form-stack.el-form .el-form-item__label {
+    width: 100% !important;
+    text-align: left;
+    justify-content: flex-start;
+    height: auto !important;
+    line-height: 1.4;
+    padding-bottom: 6px;
+    float: none;
+  }
+
+  .theme-form.el-form .el-form-item__content,
+  .hc-form-stack.el-form .el-form-item__content {
+    margin-left: 0 !important;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ── 表格：卡片内自动横向滚动 ── */
+  .el-card .el-table,
+  .el-card__body > .el-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .el-card .el-table .el-table__inner-wrapper,
+  .el-card__body > .el-table .el-table__inner-wrapper {
+    min-width: 560px;
+  }
+
+  /* ── 固定宽度工具类 → 全宽 ── */
+  .w-280,
+  .w-180,
+  .w-200,
+  .w-240 {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  /* ── Tabs 横向可滑动 ── */
+  .el-tabs__header {
+    margin-bottom: 12px;
+  }
+
+  .el-tabs__nav-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .el-tabs__nav-wrap::after {
+    display: none;
+  }
+
+  .el-tabs__nav-scroll {
+    overflow: visible;
+  }
+
+  .el-tabs__nav {
+    flex-wrap: nowrap;
+  }
+
+  .el-tabs__item {
+    padding: 0 14px;
+    font-size: 13px;
+  }
+
+  /* ── 双栏 el-row 默认单列 ── */
+  .el-row > .el-col-8,
+  .el-row > .el-col-6,
+  .el-row > .el-col-4,
+  .el-row > .el-col-16,
+  .el-row > .el-col-18 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ── 描述列表窄屏换行 ── */
+  .el-descriptions {
+    --el-descriptions-item-bordered-label-width: 100px;
+  }
+
+  .el-descriptions .el-descriptions__label,
+  .el-descriptions .el-descriptions__content {
+    word-break: break-word;
+  }
+
+  /* ── 操作按钮组全宽 ── */
+  .header-actions,
+  .action-bar,
+  .btn-group {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-actions .el-button,
+  .action-bar .el-button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ── 其他阻断型 min-width ── */
+  .test-page-shell__table-wrap,
+  [class*='-editor-container'] {
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+
+  .tabbar-editor .settings-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    height: auto !important;
+  }
+
+  .tabbar-editor .settings-scroll {
+    height: auto !important;
+    max-height: none;
+  }
+
+  /* PM 测试等宽表格容器 */
+  .test-page-shell__table-wrap .el-table {
+    min-width: 640px;
+  }
+}
+
+@media (max-width: 991px) {
+  .layout-container.is-mobile .content {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .layout-container.is-mobile .content-body {
+    padding: var(--hc-page-padding, 12px);
+    box-sizing: border-box;
+  }
+
+  /* 页面级 padding 归零，由 content-body 统一控制 */
+  .layout-container.is-mobile .page-list-card,
+  .layout-container.is-mobile .shop-theme,
+  .layout-container.is-mobile .theme-config-container {
+    padding: 0 !important;
+  }
+
+  .layout-container.is-mobile .page-list-card :deep(.el-card__body) {
+    padding: 12px;
+  }
+
+  .layout-container.is-mobile .shop-theme {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}

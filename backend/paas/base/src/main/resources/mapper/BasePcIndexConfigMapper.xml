@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BasePcIndexConfigMapper">
+
+    <resultMap type="com.houjiang.base.entity.BasePcIndexConfigEntity" id="BasePcIndexConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="pageName" column="page_name" jdbcType="VARCHAR"/>
+        <result property="pageType" column="page_type" jdbcType="INTEGER"/>
+        <result property="pageTitle" column="page_title" jdbcType="VARCHAR"/>
+        <result property="pageTwoTitle" column="page_two_title" jdbcType="VARCHAR"/>
+        <result property="pageData" column="page_data" jdbcType="VARCHAR"/>
+        <result property="pageStart" column="page_start" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="pageSort" column="page_sort" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="selectPcIndexConfig" resultType="com.houjiang.base.vo.index.GdbPcIndexConfigVO">
+        select id,page_name,page_type,page_title,page_data,page_start,page_two_title,page_sort from ${database.prefix.userms}hou_base_pc_index_config where 1=1
+        <if test="null != param.pageName">
+            and page_name = #{param.pageName}
+        </if>
+        <if test="null != param.pageType">
+            and page_type = #{param.pageType}
+        </if>
+        <if test="null != param.pageTitle">
+            and page_title = #{param.pageTitle}
+        </if>
+        <if test="null != param.pageStart">
+            and page_start = #{param.pageStart}
+        </if>
+        <if test="null != param.pageTwoTitle">
+            and page_two_title = #{param.pageTwoTitle}
+        </if>
+        <if test="null != param.id">
+            and id = #{param.id}
+        </if>
+    </select>
+</mapper>
+

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <rect width="1200" height="420" fill="#e9e2d4"/>
+  <path d="M860 320 q100 -160 200 0" fill="none" stroke="#9a7048" stroke-width="2.5" stroke-opacity="0.5"/>
+  <circle cx="960" cy="150" r="34" fill="none" stroke="#9a7048" stroke-width="2" stroke-opacity="0.55"/>
+  <path d="M840 356 h240" stroke="#9a7048" stroke-width="1.5" stroke-opacity="0.35"/>
+  <line x1="72" y1="120" x2="72" y2="300" stroke="#9a7048" stroke-width="1.5" stroke-opacity="0.5"/>
+  <text x="100" y="196" font-family="Georgia, 'Songti SC', serif" font-size="46" fill="#221e17" letter-spacing="6">器物之美</text>
+  <text x="102" y="248" font-family="Georgia, 'Songti SC', serif" font-size="18" fill="#8b8375" letter-spacing="4">HANDCRAFTED WARES</text>
+</svg>

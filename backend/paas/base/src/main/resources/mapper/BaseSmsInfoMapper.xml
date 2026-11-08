@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseSmsInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseSmsInfoEntity">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="orgId" column="org_id" jdbcType="VARCHAR"/>
+            <result property="smsSecretId" column="sms_secret_id" jdbcType="VARCHAR"/>
+            <result property="smsSecretKey" column="sms_secret_key" jdbcType="VARCHAR"/>
+            <result property="smsSdkAppId" column="sms_sdk_app_id" jdbcType="VARCHAR"/>
+            <result property="smsSign" column="sms_sign" jdbcType="VARCHAR"/>
+            <result property="smsStatus" column="sms_status" jdbcType="VARCHAR"/>
+            <result property="smsIsactive" column="sms_isActive" jdbcType="VARCHAR"/>
+            <result property="smsRemark" column="sms_remark" jdbcType="VARCHAR"/>
+            <result property="smsCreateddate" column="sms_createdDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,sms_secret_id,sms_secret_key,
+        sms_sdk_app_id,sms_sign,sms_status,
+        sms_isActive,sms_remark,sms_createdDate,org_id
+    </sql>
+    <update id="updateSMS">
+        UPDATE hou_base_sms_info SET `sms_secret_id` = #{smsSecretId,jdbcType=VARCHAR},
+        `sms_secret_key` = #{smsSecretKey,jdbcType=VARCHAR}, `sms_sdk_app_id` = #{smsSdkAppId,jdbcType=VARCHAR}, `sms_sign` = #{smsSign,jdbcType=VARCHAR},
+        `sms_status` = #{smsStatus,jdbcType=VARCHAR}, `sms_remark` = #{smsRemark,jdbcType=VARCHAR}
+        WHERE `id` = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>

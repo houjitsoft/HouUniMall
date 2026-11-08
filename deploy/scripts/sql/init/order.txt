@@ -1,0 +1,155 @@
+# =====================================================================
+# UniMall 数据库初始化唯一有序清单（canonical order）
+#
+# 这是 SQL 初始化顺序的**唯一权威来源**。两条执行链都读它，禁止各自维护：
+#   1) 传统 / jar 部署： scripts/sql/init_all.sh --schema-only | 全量
+#   2) Docker 部署：     docker/mysql-init/00-init.sql（由
+#                        scripts/sql/render-docker-init.sh 从本文件生成，勿手改）
+#
+# 改顺序 = 改本文件 + 重跑 render 脚本 + 提交生成物。
+# 校验一致性（CI / 提交前）：bash scripts/sql/render-docker-init.sh --check
+#
+# 阶段含义：
+#   [schema] 建库建表 / 加列改表，不含业务数据；--schema-only 会执行到这里
+#   [data]   初始数据（菜单 / 角色 / 管理员 / 分类导航）；--schema-only 跳过
+# =====================================================================
+
+[schema]
+# 结构快照（676 张基表，2026-09-16 导出，早于下面几列/表，故后面必须补迁移）
+10-meoc-schema.sql
+# 平台核心增量建表 + 插件制品相关表（hou_plugin_artifact 等）
+20-core-migrations.sql
+# 移动端页面模板列（schema 阶段建列；它的菜单插入依赖 seed 出来的 60010，
+# 所以本脚本在 [data] 阶段还会再跑一次，脚本本身幂等）
+22-mobile-page-template.sql
+# hou_decorate_page → hou_base_decorate_page 改名 + page_platform（幂等守卫）
+24-base-decorate-page-platform.sql
+# 插件导航列（cate_id / plugin_code / display_pos）——必须早于 99-seed.sql，
+# 因为 seed 末尾直接 UPDATE display_pos，缺列会 ERROR 1054 中断整个初始化
+15-plugin-nav-columns.sql
+# 商业交付：维护期列 + hou_service_release 表
+30-commercial-delivery.sql
+# 授权期限列 term_days（PAID 套餐 valid_days 落地，审计 P2-2）
+31-plugin-license-term.sql
+# 协议/同意表 + 协议文案种子。菜单插入部分在这里通常 no-op（/setting 父级还没建），
+# 所以它在 [data] 阶段还会再跑一次，脚本本身幂等。
+21-agreement-consent.sql
+# AI 智能体（aiagent/ai 服务）——2026-10-27 AI 线新增，此前不在清单里导致
+# Docker 全新装机缺表缺菜单；按其内部依赖序（25→27→28→31 建表/改表）放 schema 段
+25-aiagent.sql
+27-aiagent-schema-fix.sql
+28-aiagent-platform-merge.sql
+31-aiagent-agent.sql
+# AI 可视化工作流编排（hou_ai_workflow / hou_ai_workflow_run + agent.mode/workflow_code），
+# 依赖上一步的 hou_ai_agent。2026-10-29 并入 init 链（此前只有 migrations，新装缺表）
+37-aiagent-workflow.sql
+# AI 智能体「使用位置」说明回填（usage_page，仅 UPDATE，新装与升级都可执行）
+38-aiagent-usage-page.sql
+# AI 智能体 PC / H5 展示位置与直达路径（加列 + 回填已接入的三个智能体），依赖上一步的 hou_ai_agent
+39-aiagent-display-pages.sql
+# 商城分销设置（hou_mall_distribution_setting，含平台默认行；分销插件与 C 端依赖它）
+33-mall-distribution-setting.sql
+34-mall-distribution-settlement.sql
+35-mall-distribution-schema-align.sql
+# 限时秒杀「开抢前预约」表（order-seckill 插件 C5；job 服务开抢提醒依赖它，须早于插件运行）
+153-seckill-subscribe.sql
+
+[data]
+# 基础菜单树 / 角色 / 角色-菜单 / 初始超级管理员 admin
+99-seed.sql
+# 再跑一次：这次 /setting 父级已存在，协议菜单与角色授权才会真正落库
+21-agreement-consent.sql
+# 再跑一次：这次装修管理 60010 已存在，「模板选择」菜单才会真正落库
+22-mobile-page-template.sql
+# 插件分类与导航（六类默认分类 + 存量插件清单落位）
+100-plugin-navigation-categories.sql
+# 支付中心迁入 unipay 插件位（依赖上一步建出的分类）
+110-payment-to-unipay-plugin.sql
+# PC / 移动 装修菜单拆分（依赖 seed 出来的 242/61199/60136/60134 占位菜单）
+23-decoration-pc-mobile-split.sql
+# 插件发布 / 发布审核菜单（挂在插件中心 4 下；前端页面 2026-10-27 补齐）
+120-plugin-publish-menu.sql
+# 演示租户（组织 + demo 账号 + 归属），让「按站点买授权/看订单」开箱即可验证
+105-tenant-seed.sql
+# 插件开发者 / 卖家结算表 + 后台菜单（缺失能力补齐）
+130-plugin-developer-commerce.sql
+# AI 线的菜单与数据种子（依赖 99-seed 的父级菜单与 25/28 建出的 AI 表）
+26-ai-menu-fix.sql
+29-aiagent-geo-cutover.sql
+30-aiagent-front-menus.sql
+32-aiagent-agent-menu.sql
+# 菜单铁律结构对齐（商城域 10 能力升 L1、插件中心/商城管理壳移出左侧、系统设置 sort）
+# 2026-10-28 补课：铁律改造当时只改了生产库，未回写初始化链路，重装会得到老结构 6 L1
+140-menu-ironrule.sql
+# 平台侧协议签署记录回传（站点同意协议后回传平台留痕；平台侧留痕不替代站内记录，
+# 回传失败也不影响站内主记录）
+143-platform-consent.sql
+# 交易管理二级收敛（库存/售后/物流由左侧 L1 下沉为 1003 的二级项，2026-10-29 生产口径；
+# 必须在 140 之后执行，140 先把三者升为 L1）
+144-trade-submenu-menus.sql
+
+# AI 中台知识库菜单 + WeKnora 配置项（2026-10-29；api_key 实际值不入库脚本）
+145-ai-knowledge-menu.sql
+
+# 插件市场下载次数真实存储：明细表 + 历史回填 + 计数回写（2026-10-29；必须在 142 市场种子之后执行）
+146-market-plugin-download.sql
+
+# 清理自研知识库半成品遗留表（10 张 hou_ai_admin_*，生产实测 0 行；DDL 已备份到 ① /home/houjit/db-backup/）
+147-drop-ai-admin-legacy-tables.sql
+
+# 付费插件标准价格套餐（线上自助购买）：按市场标价生成 standard 套餐，必须在 142 市场种子之后
+148-market-plugin-plans.sql
+
+# AI 智能体：IM 客服应答接入示例工作流（必须在 31 智能体种子 + 37 工作流之后）
+39-aiagent-cs-reply-workflow.sql
+
+# AI 中台 · 工作流编排菜单（挂在「AI智能」242 下，紧贴「智能体」之后；必须在 32-aiagent-agent-menu.sql 之后）
+40-aiagent-workflow-menu.sql
+
+# 开源裁剪·站点形态自适应（2026-10-30 根治「新装系统全插件默认已安装」）：
+# 99-seed 是生产快照，带入 15 个商业插件位菜单 + lowcode/unipay 死入口；
+# PluginRegistryReconciler 以「插件位菜单存在」为已安装信号，启动即全标已装。
+# 两个裁剪脚本带「平台库守卫」：hou_platform_site 有行（生产/商业平台库）自动跳过，
+# 站点/开源形态（表不存在或 0 行）执行裁剪——生产误跑无害，开源安装必裁。
+# 145 必须在 110/141/152 之后：110/141 先处理插件位，152 把支付中心改回 /payment，
+# 145 再按开源形态回收（平台库有 hou_platform_site 时 145 跳过，商业站保留支付中心）。
+141-oss-plugin-menu-trim.sql
+152-payment-core-service.sql
+145-oss-dead-app-trim.sql
+
+# 营销活动菜单收敛（2026-10-31）：99-seed 带入的 1004 下 11 条二级菜单全部是死链
+# （对应 vue 页面已不存在），营销能力改由 order 域插件位承接；本脚本删死链 + 把 1004
+# 规整为一级叶子页（/mall/marketing → 营销总览 MarketingOverview.vue）。
+# 必须在 140 之后：140 先把 1004 升为 pid=0/left。刻意不在 init 里塞 order-* 插件位菜单
+# （菜单存在=已安装，会违反「初始态插件全未装」铁律）。
+150-marketing-menu-cleanup.sql
+
+# 移动端底部导航默认种子（2026-10-31）：`hou_base_modularizationd` 的 page_is_index=3
+# 这行初始化链路从来没插过，全新安装的 H5 因此没有底部菜单。仅在该行缺失时插入，
+# 已有配置（后台改过的）不动。
+151-bottom-nav-tabs.sql
+
+# 商品折扣插件分类修复（2026-11-03）：plugin.yaml 旧文案「营销与客户」与权威分类名「客户 / 营销」
+# 不同名，且同步链路不写 cate_id，导致插件管理页落「未分类」、与市场卡片不一致。
+# 本脚本把 goods-discount 的 hou_addon_plugin.cate_id 与插件位菜单 cate_id 对齐为 1（与市场登记同口径）。
+154-goods-discount-cate-fix.sql
+
+# 限时秒杀开抢预约提醒（2026-11-03）：order-seckill 插件 C5 预约配套核心改动。
+# 155 种 id=28 秒杀开抢提醒消息模板（站内信默认开、短信待服务商模板号就绪后启用）
+# + 注册 hou_job_platform（com.houjiang.job.job.SeckillSubscribeRemindJob，每分钟）。
+# 新增 job 行后需重启 job 服务才会调度。必须在 153-seckill-subscribe.sql 建表之后执行。
+155-seckill-remind-job.sql
+
+# 完整应用（2026-11-03）：独立服务归入「完整应用」（原「应用 / 工具」改名），
+# 「开发 / 运维」「开发与运维」改名为「运维 / 工具」。必须在 100 分类种子之后。
+156-full-app-category.sql
+
+# 未分类营销插件归位（2026-11-03）：红包/轮播图/活动中枢/营销总览/抽奖/cms-live
+# 等「营销与客户」旧文案与「营销 / 运营」不同名导致 cate_id=0。必须在 156 之后。
+157-uncategorized-marketing-cate-fix.sql
+
+# 「完整应用」分类 sort=0，排到第一位（2026-11-03）
+158-full-app-cate-sort-first.sql
+
+# 合并「办公 / 财务」「办公与财务」到「财务 / 办公」（2026-11-03）
+159-merge-finance-office-cate.sql

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.JobMoneyStaticsMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.JobMoneyStaticsEntity">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="moneyNoBusiness" column="money_no_business" jdbcType="DECIMAL"/>
+        <result property="rechargeCardNoBusiness" column="recharge_card_no_business" jdbcType="DECIMAL"/>
+        <result property="createTime" column="create_time" jdbcType="VARCHAR"/>
+        <result property="moneyBusiness" column="money_business" jdbcType="DECIMAL"/>
+        <result property="rechargeCardBusiness" column="recharge_card_business" jdbcType="DECIMAL"/>
+        <result property="rechargedAmount" column="recharged_amount" jdbcType="DECIMAL"/>
+        <result property="unrechargeAmount" column="unrecharge_amount" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,money_no_business,recharge_card_no_business,
+        create_time,money_business,recharge_card_business,
+        recharged_amount,unrecharge_amount
+    </sql>
+    <select id="queryMoneyStatist" resultType="java.util.Map">
+        SELECT sum(b.user_money)         moneyNoBusiness,
+               sum(b.user_recharge_card) rechargeCardNoBusiness,
+               oy.moneyBusiness,
+               oy.rechargeCardBusiness
+        FROM (SELECT sum(d.user_money) bus_money, sum(d.user_recharge_card) bus_recharge_card
+              FROM ${database.prefix.userms}hou_user_info c
+                       LEFT JOIN ${database.prefix.payment}hou_pay_user_resource d ON c.user_id = d.user_id
+              ) oy,
+             ${database.prefix.userms}hou_user_info a
+                 LEFT JOIN ${database.prefix.payment}hou_pay_user_resource b ON a.user_id = b.user_id
+    </select>
+    <select id="getRechargedAmount" resultType="java.math.BigDecimal">
+        SELECT sum(card_money)
+        FROM ${database.prefix.payment}hou_pay_card_info
+        WHERE user_account != ''
+    </select>
+    <select id="getUnrechargedAmount" resultType="java.math.BigDecimal">
+        SELECT sum(card_money)
+        FROM ${database.prefix.payment}hou_pay_card_info
+        WHERE user_account = ''
+    </select>
+</mapper>

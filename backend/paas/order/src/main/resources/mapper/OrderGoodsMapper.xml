@@ -1,0 +1,1096 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderGoodsMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderGoodsEntity" id="OrderGoodsMap">
+        <result property="orderGoodsId" column="order_goods_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="buyerUserId" column="buyer_user_id" jdbcType="INTEGER"/>
+        <result property="goodsName" column="goods_name" jdbcType="VARCHAR"/>
+        <result property="goodsClassId" column="goods_class_id" jdbcType="INTEGER"/>
+        <result property="orderSpecChineseValue" column="order_spec_chineseValue" jdbcType="VARCHAR"/>
+        <result property="goodsPrice" column="goods_price" jdbcType="NUMERIC"/>
+        <result property="orderGoodsNum" column="order_goods_num" jdbcType="VARCHAR"/>
+        <result property="goodsImage" column="goods_image" jdbcType="VARCHAR"/>
+        <result property="orderGoodsReturnnum" column="order_goods_returnnum" jdbcType="VARCHAR"/>
+        <result property="orderGoodsAmount" column="order_goods_amount" jdbcType="NUMERIC"/>
+        <result property="orderGoodsPlatformBear" column="order_goods_platform_bear" jdbcType="NUMERIC"/>
+        <result property="orderGoodsDiscountFee" column="order_goods_discount_fee" jdbcType="NUMERIC"/>
+        <result property="orderGoodsPaymentAmount" column="order_goods_payment_amount" jdbcType="VARCHAR"/>
+        <result property="orderGoodsAdjustFee" column="order_goods_adjust_fee" jdbcType="NUMERIC"/>
+        <result property="orderGoodsCommission" column="order_goods_commission" jdbcType="NUMERIC"/>
+        <result property="orderGoodsStatus" column="order_goods_status" jdbcType="INTEGER"/>
+        <result property="orderGoodsEvaluationStatus" column="order_goods_evaluation_status" jdbcType="INTEGER"/>
+        <result property="orderRptPrice" column="order_rpt_price" jdbcType="NUMERIC"/>
+        <result property="voucherPrice" column="voucher_price" jdbcType="NUMERIC"/>
+        <result property="goodsReturnStatus" column="goods_return_status" jdbcType="INTEGER"/>
+        <result property="goodsRefundStatus" column="goods_refund_status" jdbcType="INTEGER"/>
+        <result property="orderGoodsTime" column="order_goods_time" jdbcType="TIMESTAMP"/>
+        <result property="orderGoodsFinishTime" column="order_goods_finish_time" jdbcType="TIMESTAMP"/>
+        <result property="orderGoodsIdDeliver" column="order_goods_id_deliver" jdbcType="INTEGER"/>
+        <result property="orderSellerName" column="order_seller_name" jdbcType="VARCHAR"/>
+        <result property="orderSellerAddress" column="order_seller_address" jdbcType="VARCHAR"/>
+        <result property="orderSellerContact" column="order_seller_contact" jdbcType="VARCHAR"/>
+        <result property="orderShippingTime" column="order_shipping_time" jdbcType="TIMESTAMP"/>
+        <result property="orderShippingExpressId" column="order_shipping_express_id" jdbcType="INTEGER"/>
+        <result property="orderShippingCode" column="order_shipping_code" jdbcType="VARCHAR"/>
+        <result property="shippingFee" column="shipping_fee" jdbcType="NUMERIC"/>
+        <result property="orderShippingMessage" column="order_shipping_message" jdbcType="VARCHAR"/>
+        <result property="promotionId" column="promotion_id" jdbcType="INTEGER"/>
+        <result property="goodsPromotionId" column="goods_promotion_id" jdbcType="INTEGER"/>
+        <result property="orderDel" column="order_del" jdbcType="INTEGER"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+        <result property="integral" column="integral" jdbcType="INTEGER"/>
+        <result property="dealerCommission" column="dealer_commission" jdbcType="NUMERIC"/>
+        <result property="dealerReturnCommission" column="dealer_return_commission" jdbcType="NUMERIC"/>
+        <result property="supplyCommission" column="supply_commission" jdbcType="NUMERIC"/>
+        <result property="supplyReturnCommission" column="supply_return_commission" jdbcType="NUMERIC"/>
+        <result property="goodsMemberDiscount" column="goods_member_discount" jdbcType="NUMERIC"/>
+        <result property="businessRefundTime" column="business_refund_time" jdbcType="TIMESTAMP"/>
+        <result property="totalGoodsShippingFee" column="total_goods_shipping_fee" jdbcType="NUMERIC"/>
+        <result property="goodsPlusDiscount" column="goods_plus_discount" jdbcType="NUMERIC"/>
+        <result property="goodsPlusDis" column="goods_plus_dis" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertByOrderGoods">
+        insert INTO ${database.prefix.order}hou_order_goods
+        (total_goods_shipping_fee, order_id, shop_id, shop_name, deliver_shop_id, deliver_shop_name,
+         drop_shipping, goods_id, common_id, buyer_user_id, goods_name,
+         goods_class_id, order_spec_chineseValue, goods_price, order_goods_num, goods_image, shipping_fee,
+         order_goods_amount, order_goods_platform_bear, order_goods_payment_amount, order_goods_status,
+         order_goods_evaluation_status, order_rpt_price, voucher_price, goods_return_status,
+         goods_refund_status, order_goods_time, order_goods_id_deliver, promotion_id,integral,
+         dealer_commission, supply_commission, order_goods_commission, goods_member_discount, order_goods_discount_fee,
+         goods_plus_discount, goods_plus_dis, full_reduction_discount, full_folding_discount, activity_unit_price,
+         goods_promotion_id, voucher_id, ver_id)
+        values (#{totalGoodsShippingFee}, #{orderId}, #{shopId}, #{shopName}, #{deliverShopId}, #{deliverShopName},
+                #{dropShipping}, #{goodsId}, #{commonId}, #{userId},
+                #{goodsName}, #{catId}, #{goodsSpec}, #{goodsprice}, #{goodsNumber}, #{goodsImage}, #{goodsShippingFee},
+                #{orderGoodsAmount}, #{orderGoodsPlatformBear}, #{paymentRealPrice}, #{orderGoodsStatus},
+                #{orderGoodsEvaluationStatus}, #{goodsRtpPrice}, #{couponSumMoney},
+                #{goodsReturnStatus}, #{goodsRefundStatus}, #{orderGoodsTime}, #{orderGoodsIdDeliver}, #{promotionId},
+                #{integral}, #{dealerCommission}, #{supplyCommission}, #{orderGoodsCommission},
+                #{goodsMemberDiscount}, #{orderDiscountFee}, #{plusgoodsprice}, #{goodsPlusDis},
+                #{fullReductionDiscount},
+                #{fullFoldingDiscount}, #{activityUnitPrice}, #{goodsPromotionId}, #{voucherId}, #{verId})
+    </insert>
+    <update id="updateOrderGoodsByStatusByPureDigital">
+        update ${database.prefix.order}hou_order_goods
+        set order_goods_status = #{orderStatus}
+        where order_id = #{paymentNumbers}
+    </update>
+    <update id="updateOrderGoodsByStatus">
+        update ${database.prefix.order}hou_order_goods
+        set order_goods_status = #{orderStatus}
+        where order_id = #{orderNumber}
+    </update>
+    <update id="piLiangupdateByOrderGoods">
+        update ${database.prefix.order}hou_order_goods
+        set order_goods_status        = #{orderStatus},
+            order_goods_id_deliver    = #{orderGoodsIdDeliver},
+            order_seller_name         = #{orderSellerName},
+            order_seller_address      = #{orderSellerAddress},
+            order_seller_contact      = #{orderSellerContact},
+            order_shipping_time       = #{orderShippingTime},
+            order_shipping_express_id = #{orderShippingExpressId},
+            order_shipping_code       = #{orderShippingCode},
+            order_shipping_message    = #{orderShippingMessage}
+        where order_id = #{orderId}
+          and goods_id = #{goodsId}
+    </update>
+    <update id="updateByOrderGoods">
+        update ${database.prefix.order}hou_order_goods
+        set order_goods_status        = #{orderStatus},
+            order_goods_id_deliver    = #{orderGoodsIdDeliver},
+            order_seller_name         = #{orderSellerName},
+            order_seller_address      = #{orderSellerAddress},
+            order_seller_contact      = #{orderSellerContact},
+            order_shipping_time       = #{orderShippingTime},
+            order_shipping_express_id = #{orderShippingExpressId},
+            order_shipping_code       = #{orderShippingCode},
+            order_shipping_message    = #{orderShippingMessage},
+            shipment_quantity         = #{shipmentQuantity},
+            shipment_status           = #{shipmentStatus}
+        where order_goods_id = #{orderGoodsId}
+    </update>
+    <update id="updateSeparateShipmentsByOrderGoods">
+        update ${database.prefix.order}hou_order_goods
+        set order_goods_status        = #{orderStatus},
+            order_goods_id_deliver    = #{orderGoodsIdDeliver},
+            order_seller_name         = #{orderSellerName},
+            order_seller_address      = #{orderSellerAddress},
+            order_seller_contact      = #{orderSellerContact},
+            order_shipping_time       = #{orderShippingTime},
+            order_shipping_express_id = #{orderShippingExpressId},
+            order_shipping_code       = #{orderShippingCode},
+            order_shipping_message    = #{orderShippingMessage}
+        where order_id = #{orderId}
+          and goods_id = #{goodsId}
+    </update>
+    <update id="updateOrderGoodsById2">
+        update ${database.prefix.order}hou_order_goods
+        <set>
+            <if test="goodsReturnStatus != null">
+                goods_return_status = #{goodsReturnStatus},
+            </if>
+            <if test="orderGoodsStatus != null">
+                order_goods_status = #{orderGoodsStatus},
+            </if>
+            <if test="goodsRefundStatus != null">
+                goods_refund_status = #{goodsRefundStatus},
+            </if>
+            <if test="goodsBarterStatus != null">
+                goods_barter_status = #{goodsBarterStatus},
+            </if>
+            <if test="orderGoodsReturnnum != null">
+                order_goods_returnnum = #{orderGoodsReturnnum},
+            </if>
+            <if test="orderGoodsId != null">
+                goods_id = #{orderGoodsId},
+            </if>
+        </set>
+        WHERE order_id = #{orderId}
+        <if test="orderGoodsId != null">
+            and goods_id = #{orderGoodsId}
+        </if>
+    </update>
+    <update id="updateChangeShipmentsByGoodsId">
+        update ${database.prefix.order}hou_order_goods
+        set order_shipping_code    = #{orderShippingCode},
+            order_shipping_message = #{orderShippingMessage}
+        where order_goods_id = #{orderGoodsId}
+    </update>
+    <update id="updateChangeAllShipmentsByGoodsId">
+        update ${database.prefix.order}hou_order_goods
+        set order_shipping_code       = #{orderShippingCode},
+            order_shipping_express_id = #{orderShippingExpressId},
+            order_shipping_message    = #{orderShippingMessage}
+        where order_goods_id = #{orderGoodsId}
+    </update>
+    <update id="updateByDealerOrderGoods">
+        update ${database.prefix.order}hou_order_goods
+        set order_goods_status        = #{param.orderStatus},
+            order_goods_id_deliver    = #{param.orderGoodsIdDeliver},
+            order_seller_name         = #{param.orderSellerName},
+            order_seller_address      = #{param.orderSellerAddress},
+            order_seller_contact      = #{param.orderSellerContact},
+            order_shipping_time       = #{param.orderShippingTime},
+            order_shipping_express_id = #{param.orderShippingExpressId},
+            order_shipping_code       = #{param.goodsShippingCode},
+            order_shipping_message    = #{param.orderShippingMessage},
+            shipment_quantity         = #{param.shipmentQuantity},
+            shipment_status           = #{param.shipmentStatus}
+        where order_id = #{orderId} and goods_id = #{goodsId}
+    </update>
+    <update id="lessGoodsBySales">
+        UPDATE ${database.prefix.supplier}hou_supplier_goods_base
+        set goods_salenum=#{salenum}
+        where supplier_goods_id = #{goodsId}
+    </update>
+    <update id="updateOrderJingDongOrderId">
+        update ${database.prefix.order}hou_order_goods
+        set jd_order_id = #{jingDongOrderId}
+        where order_id = #{orderId}
+    </update>
+    <update id="updateJongDongSonOrder">
+        update ${database.prefix.order}hou_order_goods
+        set jd_son_order_id = #{param.jdOrderId}
+        where jd_order_id = #{param.parentJdOrderId} and goods_id = #{param.goodsId}
+    </update>
+    <select id="queryOrderGoodsCount" resultType="java.lang.Integer">
+        select sum(order_goods_num)
+        FROM ${database.prefix.order}hou_order_goods
+        where buyer_user_id = #{param.userId}
+          <if test="param.commonId != null">
+            and common_id = #{param.commonId}
+          </if>
+          <if test="param.goodsId != null">
+            and goods_id = #{param.goodsId}
+          </if>
+          <if test="param.seckillId != null">
+            and goods_promotion_id = #{param.seckillId}
+          </if>
+          <if test="param.goodsStartTime != null and param.goodsEndTime != null">
+            and order_goods_time between #{param.goodsStartTime} and #{param.goodsEndTime}
+          </if>
+          and order_goods_status != 7
+    </select>
+    <select id="queryShopTakeGoodsStart" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM ${database.prefix.business}hou_shop_gate_goods_base
+        where shop_gate_id = #{shopId}
+          and common_id = #{commonId}
+    </select>
+    <select id="queryCatCommission" resultType="java.math.BigDecimal">
+        select cat_commission
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_id = #{catId}
+    </select>
+    <select id="getVitualInfo" resultType="java.util.Map">
+        SELECT DATE_FORMAT(ggc.period_of_validity, '%Y-%m-%d %H:%i:%s') period_of_validity,
+               ggc.past_due
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT JOIN ${database.prefix.goods}hou_goods_base ggb ON ggb.goods_id = oog.goods_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common ggc ON ggc.common_id = ggb.common_id
+        WHERE order_id = #{orderId}
+        limit 1
+    </select>
+    <select id="queryBuyNumByorderId1" resultType="java.lang.Integer">
+        select order_goods_num
+        FROM ${database.prefix.order}hou_order_goods og
+        where og.order_id = #{orderId}
+          and og.goods_id = #{goodsId}
+    </select>
+    <select id="queryGoodsList" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        SELECT oog.shop_id,
+               oog.common_id,
+               oog.goods_id,
+               oog.goods_image,
+               oog.goods_name,
+               oog.order_goods_amount,
+               oog.order_goods_payment_amount,
+               oog.goods_price,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               oog.goods_return_status,
+               oog.goods_refund_status,
+               oog.shipment_quantity,
+               oog.shipment_status,
+               order_goods_evaluation_status,
+               integral AS need_integral,
+               order_shipping_code,
+               gc.goods_type,
+               gb.goods_spec,
+               gb.goods_is_shelves,
+               oog.points_rate,
+               oog.cash_price
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON oog.common_id = gc.common_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_base gb ON oog.goods_id = gb.goods_id
+        WHERE oog.order_id = #{orderId}
+          and oog.order_del = 0
+    </select>
+    <select id="listGoodsDetails" resultType="com.houjiang.order.vo.GoodsDetailsVO">
+        SELECT goods_id,
+               common_id,
+               order_spec_chineseValue,
+               goods_price,
+               goods_name,
+               goods_image,
+               order_goods_num
+        FROM ${database.prefix.order}hou_order_goods
+        WHERE order_id = #{orderId}
+    </select>
+    <select id="listReturnGoods" resultType="com.houjiang.order.vo.GoodsDetailsVO">
+        SELECT oog.goods_id,
+        oog.common_id,
+        oog.goods_name,
+        oog.common_id,
+        oog.goods_price,
+        oog.order_goods_num,
+        oog.goods_image,
+        oog.order_goods_returnnum,
+        oog.order_goods_payment_amount,
+        oog.order_spec_chineseValue,
+        oog.goods_refund_status,
+        oog.voucher_price,
+        oog.ver_id,
+        oog.barter_goods_id,
+        oog.order_rpt_price,
+        sob.goods_price AS supper_goods_price
+        FROM ${database.prefix.order}hou_order_goods oog
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob ON oog.order_id = sob.order_id and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE oog.order_id = #{paraMap.orderId}
+        <if test="paraMap.shopId != null and paraMap.shopId != ''">
+            and (sob.supplier_shop_id = #{paraMap.shopId} or oog.shop_id = #{paraMap.shopId})
+        </if>
+    </select>
+    <select id="listReturnGoods1" resultType="com.houjiang.order.vo.GoodsDetailsVO">
+        select oog.order_goods_payment_amount,
+        oog.goods_id,
+        oog.common_id,
+        oog.goods_name,
+        oog.common_id,
+        oog.goods_price,
+        oog.order_goods_num,
+        oog.goods_image,
+        oog.order_goods_returnnum,
+        oog.order_goods_payment_amount,
+        oog.order_spec_chineseValue,
+        oog.goods_return_status,
+        oog.goods_refund_status,
+        oog.voucher_price,
+        oog.ver_id,
+        oog.barter_goods_id,
+        oog.order_rpt_price
+        FROM ${database.prefix.order}hou_order_goods oog
+        left join ${database.prefix.order}hou_order_base oob on oog.order_id = oob.order_id
+        left join ${database.prefix.order}hou_order_return oor on oog.order_id = oor.order_id
+        where oog.order_id = #{paraMap.orderId}
+        <if test="paraMap.shopType != null and paraMap.shopType != '' and paraMap.shopType == 2">
+            and ((oog.shop_id = #{paraMap.shopId} AND oob.original_order IS NULL) or( oog.deliver_shop_id =
+            #{paraMap.shopId} AND oob.original_order IS NOT NULL))
+        </if>
+        <if test="paraMap.shopType != null and paraMap.shopType != '' and paraMap.shopType != 2">
+            and ((oog.shop_id = #{paraMap.shopId} AND oob.original_order IS NULL) or( oog.deliver_shop_id =
+            #{paraMap.shopId} AND oob.original_order IS NOT NULL))
+            and oor.return_type = 3
+        </if>
+        and (goods_return_status != 0 or goods_refund_status != 0 or goods_barter_status != 0)
+    </select>
+    <select id="getShipperCode2" resultType="java.util.Map">
+        select os.order_shipping_express_id as orderShippingExpressId,
+               ob.order_receiver_contact    as orderReceiverContact,
+               ob.order_receiver_address    as orderReceiverAddress,
+               ob.shop_id                   as shopId
+        FROM ${database.prefix.order}hou_order_shipment os
+                 left join ${database.prefix.order}hou_order_base ob on ob.order_id = os.order_id
+        where os.shipment_id = #{shipmentId}
+    </select>
+    <select id="queryGoodsList2" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        SELECT oog.common_id,
+               oog.goods_id,
+               oog.goods_image,
+               oog.goods_name,
+               oog.order_goods_amount,
+               oog.goods_price,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               oog.goods_return_status,
+               oog.goods_refund_status,
+               oog.shipping_fee,
+               oog.order_goods_payment_amount,
+               oog.order_goods_returnnum,
+               oob.order_payment_amount,
+               oob.order_shipping_fee
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oob.order_id = oog.order_id
+        WHERE oog.order_id = #{param.orderId}
+    </select>
+    <select id="queryGoodsList1" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        select oog.common_id,
+               oog.goods_id,
+               oog.goods_image,
+               oog.goods_name,
+               oog.order_goods_amount,
+               oog.goods_price,
+               oog.promotion_id,
+               oog.order_goods_num,
+               oog.order_goods_returnnum,
+               oog.order_goods_returnnum as barterGoodsNum,
+               oog.ver_id,
+               oog.barter_goods_id,
+               oog.order_spec_chineseValue,
+               oog.goods_return_status,
+               oog.goods_refund_status,
+               oog.shipping_fee,
+               oog.order_goods_payment_amount,
+               oog.order_goods_returnnum,
+               oob.order_payment_amount,
+               oob.order_shipping_fee
+        FROM ${database.prefix.order}hou_order_goods oog
+                 left join ${database.prefix.order}hou_order_base oob on oob.order_id = oog.order_id
+        where oog.order_id = #{orderId}
+          and (oog.goods_return_status != 0 or oog.goods_refund_status != 0 or oog.goods_barter_status != 0)
+    </select>
+    <select id="queryGoodsListByPage" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        SELECT oog.common_id,
+               oog.goods_id,
+               oog.goods_image,
+               oog.goods_name,
+               oog.order_goods_amount,
+               oog.goods_price,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               oog.goods_return_status,
+               oog.goods_refund_status,
+               oog.shipping_fee,
+               oog.order_goods_payment_amount,
+               oog.order_goods_returnnum,
+               oog.promotion_id,
+               oob.order_payment_amount,
+               oob.order_shipping_fee,
+               oob.order_id,
+               oob.order_create_time,
+               sb.shop_name
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oob.order_id = oog.order_id
+                 left join ${database.prefix.supplier}hou_shop_base sb on sb.supplier_shop_id = oob.shop_id
+        WHERE oog.order_id = #{param.orderId}
+    </select>
+    <select id="queryOrderPurchaseQuantity" resultType="com.houjiang.order.dto.ApplyReturnGoodDTO">
+        select total_goods_shipping_fee   as totalGoodsShippingFee,
+               order_goods_num            as orderGoodsNum,
+               order_goods_amount         as orderGoodsAmount,
+               order_goods_payment_amount as orderGoodsPaymentAmount,
+               shipping_fee               as shippingFee
+        FROM ${database.prefix.order}hou_order_goods
+        where order_id = #{orderId}
+          and goods_id = #{orderGoodsId}
+    </select>
+    <select id="getGoodsDiscount" resultType="com.houjiang.order.dto.OrderGoodsDiscountDTO">
+        select goods_price, order_goods_num, order_rpt_price, voucher_price
+        FROM ${database.prefix.order}hou_order_goods
+        where order_id = #{orderId}
+          and goods_id = #{goodsId}
+    </select>
+    <select id="queryAllGoods" resultType="com.houjiang.order.vo.GoodsParaVO">
+        select oog.goods_name as goodsName, sum(oog.order_goods_amount) OrderTotalPrice
+        FROM ${database.prefix.order}hou_order_goods oog
+        where oog.order_goods_status not in (1, 7)
+        GROUP BY oog.common_id
+        ORDER BY sum(oog.order_goods_amount) desc
+        limit 10
+    </select>
+    <select id="queryTodayGoods" resultType="com.houjiang.order.vo.GoodsParaVO">
+        select oog.goods_name as goodsName, sum(oog.order_goods_amount) OrderTotalPrice
+        FROM ${database.prefix.order}hou_order_goods oog
+        where oog.order_goods_status not in (1, 7)
+          and oog.order_goods_time >= DATE_FORMAT(now(), '%Y-%c-%d')
+        GROUP BY oog.common_id
+        ORDER BY sum(oog.order_goods_amount) desc
+        limit 10
+    </select>
+    <select id="queryWeekGoods" resultType="com.houjiang.order.vo.GoodsParaVO">
+        SELECT oog.goods_name as goodsName, sum(oog.order_goods_amount) OrderTotalPrice
+        FROM ${database.prefix.order}hou_order_goods oog
+        WHERE oog.order_goods_status not in (1, 7)
+          AND YEARWEEK(date_format(oog.order_goods_time, '%Y-%m-%d')) >= YEARWEEK(now())
+        GROUP BY oog.common_id
+        ORDER BY sum(oog.order_goods_amount) DESC
+        LIMIT 10
+    </select>
+    <select id="queryMonthGoods" resultType="com.houjiang.order.vo.GoodsParaVO">
+        select oog.goods_name as goodsName, sum(oog.order_goods_amount) OrderTotalPrice
+        FROM ${database.prefix.order}hou_order_goods oog
+        where oog.order_goods_status not in (1, 7)
+          and oog.order_goods_time >= CONCAT(DATE_FORMAT(now(), '%Y-%m'), '-01')
+        GROUP BY oog.common_id
+        ORDER BY sum(oog.order_goods_amount) desc
+        limit 10
+    </select>
+    <select id="queryYearGoods" resultType="com.houjiang.order.vo.GoodsParaVO">
+        select oog.goods_name as goodsName, sum(oog.order_goods_amount) OrderTotalPrice
+        FROM ${database.prefix.order}hou_order_goods oog
+        where oog.order_goods_status not in (1, 7)
+          and oog.order_goods_time >= CONCAT(DATE_FORMAT(now(), '%Y'), '-01-01')
+        GROUP BY oog.common_id
+        ORDER BY sum(oog.order_goods_amount) desc
+        limit 10
+    </select>
+    <select id="ShipmentsByOrderGoods" resultType="com.houjiang.order.vo.ShipmentsByOrderGoodsDetailsVO">
+        select oog.goods_plus_dis,
+               oog.goods_name,
+               oog.goods_image,
+               oog.goods_price,
+               oog.goods_id,
+               oog.order_goods_payment_amount,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               oog.shipment_quantity,
+               oog.shipment_status,
+               oob.payment_time,
+               gc.delivery_time,
+               sob.goods_price          as supperGoodsPrice,
+               sob.goods_price_sum      as supperOrderAmount,
+               sob.goods_payment_amount as supperPaymentAmount
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on oog.order_id = sob.order_id
+            and oog.deliver_shop_id = sob.supplier_shop_id
+                 left join ${database.prefix.order}hou_order_base oob on oob.order_id = oog.order_id
+                 left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = oog.common_id
+        where oog.order_id = #{orderId}
+          and oog.deliver_shop_id = #{shopId}
+        GROUP BY oog.goods_id
+    </select>
+    <select id="querySupplyOrders" resultType="com.houjiang.order.vo.GoodsDetailsVO">
+        select oog.goods_plus_dis,
+               oog.goods_id,
+               oog.goods_name,
+               oog.goods_image,
+               oog.order_goods_amount,
+               oog.order_goods_payment_amount,
+               oog.order_goods_adjust_fee,
+               oog.order_goods_adjust_before_price,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               ome.express_name,
+               oog.order_shipping_code,
+               oog.order_spec_chineseValue,
+               oog.goods_price,
+               sob.goods_price          as supperGoodsPrice,
+               sob.goods_price_sum      as supperOrderAmount,
+               sob.goods_payment_amount as supperPaymentAmount
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT JOIN ${database.prefix.base}hou_base_express ome on oog.order_shipping_express_id = ome.express_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob
+                           on sob.order_id = oog.order_id and oog.deliver_shop_id = sob.supplier_shop_id
+        where oog.order_id = #{orderId}
+          and oog.deliver_shop_id = #{shopId}
+        group by oog.goods_id
+    </select>
+    <select id="shipmentsByOrderGoods" resultType="com.houjiang.order.vo.ShipmentsByOrderGoodsDetailsVO">
+        select oog.goods_name,
+               oog.goods_image,
+               oog.goods_price,
+               oog.goods_id,
+               oog.order_goods_payment_amount,
+               oog.order_goods_num,
+               oog.shipment_quantity,
+               oog.shipment_status,
+               oog.order_spec_chineseValue,
+               oob.payment_time,
+               gc.delivery_time
+        FROM ${database.prefix.order}hou_order_goods oog
+                 left join ${database.prefix.order}hou_order_base oob on oob.order_id = oog.order_id
+                 left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = oog.common_id
+        where oog.order_id = #{orderId}
+          and oog.deliver_shop_id = #{shopId}
+    </select>
+    <select id="queryOrders" resultType="com.houjiang.order.vo.GoodsDetailsVO">
+        SELECT oog.goods_name,
+               oog.goods_id,
+               oog.goods_image,
+               oog.goods_price,
+               oog.order_goods_payment_amount,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               ome.express_name,
+               oog.shipment_quantity,
+               oog.shipment_status,
+               oog.order_shipping_code
+        FROM (SELECT *
+              FROM ${database.prefix.order}hou_order_goods
+              WHERE order_id = #{orderId}
+                and deliver_shop_id = #{shopId}) oog
+                 LEFT JOIN ${database.prefix.base}hou_base_express ome on oog.order_shipping_express_id = ome.express_id
+    </select>
+    <select id="queryGoodsListLimit" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        SELECT oog.shop_id,
+               oog.common_id,
+               oog.goods_id,
+               oog.goods_image,
+               oog.goods_name,
+               oog.order_goods_amount,
+               oog.order_goods_payment_amount,
+               oog.goods_price,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               oog.goods_return_status,
+               oog.goods_refund_status,
+               oog.order_goods_evaluation_status,
+               oog.integral AS needIntegral,
+               oog.order_shipping_code,
+               gc.goods_type,
+               oog.promotion_id,
+               oog.shipment_quantity,
+               oog.shipment_status,
+               gb.goods_spec,
+               gb.goods_code,
+               gc.common_state,
+               gb.goods_is_shelves,
+               gs.goods_stock
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON oog.common_id = gc.common_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_base gb ON oog.goods_id = gb.goods_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        WHERE oog.order_id = #{orderId}
+          and oog.order_del = 0
+    </select>
+    <select id="queryComplaintsByGoodsList" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        select oog.common_id,oog.goods_id,oog.goods_image,oog.goods_name,oog.order_goods_amount,
+        oog.goods_price,oog.order_goods_num,oog.order_spec_chineseValue,oog.goods_return_status,
+        oog.goods_refund_status,oog.shipping_fee,oog.order_goods_payment_amount,oog.order_goods_returnnum,
+        oob.order_payment_amount,oob.order_shipping_fee,sb.shop_name,oob.order_id,oob.order_create_time
+        FROM ${database.prefix.order}hou_order_goods oog
+        left join ${database.prefix.order}hou_order_base oob on oob.order_id = oog.order_id
+        left join ${database.prefix.supplier}hou_shop_base sb on sb.supplier_shop_id = oob.shop_id
+        where oog.order_id = #{param.orderId}
+        <if test="param.list != null">
+            and oog.goods_id in
+            <foreach collection="param.list" separator="," item="id" close=")" open="(">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="selectgoodsprice" resultType="java.math.BigDecimal">
+        select order_goods_payment_amount
+        from ${database.prefix.order}hou_order_goods
+        where goods_id = #{goodsId}
+          and order_id = #{orderId}
+    </select>
+    <select id="queryOrderZengpinInfo" resultType="java.lang.String">
+        select giveaway_info
+        FROM ${database.prefix.order}hou_order_base
+        where order_id = #{param}
+    </select>
+    <select id="queryOrderUpdatePrice" resultType="java.lang.Integer">
+        select count(1)
+        FROM ${database.prefix.order}hou_order_base
+        where order_id = #{param.orderId}
+          and order_adjust_fee is not null
+    </select>
+    <select id="queryBuyCountByGoodsId" resultType="java.lang.Integer">
+        select sum(oog.order_goods_num)
+        FROM ${database.prefix.order}hou_order_goods oog
+                 left join ${database.prefix.order}hou_order_base oob on oob.order_id = oog.order_id
+        where oog.buyer_user_id = #{userId}
+          and oog.goods_id = #{goodsId}
+          and oob.order_status != 7
+    </select>
+    <select id="queryOrderGoodsCountByDiscount" resultType="java.lang.Integer">
+        select sum(order_goods_num)
+        FROM ${database.prefix.order}hou_order_goods
+        where buyer_user_id = #{param.userId}
+          and common_id = #{param.commonId}
+          and goods_promotion_id = #{param.discountId}
+          and order_goods_time between #{param.fDate} and now()
+          and order_goods_status != 7
+    </select>
+    <select id="selectPayGoods" resultType="java.math.BigDecimal">
+        select sum(order_goods_payment_amount)
+        FROM ${database.prefix.order}hou_order_goods
+        where order_id = #{orderId} and goods_id in
+        <foreach collection="returnGoods" separator="," item="id" close=")" open="(">
+            #{id}
+        </foreach>
+    </select>
+    <select id="selectFeeGoods" resultType="java.math.BigDecimal">
+        select sum(shipping_fee)
+        FROM ${database.prefix.order}hou_order_goods
+        where order_id = #{orderId} and goods_id in
+        <foreach collection="returnGoods" separator="," item="id" close=")" open="(">
+            #{id}
+        </foreach>
+    </select>
+    <select id="queryCatCommissionByGoodsId" resultType="java.math.BigDecimal">
+        select cat_commission
+        from ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_cat gc on gb.cat_id = gc.cat_id
+        where gb.goods_id = #{goodsId}
+    </select>
+    <select id="queryOrderCommission" resultType="java.math.BigDecimal">
+        select sum(order_goods_commission) FROM ${database.prefix.order}hou_order_goods where order_id = #{orderId}
+        and goods_id not in (
+        <foreach collection="goodsList" separator=","
+                 item="goods">
+            #{goods.goodsId}
+        </foreach>
+        )
+    </select>
+    <select id="getOrderGoodsItem" resultType="com.houjiang.order.vo.OrderDetailGoodsItemVO">
+        select og.goods_name,
+        og.order_goods_num,
+        og.goods_price,
+        og.order_goods_payment_amount,
+        ob.payment_name,
+        og.order_spec_chineseValue
+        FROM ${database.prefix.order}hou_order_goods og
+        left join ${database.prefix.order}hou_order_base ob
+        on og.order_id = ob.order_id
+        <where>
+            <if test="orderId!=null and orderId!=''">
+                and og.order_id = #{orderId}
+            </if>
+        </where>
+    </select>
+    <select id="selectReturnGoods" resultType="com.houjiang.order.entity.OrderGoodsEntity">
+        SELECT og.order_goods_id,
+               og.order_id,
+               og.shop_id,
+               og.shop_name,
+               og.goods_id,
+               og.common_id,
+               og.buyer_user_id,
+               og.goods_name,
+               og.goods_price,
+               ogr.order_goods_num,
+               og.goods_image,
+               og.order_goods_returnnum as orderGoodsNum,
+               og.order_goods_amount,
+               og.order_goods_platform_bear,
+               og.order_goods_discount_fee,
+               og.order_goods_payment_amount,
+               og.order_goods_adjust_fee,
+               og.order_goods_commission,
+               og.order_goods_status,
+               og.order_goods_evaluation_status,
+               og.order_rpt_price,
+               og.voucher_price,
+               og.goods_return_status,
+               og.goods_refund_status
+        FROM ${database.prefix.order}hou_order_goods og
+        left join ${database.prefix.order}hou_order_return ogr on ogr.order_id = og.order_id
+        WHERE (og.order_id = #{orderId} AND og.goods_id = #{goodsId})
+          and (og.goods_return_status &lt;&gt; 0 OR og.goods_refund_status &lt;&gt; 0)
+    </select>
+    <select id="selectInventoryFlowNum" resultType="java.lang.Integer">
+        select sum(order_goods_num)
+        FROM ${database.prefix.order}hou_order_goods where order_id = #{orderId}
+    </select>
+    <select id="queryPurchaseOrderGoodsList"
+            resultType="com.houjiang.commons.vo.goods.StorageInventoryFlowGoodsVO">
+        select goods_id,
+               shop_id,
+               order_goods_num as goodsNum,
+               order_goods_num as buyNum
+        FROM ${database.prefix.order}hou_order_goods where order_id = #{orderId}
+    </select>
+    <select id="queryDealerGoodsId" resultType="java.lang.Integer">
+        SELECT
+            dealer_goods_id
+        FROM
+            ${database.prefix.supplier}hou_supplier_dealer_putaway_record sdpr
+        left join ${database.prefix.goods}hou_goods_base gb on gb.goods_id = sdpr.dealer_goods_id
+        WHERE
+            sdpr.dealer_type = 1 and gb.is_delete != 1
+          AND sdpr.dealer_shop_id = #{dealerShopId}
+          AND sdpr.supply_goods_id = #{goodsId}
+    </select>
+    <select id="shipmentsByOrderGoodsDetails"
+            resultType="com.houjiang.order.vo.ShipmentsByOrderGoodsDetailsVO">
+        select oog.goods_name,
+               oog.goods_image,
+               oog.goods_price,
+               oog.goods_id,
+               oog.order_goods_payment_amount,
+               oog.order_goods_num,
+               mgb.common_id,
+               oog.shipment_quantity,
+               oog.shipment_status,
+               oog.order_spec_chineseValue
+        FROM ${database.prefix.order}hou_order_goods oog
+                 left join ${database.prefix.goods}hou_goods_base mgb on mgb.goods_id = oog.goods_id
+                 left join ${database.prefix.goods}hou_goods_common mgc on mgb.common_id = mgc.common_id
+        where oog.order_id = #{orderId} and mgc.dealer_goods_flag!=1 AND oog.shipment_status!=2
+    </select>
+    <select id="querySonOrderShipmentsStart" resultType="com.houjiang.order.vo.ShipmentsByOrderGoodsDetailsVO">
+        select
+            oog.goods_id,
+            oog.shipment_quantity,
+            oog.shipment_status
+        FROM ${database.prefix.order}hou_order_goods oog
+                 left join ${database.prefix.order}hou_order_base ob on ob.order_id = oog.order_id
+        where oog.order_id != #{orderId} and original_order = #{originalOrder}
+    </select>
+    <select id="queryOrderInvoiceGoodsInfo" resultType="com.houjiang.order.vo.OrderGoodsDetailVO">
+        select goods_id,
+               common_id,
+               goods_name,
+               goods_image,
+               order_goods_num,
+               order_goods_returnnum
+        FROM ${database.prefix.order}hou_order_goods
+        where order_id = #{param.orderId}
+    </select>
+    <select id="shipmentsBySupplierOrderGoods"
+            resultType="com.houjiang.order.vo.ShipmentsByOrderGoodsDetailsVO">
+        select oog.goods_name,
+               oog.goods_image,
+               oog.goods_price,
+               oog.goods_id,
+               oog.order_goods_payment_amount,
+               oog.order_goods_num,
+               mgb.supplier_common_id as common_id,
+               oog.shipment_quantity,
+               oog.shipment_status,
+               oog.order_spec_chineseValue
+        FROM ${database.prefix.order}hou_order_goods oog
+                 left join ${database.prefix.supplier}hou_supplier_goods_base mgb on mgb.supplier_goods_id = oog.goods_id
+        where oog.order_id = #{orderId}
+    </select>
+    <select id="selectSupplierOrderDetails" resultType="com.houjiang.order.vo.GoodsDetailsVO">
+        select oog.goods_id,
+               oog.goods_name,
+               oog.goods_image,
+               oog.order_goods_payment_amount,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               ome.express_name,
+               oog.order_shipping_code,
+               oog.order_spec_chineseValue,
+               oog.shipping_fee,
+               oog.goods_price,
+               sob.goods_price           as supper_goods_price,
+               sob.goods_price_sum       as supper_order_amount,
+               sob.goods_payment_amount  as supper_payment_amount,
+               gb.common_id,
+               oog.order_goods_adjust_before_price,
+               oog.shipment_quantity,
+               oog.shipment_status,
+               oog.goods_member_discount as goodsMemberDiscount,
+               oog.shop_id as shopId,
+               oog.buyer_user_id as buyerUserId
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT JOIN ${database.prefix.base}hou_base_express ome on oog.order_shipping_express_id = ome.express_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob ON sob.order_id = oog.order_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_base gb on gb.goods_id = oog.goods_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gbc on gb.common_id = gbc.common_id
+        where oog.order_id = #{orderId}
+    </select>
+    <select id="querySupplierOrderShipmentGoods" resultType="com.houjiang.order.vo.GoodsOrderDetailsVO">
+        select oog.goods_id,
+               oog.goods_name,
+               oog.goods_image,
+               oog.order_goods_payment_amount,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               ome.express_name,
+               oog.order_shipping_code,
+               oog.order_spec_chineseValue,
+               oog.shipping_fee,
+               oog.goods_price,
+               sob.goods_price           as supper_goods_price,
+               sob.goods_price_sum       as supper_order_amount,
+               sob.goods_payment_amount  as supper_payment_amount,
+               gb.supplier_common_id as common_id,
+               oog.order_goods_adjust_before_price,
+               oog.shipment_quantity,
+               oog.shipment_status
+        FROM ${database.prefix.order}hou_order_goods oog
+                 LEFT JOIN ${database.prefix.base}hou_base_express ome on oog.order_shipping_express_id = ome.express_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob ON sob.order_id = oog.order_id
+                 LEFT JOIN ${database.prefix.supplier}hou_supplier_goods_base gb on gb.supplier_goods_id = oog.goods_id
+                 LEFT JOIN ${database.prefix.supplier}hou_supplier_common_base gbc on gb.supplier_common_id = gbc.supplier_common_id
+        where oog.order_id = #{orderId}
+    </select>
+    <select id="queryGoodsNewType" resultType="com.houjiang.commons.dto.order.WapGoodsSaleSumDTO">
+        select goods_id as goodsId, common_id as commonId, order_goods_num as goodsNum
+        FROM ${database.prefix.order}hou_order_goods
+        where order_id = #{orderId}
+    </select>
+    <select id="selectGoodsSalenum" resultType="java.lang.Integer">
+        select goods_salenum  from  ${database.prefix.supplier}hou_supplier_goods_base where supplier_goods_id = #{param.goodsId}
+    </select>
+    <select id="queryBuyNumByorderId" resultType="java.util.Map">
+        select common_id, goods_id, order_goods_returnnum, order_goods_num
+        FROM ${database.prefix.order}hou_order_goods og
+        where og.order_id = #{orderId}
+    </select>
+    <select id="queryGoodsListByReturn" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        select oog.common_id,
+               oog.goods_id,
+               oog.goods_image,
+               oog.goods_name,
+               oog.order_goods_amount,
+               oog.goods_price,
+               oog.order_goods_num,
+               oog.order_spec_chineseValue,
+               oog.goods_return_status,
+               oog.goods_refund_status,
+               oog.shipping_fee,
+               oog.order_goods_payment_amount,
+               oog.order_goods_returnnum,
+               oob.order_payment_amount,
+               oob.order_shipping_fee,
+               oob.order_source
+        FROM ${database.prefix.order}hou_order_goods oog
+                 left join ${database.prefix.order}hou_order_base oob on oob.order_id = oog.order_id
+        where oog.order_id = #{orderId}
+    </select>
+    <select id="queryOrderGoodsCountFeign" resultType="java.lang.Integer">
+        select sum(order_goods_num) FROM ${database.prefix.order}hou_order_goods
+        where buyer_user_id = #{param.userId} and common_id = #{param.commonId}
+          and order_goods_time >= #{param.fDate}
+          and order_goods_status != 7
+          and goods_promotion_id = #{param.discountId}
+    </select>
+    <select id="queryDiscountGoodsInfo2" resultType="com.houjiang.commons.vo.goods.DiscountGoodsInfoVO">
+        SELECT
+            sum( order_goods_num ) AS goodsNum,
+            sum( goods_price * order_goods_num ) AS dealAmount
+        FROM
+            ${database.prefix.order}hou_order_goods
+        WHERE
+            order_goods_status NOT IN ( 1, 7 )
+          AND goods_return_status != 2
+	AND goods_refund_status != 2
+	AND goods_id = #{param.goodsId} and goods_price =#{param.discountPrice}
+
+          AND order_goods_time BETWEEN #{param.endDateTime} and #{param.startDateTime}
+    </select>
+    <select id="queryBuyerUsers" resultType="java.lang.String">
+        SELECT DISTINCT
+            buyer_user_id
+        FROM
+            ${database.prefix.order}hou_order_goods
+        WHERE
+            order_goods_status NOT IN ( 1, 7 )
+          AND goods_return_status != 2
+	AND goods_refund_status != 2
+	AND goods_id = #{param.goodsId} and goods_price =#{param.discountPrice}
+
+          AND order_goods_time BETWEEN #{param.endDateTime} and #{param.startDateTime}
+    </select>
+    <select id="queryCountForOlder" resultType="java.lang.Integer">
+        <![CDATA[
+        select count(1)
+        FROM ${database.prefix.order}hou_order_goods
+        where buyer_user_id = #{param.userId} and order_goods_time < #{param.endDateTime} and shop_id = #{param.shopId}
+        ]]>
+    </select>
+    <select id="queryUserOrderCount" resultType="java.lang.Integer">
+        select count(1) from (
+                                 select distinct order_id
+                                 FROM ${database.prefix.order}hou_order_goods
+                                 where order_goods_status not in (1, 7)
+                                   and goods_return_status != 2
+								   and goods_refund_status != 2
+								   and goods_id =#{param.goodsId} and goods_price =#{param.discountPrice}
+                                   and order_goods_time between #{param.endDateTime} and #{param.startDateTime}
+                                   and buyer_user_id = #{param.userId}
+                             ) as a
+    </select>
+    <select id="querySeckillGoodsInfo2" resultType="com.houjiang.commons.vo.goods.SeckillGoodsInfoVO">
+        SELECT
+            sum( order_goods_num ) AS goodsNum,
+            sum( goods_price * order_goods_num ) AS dealAmount
+        FROM
+            ${database.prefix.order}hou_order_goods
+        WHERE
+            order_goods_status NOT IN ( 1, 7 )
+          AND goods_return_status != 2
+	AND goods_refund_status != 2
+	AND goods_id = #{param.goodsId} and goods_price =#{param.seckillPrice}
+
+          AND order_goods_time BETWEEN #{param.endDateTime} and #{param.startDateTime}
+    </select>
+    <select id="queryOrderGoodsByOrderId" resultType="com.houjiang.order.vo.OrderGoodsVO">
+        select
+            og.order_id,
+            og.order_goods_num,
+            og.order_goods_returnnum,
+            og.order_goods_commission,
+            og.goods_member_discount
+        FROM ${database.prefix.order}hou_order_goods og
+        where og.order_id = #{orderId} AND og.order_goods_returnnum > 0
+    </select>
+    <select id="queryReturnGoodsToSale" resultType="com.houjiang.commons.dto.order.WapGoodsSaleSumDTO">
+        select oog.order_goods_returnnum as goodsNum,
+        oog.barter_goods_id as goodsId,
+        oog.common_id
+        FROM ${database.prefix.order}hou_order_goods oog
+        where oog.order_id = #{param.orderId}
+        and (oog.goods_return_status != 0 or oog.goods_refund_status != 0 or oog.goods_barter_status != 0)
+        <if test="param.orderBarterIdList != null and param.orderBarterIdList.size() > 0">
+            and order_barter_id in
+            <foreach collection="param.orderBarterIdList" item="orderBarterId" separator="," open="(" close=")" index="">
+                #{orderBarterId}
+            </foreach>
+        </if>
+    </select>
+    <select id="queryOrderReturnGoodsCount" resultType="java.lang.Integer">
+        select count(1)
+        FROM ${database.prefix.order}hou_order_goods oog
+        where oog.order_id = #{orderId}
+          and (oog.goods_return_status != 0 or oog.goods_refund_status != 0 or oog.goods_barter_status != 0)
+    </select>
+    <select id="queryReturnGoods" resultType="java.lang.Integer">
+        select goods_id
+        FROM ${database.prefix.order}hou_order_goods
+        where order_id = #{orderId}
+          and (goods_return_status != 0 or goods_refund_status != 0 or goods_barter_status != 0)
+    </select>
+    <select id="returnGoodsList" resultType="com.houjiang.order.vo.GoodsOrderDetailsVO">
+        select og.goods_id,
+        og.common_id,
+        og.goods_name,
+        og.common_id,
+        og.goods_price,
+        og.order_goods_num,
+        og.goods_image,
+        og.order_spec_chineseValue as goodsSpec,
+        og.ver_id,
+        og.barter_goods_id,
+        og.order_goods_returnnum,
+        og.order_spec_chineseValue,
+        og.goods_refund_status,
+        og.goods_barter_status,
+        oor.return_method_status
+        FROM ${database.prefix.order}hou_order_goods og
+        left join ${database.prefix.order}hou_order_base oob on oob.order_id = og.order_id
+        left join ${database.prefix.order}hou_order_return oor on oor.order_id = og.order_id
+        where og.order_id = #{orderId}
+        <if test="param.shopType != null and param.shopType != '' and param.shopType == 2">
+            and ((oob.shop_id = #{param.shopId} AND oob.original_order IS NULL) or( oob.deliver_shop_id =
+            #{param.shopId} AND oob.original_order IS NOT NULL))
+        </if>
+        <if test="param.shopType != null and param.shopType != '' and param.shopType != 2">
+            and ((oob.shop_id = #{param.shopId} AND oob.original_order IS NULL) or( oob.deliver_shop_id =
+            #{param.shopId} AND oob.original_order IS NOT NULL))
+            and oor.return_type = 3
+        </if>
+        <if test="param.isBarter != null">
+            and og.goods_barter_status != 0
+        </if>
+    </select>
+    <select id="queryJdOrderId" resultType="java.lang.String">
+        select if(jd_son_order_id is null, jd_order_id, jd_son_order_id) FROM ${database.prefix.order}hou_order_goods
+        where order_id = #{orderId} and goods_id = #{orderGoodsId}
+    </select>
+
+    <insert id="insertSupplierByOrderGoods">
+        insert INTO ${database.prefix.order}hou_order_goods (total_goods_shipping_fee, order_id, shop_id, shop_name,
+                                 deliver_shop_id, deliver_shop_name, drop_shipping, goods_id, common_id,
+                                 buyer_user_id, goods_name, goods_class_id, order_spec_chineseValue,
+                                 goods_price, order_goods_num, goods_image, shipping_fee, order_goods_amount,
+                                 order_goods_platform_bear, order_goods_payment_amount,
+                                 order_goods_status, order_goods_evaluation_status, order_rpt_price, voucher_price,
+                                 goods_return_status,
+                                 goods_refund_status, order_goods_time, order_goods_id_deliver, promotion_id,
+                                 integral, dealer_commission, supply_commission,
+                                 order_goods_commission, goods_member_discount, ver_id)
+        values (#{goodsShippingFee}, #{orderId}, #{shopId}, #{shopName},
+                #{deliverShopId}, #{deliverShopName}, #{dropShipping},
+                #{goodsId}, #{commonId}, #{userId}, #{goodsName},
+                #{catId}, #{goodsSpec}, #{goodsprice}, #{goodsNumber}, #{goodsImage}, #{goodsShippingFee},
+                #{orderGoodsAmount}, #{orderGoodsPlatformBear},
+                #{paymentRealPrice}, #{orderGoodsStatus}, #{orderGoodsEvaluationStatus}, #{goodsRtpPrice},
+                #{couponSumMoney},
+                #{goodsReturnStatus}, #{goodsRefundStatus}, #{orderGoodsTime}, #{orderGoodsIdDeliver}, #{promotionId},
+                #{integral},
+                #{dealerCommission}, #{supplyCommission}, #{orderGoodsCommission}, #{goodsMemberDiscount}, #{verId})
+    </insert>
+
+    <select id="queryJdOrderGoodsInfo" resultType="com.houjiang.commons.dto.vop.JingDongReturnGoodsDTO">
+        select
+            if(og.jd_son_order_id is null, og.jd_order_id, og.jd_son_order_id) as jdOrderId,
+            gjd.goods_id,
+            gjd.sku_id,
+            og.order_goods_num as goodsNum,
+            og.order_id
+        from
+            ${database.prefix.order}hou_order_goods og
+                left join ${database.prefix.goods}hou_goods_jingdong_dropshipping gjd on og.goods_id = gjd.goods_id
+        where
+            og.shop_id = gjd.shop_id
+          and og.order_id = #{param.orderId}
+          and og.goods_id in
+        <foreach collection="param.goodsList" open="(" item="goods" separator="," close=")">
+            #{goods.goodsId}
+        </foreach>
+    </select>
+    <select id="queryJdReturnOrderInfo" resultType="com.houjiang.commons.dto.vop.JingDongReturnOrderDTO">
+        select jd_order_id,jd_returen_order_id FROM ${database.prefix.order}hou_order_goods where order_id = #{orderId} and jd_returen_order_id is not null
+        group by jd_returen_order_id
+    </select>
+    <select id="queryJdReturnOrderGoodsInfo" resultType="com.houjiang.commons.dto.vop.JingDongReturnGoodsDTO">
+        select
+            if(og.jd_son_order_id is null, og.jd_order_id, og.jd_son_order_id) as jdOrderId,
+            gjd.goods_id,
+            gjd.sku_id,
+            og.order_goods_num as goodsNum,
+            og.order_id,
+            og.jd_returen_order_id
+        from
+            ${database.prefix.order}hou_order_goods og
+                left join ${database.prefix.goods}hou_goods_jingdong_dropshipping gjd on og.goods_id = gjd.goods_id
+        where
+            og.shop_id = gjd.shop_id
+          and og.order_id = #{param.orderId} and jd_returen_order_id is not null
+    </select>
+
+</mapper>

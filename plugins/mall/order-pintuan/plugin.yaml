@@ -1,0 +1,51 @@
+code: order-pintuan
+name: 拼团
+version: 1.0.1
+author: UniMall
+description: 拼团（activity 拆分，归属 order 宿主）
+category: 营销与客户
+owner: official
+runtime: embedded
+hostService: mall
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - order-pintuan:root
+  - order-pintuan:root:index
+  - order-pintuan:root:settings
+  - order-pintuan:root:reports
+menus:
+  - type: M
+    name: 拼团
+    icon: UserFilled
+    sort: 3230
+    perms: order-pintuan:root
+    path: /plugin/order-pintuan
+    group: growth
+    groupSort: 100
+  - type: C
+    name: 拼团管理
+    icon: UserFilled
+    sort: 3
+    perms: order-pintuan:root:index
+    path: /plugin/order-pintuan/index
+    parentPerms: order-pintuan:root
+  - type: C
+    name: 拼团设置
+    icon: Setting
+    sort: 2
+    perms: order-pintuan:root:settings
+    path: /plugin/order-pintuan/settings
+    parentPerms: order-pintuan:root
+  - type: C
+    name: 拼团报表
+    icon: DataAnalysis
+    sort: 1
+    perms: order-pintuan:root:reports
+    path: /plugin/order-pintuan/reports
+    parentPerms: order-pintuan:root
+frontend:
+  entry: index.mjs

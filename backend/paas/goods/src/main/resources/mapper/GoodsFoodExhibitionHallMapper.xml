@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsFoodExhibitionHallMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.goods.entity.GoodsFoodExhibitionHallEntity">
+            <id property="exhibitionHallId" column="exhibition_hall_id" jdbcType="INTEGER"/>
+            <result property="exhibitionHallName" column="exhibition_hall_name" jdbcType="VARCHAR"/>
+            <result property="exhibitionHallImage" column="exhibition_hall_image" jdbcType="VARCHAR"/>
+            <result property="exhibitionHallLogo" column="exhibition_hall_logo" jdbcType="VARCHAR"/>
+            <result property="exhibitionHallLogoWap" column="exhibition_hall_logo_wap" jdbcType="VARCHAR"/>
+            <result property="exhibitionHallDesc1" column="exhibition_hall_desc1" jdbcType="VARCHAR"/>
+            <result property="exhibitionHallDesc2" column="exhibition_hall_desc2" jdbcType="VARCHAR"/>
+            <result property="exhibitionHallDesc3" column="exhibition_hall_desc3" jdbcType="VARCHAR"/>
+            <result property="goodsId" column="goods_id" jdbcType="VARCHAR"/>
+            <result property="publishTime" column="publish_time" jdbcType="TIMESTAMP"/>
+            <result property="exhibitionHallStatus" column="exhibition_hall_status" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        exhibition_hall_id,exhibition_hall_name,
+        exhibition_hall_image,exhibition_hall_logo,exhibition_hall_logo_wap,
+        exhibition_hall_desc1,exhibition_hall_desc2,exhibition_hall_desc3,
+        goods_id,publish_time,exhibition_hall_status
+    </sql>
+    <insert id="insertFoodsHallDetail">
+        REPLACE into goods_food_exhibition_hall
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="param.exhibitionHallId != null" >
+                exhibition_hall_id,
+            </if>
+            <if test="param.exhibitionHallName != null" >
+                exhibition_hall_name,
+            </if>
+            <if test="param.exhibitionHallImage != null" >
+                exhibition_hall_image,
+            </if>
+            <if test="param.exhibitionHallLogo != null" >
+                exhibition_hall_logo,
+            </if>
+            <if test="param.exhibitionHallLogoWap != null" >
+                exhibition_hall_logo_wap,
+            </if>
+            <if test="param.exhibitionHallDesc1 != null" >
+                exhibition_hall_desc1,
+            </if>
+            <if test="param.exhibitionHallDesc2 != null" >
+                exhibition_hall_desc2,
+            </if>
+            <if test="param.exhibitionHallDesc3 != null" >
+                exhibition_hall_desc3,
+            </if>
+            <if test="param.goodsId != null" >
+                goods_id,
+            </if>
+                publish_time,
+            <if test="param.exhibitionHallStatus != null" >
+                exhibition_hall_status,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="param.exhibitionHallId != null" >
+                #{param.exhibitionHallId,jdbcType=INTEGER},
+            </if>
+            <if test="param.exhibitionHallName != null" >
+                #{param.exhibitionHallName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.exhibitionHallImage != null" >
+                #{param.exhibitionHallImage,jdbcType=VARCHAR},
+            </if>
+            <if test="param.exhibitionHallLogo != null" >
+                #{param.exhibitionHallLogo,jdbcType=VARCHAR},
+            </if>
+            <if test="param.exhibitionHallLogoWap != null" >
+                #{param.exhibitionHallLogoWap,jdbcType=VARCHAR},
+            </if>
+            <if test="param.exhibitionHallDesc1 != null" >
+                #{param.exhibitionHallDesc1,jdbcType=VARCHAR},
+            </if>
+            <if test="param.exhibitionHallDesc2 != null" >
+                #{param.exhibitionHallDesc2,jdbcType=VARCHAR},
+            </if>
+            <if test="param.exhibitionHallDesc3 != null" >
+                #{param.exhibitionHallDesc3,jdbcType=VARCHAR},
+            </if>
+            <if test="param.goodsId != null" >
+                #{param.goodsId,jdbcType=VARCHAR},
+            </if>
+            now(),
+            <if test="param.exhibitionHallStatus != null" >
+                #{param.exhibitionHallStatus,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <select id="selectFoodExhibitionHallById"
+            resultType="com.houjiang.goods.vo.WapGoodsFoodExhibitionHallVO">
+        select
+        <include refid="Base_Column_List" />
+        from goods_food_exhibition_hall
+        where exhibition_hall_id =
+        #{exhibitionHallId,jdbcType=INTEGER}
+    </select>
+    <select id="selectByAll" resultType="com.houjiang.goods.vo.WebIndexSpecialtysHallVO">
+        select
+        <include refid="Base_Column_List" />
+        from ${database.prefix.goods}hou_goods_food_exhibition_hall
+    </select>
+</mapper>

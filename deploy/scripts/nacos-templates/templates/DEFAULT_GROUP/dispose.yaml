@@ -1,0 +1,93 @@
+# 项目部署域名
+domainName: https://cloud.shangliansoft.cn
+# 字体路径
+fontUrlPath: /home/wwwroot/fontPath
+spring: 
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 20MB  
+system:
+  pcIndexConfig: JAVA_PC_INDEX_CONFIG_TEST # pc首页配置redis key
+
+firstLevel: https://b2c-test.unimall.cn # 小程序授权回调域名 
+crtUploadPath: /home/wwwroot/cert # 品牌店铺支付证书路径
+
+TRANS_APP_ID: 20211220001033278
+TRANS_SECURITY_KEY: ${DISPOSE_SIGN_KEY}
+TRANS_PC_i18nPath: /home/wwwroot/html
+ES_WORDS_PATH: /home/wwwroot/html
+paypal:
+  client:
+    mode: sandbox
+    app: ${DISPOSE_PAYPAL_CLIENT_CREDENTIAL}
+    secret: ${DISPOSE_PAYPAL_CLIENT_SECRET}
+stripe:
+  # 沙盒
+  key: ${DISPOSE_STRIPE_CREDENTIAL}
+  sectret: ${DISPOSE_STRIPE_CREDENTIAL_2}
+  webhooksKey: ${DISPOSE_STRIPE_CREDENTIAL_3}
+  merchantName: 上海unimall信息科技
+  
+#加解密证书
+privateKeyPath: ${DISPOSE_PRIVATE_KEY}
+
+aliyun: 
+  accessKeyId: ${DISPOSE_ALIYUN_AK_ID}
+  secret: ${DISPOSE_ALIYUN_SECRET}
+  signName: unimall集团
+
+shopAppId: ${DISPOSE_AK_ID}
+shopAppIdSecret: ${DISPOSE_SECRET}  
+
+#怡亚通 App Key
+appKey: 111111111
+#怡亚通 APP Secre
+appSecret: ${DISPOSE_SECRET_2}
+#怡亚通供应链API请求域名
+sceUrl: https://sce-opz.changecloud.cn
+#获取省市区地址
+getRegionByCodeOpenPath: /scce/pbc/pbc/region/getRegionByCodeOpen
+#获取分类信息
+getCategorysPath: /scce/cmc/cmc/spu/open/getCategorys
+#获取分类信息
+getBrandsPath: /scce/cmc/cmc/spu/open/getBrands
+#查询商品库SPUID列表
+getSpuIdListPath: /scce/cmc/cmc/spu/open/getSpuIdList
+#查询查询SPU商品详情
+getSpuBySpuIdsPath: /scce/cmc/cmc/spu/open/getSpuBySpuIds
+#查询SKU规格信息
+listSkuBySpuIdPath: /scce/cmc/cmc/spu/open/listSkuBySpuId
+#查询商品运费
+calculatePath: /scce/cmc/cmc/freight/calculate
+#查询商品价格
+findSkuSalePricePath: /scce/cmc/cmc/spu/open/goods/findSkuSalePrice
+#查询商品库存
+findSkuStockPath: /scce/cmc/cmc/spu/open/findSkuStock
+#修改订单收货地址
+updateOrderReceiveAddressPath: /scce/ctc/ctc/reseller/order/updateOrderReceiveAddress
+#批量校验下单商品销售范围和库存
+checkSkuStockPath: /scce/cmc/cmc/spu/open/checkSkuStock
+#创建订单
+submitOrderPath: /scce/ctc/ctc/reseller/order/submitOrder
+#根据外部订单号查询订单详情列表
+getOrderDetailListPath: /scce/ctc/openApi/reseller/order/getOrderDetailList
+#查询订单详情
+getOrderDetailPath: /scce/ctc/ctc/reseller/order/getOrderDetail
+#查询物流信息
+getOrderExpressListByOsPath: /scce/ctc/ctc/tOrderExpress/getOrderExpressListByOs
+#确认收货 
+confirmReceivePath: /scce/ctc/ctc/reseller/order/confirmReceive
+#售后申请
+applyRefundPath: /scce/ctc/ctc/reseller/orderReturnGoods/applyRefund
+#退货/换货邮寄卖家
+sendReturnGoodsPath: /scce/ctc/ctc/reseller/orderReturnGoods/sendReturnGoods
+#换货确认收货
+receiptRefundPath: /scce/ctc/ctc/reseller/orderReturnGoods/receiptRefund
+#取消售后申请
+cancelRefundPath: /scce/ctc/ctc/reseller/orderReturnGoods/cancelRefund
+#查询售后单详细信息
+orderReturnGoodsDetailPath: /scce/ctc/ctc/reseller/orderReturnGoods/detail

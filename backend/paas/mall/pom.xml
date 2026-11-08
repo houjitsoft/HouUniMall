@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.houjiang</groupId>
+        <artifactId>houjiang</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>mall</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>mall</name>
+    <description>Mall商城模块 - 包含分销、返利、仓储、风控等功能</description>
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+    <dependencies>
+        <!-- mall 只有 bootstrap.yml、没有 application.yml：不加这个依赖时 Spring Boot
+             只找 application.yml，bootstrap.yml 会被整体忽略 —— 结果是 Nacos 坐标、
+             spring.config.import 清单一条都没生效，客户端回落 127.0.0.1:8848，
+             启动崩在「缺少必要的 spring.redis.* 配置」（2026-11-05 开源包实测）。
+             与 paas 其余 11 个服务、bff-web 同一口径。 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- 插件引擎：mall 作为插件宿主，MallApplication 已 @Import PluginEngineAutoConfiguration 启动 PF4J，
+             提供 PluginManager / ExtensionRegistry / RouteRegistry / PluginLifecycleManager /
+             ExtensionInvoker / PluginDispatcher 等 Bean（阶段2 真实宿主接入）。 -->
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>plugin-engine</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!-- PaaS 侧运行时装配（最终版 §二 plugin-runtime）：宿主统一经它装配引擎，
+             并引入 PluginCapabilityGateway 供 Core 调插件能力时降级（§3.2）。 -->
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>plugin-runtime</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- 扩展点契约（DashboardWidgetExtension 等）：mall 业务流经 ExtensionInvoker 触发插件扩展。 -->
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>plugin-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!-- 插件开发 SDK（注解 / ExtensionContext / PluginContext 等），plugin-api 契约所依赖。 -->
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>plugin-sdk</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!-- 商城域插件共用的 Feign 客户端（activity-shared 的 com.houjiang.activity.feign）。
+             挂到 mall 的 8 个插件（券/积分/抽奖/满赠/拼团/红包/折扣/秒杀）会 @Autowired 这些客户端，
+             宿主必须把它们放进 classpath 并显式 @EnableFeignClients 扫描该包，
+             否则插件装载后调用时报 NoSuchBeanDefinitionException（order/goods/userms 同样处理）。 -->
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>activity-shared</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!-- 插件平台按职责拆分；Mall 只做宿主装配，不再持有插件中心实现。 -->
+        <!-- 线上插件目录与分发（M0 地基）：随 mall 宿主一起装配，不新增部署进程。 -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+        <!-- Shared by paid plugins that parse or sanitize HTML. Keeping it on
+             the host class path lets PF4J plugins resolve the common library
+             without duplicating it in every thin plugin artifact. -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
+        </dependency>
+        <!-- MyBatis-Plus 3.5.7 calls APIs introduced in MyBatis 3.5.16;
+             Spring Boot's dependency management otherwise selects 3.5.14. -->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.5.16</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <!--
+        Build-time 二开通过显式 profile 进入宿主 classpath。默认构建不携带任何二开，
+        因此客户可以按站点选择模块；这些 JAR 不会进入 jar/plugins，也不会由插件市场安装。
+    -->
+    <profiles>
+        </profiles>
+    <build>
+        <finalName>mall</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <jvmArguments>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</jvmArguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

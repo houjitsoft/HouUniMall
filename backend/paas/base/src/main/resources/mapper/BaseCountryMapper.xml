@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseCountryMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseCountryEntity" id="BaseCountryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="countryName" column="country_name" jdbcType="VARCHAR"/>
+        <result property="internationalDialingCode" column="international_dialing_code" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="queryCountryAll" resultType="com.houjiang.base.vo.BaseCountryVO">
+        select id,country_name,international_dialing_code,delete_type,country_initial,country_common_use
+        from ${database.prefix.userms}hou_base_country
+        where 1 = 1
+        <if test="param.countryName != null and param.countryName != ''">
+            and country_name LIKE CONCAT('%',#{param.countryName},'%')
+        </if>
+        <if test="param.countryCommonUse != null">
+            and country_common_use = #{param.countryCommonUse}
+        </if>
+    </select>
+    <select id="transportTemplateQueryCurrency" resultType="com.houjiang.base.entity.BaseCountryEntity">
+        select id,country_name,international_dialing_code
+        from ${database.prefix.userms}hou_base_country
+        where (country_name != '中国' or delete_type = 2)
+    </select>
+    <select id="queryCountryById" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.userms}hou_base_country
+        where (country_name = '中国' or delete_type = 1) and id = #{countryId}
+    </select>
+    <select id="queryCountryName" resultType="java.lang.String">
+        select country_name
+        from ${database.prefix.userms}hou_base_country
+        where id in
+        <foreach collection="countryIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="queryAllCountry" resultType="com.houjiang.base.entity.BaseCountryEntity">
+        select id,country_name,international_dialing_code,delete_type,country_initial,country_common_use
+        from ${database.prefix.userms}hou_base_country
+        where 1 = 1
+        <if test="param.countryName != null and param.countryName != ''">
+            and country_name like CONCAT('%',#{param.countryName},'%')
+        </if>
+    </select>
+
+
+</mapper>
+

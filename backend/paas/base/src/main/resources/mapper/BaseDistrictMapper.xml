@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseDistrictMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseDistrictEntity">
+            <id property="districtId" column="district_id" jdbcType="INTEGER"/>
+            <result property="districtName" column="district_name" jdbcType="VARCHAR"/>
+            <result property="districtParentId" column="district_parent_id" jdbcType="INTEGER"/>
+            <result property="districtIsLevel" column="district_is_level" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        district_id,district_name,district_parent_id,
+        district_is_level
+    </sql>
+
+    <select id="queryProvinceport" resultType="java.lang.String">
+        select district_name from ${database.prefix.userms}hou_base_district where district_id=#{provinceId}
+    </select>
+    <select id="selectAllDistrict" resultType="com.houjiang.commons.vo.shop.ShopAllBaseDistrictVO">
+        	select
+		district_id, district_name, district_parent_id
+		from
+		${database.prefix.userms}hou_base_district
+		order by district_id asc
+    </select>
+    <select id="selectByIdList" resultType="java.lang.String"
+            parameterType="java.lang.Integer">
+        select
+        district_name
+        from ${database.prefix.userms}hou_base_district
+        where 1=1
+        <if test="districtIds != null">
+            and district_id in
+            <foreach collection="districtIds" item="districtId"
+                     separator="," open="(" close=")">
+                #{districtId}
+            </foreach>
+        </if>
+        order by field(district_id,
+        <foreach collection="districtIds" separator="," item="districtId">
+            #{districtId}
+        </foreach>
+        )
+    </select>
+    <select id="queryRegionName" resultType="java.lang.String">
+        select district_name
+        from ${database.prefix.userms}hou_base_district
+        where district_id in (#{provinceId}, #{cityId}, #{areaId})
+    </select>
+    <select id="queryProvincePort" resultType="java.lang.String">
+        select district_name
+        from ${database.prefix.userms}hou_base_district
+        where district_id = #{provinceId}
+    </select>
+    <select id="selectAllDistrict2" resultType="com.houjiang.commons.vo.shop.ShopAllBaseDistrictVO">
+        select district_id,
+               district_name,
+               district_parent_id,
+               district_is_level
+        from ${database.prefix.userms}hou_base_district
+        order by district_id asc
+    </select>
+    <select id="queryDistrictCode" resultType="java.lang.String">
+        select district_code
+        from ${database.prefix.userms}hou_base_district
+        where district_id = #{districtId}
+    </select>
+    <select id="queryDealerSet" resultType="com.houjiang.commons.vo.base.DealerSetVO">
+        select
+            config_key,value1,value2,value3
+        from ${database.prefix.userms}hou_base_dealer_set
+        where config_enable = 1 and config_key = #{key}
+    </select>
+
+</mapper>

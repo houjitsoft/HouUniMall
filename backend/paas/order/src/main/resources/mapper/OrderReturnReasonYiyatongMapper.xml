@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderReturnReasonYiyatongMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.order.entity.OrderReturnReasonYiyatongEntity">
+            <id property="orderReturnReasonId" column="order_return_reason_id" jdbcType="INTEGER"/>
+            <result property="orderReturnReasonContent" column="order_return_reason_content" jdbcType="VARCHAR"/>
+            <result property="orderReturnReasonSort" column="order_return_reason_sort" jdbcType="INTEGER"/>
+            <result property="orderReturnReasonType" column="order_return_reason_type" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        order_return_reason_id,order_return_reason_content,order_return_reason_sort,
+        order_return_reason_type
+    </sql>
+</mapper>

@@ -1,0 +1,29 @@
+server:
+  port: 8204
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${APP_DATASOURCE_PASSWORD} # 数据库密码
+  main:
+    allow-bean-definition-overriding: true
+
+alipay:
+  format: json
+  charset: utf-8
+  serverUrl: https://openapi.alipay.com/gateway.do
+  signType: RSA2
+  notifyUrl: https://unimall.houjit.com/plugin/webpos/webPos/order/alipayNotify
+  scene: bar_code
+  payTimeout: 30 #订单超时时间 单位:分钟
+  refundTimeout: 1 #规定退款时间 单位:天
+  queryTimeout: 5 #订单查询超时时间 单位:分钟
+
+wx:
+  payUrl: https://api.mch.weixin.qq.com/pay/micropay
+  payQueryUrl: https://api.mch.weixin.qq.com/pay/orderquery
+  refundUrl: https://api.mch.weixin.qq.com/secapi/pay/refund
+  refundQueryUrl: https://api.mch.weixin.qq.com/pay/refundquery
+  queryTimeout: 5 #订单查询超时时间 单位:分钟

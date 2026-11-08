@@ -1,0 +1,11 @@
+{
+  "admin": "Administrator",
+  "profile": "Profil",
+  "settings": "Einstellungen",
+  "logout": "Abmelden",
+  "name": "Name",
+  "email": "E-Mail",
+  "status": "Status",
+  "active": "Aktiv",
+  "inactive": "Inaktiv"
+}

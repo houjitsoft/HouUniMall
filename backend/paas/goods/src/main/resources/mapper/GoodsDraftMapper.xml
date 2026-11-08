@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsDraftMapper">
+
+	<select id="queryDraft" resultType="com.houjiang.goods.vo.ManageGdsCommonQueryResultStrVO">
+		select
+		draft_id  AS draftId,
+		draft_name  AS draftName,
+		draft_content  AS draftContent,
+		create_time  AS createTime,
+		shop_id  AS shopId,
+		cat_id  AS catId
+		from
+		goods_draft
+		where shop_id = #{shopId} and cat_id = #{catId,jdbcType=INTEGER}
+	</select>
+
+	<!-- 商家后台 -->
+	<select id="selectAreaById" resultType="com.houjiang.commons.vo.goods.ManageTransportAreaResultVO"
+			parameterType="java.lang.Integer">
+		select
+		id, name
+		from ${database.prefix.business}hou_shop_transport_area
+		where id =
+		#{transportAreaId,jdbcType=INTEGER}
+	</select>
+
+	<!-- 商家后台商品发布渲染 -->
+	<select id="selectTemplateById" resultType="com.houjiang.commons.vo.goods.ManageTransportTemplateResultVO"
+			parameterType="java.lang.Integer">
+		select
+		id, name
+		FROM
+		${database.prefix.business}hou_shop_transport_template
+		WHERE
+		1=1
+		<if test="transportTemplate != null">
+			and id = #{transportTemplate,jdbcType=INTEGER}
+		</if>
+	</select>
+
+	<select id="queryShopGoodsCatList" resultType="com.houjiang.commons.dto.goods.MerchantShopGoodsCatDTO">
+		select shop_goods_cat_id,shop_goods_cat_name,parent_id from ${database.prefix.business}hou_shop_self_cat where shop_goods_cat_id in
+		<foreach collection="goodsCatIdList" item="item" index="index" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="queryShopGoodsCatName" resultType="java.lang.String">
+    select shop_goods_cat_name
+    from ${database.prefix.business}hou_shop_self_cat
+    where shop_goods_cat_id = #{goodsCatId}
+  </select>
+
+    <select id="queryDraftCount" resultType="java.lang.Integer">
+		select count(*)
+		from
+		goods_draft
+		where shop_id = #{shopId} and cat_id = #{catId,jdbcType=INTEGER}
+	</select>
+
+	<!-- 店铺后台 -->
+	<select id="selectByShopId2" resultType="com.houjiang.commons.vo.goods.ManageShopBaseQueryResultVO"
+			parameterType="java.lang.Integer">
+		select
+		shop_name,shop_self_support,shop_status,district_id
+		from ${database.prefix.supplier}hou_shop_base
+		where shop_status = 3
+		<if test="shopId != null">
+			and supplier_shop_id = #{shopId}
+		</if>
+	</select>
+	<select id="selectBySupplierShopId" resultType="com.houjiang.commons.vo.goods.ManageShopBaseQueryResultVO">
+		select shop_name,shop_self_support,shop_status,district_id
+		from ${database.prefix.supplier}hou_shop_base
+		where shop_status = 3
+		<if test="shopId != null">
+			and supplier_shop_id = #{shopId,jdbcType=INTEGER}
+		</if>
+	</select>
+
+	<insert id="insertDraft">
+		insert into ${database.prefix.goods}hou_goods_draft (shop_id, cat_id, draft_name, draft_content, create_time)
+		value (#{shopId}, #{catId}, #{draftName}, #{draftContent}, now())
+	</insert>
+</mapper>

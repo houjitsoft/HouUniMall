@@ -1,0 +1,53 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+feign:
+  sentinel:
+    enabled: true
+  # Docker bridge 网络模式下，服务间调用一律走 Nacos 服务发现：
+  # 各服务源码里 @FeignClient(url="${feign.X.url:http://127.0.0.1:PORT}") 的直连默认值
+  # 是 host 网络时代的产物，bridge 模式下 127.0.0.1 指向容器自身必拒连。
+  # 此处统一置空（url 为空时 OpenFeign 按 name 走服务发现）；
+  # 需要直连的部署形态由外部环境变量 FEIGN_*_URL 或更高优先级的配置覆盖。
+  auth.url: ""
+  base.url: ""
+  cms.url: ""
+  crm.url: ""
+  erp.url: ""
+  evil.url: ""
+  finance.url: ""
+  geo.url: ""
+  goods.url: ""
+  im.url: ""
+  job.url: ""
+  logging.url: ""
+  mall.url: ""
+  merchant.url: ""
+  mes.url: ""
+  oa.url: ""
+  order.url: ""
+  orderfood.url: ""
+  payment.url: ""
+  permission.url: ""
+  pm.url: ""
+  rider.url: ""
+  supplier.url: ""
+  thirdparty.url: ""
+  userms.url: ""
+  webpos.url: ""
+snow:
+  workerId: 001
+  datacenterId: 002
+  
+ES_WORDS_PATH: /www/wwwroot/houcloud/es
+
+# 平台财务服务间调用的签名密钥（mall 签名 → merchant 校验，两侧读同一个键）。
+# 源码里是 fail-closed 的：没配就抛「mall.platform-finance.service-secret 未配置」
+# 直接起不来。放在 mutual.yaml（所有服务都 import）而不是 mall.yaml，是因为
+# merchant 看不到 mall.yaml；写在这里两侧才拿到同一个值。
+# 值由 nacos-init 每次安装随机生成，无需人工填。
+mall:
+  platform-finance:
+    service-secret: ${MALL_PLATFORM_FINANCE_SERVICE_SECRET}

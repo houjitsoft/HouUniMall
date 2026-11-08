@@ -1,0 +1,6 @@
+{
+  "warning": "Warning",
+  "confirmDelete": "Delete order",
+  "deleteSuccess": "Deleted successfully",
+  "deleteCanceled": "Delete canceled"
+}

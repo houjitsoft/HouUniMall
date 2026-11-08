@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>微信登录 - UniMall</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#182230;background:#f5f7fa;font-synthesis:none;text-rendering:optimizeLegibility}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px}
+    main{width:min(440px,100%);padding:36px 28px;background:#fff;border:1px solid #e5e9ef;border-radius:12px;text-align:center}
+    .icon{width:52px;height:52px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;background:#edf8f1;color:#07c160;font-size:25px;font-weight:700}
+    .icon.error{background:#fff3e8;color:#d97706}h1{margin:0 0 10px;font-size:21px}p{margin:0;color:#64748b;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+  </style>
+</head>
+<body>
+  <main role="status" aria-live="polite">
+    <div id="icon" class="icon">…</div>
+    <h1 id="title">正在完成微信登录</h1>
+    <p id="message">请稍候，不要关闭此页面。</p>
+  </main>
+  <script>
+    (function () {
+      'use strict';
+      var API = '/web/auth/unilogin/wechat';
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get('code') || '';
+      var state = params.get('state') || '';
+      var title = document.getElementById('title');
+      var message = document.getElementById('message');
+      var icon = document.getElementById('icon');
+      var finished = false;
+
+      function notify(payload) {
+        try {
+          var target = window.opener && !window.opener.closed ? window.opener : (window.parent !== window ? window.parent : null);
+          if (target) target.postMessage(Object.assign({ type: 'UNIMALL_UNILOGIN', channel: 'wechat' }, payload), window.location.origin);
+          return !!target;
+        } catch (e) { return false; }
+      }
+
+      function showError(text) {
+        if (finished) return;
+        finished = true;
+        icon.className = 'icon error'; icon.textContent = '!';
+        title.textContent = '微信登录未完成'; message.textContent = text;
+        notify({ status: 'failed', message: text });
+      }
+
+      function poll(qrCodeId, remaining) {
+        fetch(API + '/login-status/' + encodeURIComponent(qrCodeId), { cache: 'no-store', credentials: 'same-origin' })
+          .then(function (response) { return response.json(); })
+          .then(function (result) {
+            var data = result && result.data || {};
+            if (data.status === 'confirmed' && data.token) {
+              finished = true;
+              icon.textContent = '✓'; title.textContent = '登录成功'; message.textContent = '授权完成，正在返回原页面…';
+              notify({ status: 'confirmed', token: data.token, userMobile: data.userMobile || '' });
+              if (window.opener) window.setTimeout(function () { window.close(); }, 800);
+              return;
+            }
+            if (data.status === 'unbound') {
+              showError(data.message || '该微信账号尚未绑定平台账号，请先用账号密码登录，再到账号设置中绑定微信。');
+              notify({ status: 'unbound', message: data.message || '该微信账号尚未绑定平台账号。' });
+              return;
+            }
+            if (data.status === 'failed' || data.status === 'expired') {
+              showError(data.message || (data.status === 'expired' ? '二维码已过期，请返回登录页重试。' : '微信授权失败，请返回登录页重试。'));
+              return;
+            }
+            if (remaining <= 0) {
+              showError('等待微信确认超时，请返回登录页刷新二维码。');
+              return;
+            }
+            message.textContent = data.status === 'scanned' ? '已在微信中确认，正在完成登录…' : '已完成微信授权，正在确认登录状态…';
+            window.setTimeout(function () { poll(qrCodeId, remaining - 1); }, 1500);
+          })
+          .catch(function () {
+            if (remaining <= 0) { showError('连接登录服务失败，请返回登录页重试。'); return; }
+            window.setTimeout(function () { poll(qrCodeId, remaining - 1); }, 2000);
+          });
+      }
+
+      if (!code || !state) { showError('微信返回的授权参数不完整，请返回登录页重新扫码。'); return; }
+      fetch(API + '/callback?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state), { cache: 'no-store' })
+        .then(function (response) { return response.json(); })
+        .then(function (result) {
+          var data = result && result.data || {};
+          if (!result || result.code !== 1 || !data.status) throw new Error(result && result.message || '微信授权校验失败');
+          if (data.status === 'confirmed' && data.token) {
+            finished = true;
+            icon.textContent = '✓'; title.textContent = '登录成功'; message.textContent = '授权完成，正在返回原页面…';
+            notify({ status: 'confirmed', token: data.token, userMobile: data.userMobile || '' });
+            if (window.opener) window.setTimeout(function () { window.close(); }, 800);
+            return;
+          }
+          if (data.status === 'unbound') {
+            showError(data.message || '该微信账号尚未绑定平台账号，请先用账号密码登录，再到账号设置中绑定微信。');
+            notify({ status: 'unbound', message: data.message || '该微信账号尚未绑定平台账号。' });
+            return;
+          }
+          if (data.status !== 'waiting' && data.status !== 'scanned') throw new Error(data.message || '微信授权未完成');
+          message.textContent = '已完成微信授权，正在确认登录状态…';
+          poll(state, 80);
+        })
+        .catch(function (error) { showError(error && error.message || '微信登录失败，请返回登录页重试。'); });
+    })();
+  </script>
+</body>
+</html>

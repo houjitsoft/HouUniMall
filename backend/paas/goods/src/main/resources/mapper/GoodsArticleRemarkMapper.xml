@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsArticleRemarkMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.goods.entity.GoodsArticleRemarkEntity">
+            <id property="remarkId" column="remark_id" jdbcType="INTEGER"/>
+            <result property="articleId" column="article_id" jdbcType="VARCHAR"/>
+            <result property="remarkContent" column="remark_content" jdbcType="VARCHAR"/>
+            <result property="remarkedId" column="remarked_id" jdbcType="VARCHAR"/>
+            <result property="remarkUser" column="remark_user" jdbcType="VARCHAR"/>
+            <result property="remarkedUser" column="remarked_user" jdbcType="VARCHAR"/>
+            <result property="remarkType" column="remark_type" jdbcType="INTEGER"/>
+            <result property="auditState" column="audit_state" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="lastUpdatedTime" column="last_updated_time" jdbcType="TIMESTAMP"/>
+            <result property="auditComment" column="audit_comment" jdbcType="VARCHAR"/>
+            <result property="likeNum" column="like_num" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        remark_id,article_id,remark_content,
+        remarked_id,remark_user,remarked_user,
+        remark_type,audit_state,create_time,
+        last_updated_time,audit_comment,like_num
+    </sql>
+    <insert id="addRemark">
+        insert into ${database.prefix.goods}hou_goods_article_remark(
+			article_id,
+			remark_content,
+			remarked_id,
+			remark_user,
+			remarked_user,
+			remark_type,
+            is_read
+		)
+		values(
+			#{param.articleId},
+			#{param.remarkContent},
+			#{param.remarkedId},
+			#{param.remarkUser},
+			#{param.remarkedUser},
+			#{param.remarkType},
+		    #{param.isRead}
+		);
+    </insert>
+    <update id="updateCommunityCommentStatus">
+        update ${database.prefix.goods}hou_goods_article_remark
+        <set>
+            <if test="null !=param.auditState">
+                audit_state = #{param.auditState},
+            </if>
+            <if test="null !=param.auditComment ">
+                audit_comment=#{param.auditComment}
+            </if>
+        </set>
+        WHERE remark_id in (
+        <foreach collection="param.remarkIdList" separator="," item="remarkId">
+            #{remarkId}
+        </foreach>
+        )
+    </update>
+    <update id="updateLikeNumForComments">
+        update ${database.prefix.goods}hou_goods_article_remark
+        <set>
+            <if test="param.likeFlag == 1">
+                like_num = like_num + 1,
+            </if>
+            <if test="param.likeFlag != 1">
+                like_num = like_num - 1,
+            </if>
+        </set>
+        where remark_id = #{param.likedId,jdbcType=VARCHAR}
+    </update>
+    <select id="selectDetailsList" resultType="com.houjiang.goods.vo.CommunityCommentsDetailsVO">
+        SELECT
+        gar.remark_id,
+        gar.article_id,
+        gar.remark_content,
+        gar.remarked_id,
+        gar.remark_user,
+        gar.audit_state,
+        gar.remark_type,
+        ga.article_title,
+        ga.article_content,
+        ga.article_cover
+        FROM
+        goods_article_remark gar
+        LEFT JOIN goods_article_info ga ON gar.article_id = ga.article_id
+        WHERE
+        1 = 1
+        <if test="null != remarkId">
+            and gar.remark_id=#{remarkId}
+        </if>
+    </select>
+    <select id="selectCommunityComments" resultType="com.houjiang.goods.vo.CommunityCommentsVO">
+        SELECT
+        a.remark_id,
+        a.article_id,
+        a.remark_content,
+        a.remarked_id,
+        a.remark_user,
+        c.user_nickname as remarkUserNickName,
+        c.user_mobile as remarkUserPhone,
+        a.remarked_user,
+        d.user_nickname as remarkedUserNickName,
+        d.user_mobile as remarkedUserPhone,
+        a.audit_state,
+        a.remark_type,
+        a.create_time as postDate,
+        b.article_cover,
+        b.article_content
+        FROM
+        goods_article_remark a
+        left join ${database.prefix.goods}hou_goods_article_info b on a.article_id = b.article_id
+        left join ${database.prefix.userms}hou_user_info c on a.remark_user=c.user_id
+        left join ${database.prefix.userms}hou_user_info d on a.remarked_user=d.user_id
+        WHERE
+        1 = 1
+        <if test="null !=param.remarkUser and !''.equals(param.remarkUser)">
+            and   a.remark_user =#{param.remarkUser}
+        </if>
+        <if test="null !=param.auditState and !''.equals(param.auditState)">
+            and   a.audit_state = #{param.auditState}
+        </if>
+        <if test="null !=param.remarkUserPhone and !''.equals(param.remarkUserPhone)">
+            and   c.user_mobile like concat('%',#{param.remarkUserPhone},'%')
+        </if>
+        <if test="null !=param.remarkedUserPhone and !''.equals(param.remarkedUserPhone)">
+            and   d.user_mobile like concat('%',#{param.remarkedUserPhone},'%')
+        </if>
+        <if test="null !=param.remarkUserNickName and !''.equals(param.remarkUserNickName)">
+            and   c.user_nickname like concat('%',#{param.remarkUserNickName},'%')
+        </if>
+        <if test="null !=param.remarkedUserNickName and !''.equals(param.remarkedUserNickName)">
+            and   d.user_nickname like concat('%',#{param.remarkedUserNickName},'%')
+        </if>
+        order by a.remark_id desc
+    </select>
+    <select id="getRemarkList" resultType="com.houjiang.goods.vo.CommunityRemarkVO">
+        select a.remark_id,a.article_id,a.remark_content,a.remark_type,a.remarked_id,a.remark_user as userId,a.create_time as postDate,
+        b.article_cover,b.article_content
+        from ${database.prefix.goods}hou_goods_article_remark a
+        left join ${database.prefix.goods}hou_goods_article_info b on a.article_id = b.article_id
+        where a.audit_state=1 and a.remarked_user=#{param.userId} order by a.remark_id desc
+    </select>
+    <select id="getUserInfo" resultType="java.util.Map">
+        select
+		a.user_name as userName,
+		b.user_avatar as userAvatar
+		from ${database.prefix.userms}hou_user_info a
+		left join ${database.prefix.userms}hou_user_info_detail b on a.user_id=b.user_id
+		where a.user_id = #{userId}
+    </select>
+    <select id="getRemarkContent" resultType="java.lang.String">
+        select
+            remark_content
+		from ${database.prefix.goods}hou_goods_article_remark
+		where remark_id = #{param}
+    </select>
+    <select id="queryRemarks" resultType="com.houjiang.goods.vo.CommunityArticleRemarkEntityVO">
+        select
+			remark_id,
+			remark_content,
+			article_id,
+			remarked_id,
+			remark_user,
+			remarked_user,
+			STR_TO_DATE(create_time,'%Y-%m-%d') as remark_time,
+			remark_type,
+		    like_num
+		from ${database.prefix.goods}hou_goods_article_remark
+		where article_id = #{param.articleId}
+		and remarked_id = #{param.remarkedId}
+		and remark_type = #{param.remarkType}
+		and audit_state = 1
+    </select>
+    <delete id="deleteRemarks">
+        delete from ${database.prefix.goods}hou_goods_article_remark
+        where article_id in
+        <foreach item="articleId" collection="param.articleIds" separator="," open="(" close=")" index="index">
+            #{articleId}
+        </foreach>
+    </delete>
+
+</mapper>

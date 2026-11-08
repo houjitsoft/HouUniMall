@@ -1,0 +1,46 @@
+server:
+  port: 8099
+
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${APP_DATASOURCE_PASSWORD} # 数据库密码
+    hikari:
+      connection-timeout: 30000     # 等待连接分配连接的最大时长(毫秒),超出时长还没可用连接则发送SQLException,默认30秒
+      minimum-idle: 5               # 最小连接数
+      maximum-pool-size: 20         # 最大连接数
+      auto-commit: true             # 自动提交
+      idle-timeout: 600000          # 连接超时的最大时长(毫秒),超时则被释放(retired),默认10分钟
+      pool-name: DateSourceHikariCP # 连接池名称
+      max-lifetime: 1800000         # 连接的生命时长(毫秒),超时而且没被使用则被释放,默认30分钟(1800000ms)
+      connection-init-sql: SELECT 1 # 连接时发起SQL测试脚本
+  main:
+    allow-bean-definition-overriding: true
+  profiles:
+    active: with-mq
+
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESERVER}
+  producer:
+    group: logging-producer
+  consumer:
+    group: consumer_log_group
+
+# ELK 日志查询：连接项引用 es.yaml 的 houcloud.es.*，本服务只维护查询策略。
+houcloud:
+  log:
+    elk:
+      enabled: true
+      uris: ${houcloud.es.uri:http://127.0.0.1:9200}
+      username: ${houcloud.es.username:}
+      password: ${houcloud.es.password:}
+      index-patterns: "l4j_*,filebeat-*,logs-*,logstash-*,*-logs-*"
+      max-range-days: 7
+      default-range-hours: 24
+      max-page-size: 100
+      max-from-offset: 5000
+      query-timeout: 5s
+      track-total-hits-cap: 10000

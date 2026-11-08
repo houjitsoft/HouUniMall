@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.JobStatisticsCatMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.JobStatisticsCatEntity">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="firstCatId" column="first_cat_id" jdbcType="INTEGER"/>
+        <result property="firstCatName" column="first_cat_name" jdbcType="VARCHAR"/>
+        <result property="catTurnoverSelf" column="cat_turnover_self" jdbcType="DECIMAL"/>
+        <result property="catTurnoverReal" column="cat_turnover_real" jdbcType="DECIMAL"/>
+        <result property="catTurnoverAll" column="cat_turnover_all" jdbcType="DECIMAL"/>
+        <result property="catStatisticsTime" column="cat_statistics_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,first_cat_id,first_cat_name,
+        cat_turnover_self,cat_turnover_real,cat_turnover_all,
+        cat_statistics_time
+    </sql>
+    <select id="queryCatTurnoverReal" resultType="com.houjiang.job.dto.CategoryMonthlySalesDTO">
+        SELECT
+        sum( og.goods_price * og.ordeR_goods_num + og.shipping_fee - og.voucher_price ) AS catTurnoverReal,
+        gc.cat_frist_parent_id AS firstCatId,
+        date_format( ob.payment_time, '%Y-%m' ) AS catStatisticsTime
+        FROM
+        ${database.prefix.order}hou_order_goods og
+        LEFT JOIN ${database.prefix.order}hou_order_base ob ON ob.order_id = og.order_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_cat gc ON og.goods_class_id = gc.cat_id
+        WHERE
+        ob.payment_time >= #{startTime}  AND ob.payment_time &lt;=#{endTime}
+
+        AND ob.order_status IN ( 2, 3, 4, 5, 6 )
+        AND gc.cat_frist_parent_id IN ( 1000, 1006080506, 1006080309, 1006080236, 1006080730, 1006080325, 1006080654, 999 )
+        GROUP BY
+        gc.cat_frist_parent_id,
+        date_format( ob.payment_time, '%Y-%m')
+    </select>
+    <select id="queryCatTurnoverSelf" resultType="com.houjiang.job.dto.CategoryMonthlySalesDTO">
+        SELECT sum(og.goods_price * og.ordeR_goods_num + og.shipping_fee - og.voucher_price) AS catTurnoverSelf,
+               gc.cat_frist_parent_id                                                        AS firstCatId,
+               date_format(ob.payment_time, '%Y-%m')                                         AS catStatisticsTime
+        FROM ${database.prefix.order}hou_order_goods og
+                 LEFT JOIN ${database.prefix.order}hou_order_base ob ON ob.order_id = og.order_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_cat gc ON og.goods_class_id = gc.cat_id
+        WHERE ob.payment_time >= #{startTime}
+
+          AND ob.payment_time &lt;= #{endTime}
+
+          AND ob.order_status IN (2, 3, 4, 5, 6)
+          AND gc.cat_frist_parent_id IN
+              (1000, 1006080506, 1006080309, 1006080236, 1006080730, 1006080325, 1006080654, 999)
+        GROUP BY gc.cat_frist_parent_id,
+        date_format( ob.payment_time, '%Y-%m' )
+    </select>
+</mapper>

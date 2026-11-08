@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsArticleLikeMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsArticleLikeEntity" id="GoodsArticleLikeMap">
+        <result property="likeId" column="like_id" jdbcType="INTEGER"/>
+        <result property="articleId" column="article_id" jdbcType="VARCHAR"/>
+        <result property="likedId" column="liked_id" jdbcType="VARCHAR"/>
+        <result property="likeUser" column="like_user" jdbcType="VARCHAR"/>
+        <result property="likedUser" column="liked_user" jdbcType="VARCHAR"/>
+        <result property="likeType" column="like_type" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="lastUpdatedTime" column="last_updated_time" jdbcType="TIMESTAMP"/>
+        <result property="isRead" column="is_read" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertLike">
+        insert into ${database.prefix.goods}hou_goods_article_like(
+			article_id,
+			liked_id,
+			like_user,
+			liked_user,
+			like_type,
+            is_read
+		)
+		values(
+			#{param.articleId},
+			#{param.likedId},
+			#{param.likeUser},
+			#{param.likedUser},
+			#{param.likeType},
+			#{param.isRead}
+		)
+    </insert>
+    <delete id="deleteLikes">
+        delete from ${database.prefix.goods}hou_goods_article_like
+        where article_id in
+        <foreach item="articleId" collection="param.articleIds" separator="," open="(" close=")" index="index">
+            #{articleId}
+        </foreach>
+    </delete>
+    <delete id="deleteLike">
+        delete from ${database.prefix.goods}hou_goods_article_like
+		where like_user = #{param.likeUser}
+		  and like_id = #{param.likeId}
+    </delete>
+    <select id="getArticleIsLiked" resultType="java.lang.Integer">
+        select like_id
+		from ${database.prefix.goods}hou_goods_article_like
+		where like_user = #{param.userId}
+		and liked_id = #{param.likedId}
+		and like_type = #{param.likeType}
+    </select>
+    <select id="getRemarkisLiked" resultType="java.lang.Integer">
+        select like_id from ${database.prefix.goods}hou_goods_article_like where liked_id=#{param.remarkedId} and like_user=#{param.userId} and like_type=2
+    </select>
+    <select id="getLikedNum" resultType="java.lang.Integer">
+        select count(1)
+		from ${database.prefix.goods}hou_goods_article_like
+		where liked_user = #{param.userId}
+    </select>
+    <select id="getLikeList" resultType="com.houjiang.goods.vo.CommunityLikeEntityVO">
+        select
+		a.like_id,
+		a.article_id,
+		a.liked_id,
+		a.like_user,
+		a.liked_user,
+		a.like_type,
+		a.create_time as likeTime,
+		b.article_cover
+		from ${database.prefix.goods}hou_goods_article_like a left join ${database.prefix.goods}hou_goods_article_info b on a.article_id = b.article_id
+        inner join ${database.prefix.userms}hou_user_info b on a.like_user = b.user_id
+		where a.liked_user = #{param.userId}
+		order by a.create_time desc
+    </select>
+
+
+</mapper>

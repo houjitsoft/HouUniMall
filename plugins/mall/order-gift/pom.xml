@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.houjiang</groupId>
+        <artifactId>houjiang</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../../backend/paas/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>order-gift-plugin</artifactId>
+    <version>1.0.2</version>
+    <packaging>jar</packaging>
+    <name>UniMall 满赠 Plugin</name>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.rocketmq</groupId>
+                    <artifactId>rocketmq-spring-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.rocketmq</groupId>
+                    <artifactId>rocketmq-client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>plugin-sdk</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>plugin-api</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.pf4j</groupId>
+            <artifactId>pf4j</artifactId>
+            <version>3.12.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>order-gift-plugin-${project.version}</finalName>
+        <sourceDirectory>${project.basedir}/runtime/java</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/runtime/test/java</testSourceDirectory>
+        <resources>
+            <resource><directory>${project.basedir}/runtime/resources</directory></resource>
+            <resource><directory>${project.basedir}</directory><includes><include>plugin.yaml</include></includes></resource>
+            <!-- 前端产物必须打进 jar：宿主按 {pluginsRoot}/{code}/{version}/frontend/{entry}
+                 解析后台页面。少了这一条，插件能装能启动，但后台点进菜单是空白
+                 （order-gift 原先就漏了这一条，2026-11-05 实测 jar 内无 frontend/index.mjs）。 -->
+            <resource><directory>${project.basedir}/frontend</directory><targetPath>frontend</targetPath><includes><include>**/*</include></includes></resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>21</release>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive><manifestEntries>
+                        <Plugin-Id>order-gift</Plugin-Id>
+                        <Plugin-Version>${project.version}</Plugin-Version>
+                        <Plugin-Class>com.houjiang.gift.plugin.OrderGiftPlugin</Plugin-Class>
+                        <Plugin-Provider>UniMall</Plugin-Provider>
+                    </manifestEntries></archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

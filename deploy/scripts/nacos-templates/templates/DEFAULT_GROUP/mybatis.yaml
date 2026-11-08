@@ -1,0 +1,76 @@
+# MyBatis-Plus全局配置
+mybatis-plus:
+  configuration:
+    # 开启驼峰命名转换
+    # map-underscore-to-camel-case: true
+    # 开启缓存
+    cache-enabled: true
+    # 延迟加载
+    lazy-loading-enabled: true
+    # 按需加载
+    aggressive-lazy-loading: false    
+
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    variables:
+      # 数据库前缀配置
+      database.prefix.goods: "${MYSQL_DB}."
+      database.prefix.userms: "${MYSQL_DB}."
+      database.prefix.order: "${MYSQL_DB}."
+      database.prefix.base: "${MYSQL_DB}."
+      database.prefix.business: "${MYSQL_DB}."
+      database.prefix.payment: "${MYSQL_DB}."
+      database.prefix.thirdparty: "${MYSQL_DB}."
+      database.prefix.datav: "${MYSQL_DB}."
+      database.prefix.auth: "${MYSQL_DB}."
+      database.prefix.activity: "${MYSQL_DB}."
+      database.prefix.rider: "${MYSQL_DB}."
+      database.prefix.cms: "${MYSQL_DB}."
+      database.prefix.orderfood: "${MYSQL_DB}."
+      database.prefix.webpos: "${MYSQL_DB}."
+      database.prefix.mes: "${MYSQL_DB}."
+      database.prefix.supplier: "${MYSQL_DB}."
+      database.prefix.job: "${MYSQL_DB}."
+      database.prefix.im: "${MYSQL_DB}."
+      database.prefix.gateway: "${MYSQL_DB}."
+      database.prefix.workflow: "${MYSQL_DB}."
+  mapper-locations: classpath:mapper/*.xml
+  global-config:
+    db-config:
+      #  主键自增
+      id-type: auto
+
+# MyBatis共享配置文件 - 用于所有微服务
+spring:
+  datasource:
+    # Druid数据源全局配置
+    druid:
+      # 初始化大小
+      initial-size: 5
+      # 最小连接池数量
+      min-idle: 5
+      # 最大连接池数量
+      max-active: 20
+      # 获取连接时最大等待时间(毫秒)
+      max-wait: 60000
+      # 间隔多久进行一次检测，检测需要关闭的空闲连接(毫秒)
+      time-between-eviction-runs-millis: 60000
+      # 一个连接在池中最小生存的时间(毫秒)
+      min-evictable-idle-time-millis: 300000
+      # 验证连接有效性SQL
+      validation-query: SELECT 1
+      # 申请连接时执行validationQuery检测连接是否有效
+      test-while-idle: true
+      # 申请连接时执行validationQuery检测连接是否有效
+      test-on-borrow: false
+      # 归还连接时执行validationQuery检测连接是否有效
+      test-on-return: false
+      # 是否缓存preparedStatement
+      pool-prepared-statements: true
+      # 缓存preparedStatement的大小
+      max-pool-prepared-statement-per-connection-size: 20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计
+      filters: stat,wall,slf4j
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      # 合并多个DruidDataSource的监控数据
+      use-global-data-source-stat: true  

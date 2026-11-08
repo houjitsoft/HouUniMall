@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivityPiecingTogetherTempMapper">
+
+    <resultMap type="com.houjiang.activity.entity.ActivityPiecingTogetherTempEntity"
+               id="ActivityPiecingTogetherTempMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="detailId" column="detail_id" jdbcType="INTEGER"/>
+        <result property="markId" column="mark_id" jdbcType="INTEGER"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="payStart" column="pay_start" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertPintuanTemp">
+        insert into ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.detailId != null">
+                detail_id,
+            </if>
+            <if test="param.markId != null">
+                mark_id,
+            </if>
+            <if test="param.goodsId != null">
+                goods_id,
+            </if>
+            <if test="param.orderId != null">
+                order_id,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.createdTime != null">
+                create_time,
+            </if>
+            <if test="param.type != null">
+                type,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.detailId != null">
+                #{param.detailId,jdbcType=INTEGER},
+            </if>
+            <if test="param.markId != null">
+                #{param.markId,jdbcType=VARCHAR},
+            </if>
+            <if test="param.goodsId != null">
+                #{param.goodsId,jdbcType=BIGINT},
+            </if>
+            <if test="param.orderId != null">
+                #{param.orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.createdTime != null">
+                #{param.createdTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.type != null">
+                #{param.type,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+    <update id="updatePintByOrder">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        set pay_start = 1
+        where order_id = #{orderId} and pay_start = 0
+    </update>
+    <update id="markTempRefundedByOrder">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        set pay_start = 2
+        where order_id = #{orderId} and pay_start = 1
+    </update>
+    <select id="countPaidTempByMarkId" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        where mark_id = #{markId,jdbcType=VARCHAR} and pay_start = 1
+    </select>
+    <select id="selectPaidOrderIdsByMarkId" resultType="java.lang.String">
+        select order_id
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        where mark_id = #{markId,jdbcType=VARCHAR} and pay_start = 1
+    </select>
+    <select id="selectByMarkId" resultType="java.lang.String">
+        select order_id
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        where mark_id = #{markId,jdbcType=VARCHAR}
+    </select>
+    <select id="queryPintByOrder" resultType="java.lang.String">
+        select mark_id
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        where order_id = #{orderId}
+    </select>
+    <select id="selectModularizationPintuanBaseList" resultType="java.util.Map">
+        SELECT
+        a.pintuan_id AS activity_id,
+        a.NAME AS activity_name,
+        b.shop_name,
+        DATE_FORMAT( a.end_time, '%Y-%m-%d %H:%i:%S' ) AS end_time,
+        '正常' AS state_label
+        FROM ${database.prefix.activity}hou_addon_activity_piecing_together a
+        LEFT JOIN ${database.prefix.business}hou_shop_base b ON a.shop_id = b.supplier_shop_id
+        WHERE
+        a.STATUS = 1
+        <if test="null != param.name and '' != param.name">
+            and a.name = #{param.name}
+        </if>
+        <if test="null != param.shopId ">
+            and b.shop_id = #{param.shopId}
+        </if>
+    </select>
+    <select id="queryGoodsPrice" resultType="com.houjiang.commons.vo.activity.ModularGoodsVO">
+        SELECT
+            gd.price AS activityPrice,
+            gp.end_time AS endTime,
+            gp.start_time AS startTime
+        FROM ${database.prefix.activity}hou_addon_activity_piecing_together gp
+                LEFT JOIN ${database.prefix.activity}hou_addon_activity_piecing_together_detail gd ON gp.pintuan_id = gd.pintuan_id
+        WHERE
+            gd.goods_id = #{goodsId}
+
+          AND STATUS = 1
+          AND ( now() BETWEEN gp.start_time AND gp.end_time )
+            LIMIT 1
+    </select>
+    <select id="selectByMarkId2" resultType="java.lang.String">
+        select
+        order_id
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        where
+        <if test="expireMarkIdList != null and expireMarkIdList.size()>0">
+            mark_id in (
+            <foreach collection="expireMarkIdList" separator="," item="markId">
+                #{markId}
+            </foreach>
+            )
+        </if>
+    </select>
+
+
+</mapper>

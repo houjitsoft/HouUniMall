@@ -1,0 +1,14 @@
+package com.houjiang.userms.ucenter.model;
+
+public enum UcenterPermissionEvent {
+    SPACE_CREATED,
+    INVITATION_SENT,
+    INVITATION_ACCEPTED,
+    INVITATION_REJECTED,
+    INVITATION_CANCELLED,
+    INVITATION_EXPIRED,
+    MENUS_REPLACED,
+    MEMBER_REMOVED,
+    MEMBER_LEFT,
+    OWNERSHIP_TRANSFERRED
+}

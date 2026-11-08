@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayRiskLogMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayRiskLogEntity">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="logNo" column="log_no" jdbcType="VARCHAR"/>
+        <result property="bizType" column="biz_type" jdbcType="TINYINT"/>
+        <result property="bizNo" column="biz_no" jdbcType="VARCHAR"/>
+        <result property="mchNo" column="mch_no" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="userIp" column="user_ip" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="DECIMAL"/>
+        <result property="payMethod" column="pay_method" jdbcType="VARCHAR"/>
+        <result property="hitRuleNos" column="hit_rule_nos" jdbcType="VARCHAR"/>
+        <result property="hitRulesJson" column="hit_rules_json" jdbcType="LONGVARCHAR"/>
+        <result property="riskLevel" column="risk_level" jdbcType="TINYINT"/>
+        <result property="action" column="action" jdbcType="TINYINT"/>
+        <result property="rejectReason" column="reject_reason" jdbcType="VARCHAR"/>
+        <result property="auditStatus" column="audit_status" jdbcType="TINYINT"/>
+        <result property="auditResult" column="audit_result" jdbcType="VARCHAR"/>
+        <result property="auditOperator" column="audit_operator" jdbcType="VARCHAR"/>
+        <result property="auditTime" column="audit_time" jdbcType="TIMESTAMP"/>
+        <result property="extraContext" column="extra_context" jdbcType="LONGVARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+</mapper>

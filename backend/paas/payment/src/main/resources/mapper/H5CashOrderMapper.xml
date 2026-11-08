@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.H5CashOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.H5CashOrderEntity">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="mchNo" column="mch_no" jdbcType="VARCHAR"/>
+        <result property="appId" column="app_id" jdbcType="VARCHAR"/>
+        <result property="mchOrderNo" column="mch_order_no" jdbcType="VARCHAR"/>
+        <result property="reqSeqNo" column="req_seq_no" jdbcType="VARCHAR"/>
+        <result property="payOrderId" column="pay_order_id" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="BIGINT"/>
+        <result property="currency" column="currency" jdbcType="VARCHAR"/>
+        <result property="body" column="body" jdbcType="VARCHAR"/>
+        <result property="goodsInfo" column="goods_info" jdbcType="LONGVARCHAR"/>
+        <result property="extParam" column="ext_param" jdbcType="VARCHAR"/>
+        <result property="notifyUrl" column="notify_url" jdbcType="VARCHAR"/>
+        <result property="jumpUrl" column="jump_url" jdbcType="VARCHAR"/>
+        <result property="frontUrl" column="front_url" jdbcType="VARCHAR"/>
+        <result property="validTime" column="valid_time" jdbcType="INTEGER"/>
+        <result property="expiredTime" column="expired_time" jdbcType="INTEGER"/>
+        <result property="payTypeInfo" column="pay_type_info" jdbcType="VARCHAR"/>
+        <result property="directPayType" column="direct_pay_type" jdbcType="VARCHAR"/>
+        <result property="channelExtra" column="channel_extra" jdbcType="VARCHAR"/>
+        <result property="h5Url" column="h5_url" jdbcType="VARCHAR"/>
+        <result property="state" column="state" jdbcType="TINYINT"/>
+        <result property="clientIp" column="client_ip" jdbcType="VARCHAR"/>
+        <result property="paySuccessTime" column="pay_success_time" jdbcType="TIMESTAMP"/>
+        <result property="expireTime" column="expire_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, mch_no, app_id, mch_order_no, req_seq_no, pay_order_id, amount, currency,
+        body, goods_info, ext_param, notify_url, jump_url, front_url, valid_time,
+        expired_time, pay_type_info, direct_pay_type, channel_extra, h5_url, state,
+        client_ip, pay_success_time, expire_time, create_time, update_time
+    </sql>
+
+    <select id="selectByMchOrderNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hou_pay_h5cash_order
+        WHERE mch_no = #{mchNo} AND mch_order_no = #{mchOrderNo}
+        LIMIT 1
+    </select>
+
+    <select id="selectByPayOrderId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM hou_pay_h5cash_order
+        WHERE pay_order_id = #{payOrderId}
+        LIMIT 1
+    </select>
+
+    <update id="updateState">
+        UPDATE hou_pay_h5cash_order
+        <set>
+            state = #{state},
+            <if test="payOrderId != null and payOrderId != ''">pay_order_id = #{payOrderId},</if>
+            <if test="h5Url != null and h5Url != ''">h5_url = #{h5Url},</if>
+            <if test="paySuccessTime != null">pay_success_time = #{paySuccessTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

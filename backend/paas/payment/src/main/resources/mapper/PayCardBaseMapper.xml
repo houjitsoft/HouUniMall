@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayCardBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayCardBaseEntity">
+            <id property="cardId" column="card_id" jdbcType="INTEGER"/>
+            <result property="appId" column="app_id" jdbcType="INTEGER"/>
+            <result property="cardName" column="card_name" jdbcType="VARCHAR"/>
+            <result property="cardPrize" column="card_prize" jdbcType="VARCHAR"/>
+            <result property="cardDesc" column="card_desc" jdbcType="VARCHAR"/>
+            <result property="cardStartTime" column="card_start_time" jdbcType="DATE"/>
+            <result property="cardEndTime" column="card_end_time" jdbcType="DATE"/>
+            <result property="cardNum" column="card_num" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        card_id,app_id,card_name,
+        card_prize,card_desc,card_start_time,
+        card_end_time,card_num
+    </sql>
+    <insert id="insetPayCardBase" keyProperty = "id"  keyColumn = "card_id" useGeneratedKeys="true">
+    insert into ${database.prefix.payment}hou_pay_card_base
+        (card_name,
+        card_prize,
+         card_desc,
+         card_start_time,
+         card_end_time,
+         card_num)
+        values
+        (#{cardName},
+         #{cardPrize},
+         #{cardDesc},
+         #{cardStartTime},
+         #{cardEndTime},
+         #{cardNum})
+    </insert>
+    <select id="queryCardbaseInfoReport" resultType="com.houjiang.payment.vo.PayCardBaseInfoVO">
+        SELECT
+        ob.card_id,
+        ot.card_desc,
+        ob.card_money,
+        ot.card_start_time,
+        oyt.card_num,
+        ot.card_name,
+        ob.user_id,
+        ob.card_code,
+        ob.card_fetch_time,
+        ob.card_media_id,
+        ob.server_id,
+        ob.user_account,
+        ob.card_time,
+        ob.card_froze_money,
+        ob.card_password
+        FROM
+        ${database.prefix.payment}hou_pay_card_base ot
+        LEFT JOIN ${database.prefix.payment}hou_pay_card_info ob ON ot.card_id = ob.card_id
+        LEFT JOIN ( SELECT card_id, count(*) card_num FROM ${database.prefix.payment}hou_pay_card_info GROUP BY card_id ) oyt ON oyt.card_id = ob.card_id
+        WHERE
+        1 =1
+        <if test="param.cardId!= null and param.cardId!= ''">
+            AND ot.card_id = #{param.cardId}
+        </if>
+
+        <if test="param.cardCode!= null and param.cardCode!= ''">
+            AND ob.card_code = #{param.cardCode}
+        </if>
+
+        <if test="param.whether== '1'">
+            AND ob.user_account =''
+        </if>
+        <if
+                test="param.returnAddTimeStart!= null and param.returnAddTimeEnd!= null and param.returnAddTimeStart!= '' and param.returnAddTimeEnd!= ''">
+            AND ot.card_start_time between #{param.returnAddTimeStart} and #{param.returnAddTimeEnd}
+        </if>
+    </select>
+    <select id="queryNoRechargeMoney" resultType="java.lang.Double">
+     select if(ISNULL(sum(card_money)),0,sum(card_money))
+     from ${database.prefix.payment}hou_pay_card_base a
+     RIGHT JOIN ${database.prefix.payment}hou_pay_card_info b on   a.card_id=b.card_id
+        <if test="param.whether!= null and param.whether!= '' and param.whether== '1'">
+            where  b.user_account='' =''
+        </if>
+    </select>
+    <select id="queryList" resultType="com.houjiang.payment.vo.PayCardBaseVO">
+        SELECT *
+        FROM
+	(
+	SELECT
+		ot.card_id,
+		ot.card_name,
+		ot.card_desc,
+		ot.card_start_time,
+		ot.card_end_time
+	FROM
+		${database.prefix.payment}hou_pay_card_base ot
+		LEFT JOIN ${database.prefix.payment}hou_pay_card_info ob ON ot.card_id = ob.card_id
+	WHERE
+		1 = 1
+	GROUP BY
+		ot.card_id
+	ORDER BY
+		ot.card_id DESC
+	) oy1
+	LEFT JOIN (
+	SELECT
+		count( 1 ) unused,
+		ot.card_id id
+	FROM
+		${database.prefix.payment}hou_pay_card_info ob,
+		${database.prefix.payment}hou_pay_card_base ot
+	WHERE
+		ob.user_account = ''
+		AND ot.card_id = ob.card_id
+	GROUP BY
+		ot.card_id
+	) oy ON oy1.card_id = oy.id
+	LEFT JOIN ( SELECT card_id, count(*) card_num FROM ${database.prefix.payment}hou_pay_card_info GROUP BY card_id ) ob ON ob.card_id = oy1.card_id
+	LEFT JOIN (
+	SELECT
+		ot.card_id,
+		count( 1 ) usecount
+	FROM
+		${database.prefix.payment}hou_pay_card_base ot
+		LEFT JOIN ${database.prefix.payment}hou_pay_card_info ob ON ot.card_id = ob.card_id
+	WHERE
+		ob.user_account != ''
+	GROUP BY
+	ot.card_id
+	) oe ON oe.card_id = oy1.card_id
+
+	order by oy1.card_id desc
+    </select>
+    <select id="queryActivationNoRechargeMoney" resultType="java.lang.Double">
+        select COALESCE(sum(card_money),0)
+        from ${database.prefix.payment}hou_pay_card_base a RIGHT JOIN ${database.prefix.payment}hou_pay_card_info b on   a.card_id=b.card_id
+        where b.user_account=''
+    </select>
+    <select id="selectCardConsumeExcel" resultType="com.houjiang.payment.vo.CardIncomeListVO">
+        SELECT
+        b.order_id,
+        r.record_status,
+        r.trade_type_id,
+        r.record_money,
+        r.record_time,
+        r.record_payorder,
+        b.pay_code,
+        t.trade_payment_recharge_card,
+        r.user_id,
+        r.user_nickname,
+        record_title,
+        record_desc,
+        trade_third_party_amount,
+        b.order_is_shop_take,
+        b.virtual_goods,
+        b.past_due,
+        b.is_cancel,
+        b.order_refund_status,
+        b.order_return_status,
+        b.order_payment_amount,
+        b.order_status
+        FROM
+        ${database.prefix.order}hou_order_base b
+        LEFT JOIN ${database.prefix.payment}hou_pay_consume_record r FORCE INDEX ( `record_time` ) ON r.record_payorder = b.order_id
+        LEFT JOIN ${database.prefix.payment}hou_pay_consume_trade t ON t.order_id = b.order_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = b.shop_id
+        WHERE b.pay_code in (6,7,8)
+        <if test="param.tradeTypeId != null and param.tradeTypeId != '' and param.tradeTypeId == 1">
+            and r.trade_type_id =
+            #{param.tradeTypeId,jdbcType=TINYINT} and
+            r.user_type = 2
+        </if>
+        <if test="param.tradeTypeId != null and param.tradeTypeId != '' and param.tradeTypeId == 5">
+            and r.trade_type_id =#{param.tradeTypeId,jdbcType=TINYINT}
+            and r.user_type = 1
+            and (b.order_return_status = 2
+            OR b.order_refund_status = 2)
+        </if>
+        <if test="param.userId != null and param.userId != '' ">
+            and r.user_id = #{param.userId,jdbcType=INTEGER}
+        </if>
+        <if test="param.userNickname != null and param.userNickname != '' ">
+            and r.user_nickname = #{param.userNickname}
+        </if>
+        <if test="param.orderId != null and param.orderId != '' ">
+            and r.record_payorder = #{param.orderId,jdbcType=VARCHAR}
+        </if>
+        <if test="param.startDate != null and param.endDate != null">
+            and (r.record_time BETWEEN #{param.startDate} and
+            #{param.endDate})
+        </if>
+        order by record_time desc
+        limit 6000
+    </select>
+    <select id="selectCardConsume" resultType="com.houjiang.payment.vo.CardIncomeListVO">
+        SELECT
+        b.order_id,
+        b.order_status,
+        r.record_status,
+        r.trade_type_id,
+        r.record_money,
+        r.record_time as recordTime,
+        r.record_payorder,
+        b.pay_code,
+        t.trade_payment_recharge_card,
+        r.user_id,
+        r.user_nickname,
+        r.record_title,
+        r.record_desc,
+        t.trade_third_party_amount
+        FROM ${database.prefix.order}hou_order_base b
+        LEFT JOIN ${database.prefix.payment}hou_pay_consume_record r ON r.record_payorder = b.order_id
+        LEFT JOIN ${database.prefix.payment}hou_pay_consume_trade t ON t.order_id = b.order_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = b.shop_id
+        WHERE b.pay_code in (6,7,8)
+        <if test="param.tradeTypeId == null or param.tradeTypeId == '' or param.tradeTypeId == 0">
+            and r.user_type = 2
+        </if>
+        <if test="param.tradeTypeId != null and param.tradeTypeId != '' and param.tradeTypeId == 1">
+            and r.trade_type_id = #{param.tradeTypeId} and r.user_type = 2
+        </if>
+        <if test="param.tradeTypeId != null and param.tradeTypeId != '' and param.tradeTypeId == 5">
+            and r.trade_type_id = #{param.tradeTypeId} and r.user_type = 1
+            and (b.order_return_status = 2 OR b.order_refund_status = 2)
+        </if>
+        <if test="param.userId != null and param.userId != '' ">
+            and r.user_id = #{param.userId}
+        </if>
+        <if test="param.userNickname != null and param.userNickname != '' ">
+            and r.user_nickname = #{param.userNickname}
+        </if>
+        <if test="param.orderId != null and param.orderId != '' ">
+            and r.record_payorder = #{param.orderId,jdbcType=VARCHAR}
+        </if>
+        <if test="param.startDate != null and param.endDate != null">
+            and (r.record_time BETWEEN #{param.startDate} and #{param.endDate})
+        </if>
+        group by b.order_id order by record_time desc
+    </select>
+    <select id="selectCardConsumeAmount" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(sum(r.record_money),0)
+        FROM ${database.prefix.order}hou_order_base b
+        LEFT JOIN ${database.prefix.payment}hou_pay_consume_record r ON r.record_payorder = b.order_id
+        LEFT JOIN ${database.prefix.payment}hou_pay_consume_trade t ON t.order_id = b.order_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = b.shop_id
+        WHERE b.pay_code in (6,7,8) 
+        <if test="param.tradeTypeId != null and param.tradeTypeId != '' and param.tradeTypeId == 1">
+            and r.trade_type_id = #{param.tradeTypeId,jdbcType=TINYINT} and r.user_type = 2
+        </if>
+        <if test="param.tradeTypeId != null and param.tradeTypeId != '' and param.tradeTypeId == 5">
+            and r.trade_type_id = #{param.tradeTypeId,jdbcType=TINYINT} and r.user_type = 1
+            and (b.order_return_status = 2 OR b.order_refund_status = 2)
+        </if>
+        <if test="param.userId != null and param.userId != '' ">
+            and r.user_id = #{param.userId}
+        </if>
+        <if test="param.orderId != null and param.orderId != '' ">
+            and r.record_payorder = #{param.orderId,jdbcType=VARCHAR}
+        </if>
+        <if test="param.startDate != null and param.endDate != null">
+            and (r.record_time BETWEEN #{param.startDate} and #{param.endDate})
+        </if>
+    </select>
+    <select id="queryCardAmountListExcel" resultType="com.houjiang.payment.vo.CardAmountListVO">
+        SELECT
+        ob.card_code,
+        ob.card_money,
+        ob.card_id,
+        ob.card_fetch_time,
+        ob.user_id,
+        ob.user_account,
+        ob.card_password,
+        ot.card_desc,
+        ot.card_start_time,
+        ot.card_end_time
+        FROM
+        ${database.prefix.payment}hou_pay_card_info ob
+        LEFT JOIN
+        ${database.prefix.payment}hou_pay_card_base ot ON ot.card_id = ob.card_id
+        where 1=1
+        <if test="param.status == 2 and param.userId != null">
+            and user_id != 0 and user_id =#{param.userId,jdbcType=INTEGER}
+        </if>
+        <if test="param.status == 2 and param.userId == null">
+            and user_id != 0
+        </if>
+        <if test="param.status == 1">
+            and user_id = 0
+        </if>
+        <if test="param.parentId != null">
+            and parent_id = #{param.parentId}
+        </if>
+        <if test="param.cardCode != null and param.cardCode != '' ">
+            and card_code LIKE CONCAT(CONCAT('%', #{param.cardCode}), '%')
+        </if>
+        <if test="param.startDate != null and param.endDate != null">
+            and (card_fetch_time BETWEEN #{param.startDate} and #{param.endDate})
+        </if>
+        ORDER BY
+        ob.card_fetch_time DESC
+        limit 6000
+    </select>
+    <select id="queryCardAmountList" resultType="com.houjiang.payment.vo.CardAmountListVO">
+        SELECT
+        ob.card_code,
+        ob.card_money,
+        ob.card_id,
+        ob.card_fetch_time,
+        ob.user_id,
+        ui.user_mobile as userAccount,
+        ob.card_password,
+        ot.card_desc,
+        ot.card_start_time,
+        ot.card_end_time
+        FROM ${database.prefix.payment}hou_pay_card_info ob
+        LEFT JOIN ${database.prefix.payment}hou_pay_card_base ot ON ot.card_id = ob.card_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info ui ON ui.user_id = ob.user_id
+        where 1=1
+        <if test="param.status == 2 and param.userId != null and param.userId != ''">
+            and ob.user_id != 0 and ob.user_id =
+            #{param.userId}
+        </if>
+        <if test="param.status == 2 and (param.userId == null or param.userId == '')">
+            and ob.user_id != 0
+        </if>
+        <if test="param.status == 1">
+            and ob.user_id = 0
+        </if>
+        <if test="param.parentId != null">
+            and parent_id = #{param.parentId}
+        </if>
+        <if test="param.cardCode != null and param.cardCode != '' ">
+            and card_code LIKE CONCAT(CONCAT('%', #{param.cardCode}), '%')
+        </if>
+        <if test="param.startDate != null and param.endDate != null">
+            and (card_fetch_time BETWEEN #{param.startDate} and #{param.endDate})
+        </if>
+        ORDER BY
+        ob.card_fetch_time DESC
+    </select>
+    <select id="selectCardAmount" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(sum(card_money),0)
+        FROM
+        ${database.prefix.payment}hou_pay_card_info ob
+        LEFT
+        JOIN
+        ${database.prefix.payment}hou_pay_card_base ot ON
+        ot.card_id = ob.card_id
+        where 1=1
+        <!-- status;// 卡状态：0未激活,1激活未充值,2激活并充值 -->
+        <if test="param.status == 2 and param.userId != null and param.userId != ''">
+            and ob.user_id != 0 and ob.user_id =
+            #{param.userId}
+        </if>
+        <if test="param.status == 2 and (param.userId == null or param.userId == '')">
+            and ob.user_id != 0
+        </if>
+        <if test="param.status == 1">
+            and ob.user_id = 0
+        </if>
+        <if test="param.parentId != null">
+            and parent_id = #{param.parentId}
+        </if>
+        <if test="param.cardCode != null and param.cardCode != '' ">
+            and card_code LIKE CONCAT(CONCAT('%', #{param.cardCode}), '%')
+        </if>
+        <if test="param.startDate != null and param.endDate != null">
+            and (card_fetch_time BETWEEN #{param.startDate} and #{param.endDate})
+        </if>
+    </select>
+
+
+</mapper>

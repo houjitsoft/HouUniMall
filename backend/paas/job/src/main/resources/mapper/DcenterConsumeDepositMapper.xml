@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterConsumeDepositMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterConsumeDepositEntity">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="depositBuyerId" column="deposit_buyer_id" jdbcType="VARCHAR"/>
+            <result property="depositTotalFee" column="deposit_total_fee" jdbcType="DECIMAL"/>
+            <result property="depositGmtCreate" column="deposit_gmt_create" jdbcType="TIMESTAMP"/>
+            <result property="depositType" column="deposit_type" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,deposit_buyer_id,deposit_total_fee,
+        deposit_gmt_create,deposit_type
+    </sql>
+    <select id="getDecenterConsumeDepositVOList" resultType="com.houjiang.job.vo.DcenterConsumeDepositVO">
+        select
+        <include refid="Base_Column_List"/>
+        from ${database.prefix.payment}hou_pay_consume_deposit limit #{pageNum},#{pageSize}
+
+    </select>
+</mapper>

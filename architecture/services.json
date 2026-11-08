@@ -1,0 +1,582 @@
+{
+  "version": 1,
+  "services": [
+    {
+      "name": "goods",
+      "description": "商品、SKU、分类、销售库存与库存预占",
+      "source": "backend/paas/goods",
+      "plugins": "plugins/goods",
+      "extension": "backend/extensions/custom-goods",
+      "port": 8208
+    },
+    {
+      "name": "payment",
+      "description": "收款、支付渠道、退款、支付回调和支付流水",
+      "source": "backend/paas/payment",
+      "plugins": "plugins/payment",
+      "extension": "backend/extensions/custom-payment",
+      "port": 8207
+    },
+    {
+      "name": "order",
+      "description": "购物车、订单、履约编排、运费、售后、促销结算",
+      "source": "backend/paas/order",
+      "plugins": "plugins/order",
+      "extension": "backend/extensions/custom-order",
+      "port": 8209
+    },
+    {
+      "name": "auth",
+      "description": "登录、认证、令牌、身份提供方接入",
+      "source": "backend/paas/auth",
+      "plugins": "plugins/auth",
+      "extension": "backend/extensions/custom-auth",
+      "port": 8392
+    },
+    {
+      "name": "base",
+      "description": "平台组织、字典、基础配置、插件目录与安装编排",
+      "source": "backend/paas/base",
+      "plugins": "plugins/base",
+      "extension": "backend/extensions/custom-base",
+      "port": 8214
+    },
+    {
+      "name": "job",
+      "description": "调度定义、执行触发、重试与运行记录",
+      "source": "backend/paas/job",
+      "plugins": "plugins/job",
+      "extension": "backend/extensions/custom-job",
+      "port": 8313
+    },
+    {
+      "name": "merchant",
+      "description": "商户、店铺、入驻、店铺配置与商户业务关系",
+      "source": "backend/paas/merchant",
+      "plugins": "plugins/merchant",
+      "extension": "backend/extensions/custom-merchant",
+      "port": 8210
+    },
+    {
+      "name": "permission",
+      "description": "平台角色、菜单、权限与授权关系",
+      "source": "backend/paas/permission",
+      "plugins": "plugins/permission",
+      "extension": "backend/extensions/custom-permission",
+      "port": 8300
+    },
+    {
+      "name": "thirdparty",
+      "description": "短信、对象存储、外部平台、AI 等第三方连接能力",
+      "source": "backend/paas/thirdparty",
+      "plugins": "plugins/thirdparty",
+      "extension": "backend/extensions/custom-thirdparty",
+      "port": 8194
+    },
+    {
+      "name": "userms",
+      "description": "用户、会员、地址、收藏、积分与用户权益",
+      "source": "backend/paas/userms",
+      "plugins": "plugins/userms",
+      "extension": "backend/extensions/custom-userms",
+      "port": 8195
+    },
+    {
+      "name": "crm",
+      "description": "客户关系、线索、商机与销售跟进",
+      "source": "backend/paas/crm",
+      "plugins": "plugins/crm",
+      "extension": "backend/extensions/custom-crm",
+      "port": 8311
+    },
+    {
+      "name": "cms",
+      "description": "内容、文章、栏目、站点、商城装修与直播内容",
+      "source": "backend/paas/cms",
+      "plugins": "plugins/cms",
+      "extension": "backend/extensions/custom-cms",
+      "port": 8217
+    },
+    {
+      "name": "erp",
+      "description": "企业采购、进销存、仓库作业与供应链计划",
+      "source": "backend/paas/erp",
+      "plugins": "plugins/erp",
+      "extension": "backend/extensions/custom-erp",
+      "port": 8090
+    },
+    {
+      "name": "finance",
+      "description": "财务账簿、凭证、应收应付、佣金、返利与财务结算",
+      "source": "backend/paas/finance",
+      "plugins": "plugins/finance",
+      "extension": "backend/extensions/custom-finance",
+      "port": 8282
+    },
+    {
+      "name": "geo",
+      "description": "生成式搜索优化、品牌监测、内容优化任务",
+      "source": "backend/paas/geo",
+      "plugins": "plugins/geo",
+      "extension": "backend/extensions/custom-geo",
+      "port": 8310
+    },
+    {
+      "name": "im",
+      "description": "会话、即时通信、客服与消息投递",
+      "source": "backend/paas/im",
+      "plugins": "plugins/im",
+      "extension": "backend/extensions/custom-im",
+      "port": 8215
+    },
+    {
+      "name": "logging",
+      "description": "操作日志、审计日志、日志查询与采集接入",
+      "source": "backend/paas/logging",
+      "plugins": "plugins/logging",
+      "extension": "backend/extensions/custom-logging",
+      "port": 8099
+    },
+    {
+      "name": "mes",
+      "description": "生产执行、工单、工序、现场采集和制造进度",
+      "source": "backend/paas/mes",
+      "plugins": "plugins/mes",
+      "extension": "backend/extensions/custom-mes",
+      "port": 8199
+    },
+    {
+      "name": "oa",
+      "description": "办公、人事、考勤、审批、内部合同与行政流程",
+      "source": "backend/paas/oa",
+      "plugins": "plugins/oa",
+      "extension": "backend/extensions/custom-oa",
+      "port": 8393
+    },
+    {
+      "name": "orderfood",
+      "description": "餐饮菜单、桌台、点餐与餐饮业务编排",
+      "source": "backend/paas/orderfood",
+      "plugins": "plugins/orderfood",
+      "extension": "backend/extensions/custom-orderfood",
+      "port": 8203
+    },
+    {
+      "name": "pm",
+      "description": "项目、任务、研发协作与交付管理",
+      "source": "backend/paas/pm",
+      "plugins": "plugins/pm",
+      "extension": "backend/extensions/custom-pm",
+      "port": 8304
+    },
+    {
+      "name": "rider",
+      "description": "骑手、运力、配送任务与配送履约",
+      "source": "backend/paas/rider",
+      "plugins": "plugins/rider",
+      "extension": "backend/extensions/custom-rider",
+      "port": 8205
+    },
+    {
+      "name": "supplier",
+      "description": "供应商、资质、供货商品与供货协同",
+      "source": "backend/paas/supplier",
+      "plugins": "plugins/supplier",
+      "extension": "backend/extensions/custom-supplier",
+      "port": 8212
+    },
+    {
+      "name": "webpos",
+      "description": "门店收银终端、班次、收银业务与设备接入",
+      "source": "backend/paas/webpos",
+      "plugins": "plugins/webpos",
+      "extension": "backend/extensions/custom-webpos",
+      "port": 8204
+    },
+    {
+      "name": "tool",
+      "description": "通用工具宿主服务：承载 OCR 等对外 AI/工具类嵌入式插件",
+      "source": "backend/paas/tool",
+      "plugins": "plugins/tool",
+      "extension": "backend/extensions/custom-tool",
+      "port": 8296
+    },
+    {
+      "name": "ai",
+      "description": "AI 智能体：模型池、提示词、会话、生成记录与统一用量；源码目录 backend/paas/aiagent",
+      "source": "backend/paas/aiagent",
+      "plugins": "plugins/aiagent",
+      "port": 8316
+    }
+  ],
+  "plugins": [
+    {
+      "code": "unipay",
+      "hostService": "payment",
+      "path": "plugins/payment/unipay",
+      "runtime": "embedded"
+    },
+    {
+      "code": "ums-corp-order",
+      "hostService": "payment",
+      "path": "plugins/payment/ums-corp-order",
+      "runtime": "embedded"
+    },
+    {
+      "code": "crm",
+      "hostService": "crm",
+      "path": "plugins/crm/crm",
+      "runtime": "standalone"
+    },
+    {
+      "code": "cms",
+      "hostService": "cms",
+      "path": "plugins/cms/cms",
+      "runtime": "standalone"
+    },
+    {
+      "code": "erp",
+      "hostService": "erp",
+      "path": "plugins/erp/erp",
+      "runtime": "standalone"
+    },
+    {
+      "code": "finance",
+      "hostService": "finance",
+      "path": "plugins/finance/finance",
+      "runtime": "standalone"
+    },
+    {
+      "code": "geo",
+      "hostService": "geo",
+      "path": "plugins/geo/geo",
+      "runtime": "standalone"
+    },
+    {
+      "code": "im",
+      "hostService": "im",
+      "path": "plugins/im/im",
+      "runtime": "standalone"
+    },
+    {
+      "code": "logging",
+      "hostService": "logging",
+      "path": "plugins/logging/logging",
+      "runtime": "standalone"
+    },
+    {
+      "code": "mes",
+      "hostService": "mes",
+      "path": "plugins/mes/mes",
+      "runtime": "standalone"
+    },
+    {
+      "code": "oa",
+      "hostService": "oa",
+      "path": "plugins/oa/oa",
+      "runtime": "standalone"
+    },
+    {
+      "code": "orderfood",
+      "hostService": "orderfood",
+      "path": "plugins/orderfood/orderfood",
+      "runtime": "standalone"
+    },
+    {
+      "code": "pm",
+      "hostService": "pm",
+      "path": "plugins/pm/pm",
+      "runtime": "standalone"
+    },
+    {
+      "code": "rider",
+      "hostService": "rider",
+      "path": "plugins/rider/rider",
+      "runtime": "standalone"
+    },
+    {
+      "code": "supplier",
+      "hostService": "supplier",
+      "path": "plugins/supplier/supplier",
+      "runtime": "standalone"
+    },
+    {
+      "code": "webpos",
+      "hostService": "webpos",
+      "path": "plugins/webpos/webpos",
+      "runtime": "standalone"
+    },
+    {
+      "code": "unilogin",
+      "hostService": "auth",
+      "path": "plugins/auth/unilogin",
+      "runtime": "embedded"
+    },
+    {
+      "code": "demo-coupon",
+      "hostService": "goods",
+      "path": "plugins/goods/demo-coupon",
+      "runtime": "embedded"
+    },
+    {
+      "code": "hello-world",
+      "hostService": "goods",
+      "path": "plugins/goods/hello-world",
+      "runtime": "embedded"
+    },
+    {
+      "code": "hello-world-standalone",
+      "hostService": "goods",
+      "path": "plugins/goods/hello-world-standalone",
+      "runtime": "standalone"
+    },
+    {
+      "code": "mall-distribution",
+      "hostService": "userms",
+      "path": "plugins/userms/mall-distribution",
+      "runtime": "embedded"
+    },
+    {
+      "code": "mall-rebate",
+      "hostService": "finance",
+      "path": "plugins/finance/mall-rebate",
+      "runtime": "embedded"
+    },
+    {
+      "code": "finance-invoice",
+      "hostService": "finance",
+      "path": "plugins/finance/finance-invoice",
+      "runtime": "embedded"
+    },
+    {
+      "code": "mall-points",
+      "hostService": "userms",
+      "path": "plugins/userms/mall-points",
+      "runtime": "embedded"
+    },
+    {
+      "code": "mall-live",
+      "hostService": "cms",
+      "path": "plugins/cms/mall-live",
+      "runtime": "embedded"
+    },
+    {
+      "code": "aigateway",
+      "hostService": "thirdparty",
+      "path": "plugins/aigateway",
+      "runtime": "standalone",
+      "sourceLayout": "external"
+    },
+    {
+      "code": "aicode",
+      "hostService": "pm",
+      "path": "plugins/pm/aicode",
+      "runtime": "embedded"
+    },
+    {
+      "code": "lowcode",
+      "hostService": "base",
+      "path": "plugins/base/lowcode",
+      "runtime": "embedded"
+    },
+    {
+      "code": "mall-advertising",
+      "hostService": "order",
+      "path": "plugins/order/mall-advertising",
+      "runtime": "embedded"
+    },
+    {
+      "code": "national-subsidy",
+      "hostService": "order",
+      "path": "plugins/order/national-subsidy",
+      "runtime": "embedded"
+    },
+    {
+      "code": "activity",
+      "hostService": "order",
+      "runtime": "embedded",
+      "comment": "🔴 本项不是插件，也不存在 activity 服务：它只是一条「遗留 URL 前缀 → 承载服务」的路由映射。承载方是 order 服务本身（BFF 侧 ActivityServiceFeign 即 name=order, path=/plugin/activity），order 就是 order。前端仍在按历史前缀请求：uniapp MALL_ACTIVITY=mallUrl+\"web/plugin/activity\"、admin /plugin/activity、pc/tcenter/cmsadmin 同前缀；BFF 的 PluginProxyController 用 /web/plugin/{code}/** 通配解出 code=activity 后转发到 order（2026-10-28 曾因缺少此项导致 resolver 报 404 Unknown plugin，C 端 22 个活动页接口全断）。🔴 删除本项会让这些历史前缀全部 404；🔴 也不要按字面去找 activity 服务、activity 插件或 plugins/order/activity 源码——它们都不存在。path 仅为满足 plugin-layout 布局校验的占位，不代表存在该插件目录。",
+      "path": "plugins/order/activity",
+      "routeOnly": true
+    },
+    {
+      "code": "order-seckill",
+      "hostService": "mall",
+      "path": "plugins/mall/order-seckill",
+      "runtime": "embedded"
+    },
+    {
+      "code": "order-voucher",
+      "hostService": "mall",
+      "path": "plugins/mall/order-voucher",
+      "runtime": "embedded"
+    },
+    {
+      "code": "order-reduction",
+      "hostService": "order",
+      "path": "plugins/order/order-reduction",
+      "runtime": "embedded"
+    },
+    {
+      "code": "order-pintuan",
+      "hostService": "mall",
+      "path": "plugins/mall/order-pintuan",
+      "runtime": "embedded"
+    },
+    {
+      "code": "order-combination",
+      "hostService": "order",
+      "path": "plugins/order/order-combination",
+      "runtime": "embedded"
+    },
+    {
+      "code": "order-activity-hub",
+      "hostService": "order",
+      "path": "plugins/order/order-activity-hub",
+      "runtime": "embedded"
+    },
+    {
+      "code": "order-marketing",
+      "hostService": "order",
+      "path": "plugins/order/order-marketing",
+      "runtime": "embedded"
+    },
+    {
+      "code": "order-gift",
+      "hostService": "mall",
+      "path": "plugins/mall/order-gift",
+      "runtime": "embedded"
+    },
+    {
+      "code": "order-bargain",
+      "hostService": "order",
+      "path": "plugins/order/order-bargain",
+      "runtime": "embedded"
+    },
+    {
+      "code": "goods-discount",
+      "hostService": "mall",
+      "path": "plugins/mall/goods-discount",
+      "runtime": "embedded"
+    },
+    {
+      "code": "goods-tierprice",
+      "hostService": "goods",
+      "path": "plugins/goods/goods-tierprice",
+      "runtime": "embedded"
+    },
+    {
+      "code": "goods-limit",
+      "hostService": "goods",
+      "path": "plugins/goods/goods-limit",
+      "runtime": "embedded"
+    },
+    {
+      "code": "goods-restock",
+      "hostService": "goods",
+      "path": "plugins/goods/goods-restock",
+      "runtime": "embedded"
+    },
+    {
+      "code": "goods-qa",
+      "hostService": "goods",
+      "path": "plugins/goods/goods-qa",
+      "runtime": "embedded"
+    },
+    {
+      "code": "userms-redpacket",
+      "hostService": "mall",
+      "path": "plugins/mall/userms-redpacket",
+      "runtime": "embedded"
+    },
+    {
+      "code": "userms-lucky-draw",
+      "hostService": "mall",
+      "path": "plugins/mall/userms-lucky-draw",
+      "runtime": "embedded"
+    },
+    {
+      "code": "userms-points-mall",
+      "hostService": "mall",
+      "path": "plugins/mall/userms-points-mall",
+      "runtime": "embedded"
+    },
+    {
+      "code": "userms-checkin",
+      "hostService": "userms",
+      "path": "plugins/userms/userms-checkin",
+      "runtime": "embedded"
+    },
+    {
+      "code": "userms-plus",
+      "hostService": "userms",
+      "path": "plugins/userms/userms-plus",
+      "runtime": "embedded"
+    },
+    {
+      "code": "ocr",
+      "hostService": "tool",
+      "path": "plugins/tool/ocr",
+      "runtime": "embedded"
+    },
+    {
+      "code": "cms-live",
+      "hostService": "cms",
+      "path": "plugins/cms/cms-live",
+      "runtime": "embedded"
+    },
+    {
+      "code": "cms-carousel",
+      "hostService": "cms",
+      "path": "plugins/cms/cms-carousel",
+      "runtime": "embedded"
+    }
+  ],
+  "libraries": [
+    {
+      "artifactId": "plugin-registry",
+      "source": "backend/paas/base/modules/plugin-registry",
+      "owner": "base"
+    },
+    {
+      "artifactId": "plugin-license",
+      "source": "backend/paas/base/modules/plugin-license",
+      "owner": "base"
+    },
+    {
+      "artifactId": "plugin-market",
+      "source": "backend/paas/base/modules/plugin-market",
+      "owner": "base"
+    },
+    {
+      "artifactId": "plugin-center",
+      "source": "backend/paas/base/modules/plugin-center",
+      "owner": "base"
+    },
+    {
+      "artifactId": "plugin-artifact",
+      "source": "backend/paas/base/modules/plugin-artifact",
+      "owner": "base"
+    },
+    {
+      "artifactId": "plugin-publish",
+      "source": "backend/paas/base/modules/plugin-publish",
+      "owner": "base"
+    },
+    {
+      "artifactId": "plugin-update",
+      "source": "backend/paas/base/modules/plugin-update",
+      "owner": "base"
+    },
+    {
+      "artifactId": "plugin-runtime",
+      "source": "plugin-platform/runtime/paas-support",
+      "owner": "platform"
+    },
+    {
+      "artifactId": "plugin-signature",
+      "source": "plugin-platform/release/signature",
+      "owner": "platform"
+    }
+  ]
+}

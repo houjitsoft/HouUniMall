@@ -1,0 +1,6 @@
+{
+  "orderNo": "注文番号",
+  "customer": "顧客",
+  "amount": "金額",
+  "status": "ステータス"
+}

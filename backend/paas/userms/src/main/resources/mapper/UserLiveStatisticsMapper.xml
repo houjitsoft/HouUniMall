@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserLiveStatisticsMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserLiveStatisticsEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="platForm" column="plat_form" jdbcType="INTEGER"/>
+            <result property="userMobile" column="user_mobile" jdbcType="VARCHAR"/>
+            <result property="loginTime" column="login_time" jdbcType="TIMESTAMP"/>
+            <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,plat_form,
+        user_mobile,login_time,ts
+    </sql>
+    <select id="queryUserNikkatsuDetailPort" resultType="com.houjiang.userms.vo.MemberMessageListVO">
+        SELECT
+        user_birth,
+        user_gender,
+        a.user_id,
+        a.login_time as userLastloginTime,
+        a.user_mobile,
+        b.user_reg_time,
+        user_truename
+        FROM
+        ${database.prefix.userms}hou_user_live_statistics a
+        LEFT JOIN ${database.prefix.userms}hou_user_info_detail b ON a.user_id = b.user_id
+        WHERE 1=1
+        <if test="null != param.startTime and !''.equals(param.startTime)">
+            and login_time >= #{param.startTime}
+        </if>
+        <if test="null != param.finishTime and !''.equals(param.finishTime)">
+            and login_time &lt;= #{param.finishTime}
+        </if>
+        <if test="null != param.platForm and !''.equals(param.platForm)">
+            and plat_form = #{param.platForm}
+        </if>
+        order by  a.login_time desc
+    </select>
+    <select id="queryUserNikkatsuPort" resultType="com.houjiang.userms.entity.UserLiveStatisticsEntity">
+        SELECT
+        a.plat_form,
+        count( * ) sum
+        FROM
+        (
+        SELECT
+        count( * ) sum,
+        plat_form
+        FROM
+        ${database.prefix.userms}hou_user_live_statistics
+        where 1=1
+        <if test="null != param.startTime and !''.equals(param.startTime)">
+            and login_time >= #{param.startTime}
+        </if>
+        <if test="null != param.finishTime and !''.equals(param.finishTime)">
+            and login_time &lt;= #{param.finishTime}
+        </if>
+        GROUP BY user_id) a GROUP BY a.plat_form
+    </select>
+    <select id="selectUserLiveStatisticsCount" resultType="java.lang.Integer">
+        select count(*) from ${database.prefix.userms}hou_user_live_statistics where user_id = #{param.userId} and DATE_FORMAT (login_time,'%Y-%m-%d') = #{todayTime}
+    </select>
+</mapper>

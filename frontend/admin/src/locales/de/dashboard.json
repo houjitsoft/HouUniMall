@@ -1,0 +1,225 @@
+{
+  "welcome": {
+    "title": "Willkommen bei UniMall Management System",
+    "description": "All-in-One Unternehmensmanagement-Plattform zur Unterstützung der digitalen Transformation"
+  },
+  "stats": {
+    "users": "Gesamtbenutzer",
+    "products": "Produktanzahl",
+    "orders": "Bestellanzahl",
+    "revenue": "Heutiger Umsatz"
+  },
+  "more": "Mehr",
+  "moreModules": "Weitere Module",
+  "modules": {
+    "oa": {
+      "title": "OA-Aufgaben",
+      "noTodos": "Keine Aufgaben",
+      "types": {
+        "approval": "Genehmigung",
+        "hr": "Personal",
+        "project": "Projekt",
+        "meeting": "Meeting",
+        "other": "Andere"
+      }
+    },
+    "erp": {
+      "title": "ERP-Versandlogistik",
+      "noShipments": "Keine Versandinformationen",
+      "trackingNumber": "Sendungsnummer",
+      "estimatedArrival": "Geschätzte Ankunft",
+      "statuses": {
+        "shipping": "Versand",
+        "shipped": "Versendet",
+        "pending": "Ausstehend",
+        "delivered": "Geliefert",
+        "exception": "Ausnahme"
+      }
+    },
+    "project": {
+      "title": "Projektmanagement",
+      "noProjects": "Keine Projektinformationen",
+      "statuses": {
+        "completed": "Abgeschlossen",
+        "pending": "Ausstehend",
+        "inProgress": "In Bearbeitung"
+      }
+    },
+    "auth": {
+      "title": "Authentifizierungsverwaltung",
+      "users": "Gesamtbenutzer",
+      "roles": "Rollenanzahl",
+      "permissions": "Berechtigungsanzahl",
+      "recentActions": "Letzte Aktionen",
+      "noActions": "Keine Aktionsaufzeichnungen"
+    },
+    "setting": {
+      "title": "Systemeinstellungen",
+      "noCategories": "Keine Einstellungskategorien",
+      "systemStatus": "Systemstatus",
+      "database": "Datenbankverbindung",
+      "cache": "Cache-Service",
+      "storage": "Dateispeicher",
+      "statuses": {
+        "normal": "Normal",
+        "warning": "Warnung"
+      },
+      "categories": {
+        "basic": {
+          "title": "Grundeinstellungen",
+          "description": "Systemgrundinformationen konfigurieren"
+        },
+        "user": {
+          "title": "Benutzerverwaltung",
+          "description": "Benutzerberechtigungen und Rolleneinstellungen"
+        },
+        "finance": {
+          "title": "Finanzeinstellungen",
+          "description": "Zahlungs- und finanzbezogene Konfiguration"
+        },
+        "notification": {
+          "title": "Benachrichtigungseinstellungen",
+          "description": "Nachrichten-Push und E-Mail-Konfiguration"
+        }
+      }
+    },
+    "goods": {
+      "title": "Produktverwaltung",
+      "total": "Gesamtprodukte",
+      "onSale": "Im Verkauf",
+      "outOfStock": "Nicht auf Lager",
+      "recentGoods": "Neueste Produkte",
+      "stock": "Lager",
+      "noGoods": "Keine Produktinformationen"
+    },
+    "order": {
+      "title": "Bestellverwaltung",
+      "today": "Heutige Bestellungen",
+      "pending": "Ausstehend",
+      "revenue": "Heutiger Umsatz",
+      "recentOrders": "Neueste Bestellungen",
+      "orderNumber": "Bestellnummer",
+      "noOrders": "Keine Bestellinformationen",
+      "statuses": {
+        "pending": "Ausstehend",
+        "shipped": "Versendet",
+        "completed": "Abgeschlossen",
+        "cancelled": "Storniert"
+      }
+    },
+    "activity": {
+      "title": "Aktivitätsverwaltung",
+      "active": "Aktive Aktivitäten",
+      "upcoming": "Bevorstehend",
+      "participants": "Teilnehmer",
+      "recentActivities": "Neueste Aktivitäten",
+      "noActivities": "Keine Aktivitätsinformationen",
+      "statuses": {
+        "active": "Aktiv",
+        "upcoming": "Bevorstehend",
+        "completed": "Abgeschlossen"
+      }
+    },
+    "ai": {
+      "title": "KI-Intelligenz",
+      "requests": "Heutige Anfragen",
+      "models": "Aktive Modelle",
+      "successRate": "Erfolgsrate",
+      "recentActions": "Letzte Aktionen",
+      "noActions": "Keine Aktionsaufzeichnungen"
+    },
+    "cms": {
+      "title": "Content-Management",
+      "articles": "Gesamtartikel",
+      "published": "Veröffentlicht",
+      "comments": "Ausstehende Kommentare",
+      "recentArticles": "Neueste Artikel",
+      "noArticles": "Keine Artikelinformationen",
+      "statuses": {
+        "published": "Veröffentlicht",
+        "draft": "Entwurf",
+        "pending": "Ausstehend"
+      }
+    },
+    "crm": {
+      "title": "Kundenbeziehung",
+      "customers": "Gesamtkunden",
+      "newCustomers": "Neu diesen Monat",
+      "revenue": "Monatlicher Umsatz",
+      "recentCustomers": "Neueste Kunden",
+      "noCustomers": "Keine Kundeninformationen"
+    },
+    "dcenter": {
+      "title": "Rechenzentrum",
+      "dataVolume": "Datenvolumen",
+      "reports": "Berichte",
+      "storage": "Speicher verwendet",
+      "recentReports": "Neueste Berichte",
+      "noReports": "Keine Berichtsinformationen"
+    },
+    "im": {
+      "title": "Sofortnachrichten",
+      "onlineUsers": "Online-Benutzer",
+      "messages": "Nachrichten",
+      "groups": "Gruppen",
+      "recentMessages": "Neueste Nachrichten",
+      "noMessages": "Keine Nachrichten"
+    },
+    "workflow": {
+      "title": "Workflow-Verwaltung",
+      "processes": "Prozesse",
+      "running": "Laufend",
+      "completed": "Heute abgeschlossen",
+      "recentWorkflows": "Neueste Workflows",
+      "noWorkflows": "Keine Workflows"
+    },
+    "payment": {
+      "title": "Zahlungsverwaltung",
+      "todayAmount": "Heutiger Betrag",
+      "transactions": "Transaktionen",
+      "successRate": "Erfolgsrate",
+      "recentTransactions": "Neueste Transaktionen",
+      "noTransactions": "Keine Transaktionen"
+    },
+    "lowcode": {
+      "title": "Low-Code-Plattform",
+      "applications": "Anwendungen",
+      "components": "Komponenten",
+      "templates": "Vorlagen",
+      "recentProjects": "Neueste Projekte",
+      "noProjects": "Keine Projekte"
+    },
+    "mes": {
+      "title": "Fertigungsausführungssystem",
+      "productionLines": "Produktionslinien",
+      "equipment": "Ausrüstung",
+      "oee": "OEE",
+      "productionStatus": "Produktionsstatus",
+      "noProduction": "Keine Produktionsdaten"
+    },
+    "orderfood": {
+      "title": "Essensbestellsystem",
+      "todayOrders": "Heutige Bestellungen",
+      "revenue": "Heutiger Umsatz",
+      "venues": "Aktive Lokale",
+      "recentOrders": "Neueste Bestellungen",
+      "noOrders": "Keine Bestellungen"
+    },
+    "rider": {
+      "title": "Fahrer-Management",
+      "activeRiders": "Aktive Fahrer",
+      "todayOrders": "Heutige Bestellungen",
+      "avgDeliveryTime": "Durchschn. Lieferzeit",
+      "riderStatus": "Fahrer-Status",
+      "noRiders": "Keine Fahrer"
+    },
+    "supplier": {
+      "title": "Lieferanten-Management",
+      "suppliers": "Lieferanten",
+      "cooperations": "Kooperationen",
+      "qualityScore": "Qualitätsbewertung",
+      "recentSuppliers": "Neueste Lieferanten",
+      "noSuppliers": "Keine Lieferanten"
+    }
+  }
+}

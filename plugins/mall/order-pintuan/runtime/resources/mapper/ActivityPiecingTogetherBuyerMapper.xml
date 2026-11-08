@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivityPiecingTogetherBuyerMapper">
+
+    <resultMap type="com.houjiang.activity.entity.ActivityPiecingTogetherBuyerEntity" id="ActivityPiecingTogetherBuyerMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="detailId" column="detail_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="markId" column="mark_id" jdbcType="VARCHAR"/>
+        <result property="ranking" column="ranking" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="userAvatar" column="user_avatar" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="insertPintuanBuyer">
+        insert into ${database.prefix.activity}hou_addon_activity_piecing_together_buyer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.detailId != null">
+                detail_id,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.createdTime != null">
+                created_time,
+            </if>
+            <if test="param.markId != null">
+                mark_id,
+            </if>
+            <if test="param.ranking != null">
+                ranking,
+            </if>
+            <if test="param.userName != null">
+                user_name,
+            </if>
+            <if test="param.userAvatar != null">
+                user_avatar,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.detailId != null">
+                #{param.detailId,jdbcType=INTEGER},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.createdTime != null">
+                #{param.createdTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.markId != null">
+                #{param.markId,jdbcType=VARCHAR},
+            </if>
+            <if test="param.ranking != null">
+                #{param.ranking,jdbcType=INTEGER},
+            </if>
+            <if test="param.userName != null">
+                #{param.userName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.userAvatar != null">
+                #{param.userAvatar,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+
+</mapper>

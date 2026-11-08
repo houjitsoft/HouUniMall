@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsAttributeValueMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsAttributeValueEntity" id="MerchantGoodsAttributeValueMap">
+        <result property="attributeValueId" column="attribute_value_id" jdbcType="INTEGER"/>
+        <result property="attributeValueName" column="attribute_value_name" jdbcType="VARCHAR"/>
+        <result property="attributeId" column="attribute_id" jdbcType="INTEGER"/>
+        <result property="displayOrder" column="display_order" jdbcType="INTEGER"/>
+    </resultMap>
+
+</mapper>

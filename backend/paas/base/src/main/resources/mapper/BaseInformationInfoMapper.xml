@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseInformationInfoMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseInformationInfoEntity" id="BaseInformationInfoMap">
+        <result property="informationId" column="information_id" jdbcType="INTEGER"/>
+        <result property="classifyId" column="classify_id" jdbcType="INTEGER"/>
+        <result property="informationTitle" column="information_title" jdbcType="VARCHAR"/>
+        <result property="informationCover" column="information_cover" jdbcType="VARCHAR"/>
+        <result property="informationDesc" column="information_desc" jdbcType="VARCHAR"/>
+        <result property="informationStatus" column="information_status" jdbcType="INTEGER"/>
+        <result property="pageView" column="page_view" jdbcType="INTEGER"/>
+        <result property="pageViewSet" column="page_view_set" jdbcType="INTEGER"/>
+        <result property="pageViewNatural" column="page_view_natural" jdbcType="INTEGER"/>
+        <result property="isRecommend" column="is_recommend" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="releaseSource" column="release_source" jdbcType="VARCHAR"/>
+        <result property="releaseTime" column="release_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <update id="updateInformationPageViewById">
+        UPDATE ${database.prefix.userms}hou_base_information_info set page_view = page_view +1,page_view_natural = page_view_natural + 1 where information_id = #{param.informationId}
+    </update>
+    <delete id="deleteInformationInfoById">
+        delete from ${database.prefix.userms}hou_base_information_info where information_id = #{informationId}
+    </delete>
+    <select id="queryByPlatform" resultType="com.houjiang.base.entity.BaseInformationInfoEntity">
+        SELECT
+        bii.information_id,
+        bii.classify_id,
+        bii.information_title,
+        bii.information_cover,
+        bii.information_desc,
+        bii.information_status,
+        bii.page_view_set,
+        bii.page_view_natural,
+        bii.page_view,
+        bii.is_recommend,
+        bii.create_time,
+        bii.release_source,
+        bii.release_time,
+        bii.update_time,
+        bic.classify_name,
+        bic.classify_parent_id
+        from ${database.prefix.userms}hou_base_information_info AS bii
+        LEFT JOIN ${database.prefix.userms}hou_base_information_classify AS bic ON bii.classify_id = bic.classify_id
+        <where>
+            <if test="param.classifyIdList != null">
+                and bii.classify_id in
+                <foreach collection="param.classifyIdList" item="classifyId" separator="," open="(" close=")">
+                    #{classifyId}
+                </foreach>
+            </if>
+            <if test="param.informationStatus != null">
+                and bii.information_status = #{param.informationStatus}
+            </if>
+            <if test="param.informationTitle != null and param.informationTitle != ''">
+                and bii.information_title = #{param.informationTitle}
+            </if>
+            <if test="param.isRecommend != null">
+                and bii.is_recommend = #{param.isRecommend}
+            </if>
+            <if test="param.startTime != null and param.startTime != ''">
+                and bii.release_time >= #{param.startTime}
+            </if>
+            <if test="param.endTime != null and param.endTime != ''">
+                and #{param.endTime} >= bii.release_time
+            </if>
+        </where>
+        order by bii.update_time desc
+    </select>
+    <select id="selectInformationCountByClassifyIds" resultType="java.lang.Integer">
+        SELECT count(1) from ${database.prefix.userms}hou_base_information_info
+        WHERE 1 = 1 and classify_id in
+        <foreach collection="param" close=")" open="(" separator="," item="classifyId">
+            #{classifyId}
+        </foreach>
+    </select>
+    <select id="userQueryInformationInfo" resultType="com.houjiang.base.entity.BaseInformationInfoEntity">
+        select information_id,information_title,classify_id,information_cover,information_desc,information_status,page_view,is_recommend,release_time from ${database.prefix.userms}hou_base_information_info
+        where information_status = 1 order by is_recommend  desc,page_view  desc limit 20
+    </select>
+    <select id="userQueryInformationInfoById" resultType="com.houjiang.base.entity.BaseInformationInfoEntity">
+        select information_id,information_title,classify_id,information_cover,information_desc,information_status,page_view,is_recommend,release_time from ${database.prefix.userms}hou_base_information_info
+        where information_status = 1
+        <if test="param.classifyIdList  != null and param.isAll == 2">
+            and classify_id in
+            <foreach collection="param.classifyIdList" close=")" open="(" separator="," item="classifyId">
+                #{classifyId}
+            </foreach>
+        </if>
+        order by release_time  desc
+    </select>
+    <select id="queryInformationInfoBottom" resultType="com.houjiang.base.entity.BaseInformationInfoEntity">
+        select information_id,information_title,classify_id,information_cover,information_desc,information_status,page_view,is_recommend,release_time from ${database.prefix.userms}hou_base_information_info
+        where information_status = 1 and classify_id in
+        <foreach collection="param.classifyIdList" close=")" open="(" separator="," item="classifyId">
+            #{classifyId}
+        </foreach>
+        order by release_time  desc
+    </select>
+
+
+</mapper>

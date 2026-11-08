@@ -1,0 +1,76 @@
+code: userms-lucky-draw
+name: 抽奖转盘
+version: 1.0.0
+author: UniMall
+description: 抽奖转盘（activity 拆分，归属 userms 宿主）
+category: 营销 / 运营
+owner: official
+runtime: embedded
+hostService: mall
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - userms-lucky-draw:root
+  - userms-lucky-draw:activity
+  - userms-lucky-draw:config
+  - userms-lucky-draw:prize
+  - userms-lucky-draw:gift
+  - userms-lucky-draw:record
+  - userms-lucky-draw:participant
+menus:
+  - type: M
+    name: 抽奖转盘
+    icon: Trophy
+    sort: 3290
+    perms: userms-lucky-draw:root
+    path: /plugin/userms-lucky-draw
+    group: growth
+    groupSort: 100
+  # 二级菜单：与前端 index.js sections 一一对应（sort 大的在前）
+  - type: C
+    name: 抽奖活动
+    icon: Trophy
+    sort: 600
+    perms: userms-lucky-draw:activity
+    path: /plugin/userms-lucky-draw/index
+    parentPerms: userms-lucky-draw:root
+  - type: C
+    name: 活动配置
+    icon: Setting
+    sort: 500
+    perms: userms-lucky-draw:config
+    path: /plugin/userms-lucky-draw/config
+    parentPerms: userms-lucky-draw:root
+  - type: C
+    name: 奖项设置
+    icon: Medal
+    sort: 400
+    perms: userms-lucky-draw:prize
+    path: /plugin/userms-lucky-draw/prizes
+    parentPerms: userms-lucky-draw:root
+  - type: C
+    name: 礼品库
+    icon: Present
+    sort: 300
+    perms: userms-lucky-draw:gift
+    path: /plugin/userms-lucky-draw/gifts
+    parentPerms: userms-lucky-draw:root
+  - type: C
+    name: 抽奖记录
+    icon: Tickets
+    sort: 200
+    perms: userms-lucky-draw:record
+    path: /plugin/userms-lucky-draw/records
+    parentPerms: userms-lucky-draw:root
+  - type: C
+    name: 参与用户
+    icon: User
+    sort: 100
+    perms: userms-lucky-draw:participant
+    path: /plugin/userms-lucky-draw/participants
+    parentPerms: userms-lucky-draw:root
+frontend:
+  entry: /plugin-assets/userms-lucky-draw/1.0.0/index.mjs

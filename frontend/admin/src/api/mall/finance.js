@@ -1,0 +1,27 @@
+import request from '@/utils/request'
+
+const mallPost = (path, data = {}) => request.post(`/web/mall/finance/${path}`, data)
+
+export const getFinanceOverview = () => mallPost('overview')
+export const getIncomeList = (data) => mallPost('income/list', data)
+export const createIncome = (data) => mallPost('income/create', data)
+export const confirmIncome = (id) => mallPost('income/confirm', { id })
+export const getExpenseList = (data) => mallPost('expense/list', data)
+export const createExpense = (data) => mallPost('expense/create', data)
+export const confirmExpense = (id) => mallPost('expense/confirm', { id })
+export const getSettlementList = (data) => mallPost('settlement/list', data)
+export const settleSettlement = (id) => mallPost('settlement/settle', { id })
+export const getWithdrawList = (data) => mallPost('withdraw/list', data)
+export const getWithdrawStats = (data) => mallPost('withdraw/stats', data)
+export const auditWithdraw = (data) => mallPost('withdraw/audit', data)
+
+export const getMerchantFinanceCenter = () => mallPost('center')
+export const getRefundStats = (data) => mallPost('refund/stats', data)
+export const getRefundList = (data) => mallPost('refund/list', data)
+export const retryRefund = (data) => mallPost('refund/retry', data)
+export const getShopBalanceList = (data) => mallPost('shop/balance/list', data)
+export const getShopSettlementRecords = (data) => mallPost('settlement/list', data)
+export const getUserBalanceList = (data) => mallPost('user/wallet/list', data)
+export const getUserDepositList = (data) => mallPost('user/recharge/list', data)
+export const getFinanceSetting = () => request.get('/web/mall/setting/order/settlement')
+export const saveFinanceSetting = (data) => request.post('/web/mall/setting/order/settlement/save', data)

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserFavoritesGoodsMapper">
+
+    <resultMap type="com.houjiang.userms.entity.UserFavoritesGoodsEntity" id="UserFavoritesGoodsMap">
+        <result property="favoritesGoodsId" column="favorites_goods_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="favoritesGoodsTime" column="favorites_goods_time" jdbcType="TIMESTAMP"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="addFavoriteGoods">
+        insert into ${database.prefix.userms}hou_user_favorites_goods (user_id,goods_id,common_id,favorites_goods_time)
+        values(#{userId},#{goodsId},#{commonId},now())
+    </insert>
+    <select id="checkGoodsFavoriteOrNot" resultType="java.lang.String">
+        select uuufg.favorites_goods_id from ${database.prefix.userms}hou_user_favorites_goods uuufg where user_id = #{userId} and common_id = #{commonId}
+    </select>
+    <select id="getFavoriteGoods2" resultType="com.houjiang.userms.dto.UserFavoriteGoodsDTO">
+        SELECT
+        uuufg.favorites_goods_id,
+        uuufg.user_id,
+        uuufg.goods_id,
+        uuufg.common_id,
+        uuufg.favorites_goods_time,
+        gb.goods_is_shelves,
+        gs.goods_stock
+        FROM
+        ${database.prefix.goods}hou_user_favorites_goods uuufg
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON uuufg.common_id = gc.common_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_base gb ON uuufg.goods_id = gb.goods_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        <where>
+            user_id = #{paraMap.userId}
+            AND gc.shop_status = 3
+            GROUP BY
+            uuufg.goods_id
+        </where>
+        ORDER BY
+        favorites_goods_time DESC
+    </select>
+    <select id="getFavoriteGoods" resultType="com.houjiang.userms.dto.UserFavoriteGoodsDTO">
+        select uuufg.favorites_goods_id,uuufg.user_id,uuufg.goods_id,uuufg.common_id,uuufg.favorites_goods_time
+        from ${database.prefix.userms}hou_user_favorites_goods uuufg left join ${database.prefix.goods}hou_goods_common gc on uuufg.common_id = gc.common_id
+        where user_id = #{userId} and gc.shop_status=3
+        GROUP BY uuufg.goods_id ORDER BY favorites_goods_time DESC
+    </select>
+    <select id="getFavoriteShops" resultType="java.util.Map">
+        select uuufs.favorites_shop_id,uuufs.user_id,uuufs.shop_id,uuufs.shop_name,
+        uuufs.shop_logo,uuufs.favorites_shop_time from
+        ${database.prefix.userms}hou_user_favorites_shop uuufs
+        where user_id = #{userId}
+        GROUP BY shop_id ORDER BY favorites_shop_time DESC
+    </select>
+    <select id="selectUserFootCount" resultType="java.lang.Integer">
+        select
+        count(distinct a.common_id)
+        from ${database.prefix.goods}hou_goods_user_footprint a
+        left join ${database.prefix.goods}hou_goods_common gc
+        on a.common_id =gc.common_id
+        where gc.shop_status=3
+        <if test="param.userId != null">
+            and user_id = #{param.userId,jdbcType=INTEGER}
+        </if>
+        <if test="param.footprintDate != null and param.footprintDate != ''">
+            and footprint_date =
+            #{param.footprintDate,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+
+</mapper>

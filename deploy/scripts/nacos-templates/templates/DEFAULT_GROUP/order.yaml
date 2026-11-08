@@ -1,0 +1,21 @@
+server:
+  port: 8209
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${ORDER_DATASOURCE_PASSWORD} # 数据库密码
+  main:
+    allow-bean-definition-overriding: true
+# 项目部署域名
+domainName: https://meoc.xinji365.cn/
+fontUrlPath: /home/wwwroot/fontPath
+
+# activity 等内嵌扩展归属 order；运行制品由安装/发布流程落入专属目录。
+houcloud:
+  plugin:
+    host-service: order
+    boot-enabled: true
+    plugins-dir: /app/plugins

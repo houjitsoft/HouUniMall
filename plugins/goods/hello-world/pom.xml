@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.houjiang</groupId>
+        <artifactId>houjiang</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../../backend/paas/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>hello-world</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>UniMall Example Plugin - hello-world</name>
+    <description>Hello World：插件入口、扩展点与接口</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+    </properties>
+
+    <!-- 插件只依赖 SDK 与扩展点契约；二者由宿主以 provided 提供，不打进插件包，避免类冲突 -->
+    <dependencies>
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>plugin-sdk</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.houjiang</groupId>
+            <artifactId>plugin-api</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.pf4j</groupId>
+            <artifactId>pf4j</artifactId>
+            <version>3.12.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- plugin.yaml 在模块根，需显式打进 jar 根目录 -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>plugin.yaml</include>
+                </includes>
+            </resource>
+        </resources>
+        <finalName>hello-world-1.0.0</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <!-- PF4J 插件身份与入口 -->
+                        <manifestEntries>
+                            <Plugin-Id>hello-world</Plugin-Id>
+                            <Plugin-Class>com.houjiang.plugin.hello.HelloPlugin</Plugin-Class>
+                            <Plugin-Version>1.0.0</Plugin-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

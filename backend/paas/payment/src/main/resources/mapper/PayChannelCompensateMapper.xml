@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayChannelCompensateMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayChannelCompensateEntity">
+        <id column="id" property="id"/>
+        <result column="task_no" property="taskNo"/>
+        <result column="biz_no" property="bizNo"/>
+        <result column="biz_type" property="bizType"/>
+        <result column="channel_code" property="channelCode"/>
+        <result column="query_count" property="queryCount"/>
+        <result column="max_query" property="maxQuery"/>
+        <result column="next_execute_time" property="nextExecuteTime"/>
+        <result column="last_query_time" property="lastQueryTime"/>
+        <result column="last_result" property="lastResult"/>
+        <result column="task_status" property="taskStatus"/>
+        <result column="final_status" property="finalStatus"/>
+        <result column="error_msg" property="errorMsg"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+</mapper>

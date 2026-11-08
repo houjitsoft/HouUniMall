@@ -1,0 +1,14 @@
+{
+  "title": "Verificar código",
+  "sentTo": "Código de verificación enviado a {phone}",
+  "codePlaceholder": "Introduce el código de 6 dígitos",
+  "backToEdit": "Volver a editar",
+  "notReceived": "¿No recibiste el código? Comprueba que el teléfono sea correcto",
+  "resend": "Reenviar",
+  "codeRequired": "Introduce el código de 6 dígitos",
+  "verifySuccess": "Código verificado",
+  "verifyFailed": "Error de verificación",
+  "resendSuccess": "Código de verificación reenviado",
+  "resendFailed": "No se pudo enviar el código",
+  "resendCountdown": "Reenviar en {countdown}s"
+}

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserPlatformMessageMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserPlatformMessageEntity">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="messageContent" column="message_content" jdbcType="VARCHAR"/>
+            <result property="isReader" column="is_reader" jdbcType="INTEGER"/>
+            <result property="creater" column="creater" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updater" column="updater" jdbcType="VARCHAR"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="messageTitle" column="message_title" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,message_content,
+        is_reader,creater,create_time,
+        updater,update_time,message_title
+    </sql>
+    <insert id="insertmessage">
+        insert into ${database.prefix.userms}hou_user_platform_message
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="param.id != null" >
+                id,
+            </if>
+            <if test="param.userId != null" >
+                user_id,
+            </if>
+            <if test="param.messageTitle != null" >
+                message_title,
+            </if>
+            <if test="param.messageContent != null" >
+                message_content,
+            </if>
+            <if test="param.isReader != null" >
+                is_reader,
+            </if>
+            <if test="param.creater != null" >
+                creater,
+            </if>
+            <if test="param.createTime != null" >
+                create_time,
+            </if>
+            <if test="param.updater != null" >
+                updater,
+            </if>
+            <if test="param.updateTime != null" >
+                update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="param.id != null" >
+                #{param.id,jdbcType=BIGINT},
+            </if>
+            <if test="param.userId != null" >
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.messageTitle != null" >
+                #{param.messageTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="param.messageContent != null" >
+                #{param.messageContent,jdbcType=VARCHAR},
+            </if>
+            <if test="param.isReader != null" >
+                #{param.isReader,jdbcType=INTEGER},
+            </if>
+            <if test="param.creater != null" >
+                #{param.creater,jdbcType=VARCHAR},
+            </if>
+            <if test="param.createTime != null" >
+                #{param.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.updater != null" >
+                #{param.updater,jdbcType=VARCHAR},
+            </if>
+            <if test="param.updateTime != null" >
+                #{param.updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertSelective">
+        <selectKey keyColumn="id" keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            select last_insert_id()
+        </selectKey>
+        insert into ${database.prefix.userms}hou_user_platform_message
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="messageTitle != null" >
+                message_title,
+            </if>
+            <if test="messageContent != null" >
+                message_content,
+            </if>
+            <if test="isReader != null" >
+                is_reader,
+            </if>
+            <if test="creater != null" >
+                creater,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="updater != null" >
+                updater,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="messageTitle != null" >
+                #{messageTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="messageContent != null" >
+                #{messageContent,jdbcType=VARCHAR},
+            </if>
+            <if test="isReader != null" >
+                #{isReader,jdbcType=INTEGER},
+            </if>
+            <if test="creater != null" >
+                #{creater,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updater != null" >
+                #{updater,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+</mapper>

@@ -1,0 +1,11 @@
+{
+  "admin": "管理者",
+  "profile": "プロフィール",
+  "settings": "設定",
+  "logout": "ログアウト",
+  "name": "名前",
+  "email": "メール",
+  "status": "ステータス",
+  "active": "アクティブ",
+  "inactive": "非アクティブ"
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterSearchWordMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterSearchWordEntity">
+            <id property="searchId" column="search_id" jdbcType="INTEGER"/>
+            <result property="searchKeyword" column="search_keyword" jdbcType="VARCHAR"/>
+            <result property="searchCharIndex" column="search_char_index" jdbcType="VARCHAR"/>
+            <result property="searchNums" column="search_nums" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        search_id,search_keyword,search_char_index,
+        search_nums
+    </sql>
+    <select id="getDecenterSearchWordVOList" resultType="com.houjiang.job.vo.DcenterSearchWordVO">
+        select
+            search_id,
+            search_keyword,
+            search_char_index,
+            search_nums
+        from ${database.prefix.base}hou_base_search_word limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

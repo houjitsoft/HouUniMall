@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.UpdateActivityStatusMapper">
+
+
+    <update id="updatePromotionGoods">
+        UPDATE ${database.prefix.goods}hou_goods_common a, ${database.prefix.activity}hou_addon_activity_discount_goods b
+        SET a.common_is_xian = 0
+        WHERE a.common_id = b.common_id
+        AND NOW()
+        > b.goods_end_time
+        AND b.discount_goods_state = 1
+        AND a.common_is_xian = 3
+    </update>
+    <update id="updatePromotionDiscountBase">
+        UPDATE ${database.prefix.activity}hou_addon_activity_discount_base
+        SET discount_state = 2
+        WHERE NOW() > discount_end_time
+        AND discount_state = 1
+    </update>
+    <update id="updatePromotionDiscountGoods">
+        UPDATE ${database.prefix.activity}hou_addon_activity_discount_goods
+        SET discount_goods_state = 2
+        WHERE NOW() > goods_end_time
+        AND discount_goods_state = 1
+    </update>
+    <update id="updatePromotionDiscountBase2">
+        UPDATE ${database.prefix.activity}hou_addon_activity_discount_base
+        SET discount_state = 4
+        WHERE
+        discount_state = 0
+        AND NOW() BETWEEN pre_start_time
+        AND discount_start_time
+    </update>
+    <update id="updatePromotionDiscountGoods2">
+        UPDATE ${database.prefix.activity}hou_addon_activity_discount_goods
+        SET discount_goods_state = 4
+        WHERE discount_goods_state = 0
+        AND NOW() BETWEEN pre_start_time
+        AND goods_start_time
+    </update>
+    <update id="updatePromotionDiscountBase3">
+        UPDATE ${database.prefix.activity}hou_addon_activity_discount_base
+        SET discount_state = 1
+        WHERE discount_state IN (0, 4)
+        AND NOW() BETWEEN discount_start_time
+        AND discount_end_time
+    </update>
+    <update id="updatePromotionDiscountGoods3">
+        UPDATE ${database.prefix.activity}hou_addon_activity_discount_goods
+        SET discount_goods_state = 1
+        WHERE discount_goods_state IN (0, 4)
+        AND NOW() BETWEEN goods_start_time
+        AND goods_end_time
+    </update>
+    <update id="updateMarkStatus">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_mark
+        <set>
+            <if test="param.status != null">
+                status = #{param.status,jdbcType=BIT},
+            </if>
+        </set>
+        where mark_id in (
+        <foreach collection="param.expireMarkIdList" separator=","
+                 item="markId">
+            #{markId}
+        </foreach>
+        )
+    </update>
+    <update id="updatePintuanMarkStatus">
+        UPDATE ${database.prefix.activity}hou_addon_activity_piecing_together_mark
+        SET STATUS = 2
+        WHERE STATUS = 0
+        AND detail_id IN (
+        SELECT pd.detail_id
+        FROM ${database.prefix.activity}hou_addon_activity_piecing_together pp
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_piecing_together_detail pd ON pd.pintuan_id = pp.pintuan_id
+        WHERE NOW() > pp.end_time
+        AND pp.STATUS = 1)
+    </update>
+    <update id="updatePintuanGoods">
+        UPDATE ${database.prefix.goods}hou_goods_common a, ${database.prefix.activity}hou_addon_activity_piecing_together b
+        SET a.common_is_xian = 0
+        WHERE
+        a.common_id = b.common_id
+        AND NOW()
+        > b.end_time
+        AND b.STATUS = 1
+        AND a.common_is_xian = 4
+    </update>
+    <update id="updatePintuanStatus">
+        UPDATE
+        ${database.prefix.activity}hou_addon_activity_piecing_together
+        SET status= 0
+        WHERE NOW() > end_time
+        AND status = 1
+    </update>
+    <update id="updateManjianzengzheGoods">
+        UPDATE ${database.prefix.goods}hou_goods_common a,
+        ${database.prefix.activity}hou_addon_activity_reduction_policy_base b,
+        ${database.prefix.activity}hou_addon_activity_reduction_policy_goods c
+        SET a.common_is_xian = 0
+        WHERE
+        b.promotion_id = c.promotion_id
+        AND a.common_id = c.common_id
+        AND NOW()
+        > b.end_time
+        AND b.promotion_status = 1
+        AND a.common_is_xian = 5
+    </update>
+    <update id="updateManjianzengzheStatus">
+        UPDATE ${database.prefix.activity}hou_addon_activity_reduction_policy_base
+        SET promotion_status= 0
+        WHERE NOW() > end_time
+        AND promotion_status = 1
+    </update>
+    <update id="updateSkillGoodsStatus">
+        UPDATE ${database.prefix.goods}hou_goods_common a,${database.prefix.activity}hou_addon_activity_seckill_goods b
+        SET a.common_is_xian = 0
+        WHERE
+        a.common_id = b.common_id
+        AND NOW() > b.goods_end_time
+        AND b.seckill_goods_state = 1
+        AND a.common_is_xian = 2
+    </update>
+    <update id="updateSkillGoods">
+        UPDATE ${database.prefix.activity}hou_addon_activity_seckill_goods
+        SET seckill_goods_state = 2
+        WHERE
+        NOW() > goods_end_time
+        AND seckill_goods_state = 1
+    </update>
+    <update id="updateGoodsStatus">
+        UPDATE ${database.prefix.activity}hou_addon_activity_seckill_base
+        SET seckill_state = 2
+        WHERE
+        NOW() > seckill_end_time
+        AND seckill_state = 1
+    </update>
+    <update id="updateSkillGoods2">
+        UPDATE ${database.prefix.activity}hou_addon_activity_seckill_goods
+        SET seckill_goods_state = 1
+        WHERE
+        NOW() >= goods_start_time
+        AND seckill_goods_state = 0
+    </update>
+    <update id="updateSkillGoodsStatus2">
+        UPDATE ${database.prefix.goods}hou_goods_common a,
+        ${database.prefix.activity}hou_addon_activity_seckill_goods b
+        SET a.common_is_xian = 2
+        WHERE
+        a.common_id = b.common_id
+        AND NOW() >= b.goods_start_time
+        AND b.seckill_goods_state = 0
+        AND a.common_is_xian = 0
+    </update>
+    <update id="updateGoodsStatus2">
+        UPDATE ${database.prefix.activity}hou_addon_activity_seckill_base
+        SET seckill_state = 1
+        WHERE
+        NOW() >= seckill_start_time
+        AND seckill_state = 0
+    </update>
+    <update id="updatePintuanStatus2">
+        UPDATE ${database.prefix.activity}hou_addon_activity_piecing_together SET status= 1 WHERE NOW() > start_time AND status= 2
+    </update>
+    <update id="updateManjianzengzheStatus2">
+        UPDATE ${database.prefix.activity}hou_addon_activity_reduction_policy_base
+        SET promotion_status = 1
+        WHERE
+        NOW() >= start_time
+        AND promotion_status = 3
+    </update>
+    <update id="updatCommonIsXian">
+        update ${database.prefix.goods}hou_goods_common set common_is_xian = #{commonIsXian} where common_id = #{commonId}
+    </update>
+    <update id="updatePinTuanConfig">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_config
+        set config_data = #{configData}
+        where id = #{id}
+    </update>
+    <delete id="deletePinTuanConfig">
+        delete from ${database.prefix.activity}hou_addon_activity_piecing_together_config where id = #{id} and config_type != 1
+    </delete>
+    <select id="selectExpireMark" resultType="java.lang.String">
+        SELECT pm.mark_id
+        FROM ${database.prefix.activity}hou_addon_activity_piecing_together_mark pm
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_piecing_together_detail pd ON pd.detail_id = pm.detail_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_piecing_together pp ON pp.pintuan_id = pd.pintuan_id
+        WHERE (
+        pm.`status` = 0
+        AND NOW() > DATE_ADD(
+        pm.created_time,
+        INTERVAL pp.start_hour HOUR
+        )
+        )
+        OR (
+        pm.`status` = 0
+        AND NOW() > pp.end_time
+        )
+    </select>
+    <select id="selectByMarkId" resultType="java.lang.String">
+        select
+        order_id
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        where
+        <if test="expireMarkIdList != null and expireMarkIdList.size()>0">
+            mark_id in (
+            <foreach collection="expireMarkIdList" separator="," item="markId">
+                #{markId}
+            </foreach>
+            )
+        </if>
+    </select>
+    <update id="markTempRefunded">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_temp
+        set pay_start = 2
+        where pay_start = 1
+        and order_id in (
+        <foreach collection="orderIdList" separator="," item="orderId">
+            #{orderId}
+        </foreach>
+        )
+    </update>
+    <select id="slectDetailId" resultType="java.lang.Integer">
+        SELECT
+        count(pd.detail_id)
+        FROM
+        ${database.prefix.activity}hou_addon_activity_piecing_together pp
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_piecing_together_detail pd ON pd.pintuan_id = pp.pintuan_id
+        WHERE
+        NOW() > pp.end_time
+        AND pp. STATUS = 1
+    </select>
+    <select id="queryCommonIdBySeckillStockZero" resultType="com.houjiang.job.dto.ActivityNoneRecSlideDTO">
+        select common_id as commonId,sum(seckill_num) as seckillNum
+        from ${database.prefix.activity}hou_addon_activity_seckill_goods
+        where seckill_goods_state = 1
+        group by common_id,shop_id,seckill_id
+    </select>
+    <select id="selectCommonIsXian" resultType="java.lang.Integer">
+        select common_is_xian
+        from ${database.prefix.goods}hou_goods_common
+        where common_id = #{commonId}
+    </select>
+    <select id="selectPinTuanConfig" resultType="java.util.Map">
+        select id,config_data as configData
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_config
+    </select>
+
+</mapper>

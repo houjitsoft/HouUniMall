@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsCommonDetailMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsCommonDetailEntity" id="GoodsCommonDetailMap">
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="commonBody" column="common_body" jdbcType="VARCHAR"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List" >
+    common_id,common_body
+    </sql>
+    <select id="selectByPrimaryKey" resultType="com.houjiang.commons.vo.goods.GdbMerchantGoodsCommonDetailVO">
+        select
+        <include refid="Base_Column_List" />
+        from ${database.prefix.goods}hou_goods_common_detail
+        where common_id = #{commonId,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+        delete from ${database.prefix.goods}hou_goods_common_detail
+        where common_id in (
+        <foreach collection="commonIds" separator="," item="commonId">
+            #{commonId}
+        </foreach>
+        )
+    </delete>
+    <insert id="insertSelective" parameterType="com.houjiang.commons.dto.goods.GdbMerchantGoodsCommonDetailDTO" >
+        insert into ${database.prefix.goods}hou_goods_common_detail
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="commonId != null" >
+                common_id,
+            </if>
+            <if test="commonBody != null" >
+                common_body,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="commonId != null" >
+                #{commonId,jdbcType=INTEGER},
+            </if>
+            <if test="commonBody != null" >
+                #{commonBody,jdbcType=LONGVARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertSelective2">
+        insert into ${database.prefix.goods}hou_goods_common_detail
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="commonId != null" >
+                common_id,
+            </if>
+            <if test="commonBody != null" >
+                common_body,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="commonId != null" >
+                #{commonId,jdbcType=INTEGER},
+            </if>
+            <if test="commonBody != null" >
+                #{commonBody,jdbcType=LONGVARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.houjiang.commons.dto.goods.GdbMerchantGoodsCommonDetailDTO">
+    update ${database.prefix.goods}hou_goods_common_detail
+    <set >
+        <if test="commonBody != null" >
+            common_body = #{commonBody,jdbcType=LONGVARCHAR},
+        </if>
+    </set>
+    where common_id = #{commonId,jdbcType=INTEGER}
+</update>
+
+
+</mapper>

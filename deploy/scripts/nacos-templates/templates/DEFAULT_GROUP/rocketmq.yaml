@@ -1,0 +1,11 @@
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESERVER}
+  producer:
+    group: order-producer
+    access-key: ${ROCKETMQ_ACCESS_KEY}
+    secret-key: ${ROCKETMQ_SECRET_KEY}
+  consumer:
+    group: order-consumer
+    access-key: ${ROCKETMQ_ACCESS_KEY}
+    secret-key: ${ROCKETMQ_SECRET_KEY}
+nameServer: ${ROCKETMQ_NAMESERVER}

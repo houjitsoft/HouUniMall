@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseFloorAdpageMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseFloorAdpageEntity">
+            <id property="floorAdpageId" column="floor_adpage_id" jdbcType="INTEGER"/>
+            <result property="floorAdpageName" column="floor_adpage_name" jdbcType="VARCHAR"/>
+            <result property="leftAdpageBanner" column="left_adpage_banner" jdbcType="VARCHAR"/>
+            <result property="rightHotRecommend" column="right_hot_recommend" jdbcType="VARCHAR"/>
+            <result property="leftAdpageNav" column="left_adpage_nav" jdbcType="VARCHAR"/>
+            <result property="rightAdpageNav" column="right_adpage_nav" jdbcType="VARCHAR"/>
+            <result property="floorAdpageOrder" column="floor_adpage_order" jdbcType="INTEGER"/>
+            <result property="floorStatus" column="floor_status" jdbcType="INTEGER"/>
+            <result property="floorUpdateTime" column="floor_update_time" jdbcType="TIMESTAMP"/>
+            <result property="floorType" column="floor_type" jdbcType="BOOLEAN"/>
+            <result property="pageType" column="page_type" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        floor_adpage_id,floor_adpage_name,left_adpage_banner,
+        right_hot_recommend,left_adpage_nav,right_adpage_nav,
+        floor_adpage_order,floor_status,floor_update_time,
+        floor_type,page_type
+    </sql>
+    <update id="updateFloorAdpage">
+
+        UPDATE ${database.prefix.userms}hou_base_floor_adpage
+
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="floor_adpage_name = case" suffix="end,">
+                <foreach collection="param" item="item" index="index">
+                    <if test="item.floorAdpageName != null">
+                        when floor_adpage_id = #{item.floorAdpageId} then #{item.floorAdpageName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="left_adpage_banner = case" suffix="end,">
+                <foreach collection="param" item="item" index="index">
+                    <if test="item.leftAdpageBanner != null">
+                        when floor_adpage_id = #{item.floorAdpageId} then #{item.leftAdpageBanner}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="floor_adpage_order = case" suffix="end,">
+                <foreach collection="param" item="item" index="index">
+                    <if test="item.floorAdpageOrder != null">
+                        when floor_adpage_id = #{item.floorAdpageId} then #{item.floorAdpageOrder}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="left_adpage_nav = case" suffix="end,">
+                <foreach collection="param" item="item" index="index">
+                    <if test="item.leftAdpageNav != null">
+                        when floor_adpage_id = #{item.floorAdpageId} then #{item.leftAdpageNav}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="right_adpage_nav = case" suffix="end,">
+                <foreach collection="param" item="item" index="index">
+                    <if test="item.rightAdpageNav != null">
+                        when floor_adpage_id = #{item.floorAdpageId} then #{item.rightAdpageNav}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="right_hot_recommend = case" suffix="end,">
+                <foreach collection="param" item="item" index="index">
+                    <if test="item.rightHotRecommend != null">
+                        when floor_adpage_id = #{item.floorAdpageId} then #{item.rightHotRecommend}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="floor_status = case" suffix="end,">
+                <foreach collection="param" item="item" index="index">
+                    <if test="item.floorStatus != null">
+                        when floor_adpage_id = #{item.floorAdpageId} then #{item.floorStatus}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="floor_update_time = case" suffix="end,">
+                <foreach collection="param" item="item" index="index">
+                    <if test="item.floorUpdateTime != null">
+                        when floor_adpage_id = #{item.floorAdpageId} then #{item.floorUpdateTime}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="param" item="item" index="index" open="floor_adpage_id in (" separator="," close=")">
+            #{item.floorAdpageId,jdbcType=INTEGER}
+        </foreach>
+
+    </update>
+    <update id="pcIndexFloorUpdate">
+         UPDATE ${database.prefix.userms}hou_base_floor_adpage set floor_status = #{floorStatus} where floor_adpage_id = #{floorAdpageId}
+    </update>
+    <update id="pcIndexConfigUpdate">
+     UPDATE ${database.prefix.userms}hou_base_pc_index_config set page_start = #{pageStart} where page_type = #{pageType}
+    </update>
+    <insert id="insertFloorAdpage">
+        insert into ${database.prefix.userms}hou_base_floor_adpage
+        (floor_adpage_id,
+        floor_adpage_name,
+        left_adpage_banner,
+        floor_adpage_order,
+        left_adpage_nav,
+        right_adpage_nav,
+        right_hot_recommend,
+        floor_status,
+        floor_update_time) values
+        <foreach collection="param" item="floor" index="index"
+                 separator=",">
+            <if test="floor.floorAdpageId != null">
+                #{floor.floorAdpageId,jdbcType=INTEGER},
+            </if>
+            <if test="floor.floorAdpageName != null">
+                #{floor.floorAdpageName,jdbcType=VARCHAR},
+            </if>
+            <if test="floor.leftAdpageBanner != null">
+                #{floor.leftAdpageBanner,jdbcType=VARCHAR},
+            </if>
+            <if test="floor.floorAdpageOrder != null">
+                #{floor.floorAdpageOrder,jdbcType=INTEGER},
+            </if>
+            <if test="floor.leftAdpageNav != null">
+                #{floor.leftAdpageNav,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="floor.rightAdpageNav != null">
+                #{floor.rightAdpageNav,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="floor.rightHotRecommend != null">
+                #{floor.rightHotRecommend,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="floor.floorStatus != null">
+                #{floor.floorStatus,jdbcType=INTEGER},
+            </if>
+            <if test="floor.floorUpdateTime != null">
+                #{floor.floorUpdateTime,jdbcType=DATE},
+            </if>
+        </foreach>
+    </insert>
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderSupplierBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.order.entity.OrderSupplierBaseEntity">
+            <id property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="supplierShopId" column="supplier_shop_id" jdbcType="INTEGER"/>
+            <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+            <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+            <result property="goodsPrice" column="goods_price" jdbcType="DECIMAL"/>
+            <result property="goodsNum" column="goods_num" jdbcType="INTEGER"/>
+            <result property="goodsPriceSum" column="goods_price_sum" jdbcType="DECIMAL"/>
+            <result property="goodsPaymentAmount" column="goods_payment_amount" jdbcType="DECIMAL"/>
+            <result property="orderRefundPrice" column="order_refund_price" jdbcType="DECIMAL"/>
+            <result property="orderReturnPrice" column="order_return_price" jdbcType="DECIMAL"/>
+            <result property="orderReturnDiscount" column="order_return_discount" jdbcType="DECIMAL"/>
+            <result property="supperCommission" column="supper_commission" jdbcType="DECIMAL"/>
+            <result property="supperReturnCommission" column="supper_return_commission" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        order_id,supplier_shop_id,goods_id,
+        common_id,goods_price,goods_num,
+        goods_price_sum,goods_payment_amount,order_refund_price,
+        order_return_price,order_return_discount,supper_commission,
+        supper_return_commission
+    </sql>
+</mapper>

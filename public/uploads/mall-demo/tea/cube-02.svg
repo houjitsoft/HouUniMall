@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+  <rect width="600" height="600" fill="#f0ebe0"/>
+  <rect x="206" y="206" width="188" height="188" fill="none" stroke="#9a7048" stroke-width="2" stroke-opacity="0.5"/><path d="M206 300 h188" stroke="#9a7048" stroke-width="1.5" stroke-opacity="0.35"/>
+  <text x="300" y="500" text-anchor="middle" font-family="Georgia, 'Songti SC', serif" font-size="30" fill="#6b6357" letter-spacing="10">茶</text>
+</svg>

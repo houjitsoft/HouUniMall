@@ -1,0 +1,27 @@
+code: logging
+name: 日志管理
+version: 1.0.0
+author: UniMall
+description: Operation, access, business and ELK log management
+category: 运维 / 工具
+owner: official
+runtime: standalone
+hostService: logging
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - logging:read
+  - logging:write
+menus:
+  - type: M
+    name: 日志管理
+    icon: Document
+    sort: 3070
+    perms: shell:logging:apps
+    path: /plugin/logging
+    group: ai
+    groupSort: 200
+frontend:
+  entry: /plugin-assets/logging/1.0.0/index.mjs

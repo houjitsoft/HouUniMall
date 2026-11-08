@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayCardInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayCardInfoEntity">
+            <id property="cardCode" column="card_code" jdbcType="VARCHAR"/>
+            <result property="cardPassword" column="card_password" jdbcType="VARCHAR"/>
+            <result property="cardId" column="card_id" jdbcType="INTEGER"/>
+            <result property="cardFetchTime" column="card_fetch_time" jdbcType="TIMESTAMP"/>
+            <result property="cardMediaId" column="card_media_id" jdbcType="SMALLINT"/>
+            <result property="serverId" column="server_id" jdbcType="VARCHAR"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="userAccount" column="user_account" jdbcType="VARCHAR"/>
+            <result property="cardTime" column="card_time" jdbcType="TIMESTAMP"/>
+            <result property="cardMoney" column="card_money" jdbcType="DECIMAL"/>
+            <result property="cardFrozeMoney" column="card_froze_money" jdbcType="DECIMAL"/>
+            <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        card_code,card_password,card_id,
+        card_fetch_time,card_media_id,server_id,
+        user_id,user_account,card_time,
+        card_money,card_froze_money,parent_id
+    </sql>
+    <insert id="insetPayCardInfoBase">
+        INSERT into ${database.prefix.payment}hou_pay_card_info
+        ( card_code,
+        card_password,
+        card_id,
+        card_fetch_time,
+        card_media_id,
+        server_id,
+        user_id,
+        user_account,
+        card_time,
+        card_money,
+        card_froze_money)
+        values
+        <foreach collection="list" separator="," item="item">
+            (#{item.cardCode},
+            #{item.cardPassword},
+            #{id},
+            #{item.cardFetchTime},
+            #{item.cardMediaId},
+            #{item.serverId},
+            #{item.userId},
+            '',
+            now(),
+            #{item.cardMoney},
+            #{item.cardFrozeMoney}
+            )
+        </foreach>
+    </insert>
+    <update id="updateRechargeCard">
+         UPDATE ${database.prefix.payment}hou_pay_card_info
+        SET user_id = #{userId},user_account= #{userName},card_fetch_time= #{cardFetchTime}
+         where card_code= #{cardCode}
+    </update>
+    <update id="updatePayCardInfoBase">
+        update ${database.prefix.payment}hou_pay_card_info
+        set card_password =#{payCardInfoResult.cardPassword} ,
+        card_id = #{payCardInfoResult.cardId},
+        card_fetch_time =#{payCardInfoResult.cardFetchTime},
+        user_id =#{payCardInfoResult.userId} ,
+        user_account =#{payCardInfoResult.userAccount} ,
+        card_time =#{payCardInfoResult.cardTime} ,
+        card_money =#{payCardInfoResult.cardMoney}
+        where card_code = #{payCardInfoResult.cardCode}
+    </update>
+    <select id="execl" resultType="com.houjiang.payment.vo.PayCardBaseInfoVO">
+        SELECT
+        ob.card_id,
+        ot.card_desc,
+        ob.card_money,
+        ot.card_start_time,
+        oyt.card_num,
+        ot.card_name,
+        ob.user_id,
+        ob.card_code,
+        ob.card_fetch_time,
+        ob.card_media_id,
+        ob.server_id,
+        ob.user_account,
+        ob.card_time,
+        ob.card_froze_money
+        FROM
+        ${database.prefix.payment}hou_pay_card_base ot
+        LEFT JOIN ${database.prefix.payment}hou_pay_card_info ob ON ot.card_id = ob.card_id
+        LEFT JOIN ( SELECT card_id, count(*) card_num FROM ${database.prefix.payment}hou_pay_card_info GROUP BY card_id ) oyt ON oyt.card_id = ob.card_id
+        WHERE 1 = 1
+        <if test = "param.cardId!= null and param.cardId!= ''" >
+        AND ot.card_id = #{param.cardId}
+        </if >
+         <if test = "param.whether!= ''">
+        AND ob.user_account = ''
+        </if>
+         <if test = "param.returnAddTimeStart!= null and param.returnAddTimeEnd!= null and param.returnAddTimeStart!= '' and param.returnAddTimeEnd!= ''" >
+        AND ot.card_start_time BETWEEN #{param.returnAddTimeStart} and
+        #{param.returnAddTimeEnd}
+        </if>
+    </select>
+</mapper>

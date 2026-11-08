@@ -1,0 +1,14 @@
+{
+  "title": "验证码验证",
+  "sentTo": "验证码已发送至 {phone}",
+  "codePlaceholder": "请输入6位验证码",
+  "backToEdit": "返回修改",
+  "notReceived": "没有收到验证码？请检查手机号是否正确",
+  "resend": "重新发送",
+  "codeRequired": "请输入6位验证码",
+  "verifySuccess": "验证码验证成功",
+  "verifyFailed": "验证码验证失败",
+  "resendSuccess": "验证码已重新发送",
+  "resendFailed": "验证码发送失败",
+  "resendCountdown": "{countdown}s后重发"
+}

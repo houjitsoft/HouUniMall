@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseKdniaoConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseKdniaoConfigEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="ebussinessid" column="EBussinessID" jdbcType="VARCHAR"/>
+            <result property="appkey" column="AppKey" jdbcType="VARCHAR"/>
+            <result property="instructCode" column="instruct_code" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,shop_id,EBussinessID,
+        AppKey,status,instruct_code
+    </sql>
+    <update id="updateKdiniaoConfig">
+         REPLACE
+        into ${database.prefix.userms}hou_base_kdniao_config (id,EBussinessID,AppKey,instruct_code)
+        values (
+        #{param.id},
+        #{param.ebussinessid},
+        #{param.appkey},
+        #{param.instructCode}
+        );
+    </update>
+</mapper>

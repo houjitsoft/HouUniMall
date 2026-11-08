@@ -1,0 +1,14 @@
+{
+  "user": {
+    "read": "Baca pengguna",
+    "write": "Tulis pengguna"
+  },
+  "product": {
+    "read": "Baca produk",
+    "write": "Tulis produk"
+  },
+  "order": {
+    "read": "Baca pesanan",
+    "write": "Tulis pesanan"
+  }
+}

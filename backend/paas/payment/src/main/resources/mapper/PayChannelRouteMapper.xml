@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayChannelRouteMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayChannelRouteEntity">
+        <id column="id" property="id"/>
+        <result column="route_no" property="routeNo"/>
+        <result column="route_name" property="routeName"/>
+        <result column="biz_type" property="bizType"/>
+        <result column="pay_method" property="payMethod"/>
+        <result column="terminal" property="terminal"/>
+        <result column="merchant_no" property="merchantNo"/>
+        <result column="amount_min" property="amountMin"/>
+        <result column="amount_max" property="amountMax"/>
+        <result column="channel_codes" property="channelCodes"/>
+        <result column="strategy" property="strategy"/>
+        <result column="priority" property="priority"/>
+        <result column="status" property="status"/>
+        <result column="effective_time" property="effectiveTime"/>
+        <result column="expire_time" property="expireTime"/>
+        <result column="remark" property="remark"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="updater_id" property="updaterId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+</mapper>

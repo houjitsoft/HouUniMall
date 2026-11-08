@@ -1,0 +1,309 @@
+{
+  "welcome": {
+    "title": "Welcome to UniMall Management System",
+    "description": "One-stop enterprise management platform to help enterprise digital transformation"
+  },
+  "stats": {
+    "users": "Total Users",
+    "products": "Product Count",
+    "orders": "Order Count",
+    "revenue": "Today's Revenue",
+    "todo": "Todos",
+    "contracts": "Contracts",
+    "revenueToday": "Today's Sales"
+  },
+  "toolbar": {
+    "refresh": "Refresh",
+    "notifications": "Notifications",
+    "settings": "Dashboard Settings",
+    "open": "Open",
+    "loading": "Loading...",
+    "refreshOk": "Refreshed",
+    "moduleUnavailable": "This module page is unavailable. Check that the plugin is installed or contact the administrator.",
+    "moduleNotInstalled": "The plugin for this module is not installed. Redirected to the plugin center."
+  },
+  "editMode": {
+    "edit": "Edit",
+    "done": "Done",
+    "hide": "Hide",
+    "drag": "Drag",
+    "cols": "Grid Columns",
+    "refresh": "Auto Refresh",
+    "refreshOff": "Off",
+    "modules": "Module Display",
+    "reset": "Reset",
+    "save": "Save",
+    "saveOk": "Saved",
+    "saveLocalOnly": "Saved locally (backend unavailable)",
+    "resetOk": "Reset to default",
+    "empty": "No visible modules. Please enable in settings."
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "newContract": "New Contract",
+    "newApproval": "New Approval",
+    "newCustomer": "New Customer",
+    "newPayment": "New Payment",
+    "newOrder": "New Order",
+    "newGoods": "New Product"
+  },
+  "charts": {
+    "trend": "Business Trend",
+    "last7": "Last 7 Days",
+    "last30": "Last 30 Days",
+    "order": "Orders",
+    "revenue": "Revenue"
+  },
+  "notification": {
+    "title": "Notifications",
+    "empty": "No notifications"
+  },
+  "more": "More",
+  "moreModules": "More Modules",
+  "modules": {
+    "comingSoon": "Coming soon, stay tuned",
+    "oaNoTitle": "(No title)",
+    "oaNoTodos": "No todo items",
+    "oaMine": "Mine",
+    "oaPriority": "Priority",
+    "oaDone": "Done",
+    "oaTypes": {
+      "approval": "Approval",
+      "hr": "HR",
+      "project": "Project",
+      "meeting": "Meeting",
+      "other": "Other"
+    },
+    "paymentTodayAmount": "Today's Amount",
+    "paymentTransactions": "Transactions",
+    "paymentSuccessRate": "Success Rate",
+    "paymentNoData": "No payment data",
+    "orderToday": "Today's Orders",
+    "orderPending": "Pending",
+    "orderRevenue": "Today's Revenue",
+    "orderRecent": "Recent Orders",
+    "orderNoData": "No orders",
+    "orderStatusPending": "Pending",
+    "orderStatusShipped": "Shipped",
+    "orderStatusCompleted": "Completed",
+    "orderStatusCancelled": "Cancelled",
+    "goodsTotal": "Total Products",
+    "goodsOnSale": "On Sale",
+    "goodsLowStock": "Low Stock",
+    "goodsTopSales": "Top Sales",
+    "goodsNoData": "No products",
+    "oa": {
+      "title": "OA Todo Items",
+      "noTodos": "No todo items",
+      "types": {
+        "approval": "Approval",
+        "hr": "HR",
+        "project": "Project",
+        "meeting": "Meeting",
+        "other": "Other"
+      }
+    },
+    "erp": {
+      "title": "ERP Shipping Logistics",
+      "noShipments": "No shipping information",
+      "trackingNumber": "Tracking Number",
+      "estimatedArrival": "Estimated Arrival",
+      "statuses": {
+        "shipping": "Shipping",
+        "shipped": "Shipped",
+        "pending": "Pending",
+        "delivered": "Delivered",
+        "exception": "Exception"
+      }
+    },
+    "project": {
+      "title": "Project Management",
+      "noProjects": "No project information",
+      "statuses": {
+        "completed": "Completed",
+        "pending": "Pending",
+        "inProgress": "In Progress"
+      }
+    },
+    "auth": {
+      "title": "Authentication Management",
+      "users": "Total Users",
+      "roles": "Role Count",
+      "permissions": "Permission Count",
+      "recentActions": "Recent Actions",
+      "noActions": "No action records"
+    },
+    "setting": {
+      "title": "System Settings",
+      "noCategories": "No setting categories",
+      "systemStatus": "System Status",
+      "database": "Database Connection",
+      "cache": "Cache Service",
+      "storage": "File Storage",
+      "statuses": {
+        "normal": "Normal",
+        "warning": "Warning"
+      },
+      "categories": {
+        "basic": {
+          "title": "Basic Settings",
+          "description": "System basic information configuration"
+        },
+        "user": {
+          "title": "User Management",
+          "description": "User permissions and role settings"
+        },
+        "finance": {
+          "title": "Finance Settings",
+          "description": "Payment and finance related configuration"
+        },
+        "notification": {
+          "title": "Notification Settings",
+          "description": "Message push and email configuration"
+        }
+      }
+    },
+    "goods": {
+      "title": "Product Management",
+      "total": "Total Products",
+      "onSale": "On Sale",
+      "outOfStock": "Out of Stock",
+      "recentGoods": "Recent Products",
+      "stock": "Stock",
+      "noGoods": "No product information"
+    },
+    "order": {
+      "title": "Order Management",
+      "today": "Today's Orders",
+      "pending": "Pending",
+      "revenue": "Today's Revenue",
+      "recentOrders": "Recent Orders",
+      "orderNumber": "Order Number",
+      "noOrders": "No order information",
+      "statuses": {
+        "pending": "Pending",
+        "shipped": "Shipped",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      }
+    },
+    "activity": {
+      "title": "Activity Management",
+      "active": "Active Activities",
+      "upcoming": "Upcoming",
+      "participants": "Participants",
+      "recentActivities": "Recent Activities",
+      "noActivities": "No activity information",
+      "statuses": {
+        "active": "Active",
+        "upcoming": "Upcoming",
+        "completed": "Completed"
+      }
+    },
+    "ai": {
+      "title": "AI Intelligence",
+      "requests": "Today's Requests",
+      "models": "Active Models",
+      "successRate": "Success Rate",
+      "recentActions": "Recent Actions",
+      "noActions": "No action records"
+    },
+    "cms": {
+      "title": "Content Management",
+      "articles": "Total Articles",
+      "published": "Published",
+      "comments": "Pending Comments",
+      "recentArticles": "Recent Articles",
+      "noArticles": "No article information",
+      "statuses": {
+        "published": "Published",
+        "draft": "Draft",
+        "pending": "Pending"
+      }
+    },
+    "crm": {
+      "title": "Customer Relationship",
+      "customers": "Total Customers",
+      "newCustomers": "New This Month",
+      "revenue": "Monthly Revenue",
+      "recentCustomers": "Recent Customers",
+      "noCustomers": "No customer information"
+    },
+    "dcenter": {
+      "title": "Data Center",
+      "dataVolume": "Data Volume",
+      "reports": "Reports",
+      "storage": "Storage Used",
+      "recentReports": "Recent Reports",
+      "noReports": "No report information"
+    },
+    "im": {
+      "title": "Instant Messaging",
+      "onlineUsers": "Online Users",
+      "messages": "Messages",
+      "groups": "Groups",
+      "recentMessages": "Recent Messages",
+      "noMessages": "No messages"
+    },
+    "workflow": {
+      "title": "Workflow Management",
+      "processes": "Processes",
+      "running": "Running",
+      "completed": "Completed Today",
+      "recentWorkflows": "Recent Workflows",
+      "noWorkflows": "No workflows"
+    },
+    "payment": {
+      "title": "Payment Management",
+      "todayAmount": "Today's Amount",
+      "transactions": "Transactions",
+      "successRate": "Success Rate",
+      "recentTransactions": "Recent Transactions",
+      "noTransactions": "No transactions"
+    },
+    "lowcode": {
+      "title": "Low-Code Platform",
+      "applications": "Applications",
+      "components": "Components",
+      "templates": "Templates",
+      "recentProjects": "Recent Projects",
+      "noProjects": "No projects"
+    },
+    "mes": {
+      "title": "Manufacturing Execution System",
+      "productionLines": "Production Lines",
+      "equipment": "Equipment",
+      "oee": "OEE",
+      "productionStatus": "Production Status",
+      "noProduction": "No production data"
+    },
+    "orderfood": {
+      "title": "Food Ordering System",
+      "todayOrders": "Today's Orders",
+      "revenue": "Today's Revenue",
+      "venues": "Active Venues",
+      "recentOrders": "Recent Orders",
+      "noOrders": "No orders"
+    },
+    "rider": {
+      "title": "Rider Management",
+      "activeRiders": "Active Riders",
+      "todayOrders": "Today's Orders",
+      "avgDeliveryTime": "Avg Delivery Time",
+      "riderStatus": "Rider Status",
+      "noRiders": "No riders"
+    },
+    "supplier": {
+      "title": "Supplier Management",
+      "suppliers": "Suppliers",
+      "cooperations": "Cooperations",
+      "qualityScore": "Quality Score",
+      "recentSuppliers": "Recent Suppliers",
+      "noSuppliers": "No suppliers"
+    }
+  },
+  "dailyTodo": {
+    "title": "My Daily Todo",
+    "subtitle": "Only visible to you, for today's most important tasks"
+  }
+}

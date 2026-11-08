@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderBalanceRechargeMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderBalanceRechargeEntity" id="OrderBalanceRechargeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="payCode" column="pay_code" jdbcType="INTEGER"/>
+        <result property="rechargeOrderStart" column="recharge_order_start" jdbcType="INTEGER"/>
+        <result property="rechargeOrderId" column="recharge_order_id" jdbcType="VARCHAR"/>
+        <result property="rechargeAmount" column="recharge_amount" jdbcType="NUMERIC"/>
+        <result property="rechargeImage" column="recharge_image" jdbcType="VARCHAR"/>
+        <result property="rechargeMsg" column="recharge_msg" jdbcType="VARCHAR"/>
+        <result property="rechargeOtherNumber" column="recharge_other_number" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <update id="updateBalanceRechargeOrder">
+        update ${database.prefix.order}hou_order_balance_recharge
+        <set>
+            <if test="param.payCode != null">
+                pay_code = #{param.payCode},
+            </if>
+            <if test="param.rechargeImage != null and param.rechargeImage != ''">
+                recharge_image = #{param.rechargeImage},
+            </if>
+            <if test="param.rechargeMsg != null and param.rechargeMsg != '' ">
+                recharge_msg = #{param.rechargeMsg},
+            </if>
+            <if test="param.rechargeOtherNumber != null and param.rechargeOtherNumber != '' ">
+                recharge_other_number = #{param.rechargeOtherNumber},
+            </if>
+            <if test="param.rechargeOrderStart != null ">
+                recharge_order_start = #{param.rechargeOrderStart},
+            </if> <if test="param.rechargeOtherNumber != null and param.rechargeOtherNumber != ''  ">
+                recharge_other_number = #{param.rechargeOtherNumber},
+            </if>
+        </set>
+        where recharge_order_id = #{param.rechargeOrderId}
+    </update>
+    <update id="updateOfflineRechargeOrder">
+        update ${database.prefix.order}hou_order_balance_recharge
+        <set>
+            <if test="param.rechargeOrderStart != null">
+                recharge_order_start = #{param.rechargeOrderStart},
+            </if>
+            <if test="param.rechargeMsg != null and param.rechargeMsg != ''">
+                recharge_msg = #{param.rechargeMsg},
+            </if>
+        </set>
+        where recharge_order_id = #{param.rechargeOrderId}
+    </update>
+    <select id="createBalanceRechargeOrder" resultType="com.houjiang.order.entity.OrderBalanceRechargeEntity">
+        insert INTO ${database.prefix.order}hou_order_balance_recharge
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.userId != null and param.userId != '' ">
+                user_id,
+            </if>
+            <if test="param.userName != null and param.userName != '' ">
+                user_name,
+            </if>
+            <if test="param.userMobile != null and param.userMobile != '' ">
+                user_mobile,
+            </if>
+            <if test="param.payCode != null">
+                pay_code,
+            </if>
+            <if test="param.rechargeOrderStart != null">
+                recharge_order_start,
+            </if>
+            <if test="param.rechargeOrderId != null and param.rechargeOrderId != '' ">
+                recharge_order_id,
+            </if>
+            <if test="param.rechargeAmount != null">
+                recharge_amount,
+            </if>
+            <if test="param.rechargeImage != null and param.rechargeImage != ''">
+                recharge_image,
+            </if>
+            <if test="param.rechargeMsg != null and param.rechargeMsg != '' ">
+                recharge_msg,
+            </if>
+            <if test="param.rechargeOtherNumber != null and  param.rechargeOtherNumber != '' ">
+                recharge_other_number,
+            </if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.userId != null and param.userId != '' ">
+                #{param.userId},
+            </if>
+            <if test="param.userName != null and param.userName != '' ">
+                #{param.userName},
+            </if>
+            <if test="param.userMobile != null and param.userMobile != '' ">
+                #{param.userMobile},
+            </if>
+            <if test="param.payCode != null">
+                #{param.payCode},
+            </if>
+            <if test="param.rechargeOrderStart != null">
+                #{param.rechargeOrderStart},
+            </if>
+            <if test="param.rechargeOrderId != null and param.rechargeOrderId != '' ">
+                #{param.rechargeOrderId},
+            </if>
+            <if test="param.rechargeAmount != null">
+                #{param.rechargeAmount},
+            </if>
+            <if test="param.rechargeImage != null and param.rechargeImage != ''">
+                #{param.rechargeImage},
+            </if>
+            <if test="param.rechargeMsg != null and param.rechargeMsg != '' ">
+                #{param.rechargeMsg},
+            </if>
+            <if test="param.rechargeOtherNumber != null and param.rechargeOtherNumber != '' ">
+                #{param.rechargeOtherNumber},
+            </if>
+            now()
+        </trim>
+    </select>
+    <select id="queryOfflineRechargeOrder" resultType="com.houjiang.commons.vo.order.OrderBalanceRechargeVO">
+        select recharge_order_id,
+               recharge_amount,
+               recharge_image,
+               user_name,
+               user_mobile,
+               create_time,
+               recharge_order_start
+        FROM ${database.prefix.order}hou_order_balance_recharge
+        where pay_code = 3
+        <if test="param.rechargeOrderId != null and param.rechargeOrderId != ''">
+            and recharge_order_id like  CONCAT('%',#{param.rechargeOrderId},'%')
+        </if>
+        <if test="param.userName != null and param.userName != ''">
+            and user_name like  CONCAT('%',#{param.userName},'%')
+        </if>
+        <if test="param.rechargeOrderStart != null and param.rechargeOrderStart != ''">
+            and recharge_order_start = #{param.rechargeOrderStart}
+        </if>
+        order by create_time desc
+    </select>
+    <select id="queryRechargeOrderById" resultType="com.houjiang.commons.vo.order.OrderBalanceRechargeVO">
+        select recharge_order_id,
+               recharge_amount,
+               recharge_image,
+               user_name,
+               user_mobile,
+               create_time,
+               recharge_order_start,
+               recharge_msg,
+               pay_code,
+               recharge_other_number
+        FROM ${database.prefix.order}hou_order_balance_recharge where recharge_order_id = #{rechargeOrderId}
+    </select>
+
+
+</mapper>

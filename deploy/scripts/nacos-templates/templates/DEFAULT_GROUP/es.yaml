@@ -1,0 +1,24 @@
+# Elasticsearch 统一连接层配置（本系统内唯一真源）
+#
+# 由各服务在 bootstrap.yml 的 extension-configs 中引入（goods、logging 均已引入）。
+# 业务参数不放这里：索引名在 goods.yaml 的 houcloud.goods.es.*，
+# 日志查询策略在 logging.yaml 的 houcloud.log.elk.*。
+#
+# 地址规则：
+#   - host 网络容器（unimall-* 主力）→ 127.0.0.1:9200
+#   - bridge 网络容器              → 172.17.0.1:9200（docker0 网关）
+# 不要写公网 IP：ES 只绑定回环与 docker0，公网 9200 不开放。
+#
+# 说明：历史上曾用 spring.elasticsearch.* 一套，后端无任何 starter 使用，已废弃。
+houcloud:
+  es:
+    schema: http
+    uri: ${ES_ADDR:elasticsearch:9200}   # 多个地址用逗号隔开，如 10.0.0.1:9200,10.0.0.2:9200
+    # ES 未开启安全认证时保持空值；开启后填写内置用户（如 elastic）与密码
+    username: ""
+    password: ""
+    connect-timeout: 10000
+    socket-timeout: 60000
+    connection-request-timeout: 10000
+    max-conn-total: 200
+    max-conn-per-route: 200

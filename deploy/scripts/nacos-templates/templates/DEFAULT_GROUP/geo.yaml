@@ -1,0 +1,30 @@
+server:
+  port: 8310
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${APP_DATASOURCE_PASSWORD} # 数据库密码
+  main:
+    allow-bean-definition-overriding: true
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: deleteFlag # 全局逻辑删除字段名
+      logic-delete-value: 1 # 逻辑已删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
+houjiang:
+  geo:
+    video:
+      storage-type: local
+      storage-dir: /www/wwwroot/houcloud/jar/public/generated/geo-video
+      public-base-url: /generated/geo-video
+    dify:
+      base-url: http://dify.shangliansoft.cn/v1
+      api-key: ${APP_GEO_DIFY_APP_KEY}   # 建议用环境变量 GEO_DIFY_API_KEY
+      response-mode: blocking
+      user-prefix: geo-
+      timeout-seconds: 120
+      fallback-on-error: true      

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsDetailsVersionMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsDetailsVersionEntity" id="GoodsDetailsVersionMap">
+        <result property="goodsDetailsVerId" column="goods_details_ver_id" jdbcType="INTEGER"/>
+        <result property="verId" column="ver_id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="commonName" column="common_name" jdbcType="VARCHAR"/>
+        <result property="verBody" column="ver_body" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="operateUserId" column="operate_user_id" jdbcType="VARCHAR"/>
+        <result property="operateUserName" column="operate_user_name" jdbcType="VARCHAR"/>
+        <result property="operateTime" column="operate_time" jdbcType="TIMESTAMP"/>
+        <result property="versionNo" column="version_no" jdbcType="VARCHAR"/>
+    </resultMap>
+
+</mapper>

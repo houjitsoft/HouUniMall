@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayTransferMoneyMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayTransferMoneyEntity">
+            <id property="transferId" column="transfer_id" jdbcType="INTEGER"/>
+            <result property="fromUser" column="from_user" jdbcType="VARCHAR"/>
+            <result property="toUser" column="to_user" jdbcType="VARCHAR"/>
+            <result property="sendTime" column="send_time" jdbcType="TIMESTAMP"/>
+            <result property="receiveTime" column="receive_time" jdbcType="TIMESTAMP"/>
+            <result property="transferMoney" column="transfer_money" jdbcType="DECIMAL"/>
+            <result property="transferStatus" column="transfer_status" jdbcType="TINYINT"/>
+            <result property="transferTxt" column="transfer_txt" jdbcType="VARCHAR"/>
+            <result property="transferType" column="transfer_type" jdbcType="BOOLEAN"/>
+            <result property="transactionNumber" column="transaction_number" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        transfer_id,from_user,to_user,
+        send_time,receive_time,transfer_money,
+        transfer_status,transfer_txt,transfer_type,
+        transaction_number
+    </sql>
+    <insert id="insertTransfer">
+ INSERT INTO ${database.prefix.payment}hou_pay_transfer_money ( from_user, to_user, send_time, receive_time, transfer_money, transfer_txt, transfer_type, transaction_number )
+        VALUES
+	(#{fromUserName},#{toUserName},#{sendTime},#{receiveTime},#{money},#{paymentExplain},#{transferType},#{transactionNumber})
+    </insert>
+</mapper>

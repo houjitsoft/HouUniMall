@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserFavoritesShopMapper">
+
+    <resultMap type="com.houjiang.userms.entity.UserFavoritesShopEntity" id="UserFavoritesShopMap">
+        <result property="favoritesShopId" column="favorites_shop_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="shopLogo" column="shop_logo" jdbcType="VARCHAR"/>
+        <result property="favoritesShopTime" column="favorites_shop_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="addFavoriteShop">
+        insert into ${database.prefix.userms}hou_user_favorites_shop(user_id,shop_id,shop_name,shop_logo,favorites_shop_time)
+        values (#{userId},#{shopId},#{shopName},#{shopLogo},now())
+    </insert>
+    <delete id="deleteFavoriteShopOrNot">
+        delete  from ${database.prefix.userms}hou_user_favorites_shop where user_id = #{userId} and shop_id = #{shopId}
+    </delete>
+    <delete id="deleteUserFavoritesShop">
+        delete from ${database.prefix.userms}hou_user_favorites_shop where shop_id = #{shopId}
+    </delete>
+    <select id="checkFavoriteShopOrNot" resultType="java.lang.String">
+        select uuufg.favorites_shop_id from ${database.prefix.userms}hou_user_favorites_shop uuufg
+        where user_id = #{userId} and shop_id = #{shopId}
+    </select>
+
+
+</mapper>

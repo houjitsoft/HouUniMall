@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.ShopBaseMapper">
+
+    <resultMap id="ShopCommonResultMap"
+               type="com.houjiang.commons.vo.goods.ManageShopBaseQueryVO">
+        <result column="shop_name" property="shopName"
+                jdbcType="VARCHAR" />
+        <result column="shop_self_support" property="shopSelfSupport"
+                jdbcType="CHAR" />
+        <result column="shop_status" property="shopStatus"
+                jdbcType="BIT" />
+        <result column="district_id" property="districtId"
+                jdbcType="INTEGER" />
+    </resultMap>
+    <sql id="ShopCommon_Column_List">
+        shop_name,shop_self_support,shop_status,district_id
+    </sql>
+
+    <!-- 店铺后台 -->
+    <select id="selectByShopId2" resultMap="ShopCommonResultMap"
+            parameterType="java.lang.Integer">
+        select
+        <include refid="ShopCommon_Column_List" />
+        from ${database.prefix.supplier}hou_shop_base
+        where shop_status = 3
+        <if test="shopId != null">
+            and supplier_shop_id = #{shopId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectShopName" resultType="java.lang.String"
+            parameterType="java.lang.Integer">
+        select
+            shop_name
+        from
+            ${database.prefix.supplier}hou_shop_base
+        where
+                supplier_shop_id =
+                #{shopId,jdbcType=INTEGER}
+    </select>
+</mapper>

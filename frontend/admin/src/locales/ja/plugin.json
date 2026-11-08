@@ -1,0 +1,20 @@
+{
+  "plugin": {
+    "activity": { "name": "マーケティング活動" },
+    "aicode": { "name": "AI 開発" },
+    "cms": { "name": "コンテンツ管理" },
+    "crm": { "name": "CRM" },
+    "erp": { "name": "ERP" },
+    "finance": { "name": "財務センター" },
+    "geo": { "name": "GEO" },
+    "im": { "name": "IM" },
+    "logging": { "name": "ログ管理" },
+    "mes": { "name": "MES 製造実行" },
+    "oa": { "name": "OA オフィス" },
+    "orderfood": { "name": "飲食管理" },
+    "pm": { "name": "プロジェクト管理" },
+    "supplier": { "name": "サプライヤー管理" },
+    "webpos": { "name": "WebPOS" },
+    "demo-coupon": { "name": "クーポンデモ" }
+  }
+}

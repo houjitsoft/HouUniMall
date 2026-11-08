@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 禁止浏览器缓存 index.html，避免发布新版后旧 hash chunk 失效导致的 "Failed to fetch dynamically imported module" 错误 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>UniMall管理后台</title>
+    <script data-stale-entry-recovery>
+      (() => {
+        const reloadKey = '__stale_entry_reload_at__'
+        const historyKey = '__stale_entry_reload_history__'
+        const maxAge = 10000
+        // 60 秒内最多自动重载 3 次：发布不完整时宁可停在错误页让用户手动刷新，
+        // 也不能无限重载（曾把 URL 上的 __entry_refresh 堆成一大串、页面永远转圈）。
+        const burstWindow = 60000
+        const maxReloads = 3
+        window.addEventListener('error', (event) => {
+          const target = event.target
+          if (!target || target.tagName !== 'SCRIPT' || target.type !== 'module') return
+          const source = target.src || ''
+          if (!source.includes('/assets/')) return
+          const now = Date.now()
+          const last = Number(sessionStorage.getItem(reloadKey) || 0)
+          if (now - last < maxAge) return
+          let history = []
+          try {
+            const raw = JSON.parse(sessionStorage.getItem(historyKey) || '[]')
+            if (Array.isArray(raw)) history = raw.filter((t) => typeof t === 'number' && now - t < burstWindow)
+          } catch (e) {
+            history = []
+          }
+          if (history.length >= maxReloads) return
+          history.push(now)
+          sessionStorage.setItem(historyKey, JSON.stringify(history))
+          sessionStorage.setItem(reloadKey, String(now))
+          // 🔴 用 set() 覆盖同名参数，不要拼字符串追加：追加会让 URL 每刷一次长一截
+          const next = new URL(window.location.href)
+          next.searchParams.set('__entry_refresh', String(now))
+          window.location.replace(next.toString())
+        }, true)
+      })()
+    </script>
+  </head>
+  <body>
+    <!--
+      首屏骨架：深链直达/刷新时，宿主要先拉插件清单并动态注册插件路由，
+      这段静态 HTML 会在 Vue 挂载前立即呈现，避免十几秒纯白被误判为"页面坏了"。
+      Vue mount('#app') 后由应用内容整体替换。
+    -->
+    <div id="app">
+      <div id="boot-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;color:#303133;z-index:99999">
+        <div style="font-size:22px;font-weight:600;letter-spacing:1px">UniMall</div>
+        <div style="width:34px;height:34px;border:3px solid #dcdfe6;border-top-color:#409eff;border-radius:50%;animation:boot-spin .9s linear infinite"></div>
+        <div style="font-size:13px;color:#909399">正在加载管理后台…</div>
+      </div>
+      <style>
+        @keyframes boot-spin { to { transform: rotate(360deg); } }
+      </style>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+    <!--
+      右下角知识库挂件（WeKnora「小匠」）SDK。
+      这里只加载 SDK、不带 data-channel，因此不会自动初始化；
+      渠道与访问令牌由 src/utils/weknora.js 在运行时从
+      /admin/weknora-widget.config.json 读取后 init（令牌不落仓库）。
+    -->
+    <script src="https://hounora.shangliansoft.cn/weknora-widget.js"></script>
+  </body>
+</html>

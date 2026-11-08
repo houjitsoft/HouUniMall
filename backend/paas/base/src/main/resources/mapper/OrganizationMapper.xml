@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.OrganizationMapper">
+
+    <!-- 分页查询组织信息 -->
+    <select id="selectOrganizationPage" resultType="com.houjiang.base.entity.OrganizationEntity">
+        SELECT 
+            o.org_id,
+            o.org_name,
+            o.org_code,
+            o.org_type,
+            o.org_status,
+            o.contact_phone,
+            o.create_time,
+            o.update_time,
+            CASE o.org_type
+                WHEN 1 THEN '公司'
+                WHEN 2 THEN '部门'
+                WHEN 3 THEN '小组'
+                ELSE '未知'
+            END as org_type_name
+        FROM ${database.prefix.base}hou_base_organization o
+        WHERE 1=1
+        <if test="dto.accessibleOrgIds != null and dto.accessibleOrgIds.size() > 0">
+            AND o.org_id IN
+            <foreach collection="dto.accessibleOrgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
+        <if test="dto.orgName != null and dto.orgName != ''">
+            AND o.org_name LIKE CONCAT('%', #{dto.orgName}, '%')
+        </if>
+        <if test="dto.orgCode != null and dto.orgCode != ''">
+            AND o.org_code LIKE CONCAT('%', #{dto.orgCode}, '%')
+        </if>
+        <if test="dto.orgType != null">
+            AND o.org_type = #{dto.orgType}
+        </if>
+        <if test="dto.parentOrgId != null and dto.parentOrgId != ''">
+            AND o.parent_org_id = #{dto.parentOrgId}
+        </if>
+        <if test="dto.orgStatus != null">
+            AND o.org_status = #{dto.orgStatus}
+        </if>
+        ORDER BY o.create_time DESC
+    </select>
+
+    <!-- 查询组织树形结构 -->
+    <select id="selectOrganizationTree" resultType="com.houjiang.base.entity.OrganizationEntity">
+        SELECT 
+            o.org_id,
+            o.org_name,
+            o.org_code,
+            o.org_type,
+            o.org_status,
+            o.contact_phone,
+            o.create_time,
+            o.update_time
+        FROM ${database.prefix.base}hou_base_organization o
+        WHERE 1=1
+        <if test="dto.accessibleOrgIds != null and dto.accessibleOrgIds.size() > 0">
+            AND o.org_id IN
+            <foreach collection="dto.accessibleOrgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
+        <if test="dto.orgStatus != null">
+            AND o.org_status = #{dto.orgStatus}
+        </if>
+        ORDER BY o.create_time ASC
+    </select>
+
+    <!-- 根据父组织ID查询子组织 -->
+    <select id="selectChildrenByParentId" resultType="com.houjiang.base.entity.OrganizationEntity">
+        SELECT 
+            org_id,
+            org_name,
+            org_code,
+            org_type,
+            org_status,
+            contact_phone,
+            create_time,
+            update_time
+        FROM ${database.prefix.base}hou_base_organization
+        WHERE parent_org_id = #{parentOrgId}
+          AND org_status = 1
+        ORDER BY create_time ASC
+    </select>
+
+    <!-- 检查组织编码是否存在 -->
+    <select id="checkOrgCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM ${database.prefix.base}hou_base_organization
+        WHERE org_code = #{orgCode}
+        <if test="orgId != null and orgId != ''">
+            AND org_id != #{orgId}
+        </if>
+    </select>
+
+    <!-- 检查组织名称是否存在 -->
+    <select id="checkOrgNameExists" resultType="int">
+        SELECT COUNT(1)
+        FROM ${database.prefix.base}hou_base_organization
+        WHERE org_name = #{orgName}
+        <if test="orgId != null and orgId != ''">
+            AND org_id != #{orgId}
+        </if>
+    </select>
+
+</mapper>

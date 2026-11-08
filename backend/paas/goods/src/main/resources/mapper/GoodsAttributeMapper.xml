@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsAttributeMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsAttributeEntity" id="GoodsAttributeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="catId" column="cat_id" jdbcType="INTEGER"/>
+        <result property="commodityAttribute" column="commodity_attribute" jdbcType="VARCHAR"/>
+        <result property="attributeStatus" column="attribute_status" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertAttribute" useGeneratedKeys="true" keyProperty="id">
+        insert into ${database.prefix.goods}hou_goods_attribute (cat_id,
+		commodity_attribute, attribute_status)
+		values (#{catId,jdbcType=INTEGER},
+		#{commodityAttribute,jdbcType=VARCHAR}, #{attributeStatus,jdbcType=INTEGER})
+    </insert>
+    <delete id="deleteAttris">
+        delete from
+		goods_attribute
+		where id =
+		#{attriId,jdbcType=INTEGER}
+    </delete>
+    <select id="selectAttributeId" resultType="com.houjiang.goods.vo.GoodsAttributeVO">
+        select
+		id,commodity_attribute
+		from goods_attribute
+		where id = #{id,jdbcType=INTEGER}
+    </select>
+    <select id="selectAttributes" resultType="java.util.Map">
+        select ga.id,ga.commodity_attribute as commodityAttribute
+        from ${database.prefix.goods}hou_goods_attribute ga LEFT JOIN goods_common_attribute_association
+        aa on ga.id = aa.attribute_id
+        where
+        cat_id in (
+        <foreach collection="list" item="webCatMenu" separator=",">
+            #{webCatMenu.catId}
+        </foreach>
+        )
+        GROUP BY ga.id ORDER BY count(ga.id) desc limit 5
+    </select>
+    <select id="selectAttribute" resultType="com.houjiang.goods.entity.GoodsAttributeEntity">
+        SELECT cat_id,commodity_attribute,attribute_status,id
+		FROM goods_attribute
+		WHERE cat_id=#{catId,jdbcType=INTEGER}
+    </select>
+
+
+</mapper>

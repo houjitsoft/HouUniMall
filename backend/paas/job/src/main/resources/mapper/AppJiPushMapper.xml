@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.AppJiPushMapper">
+
+    <select id="queryOrderLogistics" resultType="com.houjiang.job.vo.AppJiPushOrderVO">
+        select b.buyer_user_id,b.order_id,b.order_shipping_code,e.express_pinyin from ${database.prefix.order}hou_order_base b
+        left join ${database.prefix.base}hou_base_express e on b.order_shipping_express_id = e.express_id where
+        HOUR(TIMEDIFF(now(),b.order_shipping_time ))>50 and b.order_status ='4' 
+    </select>
+
+</mapper>

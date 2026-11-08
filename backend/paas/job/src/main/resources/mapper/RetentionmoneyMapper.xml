@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.RetentionmoneyMapper">
+
+    <insert id="insertSysMessage">
+        INSERT INTO ${database.prefix.base}hou_base_system_message
+        (message_order_id,
+         message_user_id,
+         message_user_name,
+         message_type,
+         message_title,
+         message_create_time,
+         message_content,
+         shop_id,
+         message_processing_status)
+        VALUES (#{messageOrderId},
+                #{sellerId},
+                #{sellerName},
+                #{messageType},
+                #{messageTitle},
+                now(),
+                #{messageContent},
+                #{shopId},
+                1)
+    </insert>
+    <insert id="insertDetail">
+        insert into ${database.prefix.payment}hou_pay_asset_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.detailType != null">
+                detail_type,
+            </if>
+            <if test="param.assetType != null">
+                asset_type,
+            </if>
+            <if test="param.assetAmount != null">
+                asset_amount,
+            </if>
+            <if test="param.assetDirection != null and param.assetDirection != ''">
+                asset_direction,
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                order_id,
+            </if>
+            <if test="param.payType != null">
+                pay_type,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.detailComment != null and param.detailComment != ''">
+                detail_comment,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.detailType != null">
+                #{param.detailType,jdbcType=INTEGER},
+            </if>
+            <if test="param.assetType != null">
+                #{param.assetType,jdbcType=INTEGER},
+            </if>
+            <if test="param.assetAmount != null">
+                #{param.assetAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="param.assetDirection != null and param.assetDirection != ''">
+                #{param.assetDirection,jdbcType=VARCHAR},
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                #{param.orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="param.payType != null">
+                #{param.payType,jdbcType=INTEGER},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.detailComment != null and param.detailComment != ''">
+                #{param.detailComment,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertConsumeRecordport">
+        INSERT INTO ${database.prefix.payment}hou_pay_consume_record (user_id,
+                                                       record_money,
+                                                       order_id,
+                                                       record_date,
+                                                       record_year,
+                                                       record_month,
+                                                       record_day,
+                                                       record_title,
+                                                       record_desc,
+                                                       record_time,
+                                                       trade_type_id,
+                                                       user_type,
+                                                       record_status,
+                                                       record_paytime,
+                                                       record_delete,
+                                                       credit_remain,
+                                                       plus_or_minus,
+                                                       record_withdraw,
+                                                       os_commis_amount,
+                                                       os_commis_return_amount,
+                                                       is_current_user)
+        VALUES (#{userId},
+                #{recordMoney},
+                #{orderId},
+                #{recordDate},
+                #{year},
+                #{month},
+                #{day},
+                #{recordTitle},
+                #{record_desc},
+                NOW(),
+                #{tradeTypeId},
+                #{userType},
+                6,
+                NOW(),
+                0,
+                0.00,
+                #{plusOrMinus},
+                #{recordWithdraw},
+                #{osCommisAmount},
+                #{osCommisReturnAmount},
+                #{isCurrentUser})
+    </insert>
+    <insert id="insertretentionmoney">
+        insert into ${database.prefix.business}hou_shop_retention_money_record
+        <trim prefix="(recharge_time," suffix=")" suffixOverrides=",">
+            <if test="param.payPrice != null ">
+                recharge_amount,
+            </if>
+            <if test="param.rechargeType != null ">
+                recharge_type,
+            </if>
+            <if test="param.rechargeStatus != null">
+                recharge_status,
+            </if>
+            <if test="param.rType != null ">
+                r_type,
+            </if>
+            <if test="param.fundDestination != null and param.fundDestination != ''">
+                fund_destination,
+            </if>
+            <if test="param.payee != null and param.payee != ''">
+                payee,
+            </if>
+            <if test="param.collectionAccount != null and param.collectionAccount != ''">
+                collection_account,
+            </if>
+            <if test="param.payImg != null and param.payImg != ''">
+                pay_img,
+            </if>
+            <if test="param.receivingBank != null and param.receivingBank != ''">
+                receiving_bank,
+            </if>
+            <if test="param.payExplanation != null and param.payExplanation != ''">
+                pay_explanation,
+            </if>
+            <if test="param.shopId != null and param.shopId != ''">
+                shop_id,
+            </if>
+            <if test="param.rechargeNumber != null and param.rechargeNumber != ''">
+                recharge_number,
+            </if>
+        </trim>
+        <trim prefix=" values (now()," suffix=")" suffixOverrides=",">
+            <if test="param.payPrice != null ">
+                #{param.payPrice},
+            </if>
+            <if test="param.rechargeType != null ">
+                #{param.rechargeType},
+            </if>
+            <if test="param.rechargeStatus != null ">
+                #{param.rechargeStatus},
+            </if>
+            <if test="param.rType != null ">
+                #{param.rType},
+            </if>
+            <if test="param.fundDestination != null and param.fundDestination != ''">
+                #{param.fundDestination},
+            </if>
+            <if test="param.payee != null and param.payee != ''">
+                #{param.payee},
+            </if>
+            <if test="param.collectionAccount != null and param.collectionAccount != ''">
+                #{param.collectionAccount},
+            </if>
+            <if test="param.payImg != null and param.payImg != ''">
+                #{param.payImg},
+            </if>
+            <if test="param.receivingBank != null and param.receivingBank != ''">
+                #{param.receivingBank},
+            </if>
+            <if test="param.payExplanation != null and param.payExplanation != ''">
+                #{param.payExplanation},
+            </if>
+            <if test="param.shopId != null ">
+                #{param.shopId},
+            </if>
+            <if test="param.rechargeNumber != null and param.rechargeNumber != ''">
+                #{param.rechargeNumber},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateispay1">
+        update ${database.prefix.order}hou_order_complaints
+        set compensation_status = #{status},
+            complaints_status   = 1
+        where id = #{id}
+    </update>
+    <update id="updateCardMemberDetailPort">
+        update ${database.prefix.payment}hou_pay_user_resource
+        set user_money= user_money + #{money}
+        where user_id = #{userId}
+    </update>
+    <update id="updateshopbase">
+        update ${database.prefix.supplier}hou_shop_base
+        <set>
+            <if test="param.payPrice != null ">
+                retention_money_balance = #{param.payPrice},
+            </if>
+            <if test="param.payPrice1 != null ">
+                retention_money_withdrawal = #{param.payPrice1},
+            </if>
+            <if test="param.payPrice2 != null ">
+                retention_money_payment = #{param.payPrice2},
+            </if>
+            <if test="param.payPrice3 != null ">
+                accumulated_compensation = #{param.payPrice3},
+            </if>
+            <if test="param.retentionStatus != null ">
+                retention_status = #{param.retentionStatus},
+            </if>
+            <if test="param.retentionMoneyLimit != null ">
+                retention_money_limit = #{param.retentionMoneyLimit},
+            </if>
+            <if test="param.paymentTime != null ">
+                payment_time = #{param.paymentTime},
+            </if>
+        </set>
+        where shop_id = #{param.shopId}
+    </update>
+    <update id="updateispay">
+        update ${database.prefix.order}hou_order_complaints
+        set compensation_status = 1
+        where id = #{id}
+    </update>
+    <update id="updateshopgoods">
+        update ${database.prefix.goods}hou_goods_common
+        set common_state = 0
+        where common_state = 1
+          and shop_id = #{param}
+    </update>
+    <update id="updateGoodsBaseState">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            <if test="param.commonState != null">
+                goods_is_shelves = #{param.commonState,jdbcType=BIT}
+            </if>
+        </set>
+        where common_id
+        in (
+        <foreach collection="param.commonIdList" separator=","
+                 item="commonId">
+            #{commonId}
+        </foreach>
+        )
+    </update>
+    <update id="updateFirstRetention">
+        update ${database.prefix.supplier}hou_shop_base set first_retention = 0 where shop_id = #{shopId}
+    </update>
+
+    <select id="querycomplaintsstatus"
+            resultType="com.houjiang.commons.vo.order.OrderComplaintsVO">
+        select id,
+               compensation_amount,
+               complaints_id,
+               complaints_type,
+               complaints_reason,
+               order_id,
+               ooc.create_time,
+               fund_destination,
+               complaints_goodsid,
+               complaints_status,
+               failure_time,
+               ooc.user_id,
+               ooc.shop_id,
+               sb.user_id as sellUserId
+        from ${database.prefix.order}hou_order_complaints ooc
+                 left join ${database.prefix.supplier}hou_shop_base sb on sb.supplier_shop_id = ooc.shop_id
+        where compensation_status = 0
+          and ooc.failure_time between now() and #{date}
+    </select>
+    <select id="merchantprocessingouttime" resultType="com.houjiang.commons.vo.order.OrderComplaintsVO">
+        SELECT id,
+               compensation_amount,
+               complaints_id,
+               complaints_type,
+               complaints_reason,
+               order_id,
+               ooc.create_time,
+               fund_destination,
+               complaints_goodsid,
+               complaints_status,
+               failure_time,
+               ooc.user_id,
+               ooc.shop_id,
+               sb.user_id AS sellUserId
+        FROM ${database.prefix.order}hou_order_complaints ooc
+                 LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = ooc.shop_id
+        WHERE complaints_status = 0
+          AND now() >= failure_time
+    </select>
+    <select id="selectretention" resultType="com.houjiang.commons.vo.shop.RetentionShopInfoVO">
+        SELECT sb.retention_money_balance    AS retentionMoneyBalance,
+               sb.retention_money_withdrawal AS retentionMoneyWithdrawal,
+               sb.retention_money_payment    AS retentionMoneyPayment,
+               sb.retention_money_limit      AS retentionMoneyLimit,
+               sb.retention_status           AS retentionStatus,
+               sb.accumulated_compensation   AS accumulatedCompensation,
+               sb.user_id,
+               sb.supplier_shop_id,
+               ui.user_mobile
+        FROM ${database.prefix.supplier}hou_shop_base sb
+                 LEFT JOIN ${database.prefix.userms}hou_user_info ui ON ui.user_id = sb.user_id
+        WHERE sb.supplier_shop_id = #{shopId}
+    </select>
+    <select id="selectorder" resultType="java.util.Map">
+        SELECT shop_id,
+               order_create_time,
+               user_id
+        FROM (SELECT oob.shop_id,
+                     min(order_create_time) AS order_create_time,
+                     sb.user_id
+              FROM ${database.prefix.order}hou_order_base oob
+                       inner JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = oob.shop_id
+              WHERE order_status NOT IN (1, 7) and sb.first_retention = 1
+                and oob.shop_id &lt;&gt; 0
+              GROUP BY shop_id
+              ORDER BY order_create_time) a
+        GROUP BY shop_id
+    </select>
+    <select id="selectByConfigType" resultType="com.houjiang.commons.vo.base.BaseSysConfigsVO">
+        select config_key,
+               op_type,
+               config_value,
+               op_value,
+               config_comment,
+               config_enable
+        from ${database.prefix.base}hou_base_sys_configs
+        where config_type =
+              #{configType,jdbcType=VARCHAR}
+        order by config_sort asc
+    </select>
+    <select id="selectordergoods" resultType="com.houjiang.commons.vo.goods.PlatFormGoodsCatsVO">
+        SELECT cat_id,
+               refund_ratio,
+               cat_level
+        FROM ${database.prefix.goods}hou_goods_cat
+        WHERE cat_id IN (SELECT DISTINCT cat_id
+                         FROM ${database.prefix.goods}hou_goods_common
+                         WHERE common_id IN (SELECT DISTINCT oog.common_id
+                                             FROM ${database.prefix.order}hou_order_base oob
+                                                      LEFT JOIN ${database.prefix.order}hou_order_goods oog ON oob.order_id = oog.order_id
+                                             WHERE oob.shop_id = #{shopId}
+                                               and cat_level = 3
+                                               and oob.order_create_time BETWEEN #{starttime} and #{endtime}
+                                               and order_status not in (1, 7)))
+    </select>
+    <select id="selectcat" resultType="java.lang.Integer">
+        select t.refund_ratio
+        from (select @r                                                                   as _id,
+                     (select refund_ratio from ${database.prefix.goods}hou_goods_cat where cat_id = _id) as refund_ratio,
+                     (select @r := cat_parent_id
+              from ${database.prefix.goods}hou_goods_cat
+              where cat_id = _id) as cat_parent_id
+            from
+		(select @r := #{catId}) temp
+           , ${database.prefix.goods}hou_goods_cat a
+        where @r!=0
+        ORDER BY cat_parent_id asc
+            ) as t
+    </select>
+    <select id="selectshopbase" resultType="com.houjiang.commons.vo.shop.RetentionShopInfoVO">
+        SELECT supplier_shop_id,
+               payment_time,
+               user_id,
+               retention_money_payment,
+               retention_money_balance,
+               retention_money_withdrawal,
+               retention_money_limit,
+               retention_status
+        FROM ${database.prefix.supplier}hou_shop_base
+        WHERE retention_status = 3 or (retention_status = 2 and CURDATE() > DATE_ADD(payment_time, INTERVAL 3 DAY))
+    </select>
+    <select id="queryCardMemberservicesPort" resultType="com.houjiang.commons.vo.payment.CardMemberservicesVO">
+        SELECT a.user_id,
+               a.user_money_pending_settlement,
+               a.user_money,
+               a.user_money_frozen,
+               a.user_recharge_card
+        FROM ${database.prefix.payment}hou_pay_user_resource a
+        WHERE a.user_id = #{userId}
+    </select>
+    <select id="unpaidcomplaints" resultType="com.houjiang.commons.vo.order.OrderComplaintsVO">
+        SELECT id,
+               compensation_amount,
+               complaints_id,
+               complaints_type,
+               complaints_reason,
+               order_id,
+               create_time,
+               fund_destination,
+               complaints_goodsid,
+               complaints_status,
+               failure_time,
+               user_id,
+               shop_id
+        FROM ${database.prefix.order}hou_order_complaints
+        WHERE shop_id = #{shopId}
+          and compensation_status = 0
+          and complaints_status = 1
+
+        ORDER BY create_time DESC
+    </select>
+    <select id="selectshopgoods" resultType="java.lang.Integer">
+        SELECT common_id
+        FROM ${database.prefix.goods}hou_goods_common
+        WHERE common_state = 1
+          AND shop_id = #{param}
+    </select>
+    <select id="selectshopid" resultType="java.lang.Integer">
+        SELECT DISTINCT sb.supplier_shop_id
+        FROM ${database.prefix.order}hou_order_base oob
+                 LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = oob.shop_id
+        WHERE order_create_time BETWEEN #{starttime} and #{endtime} and sb.shop_status = 3
+    </select>
+
+</mapper>

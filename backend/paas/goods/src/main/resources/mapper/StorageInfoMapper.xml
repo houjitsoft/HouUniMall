@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.StorageInfoMapper">
+
+    <resultMap type="com.houjiang.goods.entity.StorageInfoEntity" id="StorageInfoMap">
+        <result property="storageId" column="storage_id" jdbcType="INTEGER"/>
+        <result property="storageCode" column="storage_code" jdbcType="VARCHAR"/>
+        <result property="storageName" column="storage_name" jdbcType="VARCHAR"/>
+        <result property="storageProvince" column="storage_province" jdbcType="INTEGER"/>
+        <result property="storageCity" column="storage_city" jdbcType="INTEGER"/>
+        <result property="storageArea" column="storage_area" jdbcType="INTEGER"/>
+        <result property="storageAddress" column="storage_address" jdbcType="VARCHAR"/>
+        <result property="storageContacts" column="storage_contacts" jdbcType="VARCHAR"/>
+        <result property="storageMobile" column="storage_mobile" jdbcType="VARCHAR"/>
+        <result property="storageStatus" column="storage_status" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="queryStorageInfoList" resultType="com.houjiang.goods.vo.StorageInfoVO">
+        SELECT
+            storage_id,
+            shop_id,
+            storage_code,
+            storage_name,
+            storage_province,
+            storage_city,
+            storage_area,
+            storage_address,
+            storage_contacts,
+            storage_mobile,
+            storage_status,
+            create_time,
+            update_time
+        FROM storage_info
+        where shop_id = #{param.shopId}
+        <if test="param.storageName != null and param.storageName != ''">
+            and storage_name like concat('%',#{param.storageName},'%')
+        </if>
+        <if test="param.storageCode != null and param.storageCode != ''">
+            and storage_code like concat('%',#{param.storageCode},'%')
+        </if>
+        <if test="param.storageStatus != null">
+            and storage_status = #{param.storageStatus}
+        </if>
+    </select>
+    <select id="selectStorageIdListByStorageName" resultType="java.lang.Integer">
+        select storage_id from storage_info where storage_name like concat('%',#{storageName},'%') and shop_id = #{shopId}
+    </select>
+    <select id="selectStorageNameByStorageId" resultType="java.lang.String">
+        select storage_name from storage_info where storage_id = #{storageId}
+    </select>
+
+</mapper>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsDelayConfigMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.commons.vo.base.BaseGoodsConfigVO">
+        <id column="common_id" jdbcType="INTEGER" property="commonId" />
+        <result column="sell_check" jdbcType="BIT" property="sellCheck" />
+        <result column="sell_edit" jdbcType="BIT" property="sellEdit" />
+        <result column="sell_edit_price" jdbcType="BIT" property="sellEditPrice" />
+        <result column="sell_deliver" jdbcType="BIT" property="sellDeliver" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        common_id, sell_check, sell_edit, sell_edit_price, sell_deliver
+    </sql>
+    <insert id="insertSelective" parameterType="com.houjiang.commons.vo.base.BaseGoodsConfigVO">
+        insert into goods_delay_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="commonId != null">
+                common_id,
+            </if>
+            <if test="sellCheck != null">
+                sell_check,
+            </if>
+            <if test="sellEdit != null">
+                sell_edit,
+            </if>
+            <if test="sellEditPrice != null">
+                sell_edit_price,
+            </if>
+            <if test="sellDeliver != null">
+                sell_deliver,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="commonId != null">
+                #{commonId,jdbcType=INTEGER},
+            </if>
+            <if test="sellCheck != null">
+                #{sellCheck,jdbcType=BIT},
+            </if>
+            <if test="sellEdit != null">
+                #{sellEdit,jdbcType=BIT},
+            </if>
+            <if test="sellEditPrice != null">
+                #{sellEditPrice,jdbcType=BIT},
+            </if>
+            <if test="sellDeliver != null">
+                #{sellDeliver,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from goods_delay_config
+        where common_id = #{commonId,jdbcType=INTEGER}
+    </select>
+    <update id="updateByPrimaryKeySelective" parameterType="com.houjiang.commons.vo.base.BaseGoodsConfigVO">
+        update goods_delay_config
+        <set>
+            <if test="sellCheck != null">
+                sell_check = #{sellCheck,jdbcType=BIT},
+            </if>
+            <if test="sellEdit != null">
+                sell_edit = #{sellEdit,jdbcType=BIT},
+            </if>
+            <if test="sellEditPrice != null">
+                sell_edit_price = #{sellEditPrice,jdbcType=BIT},
+            </if>
+            <if test="sellDeliver != null">
+                sell_deliver = #{sellDeliver,jdbcType=BIT},
+            </if>
+        </set>
+        where common_id = #{commonId,jdbcType=INTEGER}
+    </update>
+</mapper>

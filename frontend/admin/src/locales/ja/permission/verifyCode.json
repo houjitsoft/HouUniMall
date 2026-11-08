@@ -1,0 +1,14 @@
+{
+  "title": "認証コードの確認",
+  "sentTo": "認証コードを {phone} に送信しました",
+  "codePlaceholder": "6桁の認証コードを入力してください",
+  "backToEdit": "修正に戻る",
+  "notReceived": "認証コードが届かない場合は、電話番号が正しいか確認してください",
+  "resend": "再送信",
+  "codeRequired": "6桁の認証コードを入力してください",
+  "verifySuccess": "認証コードを確認しました",
+  "verifyFailed": "認証に失敗しました",
+  "resendSuccess": "認証コードを再送信しました",
+  "resendFailed": "認証コードの送信に失敗しました",
+  "resendCountdown": "{countdown}秒後に再送信"
+}

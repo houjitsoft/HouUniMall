@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsVersionMapper">
+
+    <select id="queryGoodsVersionList" resultType="com.houjiang.goods.entity.GoodsVersionEntity">
+        select
+            gv.ver_id,
+            gv.common_id,
+            gc.common_name,
+            gv.shop_id,
+            gv.operate_user_id,
+            gv.operate_user_name,
+            gv.operate_time,
+            gv.version_no
+        from ${database.prefix.goods}hou_goods_version gv
+        left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = gv.common_id
+        INNER JOIN ( SELECT common_id, MAX(operate_time) AS max_time
+                        FROM ${database.prefix.goods}hou_goods_version WHERE shop_id = #{param.shopId} GROUP BY common_id ) AS latest
+                    ON gv.common_id = latest.common_id AND gv.operate_time = latest.max_time
+        where gv.shop_id = #{param.shopId}
+        <if test="param.commonName != null and param.commonName != ''">
+            and gc.common_name like concat('%',#{param.commonName},'%')
+        </if>
+        <if test="param.operateUserName != null and param.operateUserName != ''">
+            and gv.operate_user_name like concat('%',#{param.operateUserName},'%')
+        </if>
+        <if test="param.startTime != null and param.startTime != '' and param.endTime != null and param.endTime != ''">
+            and (gv.operate_time between #{param.startTime} and #{param.endTime})
+        </if>
+        ORDER BY gv.operate_time DESC
+    </select>
+
+</mapper>

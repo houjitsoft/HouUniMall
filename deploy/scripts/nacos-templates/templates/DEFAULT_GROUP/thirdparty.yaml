@@ -1,0 +1,19 @@
+server:
+  port: 8194
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${THIRD_DATASOURCE_PASSWORD} # 数据库密码
+  main:
+    allow-bean-definition-overriding: true
+# 商家小程序
+shopAppId: ${THIRD_AK_ID}
+shopAppIdSecret: ${THIRD_SECRET}
+i18nPath: /houfss/hongxin/html
+# 项目部署域名
+domainName: http://${THIRD_ADDR}/
+# 字体路径
+fontUrlPath: /home/wwwroot/fontPath

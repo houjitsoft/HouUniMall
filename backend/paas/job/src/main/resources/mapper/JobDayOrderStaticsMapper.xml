@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.JobDayOrderStaticsMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.JobDayOrderStaticsEntity">
+        <id property="statId" column="stat_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="DATE"/>
+        <result property="totalRefundFee" column="total_refund_fee" jdbcType="DECIMAL"/>
+        <result property="totalRefundTrade" column="total_refund_trade" jdbcType="INTEGER"/>
+        <result property="totalPaymentAmount" column="total_payment_amount" jdbcType="DECIMAL"/>
+        <result property="totalOrderTrade" column="total_order_trade" jdbcType="INTEGER"/>
+        <result property="completeTrade" column="complete_trade" jdbcType="INTEGER"/>
+        <result property="completeFee" column="complete_fee" jdbcType="DECIMAL"/>
+            <result property="cancleTrade" column="cancle_trade" jdbcType="INTEGER"/>
+            <result property="cancleFee" column="cancle_fee" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        stat_id,create_time,total_refund_fee,
+        total_refund_trade,total_payment_amount,total_order_trade,
+        complete_trade,complete_fee,cancle_trade,
+        cancle_fee
+    </sql>
+    <select id="countOrderBase" resultType="java.util.Map">
+        SELECT
+        IFNULL( sum( order_payment_amount ), 0 ) AS orderPaymentAmount,
+        count( * ) AS completeTrade
+        FROM
+        ${database.prefix.order}hou_order_base
+        WHERE 1=1
+        <if test="null != countMap.orderStatus and countMap.orderStatus != ''">
+            and order_status = #{countMap.orderStatus}
+        </if>
+        <if test="null != countMap.orderFinishedStartTime and countMap.orderFinishedStartTime != ''">
+            and order_finished_time >= #{countMap.orderFinishedStartTime}
+        </if>
+        <if test="null != countMap.orderFinishedEndTime and countMap.orderFinishedEndTime != ''">
+            and order_finished_time &lt; #{countMap.orderFinishedEndTime}
+        </if>
+        <if test="null != countMap.orderCancelStartDate and countMap.orderCancelStartDate != ''">
+            and order_cancel_date >= #{countMap.orderCancelStartDate}
+        </if>
+        <if test="null != countMap.orderCancelEndDate and countMap.orderCancelEndDate != ''">
+            and order_cancel_date &lt; #{countMap.orderCancelEndDate}
+        </if>
+        <if test="null != countMap.orderCreateStartTime and countMap.orderCreateStartTime != ''">
+            and order_create_time >= #{countMap.orderCreateStartTime}
+        </if>
+        <if test="null != countMap.orderCreateEndTime and countMap.orderCreateEndTime != ''">
+            and order_create_time &lt; #{countMap.orderCreateEndTime}
+        </if>
+    </select>
+    <select id="countAfterSaleOrder" resultType="java.util.Map">
+        SELECT
+        IFNULL( sum( return_cash ), 0 ) AS returnCash,
+        count( 1 ) AS completeTrade
+        FROM
+        ${database.prefix.order}hou_order_return
+        WHERE 1=1
+        <if test="null != countMap.orderReturnStartTime and  countMap.orderReturnStartTime != ''">
+            and return_add_time >=  #{countMap.orderReturnStartTime}
+        </if>
+        <if test="null != countMap.orderReturnEndTime and countMap.orderReturnEndTime != ''">
+            and return_add_time &lt;= #{countMap.orderReturnEndTime}
+        </if>
+        <if test="null != countMap.returnState and  countMap.returnState != ''">
+            and return_state= #{countMap.returnState}
+        </if>
+    </select>
+</mapper>

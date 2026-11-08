@@ -1,0 +1,40 @@
+server:
+  port: 8195
+
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # connectTimeout/socketTimeout：坏连接快速失败，避免校验卡死 5s×N
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER}
+    password: ${USERMS_DATASOURCE_PASSWORD}
+    hikari:
+      connection-timeout: 10000
+      validation-timeout: 2000
+      minimum-idle: 5
+      maximum-pool-size: 30
+      auto-commit: true
+      idle-timeout: 300000
+      pool-name: UsermsHikariCP
+      max-lifetime: 600000
+      keepalive-time: 30000
+      connection-init-sql: SELECT 1
+      connection-test-query: SELECT 1
+      leak-detection-threshold: 60000
+  main:
+    allow-bean-definition-overriding: true
+# 项目部署域名
+domainName: https://cloud.shangliansoft.cn/
+# 字体路径
+fontUrlPath: /www/wwwroot/houcloud/public/fontPath
+i18nPath: /www/wwwroot/houcloud/public/html
+privateKeyPath: ${USERMS_PRIVATE_KEY}
+system:
+  pcIndexConfig: JAVA_PC_INDEX_CONFIG_TEST
+weixin:
+  Token: ${USERMS_WEIXIN_TOKEN}
+  EncodingAESKey: ${USERMS_WEIXIN_CREDENTIAL}
+  corpId: ${USERMS_WEIXIN_CREDENTIAL_2}
+  corpSecret: ${USERMS_WEIXIN_SECRET}
+  agentId: 1000101

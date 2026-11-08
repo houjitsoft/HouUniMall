@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivityPiecingTogetherMarkMapper">
+
+    <resultMap type="com.houjiang.activity.entity.ActivityPiecingTogetherMarkEntity" id="ActivityPiecingTogetherMarkMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="markId" column="mark_id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="detailId" column="detail_id" jdbcType="INTEGER"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="num" column="num" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="surplusNum" column="surplus_num" jdbcType="INTEGER"/>
+        <result property="userAvatar" column="user_avatar" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="insertPintuanMark">
+        insert into ${database.prefix.activity}hou_addon_activity_piecing_together_mark
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.detailId != null">
+                detail_id,
+            </if>
+            <if test="param.createdTime != null">
+                created_time,
+            </if>
+            <if test="param.num != null">
+                num,
+            </if>
+            <if test="param.status != null">
+                status,
+            </if>
+            <if test="param.userName != null">
+                user_name,
+            </if>
+            <if test="param.surplusNum != null">
+                surplus_num,
+            </if>
+            <if test="param.markId != null">
+                mark_id,
+            </if>
+            <if test="param.userAvatar != null">
+                user_avatar,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.detailId != null">
+                #{param.detailId,jdbcType=INTEGER},
+            </if>
+            <if test="param.createdTime != null">
+                #{param.createdTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.num != null">
+                #{param.num,jdbcType=TINYINT},
+            </if>
+            <if test="param.status != null">
+                #{param.status,jdbcType=BIT},
+            </if>
+            <if test="param.userName != null">
+                #{param.userName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.surplusNum != null">
+                #{param.surplusNum,jdbcType=INTEGER},
+            </if>
+            <if test="param.markId != null">
+                #{param.markId,jdbcType=VARCHAR},
+            </if>
+            <if test="param.userAvatar != null">
+                #{param.userAvatar,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateMarkMessage">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_mark
+        <set>
+            <if test="param.num != null">
+                num = #{param.num},
+            </if>
+            <if test="param.status != null">
+                status = #{param.status},
+            </if>
+            <if test="param.surplusNum != null">
+                surplus_num = #{param.surplusNum},
+            </if>
+        </set>
+        where mark_id = #{param.markId}
+    </update>
+    <update id="updateMarkStatus">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_mark
+        <set>
+            <if test="param.status != null">
+                status = #{param.status,jdbcType=BIT},
+            </if>
+        </set>
+        where mark_id in (
+        <foreach collection="param.expireMarkIdList" separator=","
+                 item="markId">
+            #{markId}
+        </foreach>
+        )
+    </update>
+    <select id="queryPintByMarkId" resultType="com.houjiang.activity.vo.GoodsPinTuanResultVO">
+         select pd.price_ori,pd.price,pd.common_id,pd.goods_id,gc.common_image,gc.common_name
+         from ${database.prefix.activity}hou_addon_activity_piecing_together_mark pm
+         LEFT JOIN ${database.prefix.activity}hou_addon_activity_piecing_together_detail pd on pm.detail_id = pd.detail_id
+         Left JOIN ${database.prefix.goods}hou_goods_common gc on pd.common_id = gc.common_id
+        where  mark_id = #{markId}
+    </select>
+    <select id="selectUnformedMarkId" resultType="java.lang.String">
+    SELECT
+		mark_id
+		FROM ${database.prefix.activity}hou_addon_activity_piecing_together_mark
+		WHERE
+		detail_id in (
+		SELECT
+		detail_id
+		FROM ${database.prefix.activity}hou_addon_activity_piecing_together_detail
+		WHERE
+		pintuan_id = #{pintuanId,jdbcType=VARCHAR}
+		)
+		AND STATUS = 0
+    </select>
+    <select id="querySurplusNum" resultType="java.lang.Integer">
+        select surplus_num from ${database.prefix.activity}hou_addon_activity_piecing_together_mark where mark_id = #{markId}
+    </select>
+    <select id="otherOrderIsPay" resultType="java.lang.Integer">
+        SELECT
+            count( 1 )
+        FROM ${database.prefix.activity}hou_addon_activity_piecing_together_temp tt
+                LEFT JOIN ${database.prefix.order}hou_order_base ob ON tt.order_id = ob.order_id
+        WHERE
+            tt.mark_id = #{markId} and ob.order_status != 3 and ob.order_id != #{orderId}
+    </select>
+    <select id="selectByMarkId" resultType="java.lang.String">
+        select tt.order_id from ${database.prefix.activity}hou_addon_activity_piecing_together_temp tt  where tt.mark_id = #{markId}
+    </select>
+    <update id="updateMarkFormedByMarkId">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_mark
+        set status = 1
+        where mark_id = #{markId,jdbcType=VARCHAR} and status = 0
+    </update>
+    <select id="selectPersonNumByMarkId" resultType="java.lang.Integer">
+        select pp.person_num
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_mark pm
+                 left join ${database.prefix.activity}hou_addon_activity_piecing_together_detail pd on pm.detail_id = pd.detail_id
+                 left join ${database.prefix.activity}hou_addon_activity_piecing_together pp on pd.pintuan_id = pp.pintuan_id
+        where pm.mark_id = #{markId,jdbcType=VARCHAR}
+    </select>
+
+
+</mapper>

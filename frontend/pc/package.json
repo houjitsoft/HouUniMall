@@ -1,0 +1,42 @@
+{
+  "name": "FONT_B2B_PC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "cross-env NODE_ENV=production nuxt build",
+    "build:test": "cross-env NUXT_PUBLIC_APP_ENV=development nuxt build",
+    "build:prod": "cross-env NODE_ENV=production nuxt build",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "analyze": "nuxi analyze",
+    "analyze:no-serve": "nuxi analyze --no-serve"
+  },
+  "dependencies": {
+    "@iconify-json/heroicons": "^1.2.3",
+    "@nuxt/ui": "^4.3.0",
+    "@pinia/nuxt": "^0.11.3",
+    "crypto-js": "^4.2.0",
+    "html2pdf.js": "^0.14.0",
+    "jsencrypt": "^3.5.4",
+    "nuxt": "^4.2.2",
+    "pinia": "^3.0.4",
+    "pinia-plugin-persistedstate": "^4.7.1",
+    "qrcode.vue": "^3.10.0",
+    "swiper": "^12.0.3",
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.6",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^25.2.2",
+    "cross-env": "^7.0.3",
+    "sass": "^1.97.2",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

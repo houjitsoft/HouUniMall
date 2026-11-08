@@ -1,0 +1,10 @@
+{
+  "name": "@houjiang/order-pintuan-frontend",
+  "private": true,
+  "version": "1.0.1",
+  "type": "module",
+  "description": "拼团插件前端产物（与商城 admin 共用构建依赖）",
+  "scripts": {
+    "build": "vite build"
+  }
+}

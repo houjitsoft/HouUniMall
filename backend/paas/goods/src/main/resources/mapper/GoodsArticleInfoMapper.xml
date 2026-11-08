@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsArticleInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.goods.entity.GoodsArticleInfoEntity">
+            <id property="articleId" column="article_id" jdbcType="VARCHAR"/>
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="articleTitle" column="article_title" jdbcType="VARCHAR"/>
+            <result property="articleContent" column="article_content" jdbcType="VARCHAR"/>
+            <result property="articleCover" column="article_cover" jdbcType="VARCHAR"/>
+            <result property="readNum" column="read_num" jdbcType="INTEGER"/>
+            <result property="remarkNum" column="remark_num" jdbcType="INTEGER"/>
+            <result property="auditState" column="audit_state" jdbcType="INTEGER"/>
+            <result property="auditComment" column="audit_comment" jdbcType="VARCHAR"/>
+            <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+            <result property="tagId" column="tag_id" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="lastUpdatedTime" column="last_updated_time" jdbcType="TIMESTAMP"/>
+            <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+            <result property="catId" column="cat_id" jdbcType="INTEGER"/>
+            <result property="articleType" column="article_type" jdbcType="INTEGER"/>
+            <result property="likeNum" column="like_num" jdbcType="INTEGER"/>
+            <result property="starNum" column="star_num" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        article_id,user_id,article_title,
+        article_content,article_cover,read_num,
+        remark_num,audit_state,audit_comment,
+        common_id,tag_id,
+        last_updated_time,goods_id,cat_id,
+        article_type,like_num,star_num
+    </sql>
+    <insert id="addArticleInfo">
+        insert into ${database.prefix.goods}hou_goods_article_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.articleId != null">
+                article_id,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.articleTitle != null">
+                article_title,
+            </if>
+            <if test="param.articleContent != null">
+                article_content,
+            </if>
+            <if test="param.articleCover != null">
+                article_cover,
+            </if>
+            <if test="param.commonId != null">
+                common_id,
+            </if>
+            <if test="param.tagId != null">
+                tag_id,
+            </if>
+            <if test="param.goodsId != null">
+                goods_id,
+            </if>
+            <if test="param.catId != null">
+                cat_id,
+            </if>
+            <if test="param.articleType != null">
+                article_type,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.articleId != null">
+                #{param.articleId,jdbcType=VARCHAR},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.articleTitle != null">
+                #{param.articleTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="param.articleContent != null">
+                #{param.articleContent,jdbcType=VARCHAR},
+            </if>
+            <if test="param.articleCover != null">
+                #{param.articleCover,jdbcType=VARCHAR},
+            </if>
+            <if test="param.commonId != null">
+                #{param.commonId,jdbcType=INTEGER},
+            </if>
+            <if test="param.tagId != null">
+                #{param.tagId,jdbcType=INTEGER},
+            </if>
+            <if test="param.goodsId != null">
+                #{param.goodsId,jdbcType=INTEGER},
+            </if>
+            <if test="param.catId != null">
+                #{param.catId,jdbcType=INTEGER},
+            </if>
+            <if test="param.articleType != null">
+                #{param.articleType,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateCommunityAuditStatus">
+        update ${database.prefix.goods}hou_goods_article_info
+        <set>
+            <if test="null !=param.auditState">
+                audit_state = #{param.auditState},
+            </if>
+            <if test="null !=param.auditComment ">
+                audit_comment=#{param.auditComment}
+            </if>
+        </set>
+        WHERE article_id in (
+        <foreach collection="param.articleIdList" separator="," item="articleId">
+            #{articleId}
+        </foreach>
+        )
+
+    </update>
+    <update id="updateRemarkNum">
+        update ${database.prefix.goods}hou_goods_article_info
+        set remark_num = remark_num + 1
+        where article_id in (
+        <foreach collection="param.articleIdList" separator="," item="articleId">
+            #{articleId}
+        </foreach>
+        )
+    </update>
+    <update id="updateReadNum">
+        update ${database.prefix.goods}hou_goods_article_info
+		set read_num = read_num + 1,
+			last_updated_time = NOW()
+		where article_id=#{param.articleId}
+    </update>
+    <update id="updateLikeNum">
+        update ${database.prefix.goods}hou_goods_article_info
+        <set>
+            <if test="param.likeFlag == 1">
+                like_num = like_num + 1,
+            </if>
+            <if test="param.likeFlag != 1">
+                like_num = like_num - 1,
+            </if>
+        </set>
+        where article_id = #{param.articleId,jdbcType=VARCHAR}
+    </update>
+    <update id="updateStarNum">
+        update ${database.prefix.goods}hou_goods_article_info
+        <set>
+            <if test="param.starFlag == 1">
+                star_num = star_num + 1,
+            </if>
+            <if test="param.starFlag != 1">
+                star_num = star_num - 1,
+            </if>
+        </set>
+        where article_id = #{param.articleId,jdbcType=VARCHAR}
+    </update>
+    <select id="selectCommunityContentReview2" resultType="com.houjiang.goods.vo.CommunityContentReviewVO">
+        SELECT
+        ga.article_id,
+        ga.article_title,
+        ga.article_content,
+        ga.article_cover,
+        ga.audit_state,
+        ga.audit_comment,
+        ga.goods_id,
+        ga.article_type,
+        ga.create_time as postTime,
+        uuu.user_mobile,
+        uuu.user_name,
+        uuu.user_nickname,
+        ga.common_id,
+        gmv.common_price,
+        gmv.common_image,
+        gmv.common_name,
+        gt.tag_content,
+        gt.tag_id,
+        ga.create_time
+        FROM
+        goods_article_info ga
+        LEFT JOIN ${database.prefix.userms}hou_user_info uuu ON ga.user_id = uuu.user_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gmv ON gmv.common_id=ga.common_id
+        LEFT JOIN goods_tag_info gt ON ga.tag_id  = gt.tag_id
+        WHERE
+        1 =1
+        <if test="null != param.articleId and !''.equals(param.articleId)">
+            and ga.article_id= #{param.articleId}
+        </if>
+        <if test="null != param.userName and !''.equals(param.userName)">
+            and uuu.user_name =#{param.userName}
+        </if>
+        <if test="null !=param.auditState and !''.equals(param.auditState)">
+            and ga.audit_state = #{param.auditState}
+        </if>
+        <if test="null != param.articleId and !''.equals(param.articleId)">
+            and ga.article_id=#{param.articleId}
+        </if>
+        order by ga.create_time desc
+    </select>
+    <select id="getImageReources" resultType="java.lang.String">
+    select resource_url from ${database.prefix.goods}hou_goods_article_resource where article_id = #{param} and resource_type = 1
+    </select>
+    <select id="getVideoReources" resultType="java.lang.String">
+    select resource_url from ${database.prefix.goods}hou_goods_article_resource where article_id = #{param} and resource_type = 2
+    </select>
+    <select id="getArticleContent" resultType="java.lang.String">
+        select article_content from ${database.prefix.goods}hou_goods_article_info where article_id=#{remarkId}
+    </select>
+    <select id="queryArticleInfo" resultType="com.houjiang.goods.vo.CommunityArticleDetailVO">
+        select a.article_id,
+			   a.user_id,
+			   a.article_content,
+			   a.read_num,
+			   a.remark_num,
+			   a.like_num,
+			   a.star_num,
+			   a.goods_id,
+			   a.common_id,
+			   a.tag_id,
+			   STR_TO_DATE(a.create_time, '%Y-%m-%d') as create_time,
+			   a.article_type,
+			   b.tag_content,
+			   c.goods_id,
+			   c.common_id,
+			   c.common_price,
+			   c.common_image,
+			   c.common_name,
+			   c.points_rate
+		from ${database.prefix.goods}hou_goods_article_info a
+		    left join goods_tag_info b on a.tag_id = b.tag_id
+			left join ${database.prefix.goods}hou_goods_common c on a.common_id = c.common_id
+		where a.article_id = #{param.articleId}
+    </select>
+    <select id="getUserInfo" resultType="java.util.Map">
+        select
+			a.user_name as userName,
+			b.user_avatar as userAvatar
+		from ${database.prefix.userms}hou_user_info a
+		left join ${database.prefix.userms}hou_user_info_detail b on a.user_id=b.user_id
+		where a.user_id = #{param}
+    </select>
+    <select id="getUserInfoEntity" resultType="com.houjiang.goods.vo.CommunityUserInfoVO">
+        select
+			a.user_id,
+			a.user_name,
+		    a.user_nickname,
+			a.community_background,
+			a.user_signature,
+			b.user_avatar
+		from ${database.prefix.userms}hou_user_info a
+		left join ${database.prefix.userms}hou_user_info_detail b
+		on a.user_id=b.user_id
+		where a.user_id = #{param.userId}
+		limit 1
+    </select>
+    <select id="getAllUserIds" resultType="java.lang.String">
+        select distinct user_id from ${database.prefix.userms}hou_user_info where user_state > 0
+        <if test="param.userName != null">
+            and user_name like CONCAT('%',#{param.userName},'%')
+        </if>
+    </select>
+    <select id="getHasArticleUserIds" resultType="java.lang.String">
+        select distinct a.user_id from ${database.prefix.goods}hou_goods_article_info a
+        left join ${database.prefix.userms}hou_user_info b on a.user_id=b.user_id
+        where a.audit_state = 1
+        <if test="param.userName != null">
+            and b.user_name like CONCAT('%',#{param.userName},'%')
+        </if>
+    </select>
+    <select id="getArticleNum" resultType="java.lang.Integer">
+        select count(*) from ${database.prefix.goods}hou_goods_article_info where user_id=#{param.userId} and audit_state = 1;
+    </select>
+    <select id="getArticleSmallEntity" resultType="com.houjiang.goods.vo.CommunityArticleSmallEntityVO">
+        select article_id,article_content,article_cover,article_type from ${database.prefix.goods}hou_goods_article_info where user_id=#{uid} and audit_state = 1 limit 3;
+    </select>
+    <select id="queryOrder" resultType="java.lang.String">
+        select
+		       oob.order_id
+		from ${database.prefix.order}hou_order_base oob
+		left join ${database.prefix.order}hou_order_return oor
+		on oob.order_id = oor.order_id
+		where oob.order_is_shop_take != 1
+		  and oob.buyer_user_id = #{param.userId}
+		  and oob.order_status =  6
+		  and oob.order_return_status = 0
+		  and oob.order_refund_status = 0
+		  and oob.order_del = 0
+		  and (integral_goods != 0 or integral_goods is null)
+		order by order_finished_time desc
+    </select>
+    <select id="queryGoods" resultType="com.houjiang.goods.vo.GoodsDetailVO">
+        select
+		       oog.common_id,
+		       oog.goods_id,
+		       oog.goods_image,
+		       oog.goods_name,
+		       oog.goods_price,
+		       oog.goods_class_id,
+               oog.points_rate,
+               oog.cash_price
+		from ${database.prefix.order}hou_order_goods oog
+		where oog.order_id = #{param}
+		and oog.order_del = 0
+    </select>
+    <select id="queryStarArticleInfo" resultType="com.houjiang.goods.vo.StarredArticleVO">
+        select a.article_id,
+			   a.article_title,
+			   a.article_cover,
+			   a.read_num,
+			   a.remark_num,
+			   a.like_num,
+			   a.star_num,
+			   a.user_id,
+			   a.article_type,
+			   b.user_name,
+			   c.user_avatar
+		from ${database.prefix.goods}hou_goods_article_info a
+				 left join ${database.prefix.userms}hou_user_info b
+						   on a.user_id = b.user_id
+				 left join ${database.prefix.userms}hou_user_info_detail c
+						   on a.user_id = c.user_id
+		where a.article_id = #{param.articleId}
+    </select>
+    <select id="getArticleTitle" resultType="java.lang.String">
+        select
+			article_title
+		from ${database.prefix.goods}hou_goods_article_info
+		where article_id = #{param}
+    </select>
+    <select id="getArticleList" resultType="com.houjiang.commons.vo.goods.CommunityArticleVO">
+        select
+        a.article_id,
+        a.article_title,
+        a.article_content,
+        a.article_cover,
+        a.read_num,
+        a.remark_num,
+        a.like_num,
+        a.star_num,
+        a.user_id,
+        a.article_type,
+        a.audit_state,
+        a.audit_comment,
+        b.user_name
+        from ${database.prefix.goods}hou_goods_article_info a
+        inner join ${database.prefix.userms}hou_user_info b on a.user_id = b.user_id
+        left join goods_tag_info c on a.tag_id = c.tag_id
+        where 1=1
+        <if test="param.queryStr != null and param.queryStr != ''">
+            and ( c.tag_content LIKE CONCAT('%',#{param.queryStr},'%')
+            or a.article_title LIKE CONCAT('%',#{param.queryStr},'%')
+            or b.user_name LIKE CONCAT('%',#{param.queryStr},'%') )
+        </if>
+        <if test="param.userId != null and param.userId != ''">
+            and a.user_id = #{param.userId}
+        </if>
+        <if test="param.auditState != null ">
+            and a.audit_state = 1
+        </if>
+        <if test="param.catId != null">
+            and a.cat_id = #{param.catId}
+        </if>
+        <if test="param.tagId != null">
+            and a.tag_id = #{param.tagId}
+        </if>
+        order by a.create_time desc
+    </select>
+    <select id="queryGoodsCats" resultType="com.houjiang.goods.vo.CommunityArticleTagClassVO">
+        SELECT
+        a.cat_id AS classId,
+        b.cat_name AS className,
+        count( a.cat_id ) AS count
+        FROM goods_article_info a
+        LEFT JOIN ${database.prefix.goods}hou_goods_cat b ON a.cat_id = b.cat_id
+        WHERE a.audit_state = 1 and
+        b.cat_name IS NOT NULL
+        GROUP BY
+        a.cat_id
+        ORDER BY
+        count DESC
+        LIMIT 10
+    </select>
+    <select id="queryRandomInvitation" resultType="com.houjiang.commons.vo.goods.CommunityArticleVO">
+        select
+        a.article_id,
+        a.article_title,
+        a.article_content,
+        a.article_cover,
+        a.read_num,
+        a.remark_num,
+        a.like_num,
+        a.star_num,
+        a.user_id,
+        a.article_type,
+        a.audit_state,
+        a.audit_comment,
+        b.user_name
+        from ${database.prefix.goods}hou_goods_article_info a
+        inner join ${database.prefix.userms}hou_user_info b on a.user_id = b.user_id
+        left join goods_tag_info c on a.tag_id = c.tag_id
+        where a.audit_state = 1
+        <if test="userId != null">
+            and a.user_id not in (select followed_user_id from ${database.prefix.goods}hou_goods_article_user_follow uf where uf.follow_user_id = #{userId})
+            and a.user_id != #{userId}
+        </if>
+        GROUP BY a.user_id ORDER BY RAND() LIMIT 10
+    </select>
+    <select id="getFollowedNum" resultType="java.lang.Integer">
+	select count(1)
+		from ${database.prefix.goods}hou_goods_article_user_follow
+		where followed_user_id = #{param.userId}
+    </select>
+    <select id="getFollowUserIds" resultType="java.lang.String">
+        select distinct followed_user_id
+        from ${database.prefix.goods}hou_goods_article_user_follow a
+        left join ${database.prefix.userms}hou_user_info b on a.followed_user_id=b.user_id
+        where a.follow_user_id = #{param.userId,jdbcType=INTEGER}
+        <if test="param.userName != null and param.userName != ''">
+            and b.user_name like CONCAT('%',#{param.userName},'%')
+        </if>
+    </select>
+    <select id="getFollowArticleList" resultType="com.houjiang.commons.vo.goods.CommunityArticleVO">
+        select
+        a.article_id,
+        a.article_title,
+        a.article_content,
+        a.article_cover,
+        a.read_num,
+        a.remark_num,
+        a.like_num,
+        a.star_num,
+        a.user_id,
+        a.article_type,
+        a.audit_state,
+        a.audit_comment,
+        b.user_name
+        from ${database.prefix.goods}hou_goods_article_info a
+        inner join ${database.prefix.userms}hou_user_info b on a.user_id = b.user_id
+        left join goods_tag_info c on a.tag_id = c.tag_id
+        where a.audit_state = 1
+        <if test="param.followUserIds != null and param.followUserIds.size() > 0">
+            and a.user_id in
+            <foreach item="followUserId" collection="param.followUserIds" separator="," open="(" close=")" index="index">
+                #{followUserId}
+            </foreach>
+        </if>
+        <if test="param.queryStr != null and param.queryStr != ''">
+            and c.tag_content LIKE CONCAT('%',#{param.queryStr},'%')
+            or a.article_title LIKE CONCAT('%',#{param.queryStr},'%')
+            or b.user_name LIKE CONCAT('%',#{param.queryStr},'%')
+        </if>
+    </select>
+    <delete id="deleteArticle">
+        delete from ${database.prefix.goods}hou_goods_article_info
+        where article_id in
+        <foreach item="articleId" collection="param.articleIds" separator="," open="(" close=")" index="index">
+            #{articleId}
+        </foreach>
+    </delete>
+</mapper>

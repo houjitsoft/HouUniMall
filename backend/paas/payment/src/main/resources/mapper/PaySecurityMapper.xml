@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PaySecurityMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PaySecurityEntity">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="payPassword" column="pay_password" jdbcType="VARCHAR"/>
+        <result property="realNameEncrypted" column="real_name_encrypted" jdbcType="VARCHAR"/>
+        <result property="idCardEncrypted" column="id_card_encrypted" jdbcType="VARCHAR"/>
+        <result property="realNameStatus" column="real_name_status" jdbcType="TINYINT"/>
+        <result property="realNameTime" column="real_name_time" jdbcType="TIMESTAMP"/>
+        <result property="pwdErrorCount" column="pwd_error_count" jdbcType="INTEGER"/>
+        <result property="pwdLockTime" column="pwd_lock_time" jdbcType="TIMESTAMP"/>
+        <result property="lastModifyTime" column="last_modify_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+</mapper>

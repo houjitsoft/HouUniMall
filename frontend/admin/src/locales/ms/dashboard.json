@@ -1,0 +1,225 @@
+{
+  "welcome": {
+    "title": "Selamat datang ke Sistem Pengurusan UniMall",
+    "description": "Platform pengurusan perniagaan satu henti untuk membantu transformasi digital"
+  },
+  "stats": {
+    "users": "Jumlah pengguna",
+    "products": "Bilangan produk",
+    "orders": "Bilangan pesanan",
+    "revenue": "Pendapatan hari ini"
+  },
+  "more": "Lebih",
+  "moreModules": "Lebih banyak modul",
+  "modules": {
+    "oa": {
+      "title": "Tugas OA",
+      "noTodos": "Tiada tugas",
+      "types": {
+        "approval": "Kelulusan",
+        "hr": "HR",
+        "project": "Projek",
+        "meeting": "Mesyuarat",
+        "other": "Lain-lain"
+      }
+    },
+    "erp": {
+      "title": "Logistik penghantaran ERP",
+      "noShipments": "Tiada maklumat penghantaran",
+      "trackingNumber": "Nombor penjejakan",
+      "estimatedArrival": "Anggaran ketibaan",
+      "statuses": {
+        "shipping": "Penghantaran",
+        "shipped": "Dihantar",
+        "pending": "Menunggu",
+        "delivered": "Diterima",
+        "exception": "Pengecualian"
+      }
+    },
+    "project": {
+      "title": "Pengurusan projek",
+      "noProjects": "Tiada maklumat projek",
+      "statuses": {
+        "completed": "Selesai",
+        "pending": "Menunggu",
+        "inProgress": "Dalam proses"
+      }
+    },
+    "auth": {
+      "title": "Pengurusan pengesahan",
+      "users": "Jumlah pengguna",
+      "roles": "Bilangan peranan",
+      "permissions": "Bilangan kebenaran",
+      "recentActions": "Tindakan terkini",
+      "noActions": "Tiada rekod tindakan"
+    },
+    "setting": {
+      "title": "Tetapan sistem",
+      "noCategories": "Tiada kategori tetapan",
+      "systemStatus": "Status sistem",
+      "database": "Sambungan pangkalan data",
+      "cache": "Perkhidmatan cache",
+      "storage": "Penyimpanan fail",
+      "statuses": {
+        "normal": "Normal",
+        "warning": "Amaran"
+      },
+      "categories": {
+        "basic": {
+          "title": "Tetapan asas",
+          "description": "Konfigurasi maklumat asas sistem"
+        },
+        "user": {
+          "title": "Pengurusan pengguna",
+          "description": "Tetapan kebenaran dan peranan pengguna"
+        },
+        "finance": {
+          "title": "Tetapan kewangan",
+          "description": "Konfigurasi berkaitan pembayaran dan kewangan"
+        },
+        "notification": {
+          "title": "Tetapan notifikasi",
+          "description": "Konfigurasi push mesej dan email"
+        }
+      }
+    },
+    "goods": {
+      "title": "Pengurusan produk",
+      "total": "Jumlah produk",
+      "onSale": "Sedang dijual",
+      "outOfStock": "Kehabisan stok",
+      "recentGoods": "Produk terkini",
+      "stock": "Stok",
+      "noGoods": "Tiada maklumat produk"
+    },
+    "order": {
+      "title": "Pengurusan pesanan",
+      "today": "Pesanan hari ini",
+      "pending": "Menunggu",
+      "revenue": "Pendapatan hari ini",
+      "recentOrders": "Pesanan terkini",
+      "orderNumber": "Nombor pesanan",
+      "noOrders": "Tiada maklumat pesanan",
+      "statuses": {
+        "pending": "Menunggu",
+        "shipped": "Dihantar",
+        "completed": "Selesai",
+        "cancelled": "Dibatalkan"
+      }
+    },
+    "activity": {
+      "title": "Pengurusan aktiviti",
+      "active": "Aktiviti aktif",
+      "upcoming": "Akan datang",
+      "participants": "Peserta",
+      "recentActivities": "Aktiviti terkini",
+      "noActivities": "Tiada maklumat aktiviti",
+      "statuses": {
+        "active": "Aktif",
+        "upcoming": "Akan datang",
+        "completed": "Selesai"
+      }
+    },
+    "ai": {
+      "title": "Kecerdasan AI",
+      "requests": "Permintaan hari ini",
+      "models": "Model aktif",
+      "successRate": "Kadar kejayaan",
+      "recentActions": "Tindakan terkini",
+      "noActions": "Tiada rekod tindakan"
+    },
+    "cms": {
+      "title": "Pengurusan kandungan",
+      "articles": "Jumlah artikel",
+      "published": "Diterbitkan",
+      "comments": "Komen menunggu",
+      "recentArticles": "Artikel terkini",
+      "noArticles": "Tiada maklumat artikel",
+      "statuses": {
+        "published": "Diterbitkan",
+        "draft": "Draf",
+        "pending": "Menunggu"
+      }
+    },
+    "crm": {
+      "title": "Hubungan pelanggan",
+      "customers": "Jumlah pelanggan",
+      "newCustomers": "Baru bulan ini",
+      "revenue": "Pendapatan bulanan",
+      "recentCustomers": "Pelanggan terkini",
+      "noCustomers": "Tiada maklumat pelanggan"
+    },
+    "dcenter": {
+      "title": "Pusat data",
+      "dataVolume": "Jumlah data",
+      "reports": "Laporan",
+      "storage": "Penyimpanan digunakan",
+      "recentReports": "Laporan terkini",
+      "noReports": "Tiada maklumat laporan"
+    },
+    "im": {
+      "title": "Mesej segera",
+      "onlineUsers": "Pengguna dalam talian",
+      "messages": "Mesej",
+      "groups": "Kumpulan",
+      "recentMessages": "Mesej terkini",
+      "noMessages": "Tiada mesej"
+    },
+    "workflow": {
+      "title": "Pengurusan alur kerja",
+      "processes": "Proses",
+      "running": "Berjalan",
+      "completed": "Selesai hari ini",
+      "recentWorkflows": "Alur kerja terkini",
+      "noWorkflows": "Tiada alur kerja"
+    },
+    "payment": {
+      "title": "Pengurusan pembayaran",
+      "todayAmount": "Jumlah hari ini",
+      "transactions": "Transaksi",
+      "successRate": "Kadar kejayaan",
+      "recentTransactions": "Transaksi terkini",
+      "noTransactions": "Tiada transaksi"
+    },
+    "lowcode": {
+      "title": "Platform Low-Code",
+      "applications": "Aplikasi",
+      "components": "Komponen",
+      "templates": "Templat",
+      "recentProjects": "Projek terkini",
+      "noProjects": "Tiada projek"
+    },
+    "mes": {
+      "title": "Sistem Pelaksanaan Pembuatan",
+      "productionLines": "Barisan Pengeluaran",
+      "equipment": "Peralatan",
+      "oee": "OEE",
+      "productionStatus": "Status Pengeluaran",
+      "noProduction": "Tiada data pengeluaran"
+    },
+    "orderfood": {
+      "title": "Sistem Pesanan Makanan",
+      "todayOrders": "Pesanan hari ini",
+      "revenue": "Pendapatan hari ini",
+      "venues": "Tempat aktif",
+      "recentOrders": "Pesanan terkini",
+      "noOrders": "Tiada pesanan"
+    },
+    "rider": {
+      "title": "Pengurusan Penghantar",
+      "activeRiders": "Penghantar Aktif",
+      "todayOrders": "Pesanan hari ini",
+      "avgDeliveryTime": "Masa Penghantaran Purata",
+      "riderStatus": "Status Penghantar",
+      "noRiders": "Tiada penghantar"
+    },
+    "supplier": {
+      "title": "Pengurusan Pembekal",
+      "suppliers": "Pembekal",
+      "cooperations": "Kerjasama",
+      "qualityScore": "Skor Kualiti",
+      "recentSuppliers": "Pembekal Terkini",
+      "noSuppliers": "Tiada pembekal"
+    }
+  }
+}

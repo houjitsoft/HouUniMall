@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayReconDiffMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayReconDiffEntity">
+        <id column="id" property="id"/>
+        <result column="recon_file_id" property="reconFileId"/>
+        <result column="channel_code" property="channelCode"/>
+        <result column="bill_date" property="billDate"/>
+        <result column="local_order_no" property="localOrderNo"/>
+        <result column="channel_order_no" property="channelOrderNo"/>
+        <result column="local_amount" property="localAmount"/>
+        <result column="channel_amount" property="channelAmount"/>
+        <result column="diff_type" property="diffType"/>
+        <result column="diff_amount" property="diffAmount"/>
+        <result column="handle_status" property="handleStatus"/>
+        <result column="handle_user_id" property="handleUserId"/>
+        <result column="handle_time" property="handleTime"/>
+        <result column="handle_remark" property="handleRemark"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+</mapper>

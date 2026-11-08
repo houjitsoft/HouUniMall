@@ -1,0 +1,156 @@
+- generic [ref=f2e4]:
+  - complementary [ref=f2e5]:
+    - generic [ref=f2e7]:
+      - generic [ref=f2e8]: H
+      - generic [ref=f2e9]: HouCloud
+    - menubar [ref=f2e11]:
+      - menuitem "商城管理" [ref=f2e12] [cursor=pointer]
+      - menuitem "项目管理" [ref=f2e17] [cursor=pointer]
+      - menuitem "CRM" [ref=f2e22] [cursor=pointer]
+      - menuitem "财务管理" [ref=f2e27] [cursor=pointer]
+      - menuitem "供应商" [ref=f2e32] [cursor=pointer]
+      - menuitem "支付管理" [ref=f2e38] [cursor=pointer]
+      - menuitem "生产制造" [ref=f2e44] [cursor=pointer]
+      - menuitem "OA办公" [ref=f2e49] [cursor=pointer]
+      - menuitem "ERP" [ref=f2e56] [cursor=pointer]
+      - menuitem "系统设置" [ref=f2e63] [cursor=pointer]
+  - generic [ref=f2e72]:
+    - generic [ref=f2e73]:
+      - generic [ref=f2e74]: F2C一站式管理平台
+      - generic [ref=f2e78]:
+        - button "小匠帮你传" [ref=f2e80] [cursor=pointer]
+        - button "切换组织" [ref=f2e84] [cursor=pointer]
+        - button "切换语言" [ref=f2e90] [cursor=pointer]:
+          - generic [ref=f2e91]: 中文
+        - button "清除缓存" [ref=f2e95] [cursor=pointer]:
+          - generic [ref=f2e99]: 清缓存
+        - button "17612115819" [ref=f2e101] [cursor=pointer]
+    - generic [ref=f2e105]:
+      - complementary [ref=f2e107]:
+        - generic [ref=f2e108]:
+          - generic [ref=f2e109]:
+            - button [ref=f2e110] [cursor=pointer]
+            - generic [ref=f2e115]: 项目管理
+          - menubar [ref=f2e116]:
+            - menuitem [ref=f2e117] [cursor=pointer]
+            - menuitem [ref=f2e123] [cursor=pointer]
+            - menuitem "任务管理" [expanded] [ref=f2e127]:
+              - menu [ref=f2e136]:
+                - menuitem [ref=f2e137] [cursor=pointer]
+                - menuitem [ref=f2e141] [cursor=pointer]
+                - menuitem [ref=f2e145] [cursor=pointer]
+                - menuitem [ref=f2e149] [cursor=pointer]
+                - menuitem [ref=f2e153] [cursor=pointer]
+            - menuitem "测试管理" [ref=f2e157]
+            - menuitem [ref=f2e166] [cursor=pointer]
+            - menuitem [ref=f2e170] [cursor=pointer]
+            - menuitem [ref=f2e174] [cursor=pointer]
+            - menuitem [ref=f2e179] [cursor=pointer]
+            - menuitem [ref=f2e183] [cursor=pointer]
+      - main [ref=f2e187]:
+        - generic [ref=f2e190]:
+          - generic [ref=f2e192]:
+            - generic [ref=f2e193]:
+              - button "返回" [ref=f2e194] [cursor=pointer]
+              - generic [ref=f2e199]:
+                - generic [ref=f2e200]:
+                  - generic [ref=f2e201]: 内贸后台 店铺管理，修改企业站点报错
+                  - generic [ref=f2e202]: 待开始
+                  - generic [ref=f2e204]: 中
+                - paragraph [ref=f2e206]: 未关联项目 ·ID 187
+            - button "编辑" [ref=f2e208] [cursor=pointer]
+          - generic [ref=f2e214]:
+            - generic [ref=f2e215]:
+              - generic [ref=f2e217]:
+                - generic [ref=f2e218]: 进度
+                - generic [ref=f2e219]: 0%
+                - progressbar [ref=f2e220]
+              - generic [ref=f2e224]:
+                - generic [ref=f2e225]: 计划工时
+                - generic [ref=f2e226]: 48h
+                - generic [ref=f2e227]: 预计投入
+              - generic [ref=f2e229]:
+                - generic [ref=f2e230]: 实际工时
+                - generic [ref=f2e231]: "-"
+                - generic [ref=f2e232]: 已登记
+              - generic [ref=f2e234]:
+                - generic [ref=f2e235]: 截止时间
+                - generic [ref=f2e236]: 07-17
+                - generic [ref=f2e237]: 明日到期
+            - generic [ref=f2e238]:
+              - generic [ref=f2e239]:
+                - generic [ref=f2e240]:
+                  - generic [ref=f2e241]: 基本信息
+                  - table [ref=f2e244]:
+                    - rowgroup [ref=f2e245]:
+                      - row [ref=f2e246]:
+                        - cell "任务名称" [ref=f2e247]
+                        - cell "内贸后台 店铺管理，修改企业站点报错" [ref=f2e248]
+                      - row [ref=f2e249]:
+                        - cell "所属项目" [ref=f2e250]
+                        - cell "-" [ref=f2e251]
+                        - cell "任务类型" [ref=f2e252]
+                        - cell "未知" [ref=f2e253]
+                      - row [ref=f2e254]:
+                        - cell "优先级" [ref=f2e255]
+                        - cell "中" [ref=f2e256]
+                        - cell "状态" [ref=f2e259]
+                        - cell "待开始" [ref=f2e260]
+                      - row [ref=f2e263]:
+                        - cell "负责人" [ref=f2e264]
+                        - cell "-" [ref=f2e265]
+                        - cell "创建人" [ref=f2e266]
+                        - cell "-" [ref=f2e267]
+                      - row [ref=f2e268]:
+                        - cell "开始时间" [ref=f2e269]
+                        - cell "2026/7/15 08:00:00" [ref=f2e270]
+                        - cell "截止时间" [ref=f2e271]
+                        - cell "2026/7/17 08:00:00" [ref=f2e272]
+                      - row [ref=f2e273]:
+                        - cell "创建时间" [ref=f2e274]
+                        - cell "2026/7/15 09:50:37" [ref=f2e275]
+                        - cell "更新时间" [ref=f2e276]
+                        - cell "2026/7/15 09:50:37" [ref=f2e277]
+                - generic [ref=f2e278]:
+                  - generic [ref=f2e279]: 任务描述
+                  - generic [ref=f2e280]: 项目阶段：系统编码阶段 工作类型：开发 任务类型：前端页面开发 序号25；详见文档 https://doc.weixin.qq.com/sheet/e3_AT0ACQYRAO4tHrORYHXRxCyZJMyw8?scode=ABcAIgfaAAoIL442u2AQAAfQaaAKI&tab=upes4v
+              - generic [ref=f2e281]:
+                - generic [ref=f2e282]:
+                  - generic [ref=f2e283]: 快捷操作
+                  - generic [ref=f2e284]:
+                    - button "标记为完成" [ref=f2e285] [cursor=pointer]
+                    - button "设为进行中" [ref=f2e291] [cursor=pointer]
+                    - button "更新进度" [ref=f2e296] [cursor=pointer]
+                    - button "删除任务" [ref=f2e301] [cursor=pointer]
+                - generic [ref=f2e306]:
+                  - generic [ref=f2e307]: 调整进度
+                  - generic [ref=f2e308]:
+                    - generic [ref=f2e309]:
+                      - text: 当前
+                      - strong [ref=f2e310]: 0%
+                    - generic [ref=f2e311]:
+                      - slider "滑块介于 0 至 100" [ref=f2e313] [cursor=pointer]
+                      - generic [ref=f2e315]:
+                        - button "减少数值" [ref=f2e316]
+                        - button "增加数值" [ref=f2e320] [cursor=pointer]
+                        - spinbutton [ref=f2e326]: "0"
+            - generic [ref=f2e328]:
+              - tablist [ref=f2e332]:
+                - tab [ref=f2e334]
+                - tab [ref=f2e340]
+                - tab "操作日志 1" [active] [selected] [ref=f2e345]:
+                  - generic [ref=f2e346]:
+                    - text: 操作日志
+                    - generic [ref=f2e351]: "1"
+              - tabpanel "操作日志 1" [ref=f2e388]:
+                - generic [ref=f2e389]:
+                  - generic [ref=f2e390]:
+                    - generic [ref=f2e391]: 操作日志
+                    - button "刷新" [ref=f2e392] [cursor=pointer]
+                  - generic [ref=f2e397]:
+                    - generic [ref=f2e398]:
+                      - generic [ref=f2e399]: 2026-07-15 09:50:37
+                      - generic [ref=f2e400]: "15138276706"
+                      - generic [ref=f2e401]: 创建任务
+                    - generic [ref=f2e403]: 创建了任务：内贸后台 店铺管理，修改企业站点报错
+    - paragraph [ref=f2e387]: © 2023 管理系统. 版权所有

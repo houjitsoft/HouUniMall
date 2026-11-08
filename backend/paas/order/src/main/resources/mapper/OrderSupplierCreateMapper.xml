@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderSupplierCreateMapper">
+
+
+    <select id="queryDealerApplyListByShop" resultType="com.houjiang.commons.vo.base.DealerApplyInfoVO">
+        select
+        id, supplier_shop_id, supplier_shop_name,supplier_user_id,supplier_user_name, dealer_shop_id, dealer_shop_name, dealer_user_id,
+        dealer_user_name, dealer_user_phone, dealer_status, dealer_remark, dealer_level_id,
+        dealer_level_name, dealer_discount, create_time
+        from ${database.prefix.base}hou_base_dealer_apply_info
+        where dealer_shop_id = #{dealerShopId}
+        <if test="supplierShopList != null and supplierShopList.size > 0">
+            and supplier_shop_id in
+            <foreach item="shopId" collection="supplierShopList" separator="," open="(" close=")" index="index">
+                #{shopId}
+            </foreach>
+        </if>
+        and dealer_status = 2
+    </select>
+    <select id="queryPurchasingGoods" resultType="java.lang.Integer">
+        SELECT count(*) FROM ${database.prefix.order}hou_order_base oob,${database.prefix.order}hou_order_goods oog
+        where oob.buyer_user_id = #{userId} and oog.goods_id = #{goodsId} and oog.order_id = oob.order_id
+        and oob.payment_time > DATE_SUB(NOW(), INTERVAL #{restrictionHours} DAY)
+    </select>
+    <select id="queryPurchasingGoodsStatusNum" resultType="java.lang.Integer">
+        SELECT count(*) FROM ${database.prefix.order}hou_order_base oob,${database.prefix.order}hou_order_goods oog where oob.buyer_user_id = #{userId}
+        and oog.goods_id = #{goodsId} and oog.order_goods_status = 1 and oog.order_id = oob.order_id
+    </select>
+    <select id="queryUserId" resultType="com.houjiang.commons.vo.shop.ShopUserMessageResultVO">
+        select
+		sb.user_id,sb.user_name,sb.shop_name,sb.shop_tel
+		from ${database.prefix.supplier}hou_shop_base sb
+		where sb.supplier_shop_id = #{shopId}
+    </select>
+
+</mapper>

@@ -1,0 +1,111 @@
+# UniMall 桌面应用 - electron-builder 打包配置
+# 文档: https://www.electron.build/
+
+appId: com.houjit.cloud
+productName: UniMall
+copyright: Copyright © 2025 HouJit
+
+# 目录配置
+directories:
+  output: dist-electron
+  buildResources: build
+
+# 要打包的文件
+files:
+  - electron/**/*
+  - build/**/*
+  - package.json
+
+# 不打包的文件
+extraResources: []
+
+# macOS 配置
+mac:
+  category: public.app-category.business
+  target:
+    - target: dmg
+      arch:
+        - universal
+    - target: zip
+      arch:
+        - universal
+  icon: build/icon.icns
+  artifactName: "UniMall-${version}-mac.${ext}"
+  # 注意：ad-hoc 签名不能使用 hardenedRuntime
+  # hardenedRuntime 需要 Apple Developer ID 证书才有效
+  # 无证书时设为 false，构建后用 sign-mac.sh 脚本手动签名
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  # 无证书时 entitlements 不生效，但保留配置以备将来使用
+  # entitlements: build/entitlements.mac.plist
+  # entitlementsInherit: build/entitlements.mac.plist
+  # 如需公证，配置以下项（需要 Apple Developer 证书）
+  # identity: "Developer ID Application: Your Name (TEAMID)"
+  # hardenedRuntime: true
+  # notarize: true
+
+# DMG 配置
+dmg:
+  background: null
+  backgroundColor: "#ffffff"
+  window:
+    width: 540
+    height: 380
+  contents:
+    - x: 140
+      y: 180
+    - x: 400
+      y: 180
+      type: link
+      path: /Applications
+  title: "UniMall ${version}"
+
+# Windows 配置
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+  artifactName: "UniMall-${version}-setup.${ext}"
+  # 如需代码签名
+  # signingHashAlgorithms:
+  #   - sha256
+  # certificateFile: build/cert.pfx
+  # certificatePassword: ""
+
+# NSIS 安装程序配置
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: UniMall
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  license: null
+  deleteAppDataOnUninstall: false
+  runAfterFinish: true
+
+# Linux 配置
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: build
+  artifactName: "UniMall-${version}-linux.${ext}"
+  category: Office
+
+# 发布配置 - 自动更新源
+# 使用 generic 提供者，从自有服务器检查和下载更新
+# 更新文件需部署到服务器的 /download/desktop/ 目录下
+publish:
+  provider: generic
+  url: "https://unimall.houjit.com/download/desktop"
+  # 服务器上需放置以下文件：
+  # - latest-mac.yml   (macOS 更新清单)
+  # - latest.yml       (Windows 更新清单)
+  # - UniMall-x.x.x-mac.zip  (macOS 更新包)
+  # - UniMall-x.x.x-setup.exe (Windows 更新包)

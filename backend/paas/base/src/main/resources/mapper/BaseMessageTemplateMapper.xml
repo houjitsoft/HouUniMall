@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseMessageTemplateMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseMessageTemplateEntity" id="BaseMessageTemplateMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="templateName" column="template_name" jdbcType="VARCHAR"/>
+        <result property="templateCode" column="template_code" jdbcType="VARCHAR"/>
+        <result property="mailStatus" column="mail_status" jdbcType="INTEGER"/>
+        <result property="mailTemplateContent" column="mail_template_content" jdbcType="VARCHAR"/>
+        <result property="smsStatus" column="sms_status" jdbcType="INTEGER"/>
+        <result property="smsTemplateContent" column="sms_template_content" jdbcType="VARCHAR"/>
+        <result property="smsTemplateId" column="sms_template_id" jdbcType="VARCHAR"/>
+        <result property="wxStatus" column="wx_status" jdbcType="INTEGER"/>
+        <result property="wxTemplateContent" column="wx_template_content" jdbcType="VARCHAR"/>
+        <result property="wxTemplateId" column="wx_template_id" jdbcType="VARCHAR"/>
+        <result property="templateType" column="template_type" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="selectListByTemplateId" resultType="com.houjiang.commons.vo.base.BaseMessageTemplateVO">
+        select template_name,template_code,mail_status,mail_template_content,sms_status,sms_template_content,
+               sms_template_id,wx_status,wx_template_content,wx_template_id,template_type,email_status,email_template_content
+        from ${database.prefix.userms}hou_base_message_template where id = #{templateId}
+    </select>
+
+
+</mapper>

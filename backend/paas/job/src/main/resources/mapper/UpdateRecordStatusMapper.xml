@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.UpdateRecordStatusMapper">
+
+    <update id="updateReceiverdRecord">
+        update ${database.prefix.payment}hou_pay_consume_record set record_status = 6 where record_payorder = #{orderId} and trade_type_id = 1
+    </update>
+    <update id="updateReceiverdTrade">
+        update ${database.prefix.payment}hou_pay_consume_trade
+        set order_state_id = 6
+        where order_id = #{orderId}
+    </update>
+    <update id="updateTimeoutRecord">
+        update ${database.prefix.payment}hou_pay_consume_record
+        set record_status = 7
+        where record_payorder = #{orderId}
+    </update>
+    <update id="updateTimeoutTrade">
+        update ${database.prefix.payment}hou_pay_consume_trade set order_state_id = 7 where order_id = #{orderId}
+    </update>
+</mapper>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseMerchantAgreementMapper">
+    <insert id="addAgreement">
+     REPLACE into ${database.prefix.userms}hou_base_merchant_agreement (id,name,url,sign,update_time)
+        values(#{id},#{name},#{url},#{sign},now());
+    </insert>
+
+    <select id="selectAgreement" resultType="com.houjiang.base.vo.GdbMerchantAgreementVO">
+        select id,name,url,sign,update_time from ${database.prefix.userms}hou_base_merchant_agreement where sign = #{gdbMerchantAgreement.sign}
+    </select>
+
+</mapper>

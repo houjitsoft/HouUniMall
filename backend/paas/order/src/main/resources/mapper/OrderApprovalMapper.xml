@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderApprovalMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.order.entity.OrderApprovalEntity">
+            <id property="orderApprovalId" column="order_approval_id" jdbcType="VARCHAR"/>
+            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="orderSponsor" column="order_sponsor" jdbcType="VARCHAR"/>
+            <result property="businessId" column="business_id" jdbcType="INTEGER"/>
+            <result property="approvalMethod" column="approval_method" jdbcType="INTEGER"/>
+            <result property="approvalStatus" column="approval_status" jdbcType="INTEGER"/>
+            <result property="approverOne" column="approver_one" jdbcType="VARCHAR"/>
+            <result property="approverRemarksOne" column="approver_remarks_one" jdbcType="VARCHAR"/>
+            <result property="isApprovalOne" column="is_approval_one" jdbcType="INTEGER"/>
+            <result property="approvalTimeOne" column="approval_time_one" jdbcType="TIMESTAMP"/>
+            <result property="approverTwo" column="approver_two" jdbcType="VARCHAR"/>
+            <result property="approverRemarksTwo" column="approver_remarks_two" jdbcType="VARCHAR"/>
+            <result property="isApprovalTwo" column="is_approval_two" jdbcType="INTEGER"/>
+            <result property="approvalTimeTwo" column="approval_time_two" jdbcType="TIMESTAMP"/>
+            <result property="approverThree" column="approver_three" jdbcType="VARCHAR"/>
+            <result property="approverRemarksThree" column="approver_remarks_three" jdbcType="VARCHAR"/>
+            <result property="isApprovalThree" column="is_approval_three" jdbcType="INTEGER"/>
+            <result property="approvalTimeThree" column="approval_time_three" jdbcType="TIMESTAMP"/>
+            <result property="applyTime" column="apply_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        order_approval_id,order_id,order_sponsor,
+        business_id,approval_method,approval_status,
+        approver_one,approver_remarks_one,is_approval_one,
+        approval_time_one,approver_two,approver_remarks_two,
+        is_approval_two,approval_time_two,approver_three,
+        approver_remarks_three,is_approval_three,approval_time_three,
+        apply_time
+    </sql>
+</mapper>

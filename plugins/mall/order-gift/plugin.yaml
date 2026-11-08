@@ -1,0 +1,31 @@
+code: order-gift
+name: 满赠
+version: 1.0.2
+author: UniMall
+description: 满额赠品与买赠，支持固定赠品、多选一赠品池与赠品库存控制
+category: 营销与客户
+owner: official
+runtime: embedded
+hostService: mall
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - order-gift:root
+menus:
+  - type: M
+    name: 满赠
+    icon: Present
+    sort: 3330
+    perms: order-gift:root
+    path: /plugin/order-gift
+    group: growth
+    groupSort: 96
+frontend:
+  entry: /plugin-assets/order-gift/1.0.2/index.mjs
+tables:
+  prefix: hou_plugin_order_gift_
+  migrate:
+    - db/migration/V1__order_gift.sql

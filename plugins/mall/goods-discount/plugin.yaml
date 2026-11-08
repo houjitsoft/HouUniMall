@@ -1,0 +1,35 @@
+code: goods-discount
+name: 商品折扣
+version: 1.0.0
+author: UniMall
+description: 商品折扣（activity 拆分，归属 goods 宿主）
+category: 营销 / 运营
+owner: official
+runtime: embedded
+hostService: mall
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - goods-discount:root
+  - goods-discount:root:index
+menus:
+  - type: M
+    name: 商品折扣
+    icon: PriceTag
+    sort: 3270
+    perms: goods-discount:root
+    path: /plugin/goods-discount
+    group: growth
+    groupSort: 100
+  - type: C
+    name: 商品折扣管理
+    icon: PriceTag
+    sort: 1
+    perms: goods-discount:root:index
+    path: /plugin/goods-discount/index
+    parentPerms: goods-discount:root
+frontend:
+  entry: /plugin-assets/goods-discount/1.0.0/index.mjs

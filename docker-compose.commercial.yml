@@ -1,0 +1,207 @@
+# UniMall commercial services: use only the profile for the purchased product.
+# Images must define their own application HEALTHCHECK; a TCP port alone is not readiness.
+# Source archives are delivered separately and are never mounted into these containers.
+services:
+  crm:
+    profiles: ["crm"]
+    image: ${UNIMALL_CRM_IMAGE:-unimall-crm:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-crm
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8311"
+      SPRING_APPLICATION_NAME: crm
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  cms:
+    profiles: ["cms"]
+    image: ${UNIMALL_CMS_IMAGE:-unimall-cms:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-cms
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8217"
+      SPRING_APPLICATION_NAME: cms
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  erp:
+    profiles: ["erp"]
+    image: ${UNIMALL_ERP_IMAGE:-unimall-erp:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-erp
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8090"
+      SPRING_APPLICATION_NAME: erp
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  finance:
+    profiles: ["finance"]
+    image: ${UNIMALL_FINANCE_IMAGE:-unimall-finance:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-finance
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8282"
+      SPRING_APPLICATION_NAME: finance
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  geo:
+    profiles: ["geo"]
+    image: ${UNIMALL_GEO_IMAGE:-unimall-geo:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-geo
+    restart: unless-stopped
+    networks: [unimall]
+    volumes:
+      # 生成媒体（含微信发表扫码验证二维码）需跨容器重启保留
+      - ${UNIMALL_GEO_MEDIA_DIR:-/home/houjit/houcloud-media}:/app/public
+    environment:
+      SERVER_PORT: "8310"
+      SPRING_APPLICATION_NAME: geo
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  im:
+    profiles: ["im"]
+    image: ${UNIMALL_IM_IMAGE:-unimall-im:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-im
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8215"
+      SPRING_APPLICATION_NAME: im
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  logging:
+    profiles: ["logging"]
+    image: ${UNIMALL_LOGGING_IMAGE:-unimall-logging:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-logging
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8099"
+      SPRING_APPLICATION_NAME: logging
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  mes:
+    profiles: ["mes"]
+    image: ${UNIMALL_MES_IMAGE:-unimall-mes:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-mes
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8199"
+      SPRING_APPLICATION_NAME: mes
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  oa:
+    profiles: ["oa"]
+    image: ${UNIMALL_OA_IMAGE:-unimall-oa:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-oa
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8393"
+      SPRING_APPLICATION_NAME: oa
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  orderfood:
+    profiles: ["orderfood"]
+    image: ${UNIMALL_ORDERFOOD_IMAGE:-unimall-orderfood:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-orderfood
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8203"
+      SPRING_APPLICATION_NAME: orderfood
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  pm:
+    profiles: ["pm"]
+    image: ${UNIMALL_PM_IMAGE:-unimall-pm:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-pm
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8304"
+      SPRING_APPLICATION_NAME: pm
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  rider:
+    profiles: ["rider"]
+    image: ${UNIMALL_RIDER_IMAGE:-unimall-rider:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-rider
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8205"
+      SPRING_APPLICATION_NAME: rider
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  supplier:
+    profiles: ["supplier"]
+    image: ${UNIMALL_SUPPLIER_IMAGE:-unimall-supplier:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-supplier
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8212"
+      SPRING_APPLICATION_NAME: supplier
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+  webpos:
+    profiles: ["webpos"]
+    image: ${UNIMALL_WEBPOS_IMAGE:-unimall-webpos:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-webpos
+    restart: unless-stopped
+    networks: [unimall]
+    environment:
+      SERVER_PORT: "8204"
+      SPRING_APPLICATION_NAME: webpos
+      NACOS_ADDR: ${NACOS_ADDR:?Set NACOS_ADDR}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:?Set NACOS_PASSWORD}
+      TZ: Asia/Shanghai
+networks:
+  unimall:
+    name: ${UNIMALL_NETWORK:-unimall}
+    driver: bridge

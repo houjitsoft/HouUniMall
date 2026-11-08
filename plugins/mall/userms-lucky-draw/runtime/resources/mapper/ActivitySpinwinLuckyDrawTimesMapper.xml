@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivitySpinwinLuckyDrawTimesMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.activity.entity.ActivitySpinwinLuckyDrawTimesEntity">
+        <id property="timeId" column="time_id" jdbcType="INTEGER"/>
+        <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="luckyDrawTimes" column="lucky_draw_times" jdbcType="INTEGER"/>
+        <result property="surplusDrawTimes" column="surplus_draw_times" jdbcType="INTEGER"/>
+        <result property="updateDate" column="update_date" jdbcType="TIMESTAMP"/>
+        <result property="winningTimes" column="winning_times" jdbcType="INTEGER"/>
+        <result property="numberOfDailyLottery" column="number_of_daily_lottery" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="numSweepstakesToday" column="num_sweepstakes_today" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        time_id
+        ,activity_id,user_id,
+        lucky_draw_times,surplus_draw_times,update_date,
+        winning_times,number_of_daily_lottery,user_name,
+        num_sweepstakes_today
+    </sql>
+    <insert id="insertDrawTimes">
+        insert into activity_spinwin_lucky_draw_times (activity_id, lucky_draw_times, surplus_draw_times, update_date,
+                                                       user_id, number_of_daily_lottery, user_name)
+        values (#{activityId}, #{luckyDrawTimes}, #{luckyDrawTimes}, now(), #{userId}, #{numberOfDailyLottery},
+                #{userName})
+    </insert>
+    <insert id="insertDrawTimes2">
+        insert into activity_spinwin_lucky_draw_times (activity_id, user_id, lucky_draw_times, surplus_draw_times,
+                                                       update_date, winning_times, num_sweepstakes_today)
+        values (#{activityId}, #{userId}, #{luckyDrawTimes}, #{surplusDrawTimes}, #{updateDate},
+                #{winningTimes}, #{numSweepstakesToday})
+    </insert>
+    <update id="updateDrawTimes">
+        update activity_spinwin_lucky_draw_times
+        set surplus_draw_times   = #{surplusDrawTimes},
+            update_date          = #{updateDate},
+            winning_times= #{winningTimes},
+            num_sweepstakes_today= #{numSweepstakesToday}
+        where user_id = #{userId}
+          and activity_id = #{activityId}
+    </update>
+    <select id="selectDrawTimes" resultType="com.houjiang.activity.vo.DrawTimesDetailsVO">
+        SELECT time_id,
+               lucky_draw_times,
+               surplus_draw_times,
+               number_of_daily_lottery,
+               winning_times,
+               num_sweepstakes_today
+        FROM activity_spinwin_lucky_draw_times
+        where activity_id = #{param.activityId}
+          and user_id = #{param.userId}
+    </select>
+    <select id="selectLuckyDrawTimesList"
+            resultType="com.houjiang.activity.entity.ActivitySpinwinLuckyDrawTimesEntity">
+        SELECT
+        activity_id,
+        user_id,
+        lucky_draw_times,
+        surplus_draw_times,
+        update_date,
+        winning_times,
+        number_of_daily_lottery,
+        user_name
+        FROM
+        activity_spinwin_lucky_draw_times
+        WHERE 1= 1
+        <if test="param.activityId != null and param.activityId != ''">
+            and activity_id = #{param.activityId}
+        </if>
+        order by update_date desc
+    </select>
+</mapper>

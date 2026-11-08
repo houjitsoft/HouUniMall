@@ -1,0 +1,35 @@
+code: userms-points-mall
+name: 积分商城
+version: 1.0.0
+author: UniMall
+description: 积分商城（activity 拆分，归属 userms 宿主）
+category: 营销 / 运营
+owner: official
+runtime: embedded
+hostService: mall
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - userms-points-mall:root
+  - userms-points-mall:root:index
+menus:
+  - type: M
+    name: 积分商城
+    icon: Present
+    sort: 3300
+    perms: userms-points-mall:root
+    path: /plugin/userms-points-mall
+    group: growth
+    groupSort: 100
+  - type: C
+    name: 积分商城管理
+    icon: Present
+    sort: 1
+    perms: userms-points-mall:root:index
+    path: /plugin/userms-points-mall/index
+    parentPerms: userms-points-mall:root
+frontend:
+  entry: /plugin-assets/userms-points-mall/1.0.0/index.mjs

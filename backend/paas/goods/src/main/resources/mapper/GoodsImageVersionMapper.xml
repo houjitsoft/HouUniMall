@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsImageVersionMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsImageVersionEntity" id="GoodsImageVersionMap">
+        <result property="goodsImageVerId" column="goods_image_ver_id" jdbcType="INTEGER"/>
+        <result property="verId" column="ver_id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="commonName" column="common_name" jdbcType="VARCHAR"/>
+        <result property="verBody" column="ver_body" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="operateUserId" column="operate_user_id" jdbcType="VARCHAR"/>
+        <result property="operateUserName" column="operate_user_name" jdbcType="VARCHAR"/>
+        <result property="operateTime" column="operate_time" jdbcType="TIMESTAMP"/>
+        <result property="versionNo" column="version_no" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="insertBatch">
+        insert into ${database.prefix.goods}hou_supplier_goods_image_version (ver_id, common_id, common_name, ver_body, shop_id, operate_user_id, operate_user_name, operate_time, version_no)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.verId}, #{item.commonId}, #{item.commonName}, #{item.verBody}, #{item.shopId}, #{item.operateUserId}, #{item.operateUserName}, #{item.operateTime},#{item.versionNo})
+        </foreach>
+    </insert>
+
+</mapper>

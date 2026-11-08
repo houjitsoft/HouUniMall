@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.houjiang</groupId>
+        <artifactId>houjiang</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../paas/pom.xml</relativePath>
+    </parent>
+    <artifactId>houcloud-extensions</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>含明确的专利授权（第 3 条）与商标保留（第 6 条）。</comments>
+        </license>
+    </licenses>
+    <name>HouCloud 二开模块聚合</name>
+    <description>
+        源码级二开模块聚合：统一构建全部二开示例并跑契约测试门禁。
+        本聚合不进入 backend/paas 主反应堆，避免影响 Core 构建。
+    </description>
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <modules>
+        <module>custom-goods</module>
+        <module>custom-payment</module>
+        <module>custom-order</module>
+        <module>custom-auth</module>
+        <module>custom-base</module>
+        <module>custom-job</module>
+        <module>custom-merchant</module>
+        <module>custom-permission</module>
+        <module>custom-thirdparty</module>
+        <module>custom-userms</module>
+        <module>custom-crm</module>
+        <module>custom-cms</module>
+        <module>custom-erp</module>
+        <module>custom-finance</module>
+        <module>custom-geo</module>
+        <module>custom-im</module>
+        <module>custom-logging</module>
+        <module>custom-mes</module>
+        <module>custom-oa</module>
+        <module>custom-orderfood</module>
+        <module>custom-pm</module>
+        <module>custom-rider</module>
+        <module>custom-supplier</module>
+        <module>custom-webpos</module>
+    </modules>
+    <dependencies>
+        <!-- 日志：宿主运行期提供实现，二开模块只面向 slf4j 编程。
+             注意 plugin-api / plugin-sdk 是 provided 作用域，其依赖不会传递下来，故此处显式声明。 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- 全部二开模块共用的测试依赖，子模块不必重复声明 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>21</release>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

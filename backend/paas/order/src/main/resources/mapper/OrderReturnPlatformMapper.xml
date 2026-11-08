@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderReturnPlatformMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.order.entity.OrderReturnPlatformEntity">
+            <id property="platformInterventionId" column="platform_intervention_id" jdbcType="INTEGER"/>
+            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="returnCode" column="return_code" jdbcType="VARCHAR"/>
+            <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+            <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+            <result property="interventionState" column="intervention_state" jdbcType="INTEGER"/>
+            <result property="applicationTime" column="application_time" jdbcType="TIMESTAMP"/>
+            <result property="buyerUserId" column="buyer_user_id" jdbcType="INTEGER"/>
+            <result property="sellerUserId" column="seller_user_id" jdbcType="INTEGER"/>
+            <result property="returnState" column="return_state" jdbcType="INTEGER"/>
+            <result property="sellerVoucher" column="seller_voucher" jdbcType="VARCHAR"/>
+            <result property="buyerVoucher" column="buyer_voucher" jdbcType="VARCHAR"/>
+            <result property="buyerRemarks" column="buyer_remarks" jdbcType="VARCHAR"/>
+            <result property="sellerRemarks" column="seller_remarks" jdbcType="VARCHAR"/>
+            <result property="processingResults" column="processing_results" jdbcType="INTEGER"/>
+            <result property="processingTime" column="processing_time" jdbcType="TIMESTAMP"/>
+            <result property="expriationTime" column="expriation_time" jdbcType="TIMESTAMP"/>
+            <result property="returnMethodType" column="return_method_type" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        platform_intervention_id,order_id,return_code,
+        shop_name,shop_id,intervention_state,
+        application_time,buyer_user_id,seller_user_id,
+        return_state,seller_voucher,buyer_voucher,
+        buyer_remarks,seller_remarks,processing_results,
+        processing_time,expriation_time,return_method_type
+    </sql>
+    <insert id="insertOrderReturnPlatform">
+        insert INTO ${database.prefix.order}hou_order_return_platform
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.orderId != null and param.orderId != ''">
+                order_id,
+            </if>
+            <if test="param.returnCode != null and param.returnCode != ''">
+                return_code,
+            </if>
+            <if test="param.shopName != null and param.shopName != ''">
+                shop_name,
+            </if>
+            <if test="param.shopId != null and param.shopId != ''">
+                shop_id,
+            </if>
+            <if test="param.interventionState != null and param.interventionState != ''">
+                intervention_state,
+            </if>
+            <if test="param.applicationTime != null">
+                application_time,
+            </if>
+            <if test="param.buyerUserId != null and param.buyerUserId != ''">
+                buyer_user_id,
+            </if>
+            <if test="param.sellerUserId != null and param.sellerUserId != ''">
+                seller_user_id,
+            </if>
+            <if test="param.returnState != null and param.returnState != ''">
+                return_state,
+            </if>
+            <if test="param.sellerVoucher != null and param.sellerVoucher != ''">
+                seller_voucher,
+            </if>
+            <if test="param.buyerVoucher != null and param.buyerVoucher != ''">
+                buyer_voucher,
+            </if>
+            <if test="param.buyerRemarks != null and param.buyerRemarks != ''">
+                buyer_remarks,
+            </if>
+            <if test="param.sellerRemarks != null and param.sellerRemarks != ''">
+                seller_remarks,
+            </if>
+            <if test="param.processingResults != null and param.processingResults != ''">
+                processing_results,
+            </if>
+            <if test="param.returnMethodType != null and param.returnMethodType != ''">
+                return_method_type,
+            </if>
+            <if test="param.processingTime != null">
+                processing_time,
+            </if>
+            <if test="param.expriationTime != null">
+                expriation_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.orderId != null and param.orderId != ''">
+                #{param.orderId},
+            </if>
+            <if test="param.returnCode != null and param.returnCode != ''">
+                #{param.returnCode},
+            </if>
+            <if test="param.shopName != null and param.shopName != ''">
+                #{param.shopName},
+            </if>
+            <if test="param.shopId != null and param.shopId != ''">
+                #{param.shopId},
+            </if>
+            <if test="param.interventionState != null and param.interventionState != ''">
+                #{param.interventionState},
+            </if>
+            <if test="param.applicationTime != null">
+                #{param.applicationTime},
+            </if>
+            <if test="param.buyerUserId != null and param.buyerUserId != ''">
+                #{param.buyerUserId},
+            </if>
+            <if test="param.sellerUserId != null and param.sellerUserId != ''">
+                #{param.sellerUserId},
+            </if>
+            <if test="param.returnState != null and param.returnState != ''">
+                #{param.returnState},
+            </if>
+            <if test="param.sellerVoucher != null and param.sellerVoucher != ''">
+                #{param.sellerVoucher},
+            </if>
+            <if test="param.buyerVoucher != null and param.buyerVoucher != ''">
+                #{param.buyerVoucher},
+            </if>
+            <if test="param.buyerRemarks != null and param.buyerRemarks != ''">
+                #{param.buyerRemarks},
+            </if>
+            <if test="param.sellerRemarks != null and param.sellerRemarks != ''">
+                #{param.sellerRemarks},
+            </if>
+            <if test="param.processingResults != null and param.processingResults != ''">
+                #{param.processingResults},
+            </if>
+            <if test="param.returnMethodType != null and param.returnMethodType != ''">
+                #{param.returnMethodType},
+            </if>
+            <if test="param.processingTime != null">
+                #{param.processingTime},
+            </if>
+            <if test="param.expriationTime != null">
+                #{param.expriationTime},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateOrderReturnBuyerVoucher">
+        update ${database.prefix.order}hou_order_return_platform
+        <set>
+            <if test="param.buyerVoucher != null and param.buyerVoucher != ''">
+                buyer_voucher = #{param.buyerVoucher},
+            </if>
+            <if test="param.buyerRemarks != null and param.buyerRemarks != ''">
+                buyer_remarks = #{param.buyerRemarks},
+            </if>
+            <if test="param.interventionState != null">
+                intervention_state = #{param.interventionState},
+            </if>
+            <if test="param.returnState != null and param.returnState != ''">
+                return_state = #{param.returnState},
+            </if>
+            <if test="param.returnMethodType != null and param.returnMethodType != ''">
+                return_method_type = #{param.returnMethodType},
+            </if>
+            <if test="param.expriationTime != null">
+                expriation_time = #{param.expriationTime},
+            </if>
+            <if test="param.applicationTime != null ">
+                application_time = #{param.applicationTime},
+            </if>
+            processing_results = null,
+            processing_time = null
+        </set>
+        where order_id = #{param.orderId}
+    </update>
+    <delete id="deletePlatform">
+        delete
+        FROM ${database.prefix.order}hou_order_return_platform
+        where order_id = #{orderId}
+    </delete>
+    <select id="selectOrderReturnPlatform" resultType="com.houjiang.order.vo.OrderReturnPlatformVO">
+ select rp.order_id,
+               rp.intervention_state,
+               rp.expriation_time,
+               rp.buyer_remarks,
+               rp.buyer_voucher,
+               rp.seller_voucher,
+               rp.seller_remarks,
+               sb.shop_name,
+               rp.return_code,
+               rp.shop_id,
+               rp.application_time,
+               rp.buyer_user_id,
+               rp.seller_user_id,
+               rp.return_state,
+               rp.processing_results,
+               rp.processing_time,
+               rp.return_method_type,
+               sb.retention_money_balance
+        FROM ${database.prefix.order}hou_order_return_platform rp
+        left join ${database.prefix.supplier}hou_shop_base sb on sb.supplier_shop_id = rp.shop_id
+        where rp.order_id = #{orderId}
+    </select>
+
+    <select id="queryOrderReturnDetail" resultType="com.houjiang.order.vo.ReturnOrderDetailVO">
+       select oor.return_code,
+        oor.order_id,
+        oor.return_cash,oor.return_reason_id,oor.return_reason,oor.return_method_status,
+        oor.return_rpt_cash,
+        oor.return_commision_fee,
+        oor.return_state,
+        oor.return_add_time,
+        oor.buyer_user_account,oor.revoke_num,
+        oor.shop_name,oor.return_message,oor.shop_id,oor.buyer_user_id,oor.return_mobile,
+        oor.return_member_discount,oor.close_time,oor.return_change_num,
+        oor.expiration_time,oor.return_finish_time as returnFinishTime,
+        oob.order_receiver_address,oob.order_receiver_contact
+        FROM
+	    ${database.prefix.order}hou_order_return oor
+			left join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+	   WHERE oor.order_id = #{orderId}
+    </select>
+
+    <select id="queryGoodsList1" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        select oog.common_id,oog.goods_id,oog.goods_image,oog.goods_name,oog.order_goods_amount,
+            oog.goods_price,oog.order_goods_num,oog.order_spec_chineseValue,oog.goods_return_status,
+            oog.goods_refund_status,oog.shipping_fee,oog.order_goods_payment_amount,oog.order_goods_returnnum,
+            oob.order_payment_amount,oob.order_shipping_fee, oog.goods_barter_status, oog.barter_goods_id,
+            oob.order_refund_status, oob.order_return_status, oob.order_barter_status
+            FROM ${database.prefix.order}hou_order_goods oog left join ${database.prefix.order}hou_order_base oob on oob.order_id = oog.order_id  where oog.order_id = #{orderId}
+    </select>
+
+    <select id="queryShopIdByCount" resultType="java.lang.Integer">
+        select count(1) FROM ${database.prefix.order}hou_order_return_platform where shop_id = #{shopId}
+    </select>
+
+    <update id="examineIntervention">
+        update ${database.prefix.order}hou_order_return_platform
+        <set>
+            <if test=" param.processingResults != null">
+                processing_results = #{param.processingResults},
+            </if>
+            <if test="param.processingTime != null">
+                processing_time = #{param.processingTime},
+            </if>
+            <if test="param.interventionState != null">
+                intervention_state = #{param.interventionState},
+            </if>
+        </set>
+        where order_id = #{param.orderId}
+    </update>
+    <update id="updateVkCommissionReturn">
+         update ${database.prefix.userms}hou_user_vk set  var2 = var2 - #{var2},var3 = var3 - #{var3}
+         where user_id = #{userId} and user_status = 1
+    </update>
+    <select id="updateTimeOutReturnfundplatform">
+    SELECT
+    	order_id,
+    	return_code,
+    	return_state
+    FROM
+    	${database.prefix.order}hou_order_return_platform
+    WHERE
+	intervention_state = 0
+	AND return_method_type IN ( 1, 2 )
+	AND now() > expriation_time
+    </select>
+    <select id="updateTimeOutReturnplatform">
+     SELECT rp.order_id,
+               rp.return_code,
+               rp.return_state,
+               oor.order_seller_address,
+               oor.order_seller_name,
+               oor.order_seller_contact
+        FROM ${database.prefix.order}hou_order_return_platform rp
+                 LEFT join ${database.prefix.order}hou_order_base oor ON rp.order_id = oor.order_id
+        WHERE rp.intervention_state = 0
+          AND rp.return_method_type = 3
+          AND now() > rp.expriation_time
+    </select>
+
+    <select id="selectreturnplatform" resultType="com.houjiang.order.dto.OrderReturnPlatformListDTO">
+        select order_id,return_code,shop_name,shop_id,intervention_state,application_time,return_state,return_method_type,expriation_time
+        FROM ${database.prefix.order}hou_order_return_platform where  1 = 1 and intervention_state != 0
+        <if test="param.returnCode !=null and param.returnCode != ''">
+            and return_code = #{param.returnCode}
+        </if>
+        <if test="param.orderId !=null and param.orderId != ''">
+            and order_id = #{param.orderId}
+        </if>
+        <if test="param.shopName !=null and param.shopName != ''">
+            and shop_name like  CONCAT('%',#{param.shopName },'%')
+        </if>
+        <if test="param.interventionState !=null and param.interventionState != ''">
+            and intervention_state = #{param.interventionState}
+        </if>
+        <if test="param.startTime !=null and param.endTime != null">
+            and  application_time between #{param.startTime} and #{param.endTime}
+        </if>
+        <if test="param.isTime !=null and param.isTime == '1'">
+            <![CDATA[ and now() <= expriation_time ]]>
+        </if>
+        <if test="param.isTime !=null and param.isTime == '2'">
+            and now() >= expriation_time
+        </if>
+        order by application_time  desc
+     </select>
+
+    <select id="selectOrderReturnPlatform1" resultType="java.lang.Integer">
+        select count(1) FROM ${database.prefix.order}hou_order_return_platform where order_id = #{orderId}
+    </select>
+    <select id="queryReturnGoods" resultType="java.lang.Integer">
+        select goods_id FROM ${database.prefix.order}hou_order_goods where order_id = #{orderId}
+        and (goods_return_status != 0 or goods_refund_status != 0 or goods_barter_status != 0)
+    </select>
+    <select id="getReturnInfo" resultType="com.houjiang.order.dto.ResourceInfoDTO">
+        select seller_user_id, buyer_user_id
+        FROM ${database.prefix.order}hou_order_return
+        where return_code = #{returnCode}
+    </select>
+</mapper>

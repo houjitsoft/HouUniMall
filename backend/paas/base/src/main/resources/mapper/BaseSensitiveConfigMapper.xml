@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseSensitiveConfigMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseSensitiveConfigEntity" id="BaseSensitiveConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sensitiveStart" column="sensitive_start" jdbcType="INTEGER"/>
+        <result property="sensitiveServer" column="sensitive_server" jdbcType="INTEGER"/>
+        <result property="accessKeyId" column="access_key_id" jdbcType="VARCHAR"/>
+        <result property="accessKeySecret" column="access_key_secret" jdbcType="VARCHAR"/>
+        <result property="regionId" column="region_id" jdbcType="VARCHAR"/>
+        <result property="memberInformationStart" column="member_information_start" jdbcType="INTEGER"/>
+        <result property="productEvaluationStart" column="product_evaluation_start" jdbcType="INTEGER"/>
+        <result property="supplierInformationStart" column="supplier_information_start" jdbcType="INTEGER"/>
+        <result property="productInformationStart" column="product_information_start" jdbcType="INTEGER"/>
+        <result property="salesPromotionStart" column="sales_promotion_start" jdbcType="INTEGER"/>
+        <result property="decorationModuleStart" column="decoration_module_start" jdbcType="INTEGER"/>
+        <result property="causeManagementStart" column="cause_management_start" jdbcType="INTEGER"/>
+        <result property="articleManagementStart" column="article_management_start" jdbcType="INTEGER"/>
+    </resultMap>
+
+
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsBrandTypeRelationMapper">
+    
+    <!-- 根据品牌类型ID删除关联关系 -->
+    <delete id="deleteByBrandTypeId">
+        DELETE FROM goods_brand_type_relation WHERE brand_type_id = #{brandTypeId}
+    </delete>
+    
+    <!-- 批量插入品牌关联 -->
+    <insert id="insertRelations">
+        INSERT INTO goods_brand_type_relation (brand_type_id, brand_id, create_time)
+        VALUES
+        <foreach collection="brandIds" item="brandId" separator=",">
+            (#{brandTypeId}, #{brandId}, NOW())
+        </foreach>
+    </insert>
+    
+    <!-- 根据品牌类型ID查询品牌ID列表 -->
+    <select id="selectBrandIdsByTypeId" resultType="java.lang.Integer">
+        SELECT brand_id FROM goods_brand_type_relation WHERE brand_type_id = #{brandTypeId}
+    </select>
+    
+</mapper>

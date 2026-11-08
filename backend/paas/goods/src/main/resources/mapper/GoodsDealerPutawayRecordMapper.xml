@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsDealerPutawayRecordMapper">
+
+    <delete id="deleteRecordStateBatchAll">
+        delete from ${database.prefix.base}hou_base_dealer_putaway_record
+        where dealer_common_id
+        in
+        <foreach item="commonId" collection="commonIds" separator="," open="(" close=")" index="index">
+            #{commonId}
+        </foreach>
+    </delete>
+    <select id="platFormQueryDealerGoods" resultType="com.houjiang.goods.vo.QueryDealerGoodsVO">
+        select gc.common_name,gc.common_image,gc.cat_name,gdpr.supply_common_id as supplyCommonId from goods_dealer_putaway_record gdpr left join ${database.prefix.goods}hou_goods_common gc on gdpr.supply_common_id = gc.common_id
+        where gc.common_name is not null
+        <if test="param.commonName != null and param.commonName != ''">
+            and gc.common_name like CONCAT('%',#{param.commonName},'%')
+        </if>
+        group by gdpr.supply_common_id
+    </select>
+    <select id="getDealerGoodsNum" resultType="java.lang.Integer">
+        select count(1) from goods_dealer_putaway_record where supply_common_id = #{supplyCommonId}
+    </select>
+    <select id="platFormQueryDealerShop" resultType="com.houjiang.goods.vo.QueryDealerGoodsVO">
+        select gc.shop_id,gc.shop_name
+        from goods_dealer_putaway_record gdpr left join ${database.prefix.goods}hou_goods_common gc on gdpr.dealer_common_id = gc.common_id
+        where gc.common_name is not null and gdpr.supply_common_id = #{param.supplyCommonId}
+        <if test="param.shopName != null and param.shopName != ''">
+            and gc.shop_name like CONCAT('%',#{param.shopName},'%')
+        </if>
+        group by gc.shop_id
+    </select>
+</mapper>

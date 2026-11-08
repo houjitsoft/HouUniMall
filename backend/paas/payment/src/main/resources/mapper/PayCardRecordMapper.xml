@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayCardRecordMapper">
+
+    <resultMap type="com.houjiang.payment.entity.PayCardRecordEntity" id="PayCardRecordMap">
+        <result property="cardId" column="card_id" jdbcType="INTEGER"/>
+        <result property="appId" column="app_id" jdbcType="INTEGER"/>
+        <result property="cardCreator" column="card_creator" jdbcType="VARCHAR"/>
+        <result property="totalPrice" column="total_price" jdbcType="INTEGER"/>
+        <result property="cardDesc" column="card_desc" jdbcType="VARCHAR"/>
+        <result property="creatTime" column="creat_time" jdbcType="INTEGER"/>
+        <result property="stime" column="stime" jdbcType="INTEGER"/>
+        <result property="etime" column="etime" jdbcType="INTEGER"/>
+        <result property="cardNumber" column="card_number" jdbcType="INTEGER"/>
+        <result property="cardStart" column="card_start" jdbcType="INTEGER"/>
+        <result property="cardEnd" column="card_end" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="query" resultType="com.houjiang.payment.entity.PayCardRecordEntity">
+        select
+        r.app_id,
+        r.card_creator,
+        r.total_price,
+        r.card_desc,
+        r.creat_time,
+        r.stime,
+        r.etime,
+        r.card_number,
+        r.card_start,
+        r.card_end
+        from ${database.prefix.payment}hou_pay_card_record r
+        where 1 = 1
+        <if test="param.totalPrice != null and param.totalPrice != ''">
+            and r.total_price = #{param.totalPrice}
+        </if>
+        <if test="param.cardDesc != null and param.cardDesc != ''">
+            and r.card_desc like CONCAT('%',#{param.cardDesc},'%')
+        </if>
+        <if test="param.startTime != null and param.startTime != ''">
+            and r.creat_time >= #{param.startTime}
+        </if>
+        <if test="param.endTime != null and param.endTime != ''">
+            and r.creat_time &lt;= #{param.endTime}
+        </if>
+        order by r.creat_time desc</select>
+
+
+</mapper>

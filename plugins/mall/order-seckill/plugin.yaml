@@ -1,0 +1,52 @@
+code: order-seckill
+name: 限时秒杀
+version: 1.0.0
+author: UniMall
+description: 限时秒杀（activity 拆分，归属 order 宿主）
+category: 营销与客户
+owner: official
+runtime: embedded
+hostService: mall
+supportedInstallProfiles: [LIGHTWEIGHT]
+license: FREE
+minFrameworkVersion: 1.0.0
+terminals: [admin]
+dependencies: []
+permissions:
+  - order-seckill:root
+  - order-seckill:root:index
+  - order-seckill:price
+  - order-seckill:price:index
+menus:
+  - type: M
+    name: 限时秒杀
+    icon: Timer
+    sort: 3200
+    perms: order-seckill:root
+    path: /plugin/order-seckill
+    group: growth
+    groupSort: 100
+  - type: C
+    name: 限时秒杀管理
+    icon: Timer
+    sort: 1
+    perms: order-seckill:root:index
+    path: /plugin/order-seckill/index
+    parentPerms: order-seckill:root
+  - type: M
+    name: 千客千价
+    icon: Discount
+    sort: 3100
+    perms: order-seckill:price
+    path: /plugin/order-seckill-price
+    group: growth
+    groupSort: 100
+  - type: C
+    name: 千客千价管理
+    icon: Discount
+    sort: 1
+    perms: order-seckill:price:index
+    path: /plugin/order-seckill-price/index
+    parentPerms: order-seckill:price
+frontend:
+  entry: /plugin-assets/order-seckill/1.0.0/index.mjs

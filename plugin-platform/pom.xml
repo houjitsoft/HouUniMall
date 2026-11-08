@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.houjiang</groupId>
+        <artifactId>houjiang</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../backend/paas/pom.xml</relativePath>
+    </parent>
+    <artifactId>plugin-platform</artifactId>
+    <packaging>pom</packaging>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>含明确的专利授权（第 3 条）与商标保留（第 6 条）。</comments>
+        </license>
+    </licenses>
+    <name>HouCloud Plugin Platform</name>
+    <description>Plugin SDK, stable contracts and PF4J runtime</description>
+    <modules>
+        <module>installer</module>
+        <module>sdk/plugin-sdk</module>
+        <module>../backend/contracts/plugin-api</module>
+        <module>runtime/plugin-engine</module>
+    </modules>
+</project>

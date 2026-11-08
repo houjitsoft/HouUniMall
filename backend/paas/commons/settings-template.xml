@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 
+          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <!-- 服务器配置 -->
+    <servers>
+        <!-- Sonatype OSSRH 配置 -->
+        <server>
+            <id>ossrh</id>
+            <username>your-sonatype-username</username>
+            <password>your-sonatype-password</password>
+        </server>
+        
+        <!-- 私有 Nexus 仓库配置 -->
+        <server>
+            <id>nexus-private</id>
+            <username>your-nexus-username</username>
+            <password>your-nexus-password</password>
+        </server>
+        
+        <!-- GitHub Packages 配置 -->
+        <server>
+            <id>github</id>
+            <username>your-github-username</username>
+            <password>your-github-token</password>
+        </server>
+    </servers>
+
+    <!-- 配置文件 -->
+    <profiles>
+        <profile>
+            <id>ossrh</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <gpg.executable>gpg</gpg.executable>
+                <gpg.passphrase>your-gpg-passphrase</gpg.passphrase>
+            </properties>
+        </profile>
+    </profiles>
+
+    <!-- 镜像配置 -->
+    <mirrors>
+        <!-- 阿里云镜像 -->
+        <mirror>
+            <id>aliyun</id>
+            <name>Aliyun Maven</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+            <mirrorOf>central</mirrorOf>
+        </mirror>
+    </mirrors>
+
+</settings>

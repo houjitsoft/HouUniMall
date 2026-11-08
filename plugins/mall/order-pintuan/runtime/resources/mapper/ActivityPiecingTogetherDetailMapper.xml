@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivityPiecingTogetherDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.activity.entity.ActivityPiecingTogetherDetailEntity">
+            <id property="detailId" column="detail_id" jdbcType="INTEGER"/>
+            <result property="pintuanId" column="pintuan_id" jdbcType="INTEGER"/>
+            <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+            <result property="priceOri" column="price_ori" jdbcType="FLOAT"/>
+            <result property="price" column="price" jdbcType="FLOAT"/>
+            <result property="priceOne" column="price_one" jdbcType="FLOAT"/>
+            <result property="cid" column="cid" jdbcType="INTEGER"/>
+            <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        detail_id,pintuan_id,goods_id,
+        price_ori,price,price_one,
+        cid,common_id
+    </sql>
+</mapper>

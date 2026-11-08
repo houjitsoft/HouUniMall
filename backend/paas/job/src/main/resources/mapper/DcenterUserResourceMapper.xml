@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterUserResourceMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterUserResourceEntity">
+            <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="userMoney" column="user_money" jdbcType="DECIMAL"/>
+            <result property="userRechargeCard" column="user_recharge_card" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,user_money,user_recharge_card
+    </sql>
+    <select id="getDecenterUserResourceVOList" resultType="com.houjiang.job.vo.DcenterUserResourceVO">
+        select
+            user_id,
+            user_money,
+            user_recharge_card
+        from
+            ${database.prefix.payment}hou_pay_user_resource limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

@@ -1,0 +1,36 @@
+server:
+  port: 8392
+  # servlet:
+  #   context-path:
+spring:
+  # mvc:
+  #   static-path-pattern: /api/static/**
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${AUTH_DATASOURCE_PASSWORD} # 数据库密码
+    hikari:
+      connection-timeout: 30000     # 等待连接分配连接的最大时长(毫秒),超出时长还没可用连接则发送SQLException,默认30秒
+      minimum-idle: 5               # 最小连接数
+      maximum-pool-size: 20         # 最大连接数
+      auto-commit: true             # 自动提交
+      idle-timeout: 600000          # 连接超时的最大时长(毫秒),超时则被释放(retired),默认10分钟
+      pool-name: DateSourceHikariCP # 连接池名称
+      max-lifetime: 1800000         # 连接的生命时长(毫秒),超时而且没被使用则被释放,默认30分钟(1800000ms)
+      connection-init-sql: SELECT 1 # 连接时发起SQL测试脚本
+jwt:
+  secret: ${AUTH_JWT_SECRET}
+  ttl: 86400000  # 24小时（1天）    
+
+# ---------------------------------------------------------------------------
+# 后台登录人机校验开关（houcloud.auth.captcha.enabled，代码默认 true）。
+# 2026-10-27 P1 加固后：平台后台/商家/供应商端登录强制过图形验证码（validate 里
+# 比对 PLATFORM_CODE_{sign}）；但开源装机不含验证码生成端，admin 登录页也没有验证码
+# 输入框，默认开启等于「装完即无法登录」（2026-10-28 全新机验收实锤：一切登录恒返
+# 21002）。开源基线默认关闭；生产环境接入滑块/图形验证组件后建议改回 true。
+houcloud:
+  auth:
+    captcha:
+      enabled: false

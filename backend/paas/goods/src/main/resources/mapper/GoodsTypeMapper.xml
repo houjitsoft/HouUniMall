@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsTypeMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.goods.entity.GoodsTypeEntity">
+            <id property="typeId" column="type_id" jdbcType="INTEGER"/>
+            <result property="typeName" column="type_name" jdbcType="VARCHAR"/>
+            <result property="typeDisplayorder" column="type_displayorder" jdbcType="BOOLEAN"/>
+            <result property="typeDraft" column="type_draft" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="queryGoodsTypePage" resultMap="BaseResultMap">
+        select type_id, type_name, type_displayorder
+        from goods_type
+        order by type_displayorder asc
+    </select>
+    <select id="queryGoodsTypeList" resultMap="BaseResultMap">
+        select type_id, type_name, type_displayorder
+        from goods_type
+        order by type_displayorder asc
+    </select>
+    <select id="selectTypeById" resultType="com.houjiang.goods.entity.GoodsTypeEntity">
+        select type_id,
+               type_name,
+               type_displayorder
+        from goods_type
+        where type_id = #{typeId}
+    </select>
+    <select id="selectByEmptyName" resultType="java.lang.Integer">
+        select count(1) from ${database.prefix.goods}hou_goods_type where type_name = #{typeName}
+    </select>
+    <select id="selectAllBrand" resultType="com.houjiang.goods.vo.GoodsBrandByCatIdVO">
+        select
+            brand_id, brand_name
+        from goods_brand
+    </select>
+    <insert id="insertType" useGeneratedKeys="true"
+            keyProperty = "param.typeId"
+            parameterType = "com.houjiang.goods.dto.GoodsTypeDTO">
+        insert into goods_type
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.typeId != null">
+                type_id,
+            </if>
+            <if test="param.typeName != null">
+                type_name,
+            </if>
+            <if test="param.typeDisplayorder != null">
+                type_displayorder,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.typeId != null">
+                #{param.typeId,jdbcType=INTEGER},
+            </if>
+            <if test="param.typeName != null">
+                #{param.typeName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.typeDisplayorder != null">
+                #{param.typeDisplayorder,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateType">
+        update goods_type
+        <set>
+            <if test="param.typeName != null">
+                type_name = #{param.typeName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.typeDisplayorder != null">
+                type_displayorder = #{param.typeDisplayorder,jdbcType=BIT},
+            </if>
+        </set>
+        where type_id = #{param.typeId,jdbcType=INTEGER}
+    </update>
+
+    <delete id="deleteByPrimaryKey">
+        delete from ${database.prefix.goods}hou_goods_type where type_id = #{typeId,jdbcType=INTEGER}
+    </delete>
+</mapper>

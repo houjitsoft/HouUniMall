@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderComplaintsMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderComplaintsEntity" id="OrderComplaintsMap">
+        <result property="complaintsId" column="complaints_id" jdbcType="VARCHAR"/>
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="complaintsType" column="complaints_type" jdbcType="INTEGER"/>
+        <result property="complaintsReason" column="complaints_reason" jdbcType="VARCHAR"/>
+        <result property="complaintsVoucher" column="complaints_voucher" jdbcType="VARCHAR"/>
+        <result property="complaintsContact" column="complaints_contact" jdbcType="VARCHAR"/>
+        <result property="complaintsGoodsid" column="complaints_goodsid" jdbcType="VARCHAR"/>
+        <result property="complaintsStatus" column="complaints_status" jdbcType="INTEGER"/>
+        <result property="compensationAmount" column="compensation_amount" jdbcType="NUMERIC"/>
+        <result property="compensationStatus" column="compensation_status" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="revokeNum" column="revoke_num" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="failureTime" column="failure_time" jdbcType="TIMESTAMP"/>
+        <result property="sellerVoucher" column="seller_voucher" jdbcType="VARCHAR"/>
+        <result property="sellerReason" column="seller_reason" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="fundDestination" column="fund_destination" jdbcType="INTEGER"/>
+        <result property="isPlatform" column="is_platform" jdbcType="INTEGER"/>
+        <result property="phoneNumber" column="phone_number" jdbcType="VARCHAR"/>
+        <result property="isAppeal" column="is_appeal" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertDetail">
+        insert into ${database.prefix.payment}hou_pay_asset_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.detailType != null">
+                detail_type,
+            </if>
+            <if test="param.assetType != null">
+                asset_type,
+            </if>
+            <if test="param.assetAmount != null">
+                asset_amount,
+            </if>
+            <if test="param.assetDirection != null and param.assetDirection != ''">
+                asset_direction,
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                order_id,
+            </if>
+            <if test="param.payType != null">
+                pay_type,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.detailComment != null and param.detailComment != ''">
+                detail_comment,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.detailType != null">
+                #{param.detailType,jdbcType=INTEGER},
+            </if>
+            <if test="param.assetType != null">
+                #{param.assetType,jdbcType=INTEGER},
+            </if>
+            <if test="param.assetAmount != null">
+                #{param.assetAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="param.assetDirection != null and param.assetDirection != ''">
+                #{param.assetDirection,jdbcType=VARCHAR},
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                #{param.orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="param.payType != null">
+                #{param.payType,jdbcType=INTEGER},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.detailComment != null and param.detailComment != ''">
+                #{param.detailComment,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertConsumeRecordport">
+        insert into ${database.prefix.payment}hou_pay_consume_record (user_id,record_money,order_id,record_date,record_year,
+             record_month,record_day,record_title,record_desc, record_time,trade_type_id,user_type,record_status,
+             record_paytime,record_delete,credit_remain,plus_or_minus,record_withdraw,os_commis_amount,os_commis_return_amount,
+            is_current_user) values(#{userId},#{recordMoney},#{orderId},#{recordDate},#{year},#{month},#{day},#{recordTitle},
+            #{record_desc},NOW(),#{tradeTypeId},#{userType},
+            6, NOW(),0,0.00,#{plusOrMinus},#{recordWithdraw},#{osCommisAmount},#{osCommisReturnAmount},#{isCurrentUser})
+    </insert>
+    <insert id="insertSysMessage1">
+        insert into ${database.prefix.base}hou_base_system_message (message_order_id,message_user_id,message_user_name,message_type,
+			message_title,message_create_time,message_content,shop_id,message_processing_status) values
+			(#{messageOrderId},#{sellerId},#{sellerName},#{messageType},#{messageTitle},now(),#{messageContent},
+			#{shopId},1)
+    </insert>
+    <insert id="addcomplaints" useGeneratedKeys="true" keyProperty="param.id">
+        insert INTO ${database.prefix.order}hou_order_complaints
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.complaintsId != null and param.complaintsId != ''">
+                complaints_id,
+            </if>
+            <if test="param.complaintsType != null">
+                complaints_type,
+            </if>
+            <if test="param.shopId != null">
+                shop_id,
+            </if>
+            <if test="param.complaintsReason != null and param.complaintsReason != ''">
+                complaints_reason,
+            </if>
+            <if test="param.complaintsVoucher != null and param.complaintsVoucher != ''">
+                complaints_voucher,
+            </if>
+            <if test="param.complaintsContact != null and param.complaintsContact != ''">
+                complaints_contact,
+            </if>
+            <if test="param.complaintsGoodsid != null and param.complaintsGoodsid != ''">
+                complaints_goodsid,
+            </if>
+            <if test="param.complaintsStatus != null">
+                complaints_status,
+            </if>
+            <if test="param.compensationAmount != null">
+                compensation_amount,
+            </if>
+            <if test="param.compensationStatus != null">
+                compensation_status,
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                order_id,
+            </if>
+            <if test="param.userId != null ">
+                user_id,
+            </if>
+            <if test="param.failureTime != null ">
+                failure_time,
+            </if>
+            <if test="param.sellerVoucher != null and param.sellerVoucher != ''">
+                seller_voucher,
+            </if>
+            <if test="param.sellerReason != null and param.sellerReason != ''">
+                seller_reason,
+            </if>
+            <if test="param.fundDestination != null and param.fundDestination != ''">
+                fund_destination,
+            </if>
+            <if test="param.createTime != null">
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.complaintsId != null and param.complaintsId != ''">
+                #{param.complaintsId},
+            </if>
+            <if test="param.complaintsType != null">
+                #{param.complaintsType},
+            </if>
+            <if test="param.shopId != null">
+                #{param.shopId},
+            </if>
+            <if test="param.complaintsReason != null and param.complaintsReason != ''">
+                #{param.complaintsReason},
+            </if>
+            <if test="param.complaintsVoucher != null and param.complaintsVoucher != ''">
+                #{param.complaintsVoucher},
+            </if>
+            <if test="param.complaintsContact != null and param.complaintsContact != ''">
+                #{param.complaintsContact},
+            </if>
+            <if test="param.complaintsGoodsid != null and param.complaintsGoodsid != ''">
+                #{param.complaintsGoodsid},
+            </if>
+            <if test="param.complaintsStatus != null">
+                #{param.complaintsStatus},
+            </if>
+            <if test="param.compensationAmount != null">
+                #{param.compensationAmount},
+            </if>
+            <if test="param.compensationStatus != null">
+                #{param.compensationStatus},
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                #{param.orderId},
+            </if>
+            <if test="param.userId != null ">
+                #{param.userId},
+            </if>
+            <if test="param.failureTime != null ">
+                #{param.failureTime},
+            </if>
+            <if test="param.sellerVoucher != null and param.sellerVoucher != ''">
+                #{param.sellerVoucher},
+            </if>
+            <if test="param.sellerReason != null and param.sellerReason != ''">
+                #{param.sellerReason},
+            </if>
+            <if test="param.fundDestination != null ">
+                #{param.fundDestination},
+            </if>
+            <if test="param.createTime != null">
+                #{param.createTime},
+            </if>
+        </trim>
+    </insert>
+    <insert id="addComplaints">
+        insert INTO ${database.prefix.order}hou_order_complaints
+        <trim prefix="(create_time," suffix=")" suffixOverrides=",">
+            <if test="param.complaintsId != null and param.complaintsId != ''">
+                complaints_id,
+            </if>
+            <if test="param.complaintsType != null">
+                complaints_type,
+            </if>
+            <if test="param.shopId != null">
+                shop_id,
+            </if>
+            <if test="param.complaintsReason != null and param.complaintsReason != ''">
+                complaints_reason,
+            </if>
+            <if test="param.complaintsVoucher != null and param.complaintsVoucher != ''">
+                complaints_voucher,
+            </if>
+            <if test="param.complaintsContact != null and param.complaintsContact != ''">
+                complaints_contact,
+            </if>
+            <if test="param.complaintsGoodsid != null and param.complaintsGoodsid != ''">
+                complaints_goodsid,
+            </if>
+            <if test="param.complaintsStatus != null">
+                complaints_status,
+            </if>
+            <if test="param.compensationAmount != null">
+                compensation_amount,
+            </if>
+            <if test="param.compensationStatus != null">
+                compensation_status,
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                order_id,
+            </if>
+            <if test="param.userId != null ">
+                user_id,
+            </if>
+            <if test="param.failureTime != null ">
+                failure_time,
+            </if>
+            <if test="param.sellerVoucher != null and param.sellerVoucher != ''">
+                seller_voucher,
+            </if>
+            <if test="param.sellerReason != null and param.sellerReason != ''">
+                seller_reason,
+            </if>
+            <if test="param.isPlatform != null ">
+                is_platform,
+            </if>
+            <if test="param.phone != null and param.phone != ''">
+                phone_number,
+            </if>
+            <if test="param.fundDestination != null and param.fundDestination != ''">
+                fund_destination,
+            </if>
+        </trim>
+        <trim prefix="values (now()," suffix=")" suffixOverrides=",">
+            <if test="param.complaintsId != null and param.complaintsId != ''">
+                #{param.complaintsId},
+            </if>
+            <if test="param.complaintsType != null">
+                #{param.complaintsType},
+            </if>
+            <if test="param.shopId != null">
+                #{param.shopId},
+            </if>
+            <if test="param.complaintsReason != null and param.complaintsReason != ''">
+                #{param.complaintsReason},
+            </if>
+            <if test="param.complaintsVoucher != null and param.complaintsVoucher != ''">
+                #{param.complaintsVoucher},
+            </if>
+            <if test="param.complaintsContact != null and param.complaintsContact != ''">
+                #{param.complaintsContact},
+            </if>
+            <if test="param.complaintsGoodsid != null and param.complaintsGoodsid != ''">
+                #{param.complaintsGoodsid},
+            </if>
+            <if test="param.complaintsStatus != null">
+                #{param.complaintsStatus},
+            </if>
+            <if test="param.compensationAmount != null">
+                #{param.compensationAmount},
+            </if>
+            <if test="param.compensationStatus != null">
+                #{param.compensationStatus},
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                #{param.orderId},
+            </if>
+            <if test="param.userId != null ">
+                #{param.userId},
+            </if>
+            <if test="param.failureTime != null ">
+                #{param.failureTime},
+            </if>
+            <if test="param.sellerVoucher != null and param.sellerVoucher != ''">
+                #{param.sellerVoucher},
+            </if>
+            <if test="param.sellerReason != null and param.sellerReason != ''">
+                #{param.sellerReason},
+            </if>
+            <if test="param.isPlatform != null ">
+                #{param.isPlatform},
+            </if>
+            <if test="param.phone != null and param.phone != ''">
+                #{param.phone},
+            </if>
+            <if test="param.fundDestination != null and param.fundDestination != ''">
+                #{param.fundDestination},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateCardMemberDetailPort">
+        update  ${database.prefix.payment}hou_pay_user_resource set user_money= user_money + #{money} where user_id=#{userId}
+    </update>
+    <update id="updateshopbase">
+        update ${database.prefix.supplier}hou_shop_base
+        <set>
+            <if test="param.payPrice != null ">
+                retention_money_balance = #{param.payPrice},
+            </if>
+            <if test="param.payPrice1 != null ">
+                retention_money_withdrawal = #{param.payPrice1},
+            </if>
+            <if test="param.payPrice2 != null ">
+                retention_money_payment = #{param.payPrice2},
+            </if>
+            <if test="param.payPrice3 != null ">
+                accumulated_compensation = #{param.payPrice3},
+            </if>
+            <if test="param.retentionStatus != null ">
+                retention_status = #{param.retentionStatus},
+            </if>
+            <if test="param.retentionMoneyLimit != null ">
+                retention_money_limit = #{param.retentionMoneyLimit},
+            </if>
+            <if test="param.paymentTime != null ">
+                payment_time = #{param.paymentTime},
+            </if>
+        </set>
+        where shop_id = #{param.shopId}
+    </update>
+    <update id="updatecomplaints">
+        <selectKey keyProperty='param.id' resultType='java.lang.Integer' order='AFTER'>
+            SELECT
+            id
+            FROM ${database.prefix.order}hou_order_complaints
+            where complaints_id = #{param.complaintsId}
+        </selectKey>
+        update ${database.prefix.order}hou_order_complaints
+        <set>
+            create_time = now(),
+            <if test="param.complaintsType != null">
+                complaints_type = #{param.complaintsType},
+            </if>
+            <if test="param.shopId != null">
+                shop_id = #{param.shopId},
+            </if>
+            <if test="param.complaintsReason != null and param.complaintsReason != ''">
+                complaints_reason = #{param.complaintsReason},
+            </if>
+            <if test="param.complaintsVoucher != null and param.complaintsVoucher != ''">
+                complaints_voucher = #{param.complaintsVoucher},
+            </if>
+            <if test="param.complaintsContact != null and param.complaintsContact != ''">
+                complaints_contact = #{param.complaintsContact},
+            </if>
+            <if test="param.complaintsGoodsid != null and param.complaintsGoodsid != ''">
+                complaints_goodsid = #{param.complaintsGoodsid},
+            </if>
+            <if test="param.complaintsStatus != null">
+                complaints_status = #{param.complaintsStatus},
+            </if>
+            <if test="param.compensationAmount != null">
+                compensation_amount = #{param.compensationAmount},
+            </if>
+            <if test="param.compensationStatus != null">
+                compensation_status = #{param.compensationStatus},
+            </if>
+            <if test="param.orderId != null and param.orderId != ''">
+                order_id = #{param.orderId},
+            </if>
+            <if test="param.userId != null ">
+                user_id = #{param.userId},
+            </if>
+            <if test="param.failureTime != null ">
+                failure_time = #{param.failureTime},
+            </if>
+            <if test="param.createTime != null ">
+                create_time = #{param.createTime},
+            </if>
+        </set>
+        where complaints_id = #{param.complaintsId}
+    </update>
+    <update id="revokeComplaints">
+        update ${database.prefix.order}hou_order_complaints set complaints_status = 3, revoke_num = 1
+        where user_id = #{userId} and complaints_id = #{complaintsId}
+    </update>
+    <update id="handlingcomplaints">
+        update ${database.prefix.order}hou_order_complaints
+        <set>
+            <if test="param.complaintsStatus != null ">
+                complaints_status = #{param.complaintsStatus},
+            </if>
+            <if test="param.compensationStatus != null ">
+                compensation_status = #{param.compensationStatus},
+            </if>
+            <if test="param.failureTime != null ">
+                failure_time = #{param.failureTime},
+            </if>
+            <if test="param.sellerVoucher != null and param.sellerVoucher != ''">
+                seller_voucher = #{param.sellerVoucher},
+            </if>
+            <if test="param.sellerReason != null and param.sellerReason != ''">
+                seller_reason = #{param.sellerReason},
+            </if>
+            <if test="param.fundDestination != null ">
+                fund_destination = #{param.fundDestination},
+            </if>
+            <if test="param.failureTime != null ">
+                failure_time = #{param.failureTime},
+            </if>
+            <if test="param.isAppeal != null ">
+                is_appeal = #{param.isAppeal},
+            </if>
+            <if test="param.compensationAmount != null ">
+                compensation_amount = #{param.compensationAmount},
+            </if>
+        </set>
+        where shop_id = #{param.shopId} and complaints_id = #{param.complaintsId}
+    </update>
+    <update id="updateispay">
+        update ${database.prefix.order}hou_order_complaints set compensation_status = 1 where id = #{id}
+    </update>
+    <update id="handlingComplaints">
+        update  ${database.prefix.order}hou_order_complaints
+        <set>
+            <if test="param.complaintsStatus != null ">
+                complaints_status = #{param.complaintsStatus},
+            </if>
+            <if test="param.compensationStatus != null ">
+                compensation_status = #{param.compensationStatus},
+            </if>
+            <if test="param.failureTime != null ">
+                failure_time = #{param.failureTime},
+            </if>
+            <if test="param.sellerVoucher != null and param.sellerVoucher != ''">
+                seller_voucher = #{param.sellerVoucher},
+            </if>
+            <if test="param.sellerReason != null and param.sellerReason != ''">
+                seller_reason = #{param.sellerReason},
+            </if>
+            <if test="param.fundDestination != null ">
+                fund_destination = #{param.fundDestination},
+            </if>
+            <if test="param.failureTime != null ">
+                failure_time = #{param.failureTime},
+            </if>
+            <if test="param.isAppeal != null ">
+                is_appeal = #{param.isAppeal},
+            </if>
+        </set>
+        where shop_id = #{param.shopId} and complaints_id = #{param.complaintsId}
+    </update>
+    <select id="querydeliverytime" resultType="java.util.Map">
+        select common_id as commonId ,delivery_time as deliveryTime from ${database.prefix.goods}hou_goods_common
+        where common_id in
+        <foreach collection="list" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    <select id="selectshop" resultType="java.lang.Integer">
+        select retention_money_balance from ${database.prefix.supplier}hou_shop_base where supplier_shop_id = #{shopId}
+    </select>
+    <select id="selectretention" resultType="com.houjiang.commons.vo.shop.RetentionShopInfoVO">
+        select retention_money_balance as retentionMoneyBalance,retention_money_withdrawal as retentionMoneyWithdrawal,
+        retention_money_payment as retentionMoneyPayment,retention_money_limit as retentionMoneyLimit,retention_status as retentionStatus ,
+        accumulated_compensation as accumulatedCompensation,user_id
+        from ${database.prefix.supplier}hou_shop_base where supplier_shop_id = #{shopId}
+    </select>
+    <select id="queryComplaints" resultType="com.houjiang.order.entity.OrderComplaintsEntity">
+        SELECT
+        id,
+        complaints_id,
+        complaints_type,
+        complaints_reason,
+        complaints_voucher,
+        complaints_contact,
+        complaints_goodsid,
+        seller_reason,
+        complaints_status,
+        compensation_amount,
+        compensation_status,
+        ooc.create_time,
+        revoke_num,
+        order_id,
+        ooc.user_id,
+        failure_time,
+        seller_voucher,
+        ooc.shop_id,
+        shop_name
+        FROM
+        ${database.prefix.order}hou_order_complaints ooc
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base gmsb ON gmsb.supplier_shop_id = ooc.shop_id
+        WHERE
+        1 = 1 and ooc.user_id = #{param.userId}
+        <if test="param.complaintsId != null and param.complaintsId != ''">
+            and complaints_id = #{param.complaintsId}
+        </if>
+        <if test="param.orderId != null and param.orderId != ''">
+            and order_id = #{param.orderId}
+        </if>
+        <if test="param.complaintsType != null and param.complaintsType != ''">
+            and complaints_type = #{param.complaintsType}
+        </if>
+        <if test="param.complaintsStatus != null and param.complaintsStatus != ''">
+            and complaints_status = #{param.complaintsStatus}
+        </if>
+        order by ooc.create_time desc
+    </select>
+    <select id="complaintsdetail" resultType="com.houjiang.order.entity.OrderComplaintsEntity">
+        select complaints_id,complaints_type,complaints_reason,complaints_voucher,complaints_contact,complaints_goodsid,seller_reason,
+        complaints_status,compensation_amount,compensation_status,ooc.create_time,revoke_num,order_id,ooc.user_id,
+        failure_time,seller_voucher,ooc.shop_id,shop_name
+        FROM ${database.prefix.order}hou_order_complaints ooc
+        left join ${database.prefix.supplier}hou_shop_base gmsb  on  gmsb.supplier_shop_id = ooc.shop_id
+        where 1 = 1 and ooc.user_id = #{param.userId} and id = #{param.id}
+    </select>
+    <select id="isComplaints" resultType="java.util.Map">
+        select id as id,complaints_id as complaintsId,complaints_type as complaintsType,complaints_status as complaintsStatus
+        FROM ${database.prefix.order}hou_order_complaints
+        where order_id = #{param.orderId}
+        and is_platform = 0
+        and user_id = #{param.userId}
+    </select>
+    <select id="queryComplaintsByPlatform" resultType="com.houjiang.order.entity.OrderComplaintsEntity">
+        SELECT
+        ooc.id,
+        compensation_amount,
+        complaints_id,
+        complaints_type,
+        complaints_reason,
+        order_id,
+        ooc.create_time,
+        fund_destination,
+        complaints_goodsid,
+        complaints_status,
+        failure_time,
+        sb.shop_name,
+        sb.shop_type,
+        ui.user_name
+        FROM
+        ${database.prefix.order}hou_order_complaints ooc
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON ooc.shop_id = sb.supplier_shop_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info ui ON ooc.user_id = ui.user_id
+        WHERE
+        1 = 1
+        AND complaints_status != 0
+        AND complaints_status != 3
+        <if test="param.complaintsType != null and param.complaintsType != ''">
+            and complaints_type = #{param.complaintsType}
+        </if>
+        <if test="param.shopType != null and param.shopType != ''">
+            and sb.shop_type = #{param.shopType}
+        </if>
+        <if test="param.orderId != null and param.orderId != ''">
+            and order_id = #{param.orderId}
+        </if>
+        <if test="param.complaintsId != null and param.complaintsId != ''">
+            and complaints_id = #{param.complaintsId}
+        </if>
+        <if test="param.startTime != null and param.endTime != null">
+            and ooc.create_time between #{param.startTime} and #{param.endTime}
+        </if>
+        <if test="param.complaintsStatus != null and param.complaintsStatus != ''">
+            and complaints_status = #{param.complaintsStatus}
+        </if>
+        <if test="param.userName != null and param.userName != ''">
+            and ui.user_name like CONCAT('%',#{param.userName},'%')
+        </if>
+        <if test="param.shopName != null and param.shopName != ''">
+            and sb.shop_name like CONCAT('%',#{param.shopName},'%')
+        </if>
+        <if test="param.sort == 1">
+            order by ooc.create_time desc
+        </if>
+        <if test="param.sort == 2">
+            and complaints_status = 4 order by failure_time asc
+        </if>
+    </select>
+    <select id="querycomplaintsdetail" resultType="com.houjiang.order.entity.OrderComplaintsEntity">
+    SELECT
+    	compensation_amount,
+    	complaints_id,
+    	complaints_type,
+    	complaints_reason,
+    	order_id,
+    	ooc.create_time,
+    	complaints_contact,
+    	fund_destination,
+    	complaints_goodsid,
+    	complaints_status,
+    	failure_time,
+    	sb.shop_name,
+    	ui.user_name,
+    	ooc.shop_id,
+    	sb.retention_money_limit,
+    	sb.retention_money_balance,
+    	ooc.user_id,
+    	ooc.complaints_voucher,
+    	ooc.seller_voucher,
+    	ooc.seller_reason
+    FROM
+    	${database.prefix.order}hou_order_complaints ooc
+    	LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON ooc.shop_id = sb.supplier_shop_id
+    	LEFT JOIN ${database.prefix.userms}hou_user_info ui ON ooc.user_id = ui.user_id
+    WHERE
+	    id = #{param.id}
+    </select>
+    <select id="querycomplaintsdetail1" resultType="com.houjiang.order.entity.OrderComplaintsEntity">
+    SELECT
+	    compensation_amount,
+	    complaints_id,
+	    complaints_type,
+	    complaints_reason,
+	    order_id,
+	    ooc.create_time,
+	    complaints_contact,
+	    fund_destination,
+	    complaints_goodsid,
+	    complaints_status,
+	    failure_time,
+	    sb.shop_name,
+	    ui.user_name,
+	    ooc.shop_id,
+	    sb.retention_money_limit,
+	    sb.retention_money_balance,
+	    ooc.user_id,
+	    ooc.complaints_voucher,
+	    ooc.seller_voucher,
+	    ooc.seller_reason
+    FROM
+	${database.prefix.order}hou_order_complaints ooc
+	LEFT JOIN  ${database.prefix.supplier}hou_shop_base sb ON ooc.shop_id = sb.supplier_shop_id
+	LEFT JOIN  ${database.prefix.userms}hou_user_info ui ON ooc.user_id = ui.user_id
+    WHERE
+	complaints_id = #{param}
+    </select>
+    <select id="queryGoodsList" resultType="com.houjiang.commons.vo.goods.GoodsDetailsListVO">
+        SELECT
+        oog.common_id,
+        oog.goods_id,
+        oog.goods_image,
+        oog.goods_name,
+        oog.order_goods_amount,
+        oog.goods_price,
+        oog.order_goods_num,
+        oog.order_spec_chineseValue,
+        oog.goods_return_status,
+        oog.goods_refund_status,
+        oog.shipping_fee,
+        oog.order_goods_payment_amount,
+        oog.order_goods_returnnum,
+        gb.goods_spec,
+        oob.order_payment_amount,
+        oob.order_shipping_fee,
+        sb.shop_name,
+        oob.order_id,
+        oob.order_create_time,
+        oob.order_status,
+        oor.return_state,
+        oob.order_refund_status,
+        oob.order_return_status,
+        gc.delivery_time,
+        oog.order_goods_id_deliver,
+        oob.order_shipping_time as orderShippingTime
+        FROM
+         ${database.prefix.order}hou_order_goods oog
+        left join ${database.prefix.order}hou_order_base oob on oob.order_id = oog.order_id
+        left join ${database.prefix.order}hou_order_return oor on oob.order_id = oor.order_id
+        left join ${database.prefix.goods}hou_goods_base gb on gb.goods_id = oog.goods_id
+        left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = gb.common_id
+        left join ${database.prefix.supplier}hou_shop_base sb on sb.supplier_shop_id = oob.shop_id
+        where oog.order_id = #{param.orderId}
+        <if test="param.list != null">
+            and oog.goods_id in
+            <foreach collection="param.list" separator="," item="id" close=")" open="(">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="ShopScore" resultType="com.houjiang.commons.vo.shop.ShopEvaluationVO">
+        select avg_servicecredit,avg_deliverycredit,avg_desccredit from ${database.prefix.business}hou_shop_avg_evaluation where shop_id = #{shopId}
+    </select>
+    <select id="selectretention2" resultType="com.houjiang.commons.vo.shop.RetentionShopInfoVO">
+    SELECT
+    	retention_money_balance AS retentionMoneyBalance,
+    	retention_money_withdrawal AS retentionMoneyWithdrawal,
+    	retention_money_payment AS retentionMoneyPayment,
+    	retention_money_limit AS retentionMoneyLimit,
+    	retention_status AS retentionStatus,
+    	accumulated_compensation AS accumulatedCompensation,
+    	sb.user_id,
+    	sb.supplier_shop_id,
+    	ui.user_mobile
+    FROM
+    	${database.prefix.supplier}hou_shop_base sb
+    	LEFT JOIN ${database.prefix.userms}hou_user_info  ui ON ui.user_id = sb.user_id
+    WHERE
+	sb.supplier_shop_id = #{shopId}
+    </select>
+    <select id="queryOrderRevokeComplaints" resultType="java.lang.Integer">
+        select count(1) FROM ${database.prefix.order}hou_order_complaints where order_id = #{orderId} and user_id = #{userId}
+    </select>
+    <select id="querymonthFine" resultType="java.lang.String">
+        SELECT sum(a)
+        END
+        FROM
+	(
+		( SELECT sum( compensation_amount ) AS a FROM ${database.prefix.order}hou_order_complaints WHERE shop_id =
+        #{param.shopId}
+        AND
+        create_time
+        BETWEEN
+        #{param.start}
+        and
+        #{param.end}
+        and
+        complaints_status
+        =
+        1
+        )
+        )
+        AS
+        find
+    </select>
+    <select id="unpaidcomplaints" resultType="com.houjiang.commons.vo.order.OrderComplaintsVO">
+        SELECT
+            id,
+            compensation_amount,
+            complaints_id,
+            complaints_type,
+            complaints_reason,
+            order_id,
+            create_time,
+            fund_destination,
+            complaints_goodsid,
+            complaints_status,
+            failure_time,
+            user_id,
+            shop_id
+        FROM
+            ${database.prefix.order}hou_order_complaints
+        WHERE
+            shop_id = #{shopId} and compensation_status = 0 and complaints_status = 1
+
+        ORDER BY
+            create_time DESC
+    </select>
+    <select id="selectretentiontotal" resultType="java.lang.Integer">
+        select count(1) FROM ${database.prefix.order}hou_order_complaints where shop_id = #{shopId} and complaints_status = #{complaintsStatus}
+    </select>
+    <select id="queryComplaintsId" resultType="com.houjiang.commons.vo.order.OrderComplaintsVO">
+        SELECT
+            compensation_amount,
+            complaints_id,
+            complaints_type,
+            complaints_reason,
+            order_id,
+            create_time,
+            fund_destination,
+            complaints_goodsid,
+            complaints_status,
+            failure_time,
+            user_id,
+            complaints_voucher,
+            complaints_contact,
+            seller_voucher,
+            seller_reason
+        FROM
+            ${database.prefix.order}hou_order_complaints
+        WHERE
+            complaints_id = #{complaintsId}
+    </select>
+    <select id="queryComplaintsId1" resultType="com.houjiang.commons.vo.order.OrderComplaintsVO">
+        SELECT
+            compensation_amount,
+            complaints_id,
+            complaints_type,
+            complaints_reason,
+            order_id,
+            create_time,
+            fund_destination,
+            complaints_goodsid,
+            complaints_status,
+            failure_time,
+            user_id,
+            complaints_voucher,
+            complaints_contact,
+            seller_voucher,
+            seller_reason
+        FROM
+            ${database.prefix.order}hou_order_complaints
+        WHERE
+            id = #{complaintsId}
+    </select>
+    <select id="selectOrderId" resultType="java.util.Map">
+        select oc.order_id,ob.buyer_user_id as user_id
+        FROM ${database.prefix.order}hou_order_complaints oc
+                 left join ${database.prefix.order}hou_order_base ob on ob.order_id = oc.order_id
+        where complaints_id = #{complaintsId}
+    </select>
+    <select id="queryAllFine" resultType="java.lang.String">
+        SELECT
+            sum( a )
+        END
+        FROM
+	(
+		( SELECT sum( compensation_amount ) AS a FROM ${database.prefix.order}hou_order_complaints WHERE shop_id = #{shopId}
+        and complaints_status = 1)
+        ) AS find
+    </select>
+
+
+</mapper>

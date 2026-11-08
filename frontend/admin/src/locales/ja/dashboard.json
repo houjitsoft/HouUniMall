@@ -1,0 +1,229 @@
+{
+  "welcome": {
+    "title": "UniMall管理システムへようこそ",
+    "description": "ワンストップ企業管理プラットフォーム、企業のデジタル変革を支援"
+  },
+  "stats": {
+    "users": "ユーザー総数",
+    "products": "商品数",
+    "orders": "注文数",
+    "revenue": "本日の収入"
+  },
+  "more": "もっと見る",
+  "moreModules": "その他のモジュール",
+  "modules": {
+    "oa": {
+      "title": "OAタスク",
+      "noTodos": "タスクがありません",
+      "types": {
+        "approval": "承認",
+        "hr": "人事",
+        "project": "プロジェクト",
+        "meeting": "会議",
+        "other": "その他"
+      }
+    },
+    "erp": {
+      "title": "ERP配送物流",
+      "noShipments": "配送情報がありません",
+      "trackingNumber": "追跡番号",
+      "estimatedArrival": "到着予定",
+      "statuses": {
+        "shipping": "配送中",
+        "shipped": "発送済み",
+        "pending": "発送待ち",
+        "delivered": "配達完了",
+        "exception": "異常"
+      }
+    },
+    "project": {
+      "title": "プロジェクト管理",
+      "noProjects": "プロジェクト情報がありません",
+      "statuses": {
+        "completed": "完了",
+        "pending": "保留中",
+        "inProgress": "進行中"
+      }
+    },
+    "auth": {
+      "title": "認証管理",
+      "users": "ユーザー総数",
+      "roles": "ロール数",
+      "permissions": "権限数",
+      "recentActions": "最近の操作",
+      "noActions": "操作記録がありません"
+    },
+    "setting": {
+      "title": "システム設定",
+      "noCategories": "設定カテゴリがありません",
+      "systemStatus": "システム状態",
+      "database": "データベース接続",
+      "cache": "キャッシュサービス",
+      "storage": "ファイルストレージ",
+      "statuses": {
+        "normal": "正常",
+        "warning": "警告"
+      },
+      "categories": {
+        "basic": {
+          "title": "基本設定",
+          "description": "システム基本情報設定"
+        },
+        "user": {
+          "title": "ユーザー管理",
+          "description": "ユーザー権限とロール設定"
+        },
+        "finance": {
+          "title": "財務設定",
+          "description": "支払いと財務関連設定"
+        },
+        "notification": {
+          "title": "通知設定",
+          "description": "メッセージプッシュとメール設定"
+        }
+      }
+    },
+    "goods": {
+      "title": "商品管理",
+      "total": "商品総数",
+      "onSale": "販売中",
+      "outOfStock": "在庫切れ",
+      "recentGoods": "最近の商品",
+      "stock": "在庫",
+      "noGoods": "商品情報がありません"
+    },
+    "order": {
+      "title": "注文管理",
+      "today": "本日の注文",
+      "pending": "保留中",
+      "revenue": "本日の収入",
+      "recentOrders": "最近の注文",
+      "orderNumber": "注文番号",
+      "noOrders": "注文情報がありません",
+      "statuses": {
+        "pending": "保留中",
+        "shipped": "発送済み",
+        "completed": "完了",
+        "cancelled": "キャンセル"
+      }
+    },
+    "activity": {
+      "title": "活動管理",
+      "active": "進行中活動",
+      "upcoming": "開始予定",
+      "participants": "参加者数",
+      "recentActivities": "最近の活動",
+      "noActivities": "活動情報がありません",
+      "statuses": {
+        "active": "進行中",
+        "upcoming": "開始予定",
+        "completed": "終了"
+      }
+    },
+    "ai": {
+      "title": "AIインテリジェンス",
+      "requests": "本日のリクエスト",
+      "models": "アクティブモデル",
+      "successRate": "成功率",
+      "recentActions": "最近の操作",
+      "noActions": "操作記録がありません"
+    },
+    "cms": {
+      "title": "コンテンツ管理",
+      "articles": "記事総数",
+      "published": "公開済み",
+      "comments": "承認待ちコメント",
+      "recentArticles": "最近の記事",
+      "noArticles": "記事情報がありません",
+      "statuses": {
+        "published": "公開済み",
+        "draft": "下書き",
+        "pending": "承認待ち"
+      }
+    },
+    "crm": {
+      "title": "顧客関係",
+      "customers": "顧客総数",
+      "newCustomers": "今月の新規",
+      "revenue": "月間収入",
+      "recentCustomers": "最近の顧客",
+      "noCustomers": "顧客情報がありません"
+    },
+    "dcenter": {
+      "title": "データセンター",
+      "dataVolume": "データ量",
+      "reports": "レポート数",
+      "storage": "ストレージ使用量",
+      "recentReports": "最近のレポート",
+      "noReports": "レポート情報がありません"
+    },
+    "im": {
+      "title": "インスタントメッセージング",
+      "onlineUsers": "オンラインユーザー",
+      "messages": "メッセージ数",
+      "groups": "グループ数",
+      "recentMessages": "最近のメッセージ",
+      "noMessages": "メッセージがありません"
+    },
+    "workflow": {
+      "title": "ワークフロー管理",
+      "processes": "プロセス数",
+      "running": "実行中",
+      "completed": "今日完了",
+      "recentWorkflows": "最近のワークフロー",
+      "noWorkflows": "ワークフローがありません"
+    },
+    "payment": {
+      "title": "支払い管理",
+      "todayAmount": "今日の金額",
+      "transactions": "取引数",
+      "successRate": "成功率",
+      "recentTransactions": "最近の取引",
+      "noTransactions": "取引がありません"
+    },
+    "lowcode": {
+      "title": "ローコードプラットフォーム",
+      "applications": "アプリケーション数",
+      "components": "コンポーネント数",
+      "templates": "テンプレート数",
+      "recentProjects": "最近のプロジェクト",
+      "noProjects": "プロジェクトがありません"
+    },
+    "mes": {
+      "title": "製造実行システム",
+      "productionLines": "生産ライン数",
+      "equipment": "設備数",
+      "oee": "設備総合効率",
+      "productionStatus": "生産状況",
+      "noProduction": "生産データがありません"
+    },
+    "orderfood": {
+      "title": "フードオーダーシステム",
+      "todayOrders": "本日の注文",
+      "revenue": "本日の収入",
+      "venues": "アクティブな店舗",
+      "recentOrders": "最近の注文",
+      "noOrders": "注文がありません"
+    },
+    "rider": {
+      "title": "ライダー管理",
+      "activeRiders": "アクティブライダー",
+      "todayOrders": "本日の注文",
+      "avgDeliveryTime": "平均配送時間",
+      "riderStatus": "ライダー状況",
+      "noRiders": "ライダーがいません"
+    },
+    "supplier": {
+      "title": "サプライヤー管理",
+      "suppliers": "サプライヤー数",
+      "cooperations": "協力数",
+      "qualityScore": "品質スコア",
+      "recentSuppliers": "最近のサプライヤー",
+      "noSuppliers": "サプライヤーがいません"
+    }
+  },
+  "dailyTodo": {
+    "title": "マイデイリータスク",
+    "subtitle": "自分だけが閲覧できます。今日の重要事項を記録しましょう"
+  }
+}

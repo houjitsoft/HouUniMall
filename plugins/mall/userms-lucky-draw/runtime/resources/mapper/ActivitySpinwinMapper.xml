@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivitySpinwinMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.activity.entity.ActivitySpinwinEntity">
+        <id property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="activityTitle" column="activity_title" jdbcType="VARCHAR"/>
+        <result property="activityStartTime" column="activity_start_time" jdbcType="TIMESTAMP"/>
+        <result property="activityEndTime" column="activity_end_time" jdbcType="TIMESTAMP"/>
+        <result property="partakeNumIsDisplay" column="partake_num_is_display" jdbcType="INTEGER"/>
+        <result property="partakeNum" column="partake_num" jdbcType="INTEGER"/>
+        <result property="partakeNumIsLimit" column="partake_num_is_limit" jdbcType="INTEGER"/>
+        <result property="partakeNumLimit" column="partake_num_limit" jdbcType="INTEGER"/>
+        <result property="graphicExplanation" column="graphic_explanation" jdbcType="VARCHAR"/>
+        <result property="firstScreenAdvertise" column="first_screen_advertise" jdbcType="VARCHAR"/>
+        <result property="firstScreenIsDisplay" column="first_screen_is_display" jdbcType="INTEGER"/>
+        <result property="isRoundAwardInformation" column="is_round_award_information" jdbcType="INTEGER"/>
+        <result property="activityIsEnable" column="activity_is_enable" jdbcType="INTEGER"/>
+        <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
+        <result property="updateDate" column="update_date" jdbcType="TIMESTAMP"/>
+        <result property="totalSweepstakesIsLimit" column="total_sweepstakes_is_limit" jdbcType="INTEGER"/>
+        <result property="totalSweepstakesLimit" column="total_sweepstakes_limit" jdbcType="INTEGER"/>
+        <result property="winningTimesPerPerson" column="winning_times_per_person" jdbcType="INTEGER"/>
+        <result property="winningRate" column="winning_rate" jdbcType="DECIMAL"/>
+        <result property="expectedNumberOfParticipants" column="expected_number_of_participants" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        activity_id
+        ,activity_title,activity_start_time,
+        activity_end_time,partake_num_is_display,partake_num,
+        partake_num_is_limit,partake_num_limit,graphic_explanation,
+        first_screen_advertise,first_screen_is_display,is_round_award_information,
+        activity_is_enable,update_by,update_date,
+        total_sweepstakes_is_limit,total_sweepstakes_limit,winning_times_per_person,
+        winning_rate,expected_number_of_participants
+    </sql>
+    <insert id="insertSpinwinActivity">
+        insert into activity_spinwin
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.activityId != null and param.activityId != ''">
+                activity_id,
+            </if>
+            <if test="param.activityTitle != null">
+                activity_title,
+            </if>
+            <if test="param.activityStartTime != null">
+                activity_start_time,
+            </if>
+            <if test="param.activityEndTime != null">
+                activity_end_time,
+            </if>
+            <if test="param.partakeNumIsDisplay != null">
+                partake_num_is_display,
+            </if>
+            <if test="param.partakeNum != null">
+                partake_num,
+            </if>
+            <if test="param.partakeNumIsLimit != null">
+                partake_num_is_limit,
+            </if>
+            <if test="param.partakeNumLimit != null">
+                partake_num_limit,
+            </if>
+            <if test="param.graphicExplanation != null">
+                graphic_explanation,
+            </if>
+            <if test="param.firstScreenAdvertise != null">
+                first_screen_advertise,
+            </if>
+            <if test="param.firstScreenIsDisplay != null">
+                first_screen_is_display,
+            </if>
+            <if test="param.isRoundAwardInformation != null">
+                is_round_award_information,
+            </if>
+            <if test="param.activityIsEnable != null">
+                activity_is_enable,
+            </if>
+            <if test="param.updateBy != null">
+                update_by,
+            </if>
+            <if test="param.updateDate != null">
+                update_date,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.activityId != null and param.activityId != ''">
+                #{param.activityId,jdbcType=INTEGER},
+            </if>
+            <if test="param.activityTitle != null">
+                #{param.activityTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="param.activityStartTime != null">
+                #{param.activityStartTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.activityEndTime != null">
+                #{param.activityEndTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.partakeNumIsDisplay != null">
+                #{param.partakeNumIsDisplay,jdbcType=INTEGER},
+            </if>
+            <if test="param.partakeNum != null">
+                #{param.partakeNum,jdbcType=INTEGER},
+            </if>
+            <if test="param.partakeNumIsLimit != null">
+                #{param.partakeNumIsLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.partakeNumLimit != null">
+                #{param.partakeNumLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.graphicExplanation != null">
+                #{param.graphicExplanation,jdbcType=VARCHAR},
+            </if>
+            <if test="param.firstScreenAdvertise != null">
+                #{param.firstScreenAdvertise,jdbcType=VARCHAR},
+            </if>
+            <if test="param.firstScreenIsDisplay != null">
+                #{param.firstScreenIsDisplay,jdbcType=VARCHAR},
+            </if>
+            <if test="param.isRoundAwardInformation != null">
+                #{param.isRoundAwardInformation,jdbcType=INTEGER},
+            </if>
+            <if test="param.activityIsEnable != null">
+                #{param.activityIsEnable,jdbcType=INTEGER},
+            </if>
+            <if test="param.updateBy != null">
+                #{param.updateBy,jdbcType=VARCHAR},
+            </if>
+            <if test="param.updateDate != null">
+                #{param.updateDate,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateSpinwinLimit">
+        update activity_spinwin
+        <set>
+            <if test="param.totalSweepstakesIsLimit != null">
+                total_sweepstakes_is_limit =
+                #{param.totalSweepstakesIsLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.totalSweepstakesLimit != null">
+                total_sweepstakes_limit =
+                #{param.totalSweepstakesLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.winningTimesPerPerson != null">
+                winning_times_per_person =
+                #{param.winningTimesPerPerson,jdbcType=INTEGER},
+            </if>
+            <if test="param.totalSweepstakesIsLimit != null">
+                winning_rate = #{param.winningRate,jdbcType=DOUBLE},
+            </if>
+            <if test="param.expectedNumberOfParticipants != null">
+                expected_number_of_participants =
+                #{param.expectedNumberOfParticipants,jdbcType=INTEGER},
+            </if>
+        </set>
+        where activity_id = #{param.activityId,jdbcType=INTEGER}
+    </update>
+    <update id="updateSpinwinActivity">
+        update activity_spinwin
+        <set>
+            <if test="param.activityTitle != null">
+                activity_title = #{param.activityTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="param.activityStartTime != null">
+                activity_start_time =
+                #{param.activityStartTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.activityEndTime != null">
+                activity_end_time =
+                #{param.activityEndTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.partakeNumIsDisplay != null">
+                partake_num_is_display =
+                #{param.partakeNumIsDisplay,jdbcType=INTEGER},
+            </if>
+            <if test="param.partakeNum != null">
+                partake_num = #{param.partakeNum,jdbcType=INTEGER},
+            </if>
+            <if test="param.partakeNumIsLimit != null">
+                partake_num_is_limit =
+                #{param.partakeNumIsLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.partakeNumLimit != null">
+                partake_num_limit =
+                #{param.partakeNumLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.graphicExplanation != null">
+                graphic_explanation =
+                #{param.graphicExplanation,jdbcType=VARCHAR},
+            </if>
+            <if test="param.firstScreenAdvertise != null">
+                first_screen_advertise =
+                #{param.firstScreenAdvertise,jdbcType=VARCHAR},
+            </if>
+            <if test="param.firstScreenIsDisplay != null">
+                first_screen_is_display =
+                #{param.firstScreenIsDisplay,jdbcType=VARCHAR},
+            </if>
+            <if test="param.isRoundAwardInformation != null">
+                is_round_award_information =
+                #{param.isRoundAwardInformation,jdbcType=INTEGER},
+            </if>
+            <if test="param.activityIsEnable != null">
+                activity_is_enable =
+                #{param.activityIsEnable,jdbcType=INTEGER},
+            </if>
+            <if test="param.updateBy != null">
+                update_by = #{param.updateBy,jdbcType=VARCHAR},
+            </if>
+            <if test="param.updateDate != null">
+                update_date = #{param.updateDate,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where activity_id = #{param.activityId,jdbcType=INTEGER}
+    </update>
+    <update id="updateActivity">
+        update activity_spinwin
+        set partake_num=#{param.partakeNum}
+        where activity_id = #{param.activityId}
+    </update>
+    <select id="selectSpinwinActivityList" resultType="com.houjiang.activity.entity.ActivitySpinwinEntity">
+        select
+        activity_id, activity_title, activity_start_time,
+        activity_end_time,
+        partake_num_is_display,
+        partake_num,
+        partake_num_is_limit, partake_num_limit,
+        first_screen_is_display,
+        is_round_award_information,
+        activity_is_enable,update_date
+        from
+        activity_spinwin
+        where activity_is_enable != 3
+        <if
+                test="param.activityTitle != null and param.activityTitle != ''">
+            and activity_title LIKE CONCAT('%',#{param.activityTitle },'%')
+        </if>
+        order by update_date desc
+    </select>
+    <select id="selectDrawDetail" resultType="com.houjiang.activity.vo.SpinWinDrawDetailVO">
+        SELECT partake_num,
+               partake_num_is_limit,
+               partake_num_limit,
+               total_sweepstakes_is_limit,
+               total_sweepstakes_limit,
+               winning_times_per_person,
+               partake_num_is_display
+        FROM activity_spinwin
+        where (now() between activity_start_time and activity_end_time)
+          and activity_is_enable = 1
+          and activity_id = #{param.activityId}
+    </select>
+    <select id="selectActivityExplain" resultType="java.lang.String">
+        SELECT graphic_explanation
+        FROM activity_spinwin
+        where activity_id = #{param.activityId}
+    </select>
+    <select id="selectActivityGift" resultType="com.houjiang.activity.dto.GiftDTO">
+        SELECT ap.prize_id,
+               ap.prize_grade,
+               ap.is_win,
+               ap.prize_name,
+               ag.gift_is_redpacket,
+               ag.redpacket_t_id,
+               ap.gift_num / (SELECT SUM(gift_num)
+                              FROM activity_spinwin_prize
+                              WHERE ap.activity_id = #{param.activityId}) AS probability
+        FROM activity_spinwin_prize ap
+                 LEFT JOIN activity_spinwin_gift ag ON ag.gift_id = ap.gift_id
+        WHERE ap.activity_id = #{param.activityId}
+          and gift_num > give_out_gift_num
+        ORDER BY ap.is_win asc, ap.gift_num ASC
+    </select>
+</mapper>

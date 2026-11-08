@@ -1,0 +1,150 @@
+server:
+  port: 8391
+
+spring:
+  application:
+    name: bff-web
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: auth
+          uri: lb://auth
+          predicates:
+            - Path=/auth/**
+        - id: userms
+          uri: lb://userms
+          predicates:
+            - Path=/userms/**
+        - id: order
+          uri: lb://order
+          predicates:
+            - Path=/order/**
+        - id: payment
+          uri: lb://payment
+          predicates:
+            - Path=/payment/**
+        - id: business
+          uri: lb://business
+          predicates:
+            - Path=/business/**
+        - id: base
+          uri: lb://base
+          predicates:
+            - Path=/base/**
+        - id: goods
+          uri: lb://goods
+          predicates:
+            - Path=/goods/**
+        - id: activity
+          uri: lb://activity
+          predicates:
+            - Path=/activity/**
+        - id: thirdparty
+          uri: lb://thirdparty
+          predicates:
+            - Path=/thirdparty/**
+        - id: job
+          uri: lb://job
+          predicates:
+            - Path=/job/**
+        - id: crm
+          uri: lb://crm
+          predicates:
+            - Path=/crm/**
+        - id: supplier
+          uri: lb://supplier
+          predicates:
+            - Path=/supplier/**
+        - id: im
+          uri: lb://im
+          predicates:
+            - Path=/im/**
+        - id: ai
+          uri: lb://ai
+          predicates:
+            - Path=/ai/**
+        - id: cms
+          uri: lb://cms
+          predicates:
+            - Path=/cms/**
+        - id: datav
+          uri: lb://datav
+          predicates:
+            - Path=/datav/**
+        - id: mes
+          uri: lb://mes
+          predicates:
+            - Path=/mes/**
+        - id: oa
+          uri: lb://oa
+          predicates:
+            - Path=/oa/**
+        - id: orderfood
+          uri: lb://orderfood
+          predicates:
+            - Path=/orderfood/**
+        - id: permission
+          uri: lb://permission
+          predicates:
+            - Path=/permission/**
+        - id: pm
+          uri: lb://pm
+          predicates:
+            - Path=/pm/**
+        - id: rider
+          uri: lb://rider
+          predicates:
+            - Path=/rider/**
+        - id: webpos
+          uri: lb://webpos
+          predicates:
+            - Path=/webpos/**
+        - id: workflow
+          uri: lb://workflow
+          predicates:
+            - Path=/workflow/**
+        - id: erp
+          uri: lb://erp
+          predicates:
+            - Path=/erp/**
+        - id: finance
+          uri: lb://finance
+          predicates:
+            - Path=/finance/**
+
+    openfeign:
+      client:
+        config:
+          pm:
+            url: http://${BFF_PM_ADDR}
+
+# 平台协议回传：站点用户签署协议后，站点后端自动把签署凭据回传到平台汇总
+#（装完默认开启，平台后台「协议同意记录 → 站点回传记录」页可查）。
+# 不想接入：variables.env 里置 HOUCLOUD_PLATFORM_REPORT_ENABLED=false 即可；
+# url / site-code / token 任一为空时后端会静默跳过，不影响业务。
+houcloud:
+  platform:
+    report-enabled: ${HOUCLOUD_PLATFORM_REPORT_ENABLED}
+    url: ${HOUCLOUD_PLATFORM_URL}
+    site-code: ${HOUCLOUD_PLATFORM_SITE_CODE}
+    site-name: ${HOUCLOUD_PLATFORM_SITE_NAME}
+    token: ${HOUCLOUD_PLATFORM_TOKEN}
+
+# bff-web → 同机部署直连，避免 Nacos 命名空间不一致 / 插件临时关闭注册导致 503
+feign:
+  logging:
+    url: http://127.0.0.1:8099
+  oa:
+    url: http://127.0.0.1:8393
+  mall:
+    url: http://127.0.0.1:8220
+  # 生产 RH2288 当前 ERP 监听 8315（见 plugin-services-repair env）；架构目标端口为 8090
+  erp:
+    url: http://127.0.0.1:8315
+  pm:
+    url: http://${BFF_FEIGN_PM_ADDR}

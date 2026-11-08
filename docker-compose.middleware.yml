@@ -1,0 +1,207 @@
+# =====================================================================
+# HouCloud · 仅中间件编排（部署轨 A 的加速器：容器跑中间件，服务仍用 jar 跑在宿主机）
+#
+# 用法：
+#   cp .env.docker.example .env
+#   bash deploy/scripts/docker.sh mw          # = docker compose -f docker-compose.middleware.yml up -d
+#
+# 它替你做三件事：
+#   1) 起 MySQL / Redis / Nacos / RocketMQ（端口一律只绑宿主机 127.0.0.1）
+#   2) 自动完成数据库初始化（670 张 Core 表 + 菜单/角色/admin）与 Nacos 配置导入
+#      —— 注意：这里渲染出的配置里，中间件地址一律写成 127.0.0.1，
+#         因为真正连库的是宿主机上的 jar，不是容器。
+#
+# 然后按《安装手册》第 3 步在宿主机上编译并启动各服务 jar 即可。
+# 想连容器里的 Nacos，jar 启动时带上：
+#   export NACOS_ADDR=127.0.0.1:8848 NACOS_NAMESPACE=houeoc NACOS_PASSWORD=<.env 里的值>
+# =====================================================================
+
+name: ${COMPOSE_PROJECT_NAME:-unimall}-mw
+
+services:
+  mysql:
+    image: ${MYSQL_IMAGE:-mysql:8.0.39}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+      - --max_connections=500
+      - --innodb_buffer_pool_size=512M
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-meoc}
+      MYSQL_USER: ${MYSQL_USER:-meoc}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me}
+      TZ: Asia/Shanghai
+    ports:
+      - "127.0.0.1:${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./deploy/mysql-init:/docker-entrypoint-initdb.d:ro
+      - ./deploy/scripts/sql/init:/opt/houcloud-sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
+    networks: [unimall-mw]
+
+  # Redis 与主编排同款定义；轨 A 下宿主机 jar 连 127.0.0.1:REDIS_HOST_PORT。
+  # 宿主机已有现成 Redis 时：.env 里把 REDIS_HOST_PORT 设成它的端口（并保证口令一致），
+  # 或删掉本服务定义改用外部实例——二选一，别让两个 Redis 抢 6379。
+  redis:
+    image: ${REDIS_IMAGE:-redis:7.2-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-redis
+    command:
+      - sh
+      - -c
+      # 有密码就带密码启动，没密码就明文（模板里 password 是占位符，留空即无密码）
+      - >-
+        exec redis-server
+        --appendonly yes
+        --dir /data
+        ${REDIS_PASSWORD:+--requirepass "$REDIS_PASSWORD"}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      TZ: Asia/Shanghai
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+    networks: [unimall-mw]
+
+  nacos:
+    image: ${NACOS_IMAGE:-nacos/nacos-server:v2.3.2}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-nacos
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: ${NACOS_AUTH_ENABLE:-true}
+      NACOS_AUTH_PASSWORD: ${NACOS_AUTH_PASSWORD:-nacos}
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN:-change-me-generate-with-openssl-rand-base64-32}
+      NACOS_AUTH_IDENTITY_KEY: ${NACOS_AUTH_IDENTITY_KEY:-houcloud}
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_AUTH_IDENTITY_VALUE:-houcloud}
+      JVM_XMS: 512m
+      JVM_XMX: 1024m
+      TZ: Asia/Shanghai
+    ports:
+      - "127.0.0.1:${NACOS_HOST_PORT:-8848}:8848"
+      - "127.0.0.1:${NACOS_GRPC_PORT:-9848}:9848"
+      - "127.0.0.1:${NACOS_GRPC_RAFT_PORT:-9849}:9849"
+    volumes:
+      - nacos-data:/home/nacos/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8848/nacos/ >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 40
+      start_period: 40s
+    restart: unless-stopped
+    networks: [unimall-mw]
+
+  rocketmq-namesrv:
+    image: ${ROCKETMQ_IMAGE:-apache/rocketmq:5.1.4}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-rocketmq-namesrv
+    command: ["sh", "mqnamesrv"]
+    environment:
+      JAVA_OPT_EXT: -Xms256m -Xmx512m
+      TZ: Asia/Shanghai
+    ports:
+      - "127.0.0.1:${ROCKETMQ_NAMESRV_PORT:-9876}:9876"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/9876' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+    networks: [unimall-mw]
+
+  rocketmq-broker:
+    image: ${ROCKETMQ_IMAGE:-apache/rocketmq:5.1.4}
+    # 镜像默认以 rocketmq(uid 3000) 运行，而挂载的命名卷是 root 属主，
+    # 不切换成 root 会因 store 目录不可写导致 broker 启动失败（表现为 NPE 退出）。
+    user: "0:0"
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-rocketmq-broker
+    command: ["sh", "-c", "exec sh mqbroker -c /opt/rocketmq/conf/broker.conf"]
+    environment:
+      JAVA_OPT_EXT: -Xms512m -Xmx1024m
+      TZ: Asia/Shanghai
+    ports:
+      - "127.0.0.1:${ROCKETMQ_BROKER_PORT:-10911}:10911"
+      - "127.0.0.1:${ROCKETMQ_BROKER_VIP_PORT:-10909}:10909"
+      - "127.0.0.1:${ROCKETMQ_BROKER_HA_PORT:-10912}:10912"
+    volumes:
+      - ./deploy/rocketmq/broker-host.conf:/opt/rocketmq/conf/broker.conf:ro
+      - rocketmq-data:/home/rocketmq/store
+    depends_on:
+      rocketmq-namesrv:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/10911' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+    networks: [unimall-mw]
+
+  nacos-init:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.nacos-init
+    image: unimall/nacos-init:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-nacos-init
+    working_dir: /work
+    volumes:
+      - ./deploy/scripts/nacos-templates:/work
+    environment:
+      NACOS_ADDR: nacos:8848
+      NACOS_USER: ${NACOS_USER:-nacos}
+      NACOS_PASSWORD: ${NACOS_AUTH_PASSWORD:-nacos}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_AUTH_ENABLED: ${NACOS_AUTH_ENABLE:-true}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      ES_PASSWORD: ${ES_PASSWORD:-}
+      WEB_PORT: ${WEB_PORT:-8080}
+      # 关键：jar 跑在宿主机，配置里的中间件地址必须是 127.0.0.1 而不是容器名
+      RENDER_MYSQL_HOST: 127.0.0.1
+      RENDER_MYSQL_PORT: ${MYSQL_HOST_PORT:-3306}
+      # 轨 A 的消费方是宿主机上的 jar：Redis 地址一律渲染成 127.0.0.1 + 宿主机映射端口。
+      # 注意：全栈轨的 .env 注释建议 REDIS_ADDR=redis:6379，那是给容器服务用的；
+      # 只跑 mw 时必须保持 127.0.0.1（或注释掉），否则把容器名写进 Nacos、宿主 jar 解析不了。
+      RENDER_REDIS_ADDR: ${REDIS_ADDR:-127.0.0.1}
+      RENDER_REDIS_PORT: ${REDIS_HOST_PORT:-6379}
+      # 必须跟着宿主端口走：jar 轨的服务跑在宿主机，连的是映射后的端口，
+      # 写死 8848 会在改了 NACOS_HOST_PORT 后把错误地址写进 Nacos 配置里。
+      RENDER_NACOS_SERVER_ADDR: 127.0.0.1:${NACOS_HOST_PORT:-8848}
+      RENDER_ROCKETMQ_NAMESERVER: 127.0.0.1:${ROCKETMQ_NAMESRV_PORT:-9876}
+      RENDER_BFF_ADDR: 127.0.0.1:8391
+      RENDER_THIRD_ADDR: http://127.0.0.1:8194
+      RENDER_ES_ADDR: ${ES_HOST:-127.0.0.1:9200}
+      TZ: Asia/Shanghai
+    depends_on:
+      nacos:
+        condition: service_healthy
+    restart: "no"
+    networks: [unimall-mw]
+
+networks:
+  unimall-mw:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data:
+  nacos-data:
+  rocketmq-data:

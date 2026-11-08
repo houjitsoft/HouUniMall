@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseWxLiveGoodsMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseWxLiveGoodsEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+            <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+            <result property="wxGoodsId" column="wx_goods_id" jdbcType="INTEGER"/>
+            <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+            <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+            <result property="commonName" column="common_name" jdbcType="VARCHAR"/>
+            <result property="goodsPrice" column="goods_price" jdbcType="DECIMAL"/>
+            <result property="commonStock" column="common_stock" jdbcType="INTEGER"/>
+            <result property="commonImage" column="common_image" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="operation" column="operation" jdbcType="INTEGER"/>
+            <result property="isverify" column="isverify" jdbcType="INTEGER"/>
+            <result property="cause" column="cause" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,common_id,goods_id,
+        wx_goods_id,shop_id,shop_name,
+        common_name,goods_price,common_stock,
+        common_image,create_time,operation,
+        isverify,cause
+    </sql>
+
+    <select id="queryLiveCommons" resultType="com.houjiang.base.entity.BaseWxLiveGoodsEntity">
+        select
+        wlg.id,
+        wlg.common_id,
+        wlg.goods_id,
+        wlg.shop_id,
+        wlg.shop_name,
+        wlg.common_name,
+        wlg.goods_price,
+        wlg.common_stock,
+        wlg.common_image,
+        wlg.create_time,
+        wlg.operation,
+        wlg.isverify,
+        wlg.cause
+        from ${database.prefix.userms}hou_base_wx_live_goods wlg
+        where
+        1=1
+        <if test="param.shopId != null and param.shopId != '' ">
+            and wlg.shop_id = #{param.shopId}
+        </if>
+        <if test="param.commonName != null and param.commonName != '' ">
+            and wlg.common_name = #{param.commonName}
+        </if>
+        <if test="param.state != null and param.state != ''">
+            and wlg.isverify = #{param.state}
+        </if>
+        order by wlg.create_time desc
+    </select>
+
+    <insert id="insertLiveGoods" parameterType="java.util.List">
+        insert into ${database.prefix.userms}hou_base_wx_live_goods
+        (
+        common_id,goods_id,shop_id,shop_name,common_name,goods_price,common_stock,common_image,operation,isverify
+        )
+        values
+        <foreach collection="wxLiveGoods" item="wxLiveGoods"
+                 index="index" separator=",">
+            <trim prefix=" (" suffix=")" suffixOverrides=",">
+                <if test="wxLiveGoods.commonId != null">
+                    #{wxLiveGoods.commonId},
+                </if>
+                <if test="wxLiveGoods.goodsId != null">
+                    #{wxLiveGoods.goodsId},
+                </if>
+                <if test="wxLiveGoods.shopId != null">
+                    #{wxLiveGoods.shopId},
+                </if>
+                <if test="wxLiveGoods.shopName != null">
+                    #{wxLiveGoods.shopName},
+                </if>
+                <if test="wxLiveGoods.commonName != null">
+                    #{wxLiveGoods.commonName},
+                </if>
+                <if test="wxLiveGoods.goodsPrice != null">
+                    #{wxLiveGoods.goodsPrice},
+                </if>
+                <if test="wxLiveGoods.commonStock != null">
+                    #{wxLiveGoods.commonStock},
+                </if>
+                <if test="wxLiveGoods.commonImage != null">
+                    #{wxLiveGoods.commonImage},
+                </if>
+                <if test="wxLiveGoods.operation != null">
+                    #{wxLiveGoods.operation},
+                </if>
+                <if test="wxLiveGoods.isverify != null">
+                    #{wxLiveGoods.isverify},
+                </if>
+            </trim>
+        </foreach>
+    </insert>
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayBankcardMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayBankcardEntity">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="bankCode" column="bank_code" jdbcType="VARCHAR"/>
+        <result property="bankName" column="bank_name" jdbcType="VARCHAR"/>
+        <result property="cardNoEncrypted" column="card_no_encrypted" jdbcType="VARCHAR"/>
+        <result property="cardNoTail" column="card_no_tail" jdbcType="VARCHAR"/>
+        <result property="cardType" column="card_type" jdbcType="TINYINT"/>
+        <result property="holderName" column="holder_name" jdbcType="VARCHAR"/>
+        <result property="holderIdEncrypted" column="holder_id_encrypted" jdbcType="VARCHAR"/>
+        <result property="holderMobile" column="holder_mobile" jdbcType="VARCHAR"/>
+        <result property="isDefault" column="is_default" jdbcType="TINYINT"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="verifyStatus" column="verify_status" jdbcType="TINYINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+</mapper>

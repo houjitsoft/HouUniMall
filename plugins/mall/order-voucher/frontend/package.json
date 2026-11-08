@@ -1,0 +1,10 @@
+{
+  "name": "@houjiang/order-voucher-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "优惠券插件前端产物（与商城 admin 共用构建依赖）",
+  "scripts": {
+    "build": "vite build"
+  }
+}

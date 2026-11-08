@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseWxLiveHostMapper">
+    <update id="updateHostState">
+        UPDATE ${database.prefix.userms}hou_base_wx_live_host wlh SET  wlh.state = #{state},wlh.operation = 0,wlh.cause = #{cause} WHERE wlh.id = #{id}
+    </update>
+
+    <select id="queryLiveHostState" parameterType="java.lang.Integer" resultType="com.houjiang.base.vo.QuLiveHostStateResultVO">
+        select wechat_id,state,hoststate from  ${database.prefix.userms}hou_base_wx_live_host where shop_id = #{shopId}
+    </select>
+    <select id="queryHosts" resultType="com.houjiang.base.vo.WxHostsVO">
+        SELECT
+        wlh.id,
+        wlh.user_id,
+        wlh.shop_id,
+        gsb.shop_name,
+        wlh.wechat_id,
+        gsb.shop_tel AS shopPhone,
+        wlh.head_portrait,
+        wlh.creata_time,
+        wlh.state,
+        wlh.cause,
+        wlh.hoststate
+        FROM
+        ${database.prefix.userms}hou_base_wx_live_host wlh
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base gsb ON gsb.supplier_shop_id = wlh.shop_id
+        where
+        1=1
+        <if test="param.wechatId != null and param.wechatId != ''">
+            and wlh.wechat_id = #{param.wechatId}
+        </if>
+        <if test="param.shopPhone != null and param.shopPhone != ''">
+            and gsb.shop_tel = #{param.shopPhone}
+        </if>
+        <if test="param.shopName != null and param.shopName != ''">
+            and gsb.shop_name = #{param.shopName}
+        </if>
+        <if test="param.state != null and param.state != ''">
+            and wlh.state = #{param.state}
+        </if>
+
+        order by creata_time desc
+    </select>
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  国内构建环境的 Maven 中央仓库镜像：① RH2288 到 repo.maven.apache.org 实测
+  77 B/s ~ 20 kB/s（2026-10-30），全量依赖下载要数小时；阿里云公共聚合仓库
+  （central + jcenter + spring 等）实测 MB/s 级。build-jars.sh 检测到本文件
+  存在时自动追加 `mvn -s`，不存在的树不受影响。
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <mirrors>
+    <mirror>
+      <id>aliyun-public</id>
+      <mirrorOf>central</mirrorOf>
+      <name>Aliyun public aggregate repository (central et al.)</name>
+      <url>https://maven.aliyun.com/repository/public</url>
+    </mirror>
+  </mirrors>
+</settings>

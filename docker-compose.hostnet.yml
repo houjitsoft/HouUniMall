@@ -1,0 +1,259 @@
+# =====================================================================
+# HouCloud · Docker 编排 override：模式 B（外部中间件 / host 网络）
+#
+# 适用场景：宿主机上**已经**有 Nacos / MySQL / Redis / RocketMQ
+#           （比如生产机 RH2288），只想把 14 个业务服务放进容器统一管理。
+#
+# 用法（🔴 --no-deps 必须带，否则 compose 会连带拉起 mysql/redis/nacos/rocketmq，
+#       去抢宿主机上已被占用的 8848 / 3306 / 6379，报 "port is already allocated"）：
+#
+#   cp .env.docker.example .env
+#   # .env 里至少要写这四项（Nacos 在别的机器时 NACOS_ADDR 填它的真实地址）：
+#   NACOS_ADDR=127.0.0.1:8848
+#   NACOS_NAMESPACE=houeoc
+#   NACOS_USER=nacos
+#   NACOS_PASSWORD=<你的 Nacos 口令>     # 🔴 模式 B 只认这个名字，写 NACOS_AUTH_PASSWORD 不生效
+#   docker build -f deploy/Dockerfile.builder -t unimall/builder:latest .
+#   docker compose -f docker-compose.yml -f docker-compose.hostnet.yml \
+#       build base goods mall auth order supplier userms payment bff-web \
+#             job merchant permission thirdparty
+#   docker compose -f docker-compose.yml -f docker-compose.hostnet.yml \
+#       up -d --no-deps base goods mall auth order supplier userms payment bff-web \
+#             job merchant permission thirdparty
+#   # 上面这条不含 aicode：它在 ai profile 下，要起它必须再加 --profile ai aicode
+#
+# 起之前先确认口令真的被吃到了（见过两次「写了却渲染成默认 nacos」的事故）：
+#   docker compose -f docker-compose.yml -f docker-compose.hostnet.yml config | grep NACOS_PASSWORD
+#
+# 校验（不起容器）：
+#   docker compose -f docker-compose.yml -f docker-compose.hostnet.yml config >/dev/null
+#
+# 为什么必须在本文件之前先跑 builder：
+#   各服务镜像只从 unimall/builder 里 COPY 自己那一个 jar，缺镜像会 build 失败。
+#
+# 为什么主 compose 里不能有 networks 字段：
+#   compose 规范里 network_mode 与 networks 互斥，显式写过 networks 的服务再加
+#   network_mode: host 会报 "mutually exclusive network_mode and networks"；
+#   把 host 写成 network 名又会报 "network-scoped aliases are only supported for
+#   user-defined networks"。所以主文件已移除全部 networks，让服务落进 default 网络。
+#
+# host 网络下的注意点：
+#   1. 端口直接占用宿主机：bff-web 8391、permission 8300、auth 8392 ……
+#      同端口已被宿主机进程占用会起不来（"Address already in use"）。
+#   2. healthcheck 探 127.0.0.1:<业务端口>，容器=宿主机网络栈，探的就是真实端口。
+#   3. 数据源 / Redis / RocketMQ 地址**不在这里配**：它们由 Nacos 里的 mutual.yaml
+#      / redis.yaml / rocketmq.yaml 下发（外部中间件的真实地址已经在那些配置里了）。
+#      要改请改 Nacos 配置，或见下方 x-hostnet-env 里的可选覆盖。
+# =====================================================================
+
+x-hostnet-env: &hostnet-env
+  # ---- 注册中心 / 配置中心 ----
+  # 默认 127.0.0.1:8848：host 网络下容器即宿主机，本机 Nacos 直接用环回地址可达。
+  # 若 Nacos 在别的机器（如 127.0.0.1:8848），在 .env 里显式覆盖 NACOS_ADDR。
+  NACOS_ADDR: ${NACOS_ADDR:-127.0.0.1:8848}
+  NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+  NACOS_USER: ${NACOS_USER:-nacos}
+  # ⚠️ 这里**不要**写成嵌套默认值 ${NACOS_PASSWORD:-${NACOS_AUTH_PASSWORD:-nacos}}。
+  # 实测 Docker Compose v5.1.4 解析不了嵌套 `:-` —— 外层变量会被静默忽略，
+  # 结果取到的是 NACOS_AUTH_PASSWORD 的值（我把两个变量设成不同探针值验证过）。
+  # 所以两个模式各用一个变量名：
+  #   模式 A（全栈）→ 主文件 anchor，用 NACOS_AUTH_PASSWORD（与 nacos 服务端同源）
+  #   模式 B（本文件）→ NACOS_PASSWORD
+  # 写错名字会静默退回默认口令 nacos，表现为「Nacos 连得上但读不到配置」，
+  # 最终炸在 RedisConfig 之类完全不相干的位置（RedisConfig.java:67 的
+  # “缺少必要的spring.redis.*配置”）。起之前务必用下面这条命令确认真的吃到了：
+  #   docker compose -f docker-compose.yml -f docker-compose.hostnet.yml config | grep NACOS_PASSWORD
+  NACOS_PASSWORD: ${NACOS_PASSWORD:-nacos}
+  # ---- 可选：数据源 / Redis / RocketMQ 地址覆盖入口 ----
+  # 业务服务的库连接串取自 Nacos 的 mutual.yaml，Redis 取自 redis.yaml，RocketMQ 取自
+  # rocketmq.yaml —— 也就是说「外部中间件地址」的正确落点是 Nacos 配置（nacos-init 会用
+  # 下面的 RENDER_* 变量把模板渲染成配置）。本 anchor 因此**只注入 NACOS_***：
+  # 少传一个中间件地址变量，就少一处「空值把配置里的默认值顶掉」的隐患。
+  #
+  # 只有当你确需把这类地址改成走环境变量（例如某个服务的 bootstrap.yml 里加了
+  # `${MYSQL_HOST:...}` 占位符）时，再取消下面几行注释：
+  # MYSQL_HOST: ${MYSQL_HOST:-127.0.0.1}
+  # REDIS_HOST: ${REDIS_HOST:-127.0.0.1}
+  # 模式 B 下中间件在宿主机上，重跑 nacos-init 前务必在 .env 写：
+  #   REDIS_ADDR=127.0.0.1:6379
+  # 否则默认值 redis:6379 是模式 A 的服务名，宿主机上解析不到。
+  # ROCKETMQ_NAMESERVER: ${ROCKETMQ_NAMESERVER:-127.0.0.1:9876}
+
+services:
+  base:
+    network_mode: host
+    # 制品云存储 / 验签 / 支付闸门：密钥只放宿主机私密 env，禁止进 git。
+    # 模板见 deploy/scripts/nacos-templates/artifact-commerce.env.example（仓库已带）
+    # 🔴 required: false —— 该文件可放在宿主机任意私密路径，
+    # 不带 required:false 时全新机器 `compose up` 会直接报 env file not found 起不来。
+    # 缺它时制品云存储/验签能力降级（上传会明确报错），但服务本身能启动。
+    env_file:
+      - path: ${HOU_ARTIFACT_ENV_FILE:-/home/houjit/.unimall/base-artifact.env}
+        required: false
+    environment:
+      <<: *hostnet-env
+      HOUCLOUD_PLUGIN_UNAVAILABLE_CODES: ${HOUCLOUD_PLUGIN_UNAVAILABLE_CODES:-}
+    # 🔴 插件前端产物的读取根（宿主机侧）。T11 起「产物托管端点」
+    #    /plugin-assets/{code}/{version}/** 由 base 提供（PluginAssetController +
+    #    PluginAssetResolver，目录形态 plugins/{code}/{ver}/frontend/{entry}），
+    #    BFF 的 /web/plugin-assets/** 泛化转发到这里。
+    #    缺这个挂载时 base 内没有 /app/plugins，产物一律 404
+    #    「插件产物不存在: index.mjs」，前端插件页整块空白 —— 现象很像「插件没部署」。
+    #    与 mall 的那份挂载同源（plugins-dir 默认值 "plugins" 相对 workdir /app）。
+    #    保持可写：市场在线安装 / 升级编排会把新制品落盘到这里。
+    volumes:
+      - ${PLUGINS_DIR:-./plugins}:/app/plugins
+
+  goods:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  mall:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+    # 🔴 插件 jar 的读取根（宿主机侧）。带后端的业务插件（activity/aicode/cms/crm/erp/
+    #    finance/im/logging/mes/oa/orderfood/pm/supplier/webpos 共 14 个）不在镜像里，
+    #    而是单独构建后落到 plugins/<code>/1.0.0/<code>-1.0.0.jar，
+    #    hou_addon_plugin_install.jar_path 记的是容器内的 /app/plugins/...。
+    #    缺这个挂载时 mall 启动时只会 WARN「插件安装包不存在」，插件不装载、
+    #    插件页退化为前端 mock 数据——现象很像「后端没部署」，极易误判。
+    #    jar 目录是 .gitignore 忽略的（plugins/*/[0-9]*.[0-9]*.[0-9]*/），
+    #    ⚠️ 因此「删掉工作目录重新克隆」会静默丢掉全部 14 个 jar，务必先备份。
+    volumes:
+      - ${PLUGINS_DIR:-./plugins}:/app/plugins
+
+  auth:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  order:
+    network_mode: host
+    # 🔴 启动看门狗：根治「Nacos 抖动 → 注册失败 → Spring 启动中止 → 端口不监听
+    #    但容器不退出」的假死（2026-10-15 userms/order 事故，详见脚本头注释）。
+    #    不配这一组时容器走镜像默认 entrypoint（exec java），行为与改动前完全一致。
+    entrypoint: ["/bin/bash", "/app/boot/java-boot-watchdog.sh"]
+    volumes:
+      - ./deploy/scripts/docker/java-boot-watchdog.sh:/app/boot/java-boot-watchdog.sh:ro
+    environment:
+      <<: *hostnet-env
+      JAVA_BOOT_LOG_NAME: order
+      JAVA_BOOT_PORT: "8209"
+
+  supplier:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  userms:
+    network_mode: host
+    # 🔴 启动看门狗：同 order。本次事故的另一个主角（8195）。
+    entrypoint: ["/bin/bash", "/app/boot/java-boot-watchdog.sh"]
+    volumes:
+      - ./deploy/scripts/docker/java-boot-watchdog.sh:/app/boot/java-boot-watchdog.sh:ro
+    environment:
+      <<: *hostnet-env
+      JAVA_BOOT_LOG_NAME: userms
+      JAVA_BOOT_PORT: "8195"
+
+  payment:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  bff-web:
+    network_mode: host
+    # 注：host 网络下端口映射不生效，容器直接用宿主机 8391；daemon 创建时会打一条
+    #     "Published ports are discarded when using host network mode" WARNING，属预期，
+    #     不用管（实测 `ports: []` 清不掉它——compose 合并时空列表不会覆盖主文件的列表）。
+    environment:
+      <<: *hostnet-env
+      HOUCLOUD_PLUGIN_MIGRATION_AICODE_URL: ${HOUCLOUD_PLUGIN_MIGRATION_AICODE_URL:-}
+      # userms Feign：空 FEIGN_USERMS_URL 会清空注解默认值，导致走不存在的 userms-ucenter
+      FEIGN_USERMS_URL: ${FEIGN_USERMS_URL:-http://127.0.0.1:8195}
+      # base Feign（8214）：H5 首页装修数据全部走 /web/base/**（modularizationdIndex 取页面组件、
+      # sysConfig/quertNavLogo 取导航文案）。不配就是空值，BFF 一律返回 20001「请求的资源不存在」，
+      # H5 侧拿到 data:null 后 res.data[0] / res.data.pageData 直接抛错，首页白屏。
+      FEIGN_BASE_URL: ${FEIGN_BASE_URL:-http://127.0.0.1:8214}
+
+  job:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  merchant:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  permission:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  thirdparty:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  aicode:
+    network_mode: host
+    # Existing AICode service remains available until PM takes over its APIs.
+    env_file:
+      - path: ${AICODE_DATABASE_ENV_FILE:-/home/houjit/.unimall/aicode-database.env}
+        required: false
+    environment:
+      <<: *hostnet-env
+
+  oa:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  geo:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  logging:
+    network_mode: host
+    environment:
+      <<: *hostnet-env
+
+  # ---- 安装向导 custom 模式：nacos-init 渲染「外部中间件」地址 ----
+  # 本文件不含 mysql/redis/nacos 容器定义，nacos-init 保持 bridge 网络跑
+  # （它 curl 的是 NACOS_ADDR 指向的外部 Nacos，容器内出网即可）。
+  # 环境变量按 compose override 的按键合并规则覆盖主文件的同名键；
+  # 未涉及键（NACOS_AUTH_ENABLE 等）沿用主文件。
+  # MYSQL_USER / MYSQL_DB：render_variables.py 的同名环境变量优先级最高，
+  # 直接决定模板里 ${MYSQL_USER} / ${MYSQL_DB}（库名/账号已变量化）。
+  nacos-init:
+    # host 网络：客户中间件在宿主机（127.0.0.1）时，bridge 容器里的 nacos-init
+    # 连不到宿主的环回地址；host 网络下容器即宿主机网络栈，127.0.0.1 语义正确。
+    # Nacos 在远端机器时同样可出网访问。一次性任务不占端口，无冲突面。
+    network_mode: host
+    environment:
+      NACOS_ADDR: ${NACOS_ADDR:-127.0.0.1:8848}
+      NACOS_USER: ${NACOS_USER:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:-nacos}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me}
+      MYSQL_USER: ${CUSTOM_MYSQL_USER:-root}
+      MYSQL_DB: ${CUSTOM_MYSQL_DB:-meoc}
+      REDIS_PASSWORD: ${CUSTOM_REDIS_PASSWORD:-}
+      WEB_PORT: ${WEB_PORT:-8080}
+      RENDER_MYSQL_HOST: ${CUSTOM_MYSQL_HOST:-127.0.0.1}
+      RENDER_MYSQL_PORT: ${CUSTOM_MYSQL_PORT:-3306}
+      RENDER_MYSQL_USER: ${CUSTOM_MYSQL_USER:-root}
+      RENDER_MYSQL_DB: ${CUSTOM_MYSQL_DB:-meoc}
+      RENDER_REDIS_ADDR: ${REDIS_ADDR:-127.0.0.1:6379}
+      RENDER_NACOS_SERVER_ADDR: ${NACOS_ADDR:-127.0.0.1:8848}
+      RENDER_ROCKETMQ_NAMESERVER: ${CUSTOM_ROCKETMQ_NAMESERVER:-127.0.0.1:9876}
+      # host 网络下服务间互访 = 宿主机端口，渲染容器名无意义
+      RENDER_BFF_ADDR: 127.0.0.1:8391
+      RENDER_THIRD_ADDR: http://127.0.0.1:8194
+      RENDER_ES_ADDR: ${CUSTOM_ES_ADDR:-127.0.0.1:9200}
+      # hostnet 轨没有 seata-server；渲染成 127.0.0.1 不会有人真去连（SEATA_ENABLED=false）
+      RENDER_SEATA_SERVER_ADDR: 127.0.0.1:8091

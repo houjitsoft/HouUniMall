@@ -1,0 +1,1077 @@
+# =====================================================================
+# HouCloud · Docker 一键编排（部署轨 B：全容器化）
+#
+# 一条命令起整套系统：
+#   cp .env.docker.example .env
+#   bash deploy/scripts/docker.sh up          # = docker compose build + up -d
+#
+# 包含：MySQL / Redis / Nacos / RocketMQ + 14 个核心微服务 + 管理后台前端（Nginx）
+#       + 10 个商业服务（commerce profile，源码同在 backend/paas/，默认不启，
+#         `bash deploy/scripts/docker.sh full` 一条命令起完整 24 业务服务）
+# 数据库初始化（670 张 Core 表 + 菜单/角色/admin）与 Nacos 配置导入都是自动的：
+#   - MySQL 首启执行 deploy/mysql-init/00-init.sql（source 进 deploy/scripts/sql/init）
+#   - nacos-init 一次性任务容器渲染变量表并导入 39 个 dataId
+#
+# 只想用容器跑中间件、服务仍用 jar 跑在宿主机？用 docker-compose.middleware.yml。
+# 中间件已在宿主机（外部 Nacos / MySQL / Redis），只让业务服务进容器？叠加
+# docker-compose.hostnet.yml 走 host 网络（详见 public/docs/docker/操作手册.md）。
+# 资源建议：核心集 16GB 内存（14 个 JVM + 5 个中间件）；完整 24 服务再 +12GB；
+# 8GB 机器用 bash deploy/scripts/docker.sh demo（最小集）。
+#
+# 两种模式：
+#   A 全栈（默认）  docker compose up -d
+#                  中间件与业务同进 bridge 网络，按服务名互通（nacos:8848）
+#   B 外部中间件    docker compose -f docker-compose.yml -f docker-compose.hostnet.yml \
+#                       up -d --no-deps <svc>
+#                  host 网络直连宿主机端口；必须带 --no-deps，否则会去拉中间件抢端口
+# =====================================================================
+
+# 项目名可覆盖：同一台机器上跑第二套（预发/验收/客户演示）时，在 .env 里改
+# COMPOSE_PROJECT_NAME 即可共存。原先写死 unimall，导致「已有一套的机器装不了第二套」，
+# 容器名与数据卷名会直接撞车。
+name: ${COMPOSE_PROJECT_NAME:-unimall}
+
+x-java-service: &java-service
+  restart: unless-stopped
+  depends_on:
+    builder:
+      condition: service_completed_successfully
+    mysql:
+      condition: service_healthy
+    # 2026-10-27：Redis 恢复为 compose 服务，作为硬依赖等它会话可用再起业务
+    # （模式 B 用 --no-deps 起服务时不会拉起它，由外部中间件顶替）
+    redis:
+      condition: service_healthy
+    rocketmq-broker:
+      condition: service_started
+    nacos-init:
+      condition: service_completed_successfully
+    # 插件先投放再登记，宿主最后才起 —— 宿主插件引擎是启动时一次性扫描插件目录，
+    # 目录里没 jar 就会「装好了但没加载」，只能重启补齐。
+    plugin-seed:
+      condition: service_completed_successfully
+    plugin-register:
+      condition: service_completed_successfully
+  environment: &java-service-env
+    # 默认 nacos:8848 = 模式 A（容器内 Nacos）；模式 B（外部 Nacos）在 .env 里覆盖，
+    # 例如 NACOS_ADDR=127.0.0.1:8848 或 NACOS_ADDR=127.0.0.1:8848
+    NACOS_ADDR: ${NACOS_ADDR:-nacos:8848}
+    NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+    NACOS_USER: ${NACOS_USER:-nacos}
+    # 口令同时接受两个变量名：优先 NACOS_PASSWORD，回退 NACOS_AUTH_PASSWORD，都没有才用 nacos。
+    # （Bootstrap 里读的环境变量叫 NACOS_PASSWORD，早期编排却只从 NACOS_AUTH_PASSWORD 取值，
+    #   导致按常理写 NACOS_PASSWORD=xxx 的人被静默退回默认口令 —— 见 public/docs/docker/操作手册.md 5.7）
+    NACOS_PASSWORD: ${NACOS_PASSWORD:-${NACOS_AUTH_PASSWORD:-nacos}}
+    # Redis 兜底 env：bootstrap.yml 的兜底段引用 ${REDIS_HOST}/${REDIS_PORT}/${REDIS_PASSWORD}，
+    # Nacos redis.yaml 拉取正常时被远端真值覆盖；拉取失败时靠它避免启动即崩。
+    # REDIS_ADDR（host:port）由 entrypoint-service.sh 拆成 REDIS_HOST/REDIS_PORT。
+    REDIS_ADDR: ${REDIS_ADDR:-redis:6379}
+    REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    JAVA_OPTS: ${JAVA_OPTS:--Xms256m -Xmx900m -Dfile.encoding=UTF-8}
+    TZ: Asia/Shanghai
+    # ---- 插件分发 / 市场交易（base 使用；其余服务忽略同名变量）----
+    # 这几项在 application-plugin.yml 里全是 ${ENV:} fail-closed 占位符：留空即拒绝，
+    # 不会静默放行。空白机必须由 deploy/install.sh 生成后经这里注入，否则
+    # 「发布 → 购买 → 下载 → 安装」整条链路会在五个不同接口上分别报错。
+    HOU_ARTIFACT_DOWNLOAD_TOKEN_SECRET: ${HOU_ARTIFACT_DOWNLOAD_TOKEN_SECRET:-}
+    HOU_ARTIFACT_SIGN_ACTIVE_KID: ${HOU_ARTIFACT_SIGN_ACTIVE_KID:-k2026}
+    HOU_ARTIFACT_SIGN_PUBLIC_KEYS: ${HOU_ARTIFACT_SIGN_PUBLIC_KEYS:-}
+    HOU_ARTIFACT_SIGN_PRIVATE_KEY_PATH: ${HOU_ARTIFACT_SIGN_PRIVATE_KEY_PATH:-}
+    HOU_PLUGIN_REQUIRE_SIGNATURE: ${HOU_PLUGIN_REQUIRE_SIGNATURE:-true}
+    HOU_PLUGIN_PAY_ENABLED: ${HOU_PLUGIN_PAY_ENABLED:-false}
+    HOU_PLUGIN_PAY_CHANNEL: ${HOU_PLUGIN_PAY_CHANNEL:-CASHIER}
+    HOU_PLUGIN_PAY_SANDBOX: ${HOU_PLUGIN_PAY_SANDBOX:-false}
+    HOU_PLUGIN_PAY_ADMIN_TOKEN: ${HOU_PLUGIN_PAY_ADMIN_TOKEN:-}
+    # HOU_*：供 application-plugin.yml 的 ${HOU_INTERNAL_JOB_TOKEN:} 占位；
+    # HOUCLOUD_PLUGIN_*：Spring 松散绑定到 houcloud.plugin.internal-job-token（goods/order/userms/…）。
+    # 留空 = fail-closed；install.sh 首次安装会写入 .env。
+    HOU_INTERNAL_JOB_TOKEN: ${HOU_INTERNAL_JOB_TOKEN:-}
+    HOUCLOUD_PLUGIN_INTERNAL_JOB_TOKEN: ${HOU_INTERNAL_JOB_TOKEN:-}
+    # 跨宿主安装静态地址（base 读 houcloud.plugin.host-endpoints.*）。
+    # install.sh 默认只起 permission/auth/userms/base/bff，故仅 userms/auth 给 Docker DNS 默认值，
+    # 避免 goods/order 等未启动时被误判为「宿主已部署」。其它宿主按需在 .env 填写。
+    HOU_PLUGIN_HOST_USERMS: ${HOU_PLUGIN_HOST_USERMS:-http://userms:8195}
+    HOU_PLUGIN_HOST_AUTH: ${HOU_PLUGIN_HOST_AUTH:-http://auth:8392}
+    HOU_PLUGIN_HOST_GOODS: ${HOU_PLUGIN_HOST_GOODS:-http://goods:8208}
+    HOU_PLUGIN_HOST_ORDER: ${HOU_PLUGIN_HOST_ORDER:-http://order:8209}
+    HOU_PLUGIN_HOST_CMS: ${HOU_PLUGIN_HOST_CMS:-}
+    HOU_PLUGIN_HOST_TOOL: ${HOU_PLUGIN_HOST_TOOL:-}
+    HOU_PLUGIN_HOST_PAYMENT: ${HOU_PLUGIN_HOST_PAYMENT:-http://payment:8207}
+    HOU_PLUGIN_PAY_CASHIER_API_KEY: ${HOU_PLUGIN_PAY_CASHIER_API_KEY:-}
+    HOU_BASE_PUBLIC_BASE_URL: ${HOU_BASE_PUBLIC_BASE_URL:-}
+    # Seata 分布式事务。默认 true 保持既有生产行为（①有 seata-server）；
+    # 空白机没有 seata-server，seata 客户端仍会去要 vgroupMapping 配置，
+    # 直接 BeanCreationException 崩在 globalTransactionScanner。安装器生成的 .env 里设 false。
+    SEATA_ENABLED: ${SEATA_ENABLED:-true}
+  mem_limit: ${SERVICE_MEM_LIMIT:-1200m}
+
+# bff-web 独有的两个必填环境变量。
+# 它的 bootstrap.yml 里 xxl.job.admin.password / restart.admin.token 是无默认值的占位符
+# （其余 13 个服务不需要），容器里不显式传入会直接启动失败：
+#   Could not resolve placeholder 'XXL_JOB_PASS'
+# 随机串即可，自行在 .env 中设置。
+x-bff-env: &bff-env
+  XXL_JOB_PASS: ${XXL_JOB_PASS:?XXL_JOB_PASS is required by bff-web}
+  RESTART_ADMIN_TOKEN: ${RESTART_ADMIN_TOKEN:?RESTART_ADMIN_TOKEN is required by bff-web}
+
+services:
+  # ------------------------------------------------------------ 构建器
+  # 一次性编译全部服务并归集 jar 到 /jars；各服务镜像只从它 COPY 自己那一个 jar。
+  builder:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.builder
+    image: ${BUILDER_IMAGE:-unimall/builder:latest}
+    command: ["sh", "-c", "echo builder ready; ls -lh /jars"]
+    restart: "no"
+
+  # ------------------------------------------------------------ 中间件
+  mysql:
+    image: ${MYSQL_IMAGE:-mysql:8.0.39}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+      - --max_connections=500
+      - --innodb_buffer_pool_size=512M
+      # 首次初始化要跑 704 张建表 + 索引 + 种子数据，是整包安装最慢的一步
+      # （RH2288 慢盘实测 40 分钟以上，占「全新装机」总时长的一半还多）。
+      # 原因是 MySQL 8 默认开 binlog，每条 DDL 都要写 binlog 并 fsync，再加上
+      # InnoDB 每次提交刷 redo，两条 fsync 串行叠在几千条语句上。
+      # 单机自建商城不需要 binlog（没有主从、没有按时间点回滚的需求），
+      # redo 改成每秒刷一次（崩溃时最多丢 1 秒，初始化阶段可接受）。
+      - --skip-log-bin
+      - --innodb_flush_log_at_trx_commit=2
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-meoc}
+      MYSQL_USER: ${MYSQL_USER:-meoc}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me}
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./deploy/mysql-init:/docker-entrypoint-initdb.d:ro
+      - ./deploy/scripts/sql/init:/opt/houcloud-sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
+
+  # ------------------------------------------------------------ Redis
+  # 🔴 2026-10-27：Redis 恢复为 compose 服务。
+  #   2026-10-19 曾因 RH2288 上容器 Redis 抢占宿主机 6379 而删除本服务，但那次只是
+  #   「生产机已有宿主 Redis」的场景；删掉后全新机器上模式 A 根本没有 Redis，
+  #   而 nacos-init 又把 REDIS_ADDR 渲成 127.0.0.1，容器内连不上 → 所有服务起不来。
+  #
+  #   现在的取法：
+  #   - 默认（模式 A，全新机器）起本服务，服务名 redis，REDIS_ADDR 默认 redis:6379；
+  #   - 宿主机已有 Redis（RH2288 生产机，模式 B）时用 -f docker-compose.hostnet.yml
+  #     且 --no-deps，本服务不会被拉起；并在 .env 里设 REDIS_ADDR=127.0.0.1:6379。
+  #   - 只想用外部 Redis 又非要走模式 A：设 REDIS_ADDR=<host>:6379 并给本服务加
+  #     `profiles: ["bundled-redis"]` 按需启用（compose 里改，不建议长期这么挂着）。
+  redis:
+    image: ${REDIS_IMAGE:-redis:7.2-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-redis
+    command:
+      - sh
+      - -c
+      # 有密码就带密码启动，没密码就明文（模板里 password 是占位符，留空即无密码）
+      - >-
+        exec redis-server
+        --appendonly yes
+        --dir /data
+        ${REDIS_PASSWORD:+--requirepass "$REDIS_PASSWORD"}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      TZ: Asia/Shanghai
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  nacos:
+    image: ${NACOS_IMAGE:-nacos/nacos-server:v2.3.2}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-nacos
+    # 🔴 2026-10-27 实测：Nacos 2.3.2 内嵌 Derby 首次建库有 30s 登录超时。装机时
+    # MySQL 正在建 700+ 张表（重 I/O），Derby 建库偶发超时 → 登录失败 → nacos 启动
+    # 即崩，但已在数据卷里留下了「有目录、缺 service.properties」的残缺库。
+    # 数据卷是持久化的，restart 每次都撞在同一处，安装就此永久卡死；而报错只写
+    # load derby-schema.sql error，完全看不出是残留数据的问题（`down` 也不清卷）。
+    # 官方镜像没有自愈逻辑，这里在每次启动前拦一道：残缺就删掉重来。
+    # 路径全写字面量、不用 shell 变量，避免 compose 对 $ 的转义歧义。
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ -d /home/nacos/data/derby-data ] && [ ! -f /home/nacos/data/derby-data/service.properties ]; then
+          echo "[houcloud] 检测到残缺的 Derby 数据目录（上次建库中断），清理后重建"
+          rm -rf /home/nacos/data/derby-data
+        fi
+        exec /home/nacos/bin/docker-startup.sh
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: ${NACOS_AUTH_ENABLE:-true}
+      NACOS_AUTH_PASSWORD: ${NACOS_AUTH_PASSWORD:-nacos}
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN:-change-me-generate-with-openssl-rand-base64-32}
+      NACOS_AUTH_IDENTITY_KEY: ${NACOS_AUTH_IDENTITY_KEY:-houcloud}
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_AUTH_IDENTITY_VALUE:-houcloud}
+      JVM_XMS: 512m
+      JVM_XMX: 1024m
+      JVM_XMN: 256m
+      TZ: Asia/Shanghai
+    ports:
+      - "${NACOS_HOST_PORT:-8848}:8848"
+      # gRPC 端口：客户端注册/配置长轮询要走 9848（宿主机上的 jar 也需要）
+      - "${NACOS_GRPC_PORT:-9848}:9848"
+      - "${NACOS_GRPC_RAFT_PORT:-9849}:9849"
+    volumes:
+      - nacos-data:/home/nacos/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8848/nacos/ >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      # 实测慢盘/高负载下 nacos 从启动到可服务要 60-90s，start_period 给 40s 太紧，
+      # 会把「还在初始化」误判成 unhealthy。放宽到 90s + 60 次重试（约 10 分钟容错）。
+      retries: 60
+      start_period: 90s
+    restart: unless-stopped
+
+  rocketmq-namesrv:
+    image: ${ROCKETMQ_IMAGE:-apache/rocketmq:5.1.4}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-rocketmq-namesrv
+    command: ["sh", "mqnamesrv"]
+    environment:
+      JAVA_OPT_EXT: -Xms256m -Xmx512m -Xmn128m
+      TZ: Asia/Shanghai
+    ports:
+      - "${ROCKETMQ_NAMESRV_PORT:-9876}:9876"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/9876' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+
+  rocketmq-broker:
+    image: ${ROCKETMQ_IMAGE:-apache/rocketmq:5.1.4}
+    # 镜像默认以 rocketmq(uid 3000) 运行，而挂载的命名卷是 root 属主，
+    # 不切换成 root 会因 store 目录不可写导致 broker 启动失败（表现为 NPE 退出）。
+    user: "0:0"
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-rocketmq-broker
+    command: ["sh", "-c", "exec sh mqbroker -c /opt/rocketmq/conf/broker.conf"]
+    environment:
+      JAVA_OPT_EXT: -Xms512m -Xmx1024m -Xmn256m
+      TZ: Asia/Shanghai
+    volumes:
+      - ./deploy/rocketmq/broker.conf:/opt/rocketmq/conf/broker.conf:ro
+      - rocketmq-data:/home/rocketmq/store
+    depends_on:
+      rocketmq-namesrv:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/10911' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+
+  # ------------------------------------------------------------ 配置初始化
+  nacos-init:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.nacos-init
+    image: unimall/nacos-init:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-nacos-init
+    working_dir: /work
+    volumes:
+      # 挂载仓库配置目录：改完配置重新 `docker compose run --rm nacos-init` 即可，不用重建镜像。
+      # 🔴 必须是 :ro —— 容器以 root 运行，可写挂载会让它把渲染产物（variables.env、
+      # build/）写回宿主机源码树，属主变 root，之后普通用户 rm -rf / git clean 全被拒；
+      # entrypoint 检测到只读会自动在容器内暂存渲染，功能不受影响。
+      - ./deploy/scripts/nacos-templates:/work:ro
+      # 🔴 2026-10-31：variables.env 持久化（site-code 等实例标识幂等的真源）。
+      # /work 只读导致渲染产物留在容器内，容器销毁即丢 → 重跑 nacos-init 换新 site-code，
+      # 平台侧把同一站点登记成多行。挂 named volume，down -v 时随之清（全新实例新码，符合设计）。
+      - nacos-init-data:/persist
+    environment:
+      NACOS_ADDR: ${NACOS_ADDR:-nacos:8848}
+      NACOS_USER: ${NACOS_USER:-nacos}
+      # 与上面 x-java-service 的口令取值保持一致：NACOS_PASSWORD 优先
+      NACOS_PASSWORD: ${NACOS_PASSWORD:-${NACOS_AUTH_PASSWORD:-nacos}}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-houeoc}
+      NACOS_AUTH_ENABLED: ${NACOS_AUTH_ENABLE:-true}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      ES_PASSWORD: ${ES_PASSWORD:-}
+      WEB_PORT: ${WEB_PORT:-8080}
+      # 🔴 2026-10-27：默认按模式 A 的服务名渲染（compose 已恢复 redis 服务）。
+      # 模式 B（外部/宿主 Redis，host 网络）在 .env 里设 REDIS_ADDR=127.0.0.1:6379；
+      # 跨机部署设成真实地址。地址错的表现是服务启动时 RedisConfig 报「缺少必要的 spring.redis.*配置」。
+      RENDER_REDIS_ADDR: ${REDIS_ADDR:-redis:6379}
+      RENDER_NACOS_SERVER_ADDR: nacos:8848
+      RENDER_ROCKETMQ_NAMESERVER: rocketmq-namesrv:9876
+      RENDER_BFF_ADDR: bff-web:8391
+      RENDER_ES_ADDR: elasticsearch:9200
+      RENDER_THIRD_ADDR: http://thirdparty:8194
+      TZ: Asia/Shanghai
+    depends_on:
+      nacos:
+        condition: service_healthy
+    restart: "no"
+
+  # ------------------------------------------------------------ 插件投放 / 登记
+  # 「11 个插件默认安装」缺一不可的两步，都是幂等一次性容器：
+  #   1) plugin-seed：builder 镜像里除了服务 jar 还有插件 jar（deploy/build-jars.sh
+  #      的插件步骤产出到 /jars/plugins）。服务 jar 靠各服务镜像 COPY --from 取走，
+  #      插件 jar 没有这层搬运，得由本容器铺到宿主插件卷上。
+  #      宿主插件引擎启动时只认落盘目录 {PLUGINS_DIR}/{code}/{version}/，不认源码。
+  #   2) plugin-register：逐个执行 plugins/<域>/<插件>/deploy/register.sql，
+  #      写插件中心条目、安装记录、后台菜单、市场条目与角色授权。
+  #
+  # 🔴 这两个步骤此前在整包里完全不存在：register.sql 全仓无人执行、插件 jar
+  #    一个都不产出，所以「默认安装 11 个插件」实际从未生效（插件中心是空表）。
+  plugin-seed:
+    image: ${BUILDER_IMAGE:-unimall/builder:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-plugin-seed
+    volumes:
+      - ${PLUGINS_DIR:-./data/plugins}:/dest
+    command: ["sh", "/src/deploy/plugin-seed.sh"]
+    depends_on:
+      builder:
+        condition: service_completed_successfully
+    restart: "no"
+
+  plugin-register:
+    image: ${MYSQL_IMAGE:-mysql:8.0.39}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-plugin-register
+    volumes:
+      # 只读挂源码树：register.sql 分布在 plugins/<域>/<插件>/deploy/ 下
+      - .:/src:ro
+    command: ["sh", "/src/deploy/plugin-register.sh"]
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: ${MYSQL_USER:-meoc}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-meoc}
+      MYSQL_PWD: ${MYSQL_PASSWORD:-change-me}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+
+  # ------------------------------------------------------------ 微服务
+  permission:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-permission
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: permission
+    image: unimall/permission:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8300' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  auth:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-auth
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: auth
+    image: unimall/auth:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8392' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  base:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-base
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: base
+    image: unimall/base:${IMAGE_TAG:-latest}
+    # 🔴 插件制品根（2026-10-27 补）：base 负责 /plugin-assets/** 产物托管和
+    # 市场在线安装落盘，缺这个挂载时插件前端产物一律 404「插件产物不存在: index.mjs」，
+    # 且市场安装的 jar 写在容器临时层，容器重建即丢。
+    # 用宿主机目录（与模式 B 的 ${PLUGINS_DIR} 同一口径），换机/重建都不丢已装插件。
+    volumes:
+      - ${PLUGINS_DIR:-./data/plugins}:/app/plugins
+      # 制品签名私钥（只读）。由 deploy/install.sh 首次安装时生成到宿主机 secrets/，
+      # 权限 600。生产环境应改为在签名机上签名、只把公钥分发到本机 ——
+      # 私钥留在应用服务器上等于把「以官方名义发布任意插件」的能力放进了容器。
+      - ${PLUGIN_SIGN_SECRETS_DIR:-./secrets}:/app/secrets:ro
+      # 上传的制品本体（local 存储模式）。ArtifactProperties.root 默认是
+      # ${user.home}/houcloud/artifacts，在容器里等于 /root/houcloud/artifacts ——
+      # 容器一重建，已发布/已上架的 jar 全丢，下载接口随即 404。必须落到宿主目录。
+      - ${ARTIFACTS_DIR:-./artifacts}:/app/artifacts
+    environment:
+      <<: *java-service-env
+      HOUCLOUD_ARTIFACT_ROOT: /app/artifacts
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8214' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  userms:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-userms
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: userms
+    image: unimall/userms:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8195' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  goods:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-goods
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: goods
+    image: unimall/goods:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8208' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  order:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-order
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: order
+    image: unimall/order:${IMAGE_TAG:-latest}
+    # 只装载归属 order 的已交付插件，不能挂载所有服务的插件目录。
+    environment:
+      <<: *java-service-env
+      HOUCLOUD_PLUGIN_HOST_SERVICE: order
+      HOUCLOUD_PLUGIN_BOOT_ENABLED: "true"
+      HOUCLOUD_PLUGIN_PLUGINS_DIR: /app/plugins
+    volumes:
+      - ${ORDER_PLUGINS_DIR:-./plugin-data/order}:/app/plugins:ro
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8209' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  payment:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-payment
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: payment
+    image: unimall/payment:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8207' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  mall:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-mall
+    mem_limit: ${MALL_MEM_LIMIT:-1800m}
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: mall
+        # 开源包内 mall 不挂 GEO（商业插件，不在开源树），没有扫码登录/自动发文这类
+        # 需要有头浏览器的能力，因此用普通 JRE 运行镜像即可，无需再拉 1.7GB 的
+        # Playwright 镜像。主营环境要装 GEO 插件时，在 .env 里设
+        # MALL_RUNTIME_IMAGE=mcr.microsoft.com/playwright/java:v1.61.0-jammy 覆盖。
+        RUNTIME_IMAGE: ${MALL_RUNTIME_IMAGE:-eclipse-temurin:21-jre-jammy}
+    image: unimall/mall:${IMAGE_TAG:-latest}
+    # 🔴 必须 `<<: *java-service-env` 合并锚点，不能用列表写 —— 用列表会把锚点里
+    #    的 NACOS_ADDR / NACOS_PASSWORD / REDIS_ADDR 等整组覆盖掉，容器里一个都拿不到：
+    #    Nacos 坐标回落 127.0.0.1:8848，口令变成字面量 ${NACOS_PASSWORD}，
+    #    启动即「缺少必要的 spring.redis.* 配置」并无限重启（2026-11-05 开源包实测）。
+    #    order/bff-web 都是合并写法，mall 这里是漏改。
+    environment:
+      <<: *java-service-env
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      # 插件宿主：mall 集中装载商城域插件（优惠券/积分商城/抽奖/满赠/拼团/红包/
+      # 商品折扣/秒杀）。host-service 必须与插件 plugin.yaml 的 hostService 一致。
+      # 兜底值；Nacos mall.yaml 的 houcloud.plugin.* 优先级更高。
+      HOUCLOUD_PLUGIN_HOST_SERVICE: mall
+      HOUCLOUD_PLUGIN_BOOT_ENABLED: "true"
+      HOUCLOUD_PLUGIN_PLUGINS_DIR: /app/plugins
+    # 插件宿主：插件 jar 落盘目录挂出来，容器重建不丢已装插件。
+    # /app/plugins 与 base 同源（base 在线安装写这里，mall 装载也读这里）。
+    volumes:
+      - plugin-data:/data/plugins
+      - ${PLUGINS_DIR:-./data/plugins}:/app/plugins
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8220' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 180s
+
+  merchant:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-merchant
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: merchant
+    image: unimall/merchant:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8210' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  supplier:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-supplier
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: supplier
+    image: unimall/supplier:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8212' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  # 独立 OA 服务：oa 插件已于 2026-09-20 由 embedded 改为 runtime: standalone +
+  # hostService: oa（提交 1bbd754d2），后端不再由 mall 用 PF4J 装载，必须由本服务承载。
+  # 缺它时 BFF 的 PluginServiceResolver 在 Nacos 找不到 oa 实例，/web/plugin/oa/** 一律 503。
+  # 端口来自 Nacos oa.yaml（server.port: 8393）；bootstrap.yml 需带 dispose.yaml
+  # （domainName 等全局项），否则 WXPayConfigShop 注入失败起不来。
+  oa:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-oa
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: oa
+    image: unimall/oa:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8393' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  # GEO 独立服务（8310）。目标架构下 mall 不再充当统一业务宿主，插件后端归属各业务服务；
+  # geo 的定时发布由 job 经 Nacos 发现直连本服务（GeoServiceClient name="geo"），
+  # 管理端 /web/plugin/geo/** 由 bff 按 architecture/services.json 转发到这里。
+  # 🔴 运行时必须带 Chromium：平台授权登录 / 部分平台发布走 Playwright，
+  #    基座没有浏览器时表现为「发布任务跑完但平台没出文」。
+  #    本地已有等价镜像时用 GEO_RUNTIME_IMAGE 指定，避免重复拉取。
+  geo:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-geo
+    mem_limit: ${GEO_MEM_LIMIT:-2000m}
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: geo
+        RUNTIME_IMAGE: ${GEO_RUNTIME_IMAGE:-mcr.microsoft.com/playwright/java:v1.61.0-jammy}
+    image: unimall/geo:${IMAGE_TAG:-latest}
+    # 同 mall：用列表会盖掉锚点里的 NACOS_*/REDIS_ADDR，必须合并。
+    environment:
+      <<: *java-service-env
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8310' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 180s
+
+  # 日志服务（8314，端口来自 Nacos logging.yaml）。
+  # 收集全平台日志（操作/访问/登录/错误/业务）并落 hou_log_* 6 张表，
+  # 2026-09-26 起额外承载「运行错误告警」hou_log_alert：消费 ERROR 消息时按指纹聚合，
+  # admin 顶栏铃铛红点 + /dcenter/error-alert 页面看得到。
+  # 缺它时 BFF 的 /web/log/** 全部降级为「日志服务暂时不可用」，告警页永远空。
+  # 🔴 bootstrap.yml 必须带 dispose.yaml（domainName），否则启动即
+  #    「Could not resolve placeholder 'domainName'」退出（与 oa 同一坑）。
+  logging:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-logging
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: logging
+    image: unimall/logging:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8314' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  thirdparty:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-thirdparty
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: thirdparty
+    image: unimall/thirdparty:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8194' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  job:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-job
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: job
+    image: unimall/job:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8313' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  # AI 中台（AI 智能体）：模型池 / 提示词 / 会话 / 生成记录 / 用量 / 工作流编排。
+  # 🔴 注册名必须是 ai —— application.yml 的 spring.application.name=ai，BFF 的
+  #    AiServiceFeign 是 @FeignClient(name="ai")；把服务名改成 aiagent 会让
+  #    /web/ai/** 全部报「找不到提供方」。
+  # 模型不写死在配置里：由 hou_ai_model 表运行期构建，网关地址/密钥在后台热改。
+  aiagent:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-aiagent
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: aiagent
+    image: unimall/aiagent:${IMAGE_TAG:-latest}
+    environment:
+      <<: *java-service-env
+      SPRING_APPLICATION_NAME: ai
+      # AI 网关出口兜底；库中 hou_ai_config 的 ai_gateway_* 优先级更高
+      AI_GATEWAY_BASE_URL: ${AI_GATEWAY_BASE_URL:-}
+      AI_GATEWAY_PROFILE_KEY: ${AI_GATEWAY_PROFILE_KEY:-}
+      AI_GATEWAY_DEFAULT_MODEL: ${AI_GATEWAY_DEFAULT_MODEL:-mall-chat}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8316' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  aicode:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-aicode
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: aicode
+    image: unimall/aicode:${IMAGE_TAG:-latest}
+    # AI 能力为可选项，默认不随主栈启动：docker compose --profile ai up -d
+    profiles: ["ai"]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8318' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  # ------------------------------------------------------------ 商业服务（commerce profile）
+  # architecture/services.json 目标架构共 24 个业务服务；上面 14 个是默认启动的核心集
+  # （+mall 插件宿主），下面 10 个是商业付费服务，源码同在 backend/paas/ 下，builder 一并编译。
+  # 🔴 默认不随主栈启动：每个约 1.2GB 内存，全起需再 +12GB。
+  #     一条命令起完整 24 服务：bash deploy/scripts/docker.sh full
+  #     或：HOUCLOUD_PROFILES=commerce bash deploy/scripts/docker.sh up
+  # ⚠ 与 docker-compose.commercial.yml 二选一：那份用「购买后交付的独立制品镜像」
+  #   （unimall-crm:latest 等，需自带镜像）；本组用源码构建，都有源码时用本组。
+  # 端口来自 architecture/services.json（healthcheck 探容器内同一端口）。
+  crm:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-crm
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: crm
+    image: unimall/crm:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8311' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  cms:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-cms
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: cms
+    image: unimall/cms:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8217' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  erp:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-erp
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: erp
+    image: unimall/erp:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8090' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  finance:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-finance
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: finance
+    image: unimall/finance:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8282' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  im:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-im
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: im
+    image: unimall/im:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8215' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  mes:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-mes
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: mes
+    image: unimall/mes:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8199' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  orderfood:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-orderfood
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: orderfood
+    image: unimall/orderfood:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8203' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  pm:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-pm
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: pm
+    image: unimall/pm:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8304' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  rider:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-rider
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: rider
+    image: unimall/rider:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8205' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  webpos:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-webpos
+    profiles: ["commerce"]
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: webpos
+    image: unimall/webpos:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8204' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  bff-web:
+    <<: *java-service
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-bff-web
+    # 合并共享环境变量与 bff-web 独有的必填项（YAML 合并键不会深合并，
+    # 直接写 environment 会把锚点里的 NACOS_* 全部覆盖掉，必须显式合并两段）
+    environment:
+      <<: [*java-service-env, *bff-env]
+      # 上传目录必须指向容器内真实存在的路径：bootstrap.yml 的默认值曾是
+      # X99 时代的 D:/wwwroot/houcloud/public/uploads/mall（Windows 路径），Linux 容器里
+      # 一定不存在，导致 /web/common/file/{name} 一律 404（2026-09-20 财务中心图片全挂）。
+      LOCAL_UPLOAD_PATH: /www/wwwroot/houcloud_code/uploads
+    mem_limit: ${BFF_MEM_LIMIT:-1200m}
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.service
+      args:
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-unimall/builder:latest}
+        JAR_NAME: bff-web
+    image: unimall/bff-web:${IMAGE_TAG:-latest}
+    ports:
+      - "${BFF_PORT:-8391}:8391"
+    # 上传文件目录：必须挂到宿主机持久目录。
+    # /web/common/file/{fileName}（WebCommonController#serveFile）与本地上传
+    # （LocalFileUploadService）都读写 local.upload.path，未配置时默认
+    # /www/wwwroot/houcloud_code/uploads —— 容器内该路径是空的，于是页面上所有
+    # <img src="/web/common/file/xxx.jpg"> 一律 404，且新上传的文件随容器销毁丢失。
+    volumes:
+      - ./public/uploads/mall:/www/wwwroot/houcloud_code/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8391' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 150s
+
+  # ------------------------------------------------------------ 前端
+  admin-web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.frontend
+      args:
+        APP_DIR: frontend/admin
+        # 🔴 必须为空：admin 的 API 封装路径自带 /web 前缀（request.js baseURL = VITE_APP_BASE_API）。
+        # 这里注入 /web 会让请求变成 /web/web/auth/login 双前缀，BFF 返回 20001「请求的资源不存在」
+        # ——2026-10-28 浏览器首登失败的实锤根因（compose build args 覆盖了 Dockerfile 的空默认值）。
+        VITE_APP_BASE_API: ""
+    image: ${ADMIN_WEB_IMAGE:-unimall/admin-web:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-admin-web
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      bff-web:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ------------------------------------------------------------ 安装向导（install profile）
+  # 只在安装期存在：install.sh --wizard 拉起；安装完成由 agent 的 finish 接口停掉，
+  # WEB_PORT 交还 admin-web。正常 compose up 不会启动它们（profile 隔离）。
+  install-agent:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.install-agent
+    image: ${INSTALL_AGENT_IMAGE:-unimall/install-agent:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-install-agent
+    profiles: ["install"]
+    # 🔴 同构挂载（2026-10-28 第五轮两连坑后的终解）：
+    # agent 要在容器里跑 docker compose，而 compose 有一类双重身份的路径：
+    #   挂载源/build context 由 dockerd 在宿主侧解析；而 compose client 自己
+    #   又要读同一批路径（build context 打包、.env、相对挂载展开）。
+    # 挂 /project 时宿主侧被 Docker 自动建空目录（mysql 挂空 initdb、broker 读空
+    # conf 直接 crash-loop）；改 --project-directory 传宿主路径时 compose client
+    # 在容器内又 lstat 不到。唯一两全：把仓库目录**原路径**（宿主绝对路径）挂进
+    # 容器同名位置，两端看到同一个路径。HOUCLOUD_HOST_PROJECT_DIR 由
+    # install.sh --wizard 在宿主机 export 注入；未注入时退化为 ./ 挂 /project
+    #（非向导场景没人用 agent，仅保 compose 可解析）。
+    working_dir: ${HOUCLOUD_HOST_PROJECT_DIR:-/project}
+    volumes:
+      - ${HOUCLOUD_HOST_PROJECT_DIR:-./}:${HOUCLOUD_HOST_PROJECT_DIR:-/project}
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      # custom 模式连通测试/灌库要连「宿主机上的中间件」：
+      # 用户填 127.0.0.1 时 agent 改走 host.docker.internal（app.py 的 rewrite_loopback）
+      - "host.docker.internal:host-gateway"
+    environment:
+      TZ: Asia/Shanghai
+      INSTALL_PROJECT_DIR: ${HOUCLOUD_HOST_PROJECT_DIR:-/project}
+      HOUCLOUD_HOST_PROJECT_DIR: ${HOUCLOUD_HOST_PROJECT_DIR:-}
+    restart: unless-stopped
+
+  install-web:
+    image: nginx:1.27-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-install-web
+    profiles: ["install"]
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+      - ./deploy/nginx/install-wizard.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - install-agent
+    restart: unless-stopped
+
+  # ------------------------------------------------------------ 可选组件
+  elasticsearch:
+    image: ${ES_IMAGE:-docker.elastic.co/elasticsearch/elasticsearch:8.13.4}
+    container_name: ${COMPOSE_PROJECT_NAME:-unimall}-es
+    profiles: ["es"]
+    environment:
+      discovery.type: single-node
+      ELASTIC_PASSWORD: ${ES_PASSWORD:-change-me}
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      xpack.security.enabled: "true"
+      TZ: Asia/Shanghai
+    ports:
+      - "${ES_HOST_PORT:-9200}:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -u elastic:$$ELASTIC_PASSWORD http://127.0.0.1:9200/_cluster/health >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    restart: unless-stopped
+
+# 注：这里刻意**不声明** networks —— 所有服务自然落入 compose 的 default 网络，
+# 服务名互通能力不变（模式 A），同时 `network_mode: host` 不再与之互斥（模式 B）。
+volumes:
+  mysql-data:
+  redis-data:
+  nacos-data:
+  rocketmq-data:
+  es-data:
+  plugin-data:
+  nacos-init-data:

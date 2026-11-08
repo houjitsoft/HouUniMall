@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserVkMapper">
+
+    <insert id="addBalance">
+        update ${database.prefix.payment}hou_pay_user_resource
+        set user_money = user_money + #{fixedRewards}
+        where user_id = #{userId}
+    </insert>
+    <insert id="addPayAssetDetails">
+        insert into ${database.prefix.payment}hou_pay_asset_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="detailType != null">
+                detail_type,
+            </if>
+            <if test="assetType != null">
+                asset_type,
+            </if>
+            <if test="assetAmount != null">
+                asset_amount,
+            </if>
+            <if test="assetDirection != null and assetDirection != ''">
+                asset_direction,
+            </if>
+            <if test="orderId != null and orderId != ''">
+                order_id,
+            </if>
+            <if test="payType != null">
+                pay_type,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="detailComment != null and detailComment != ''">
+                detail_comment,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="detailType != null">
+                #{detailType,jdbcType=INTEGER},
+            </if>
+            <if test="assetType != null">
+                #{assetType,jdbcType=INTEGER},
+            </if>
+            <if test="assetAmount != null">
+                #{assetAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="assetDirection != null and assetDirection != ''">
+                #{assetDirection,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null and orderId != ''">
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="payType != null">
+                #{payType,jdbcType=INTEGER},
+            </if>
+            <if test="userId != null">
+                #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="detailComment != null and detailComment != ''">
+                #{detailComment,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="addVkTgNumByList">
+        update ${database.prefix.userms}hou_user_vk set tg_num = tg_num + 1
+        where user_id in
+        <foreach collection="userIdList" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </update>
+    <update id="subVkTgNumByList">
+        update ${database.prefix.userms}hou_user_vk set tg_num = if(tg_num - 1 &lt; 0, 0, tg_num - 1)
+        where user_id in
+        <foreach collection="userIdList" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </update>
+    <update id="subUserAccount">
+        update ${database.prefix.userms}hou_user_vk
+        <set>
+            <if test="param.vkAccount != null">
+                pending_withdrawn_commission = #{param.vkAccount},
+            </if>
+            <if test="param.withdrawFreezeAccount != null">
+                withdrawn_commission = #{param.withdrawFreezeAccount},
+            </if>
+        </set>
+        where user_id = #{param.userId}
+    </update>
+
+    <select id="selectVkUserList" resultType="com.houjiang.userms.vo.VkUserListVO">
+        select
+        vk.user_id,
+        vk.user_name,
+        vk.mobile as userMobile,
+        uiv.is_superior,
+        inviterOne.user_name as oneInviter,
+        inviterTwo.user_name as twoInviter,
+        vk.tg_num as totalTgUserNum,
+        vk.total_share_commission as totalShareCommission,
+        vk.withdrawn_commission + vk.pending_withdrawn_commission as totalCommission,
+        vk.withdrawn_commission as withdrawnCommission,
+        vk.pending_withdrawn_commission as pendingWithdrawnCommission,
+        vk.create_time
+        from ${database.prefix.userms}hou_user_vk vk
+        left join ${database.prefix.userms}hou_user_inviter uiv on vk.user_id = uiv.user_id
+        left join (select user_mobile, user_id, user_name, user_nickname from ${database.prefix.userms}hou_user_info) inviterOne on
+            inviterOne.user_id = uiv.one_inviter
+        left join (select user_mobile, user_id, user_name, user_nickname from ${database.prefix.userms}hou_user_info) inviterTwo on
+            inviterTwo.user_id = uiv.two_inviter
+        <where>
+            <if test="param.userName != null and param.userName != ''">
+                and vk.user_name LIKE CONCAT('%', #{param.userName},'%')
+            </if>
+            <if test="param.mobile != null and param.mobile != ''">
+                and vk.mobile LIKE CONCAT('%',#{param.mobile},'%')
+            </if>
+            <if test="param.inviterMobile != null and param.inviterMobile != ''">
+                and (inviterOne.user_mobile LIKE CONCAT('%',#{param.inviterMobile},'%') or
+                inviterOne.user_name LIKE CONCAT('%',#{param.inviterMobile},'%') or
+                inviterOne.user_nickname LIKE CONCAT('%',#{param.inviterMobile},'%') or
+                inviterTwo.user_mobile LIKE CONCAT('%',#{param.inviterMobile},'%') or
+                inviterTwo.user_name LIKE CONCAT('%',#{param.inviterMobile},'%') or
+                inviterTwo.user_nickname LIKE CONCAT('%',#{param.inviterMobile},'%'))
+            </if>
+        </where>
+        order by vk.create_time desc
+    </select>
+    <select id="selectGiftOrderCount" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.order}hou_order_base
+        where buyer_user_id = #{userId} and is_gift_order = 1
+    </select>
+    <select id="queryUserInfoByOrderId" resultType="com.houjiang.userms.dto.VkGiftOrderDTO">
+        select ob.order_id,
+               ob.is_gift_order,
+               ui.user_id,
+               ui.user_name,
+               ui.user_mobile
+        from ${database.prefix.order}hou_order_base ob
+                 left join ${database.prefix.userms}hou_user_info ui on ob.buyer_user_id = ui.user_id
+        where (ob.order_id = #{orderId} or ob.payment_number = #{orderId})
+    </select>
+    <select id="selectVkTotalTgUser" resultType="com.houjiang.userms.vo.VkTgUserListVO">
+        select
+        uiv.user_id,
+        ui.user_name,
+        ui.user_mobile,
+        uid.user_gender as sex,
+        if(uiv.one_inviter = #{param.userId},1,2) as userType,
+        if(uv.id is null,0,1) as isVkUser,
+        uv.create_time as vkCreateTime,
+        uv.tg_num,
+        ui.create_time as createTime
+        from ${database.prefix.userms}hou_user_inviter uiv
+        left join ${database.prefix.userms}hou_user_vk uv on uv.user_id = uiv.user_id
+        left join ${database.prefix.userms}hou_user_info ui on ui.user_id = uiv.user_id
+        left join ${database.prefix.userms}hou_user_info_detail uid on uid.user_id = uiv.user_id
+        <where>
+            <if test="param.userType == null and param.userId != null and param.userId != ''">
+                and (uiv.one_inviter = #{param.userId} or uiv.two_inviter = #{param.userId})
+            </if>
+            <if test="param.userType != null and param.userType == 1 and param.userId != null and param.userId != ''">
+                and uiv.one_inviter = #{param.userId}
+            </if>
+            <if test="param.userType != null and param.userType == 2 and param.userId != null and param.userId != ''">
+                and uiv.two_inviter = #{param.userId}
+            </if>
+            <if test="param.userName != null and param.userName != ''">
+                and ui.user_name LIKE CONCAT('%', #{param.userName},'%')
+            </if>
+            <if test="param.mobile != null and param.mobile != ''">
+                and ui.user_mobile LIKE CONCAT('%', #{param.mobile},'%')
+            </if>
+        </where>
+    </select>
+    <select id="selectFxOrderNum" resultType="java.lang.Integer">
+        select sum(IF(oc.share_user_id = #{userId} or oc.tg_one_user_id = #{userId} or oc.tg_two_user_id = #{userId}, 1,
+                      0))
+        from ${database.prefix.order}hou_order_commission oc
+        where oc.buy_user_id = #{userId}
+          and oc.order_status != 5
+    </select>
+    <select id="selectFxOrderAmount" resultType="java.math.BigDecimal">
+        select sum(IF(oc.share_user_id = #{userId}, oc.fx_commission, 0) +
+                   IF(oc.tg_one_user_id = #{userId}, oc.one_tg_commission, 0) +
+                   IF(oc.tg_two_user_id = #{userId}, oc.two_tg_commission, 0))
+        from ${database.prefix.order}hou_order_commission oc
+        where oc.buy_user_id = #{userId}
+          and oc.order_status = 3
+    </select>
+    <select id="selectTodaySettlement" resultType="java.math.BigDecimal">
+        select sum(IF(oc.share_user_id = #{userId}, oc.fx_commission, 0) +
+                   IF(oc.tg_one_user_id = #{userId}, oc.one_tg_commission, 0) +
+                   IF(oc.tg_two_user_id = #{userId}, oc.two_tg_commission, 0))
+        from ${database.prefix.order}hou_order_commission oc
+        where (oc.share_user_id = #{userId} or oc.tg_one_user_id = #{userId} or oc.tg_two_user_id = #{userId})
+          and oc.order_status = 3
+          and oc.fx_settlement_status = 1
+          and DATE(STR_TO_DATE(oc.fx_settlement_time, '%Y-%m-%d')) = DATE(STR_TO_DATE(now(), '%Y-%m-%d'))
+    </select>
+    <select id="selectTodayEstimatedIncome" resultType="java.math.BigDecimal">
+        select sum(IF(oc.share_user_id = #{userId}, oc.fx_commission - oc.return_fx_commission, 0) +
+                   IF(oc.tg_one_user_id = #{userId}, oc.one_tg_commission - oc.return_one_tg_commission, 0) +
+                   IF(oc.tg_two_user_id = #{userId}, oc.two_tg_commission - oc.return_two_tg_commission, 0))
+        from ${database.prefix.order}hou_order_commission oc
+                 left join ${database.prefix.order}hou_order_base ob on ob.order_id = oc.order_id
+        where (oc.share_user_id = #{userId} or oc.tg_one_user_id = #{userId} or oc.tg_two_user_id = #{userId})
+          and oc.order_status in (1,2,4,6)
+          and oc.fx_settlement_status = 0
+          and DATE(STR_TO_DATE(ob.order_create_time, '%Y-%m-%d')) = DATE(STR_TO_DATE(now(), '%Y-%m-%d'))
+    </select>
+    <select id="selectTotalEstimatedIncome" resultType="java.math.BigDecimal">
+        select sum(IF(oc.share_user_id = #{userId}, oc.fx_commission - oc.return_fx_commission, 0) +
+                   IF(oc.tg_one_user_id = #{userId}, oc.one_tg_commission - oc.return_one_tg_commission, 0) +
+                   IF(oc.tg_two_user_id = #{userId}, oc.two_tg_commission - oc.return_two_tg_commission, 0))
+        from ${database.prefix.order}hou_order_commission oc
+                 left join ${database.prefix.order}hou_order_base ob on ob.order_id = oc.order_id
+        where (oc.share_user_id = #{userId} or oc.tg_one_user_id = #{userId} or oc.tg_two_user_id = #{userId})
+          and oc.order_status in (1,2,4,6)
+          and oc.fx_settlement_status = 0
+    </select>
+    <select id="selectVkCustomerInfo" resultType="com.houjiang.userms.vo.VkCustomerInfoVO">
+        select
+        ui.user_id,
+        ui.user_name,
+        ui.user_mobile,
+        uid.user_gender as userSex,
+        uid.user_avatar as userAvatar,
+        ui.create_time,
+        uv.tg_num
+        from ${database.prefix.userms}hou_user_info ui
+        left join ${database.prefix.userms}hou_user_info_detail uid on uid.user_id = ui.user_id
+        left join ${database.prefix.userms}hou_user_vk uv on uv.user_id = ui.user_id
+        left join ${database.prefix.userms}hou_user_inviter uiv on uiv.user_id = ui.user_id
+        where (uiv.one_inviter = #{param.userId} or uiv.two_inviter = #{param.userId})
+        <if test="param.userName != null and param.userName != ''">
+            and ui.user_name LIKE CONCAT('%', #{param.userName},'%') or ui.user_nickname LIKE CONCAT('%',
+            #{param.userName},'%')
+        </if>
+        <if test="param.userType == null and param.userId != null and param.userId != ''">
+            and (uiv.one_inviter = #{param.userId} or uiv.two_inviter = #{param.userId})
+        </if>
+        <if test="param.userType != null and param.userType == 1 and param.userId != null and param.userId != ''">
+            and uiv.one_inviter = #{param.userId}
+        </if>
+        <if test="param.userType != null and param.userType == 2 and param.userId != null and param.userId != ''">
+            and uiv.two_inviter = #{param.userId}
+        </if>
+        <if test="param.isToday != null and param.isToday == 1">
+            and DATE(STR_TO_DATE(uiv.create_time, '%Y-%m-%d')) = DATE(STR_TO_DATE(now(), '%Y-%m-%d'))
+        </if>
+    </select>
+    <select id="selectVkOrderInfo" resultType="com.houjiang.userms.vo.VkCustomerInfoVO">
+        select count(DISTINCT oc.order_id)                                            as fxOrderNum,
+               sum(IF(oc.share_user_id = #{inviterUserId}, oc.fx_commission, 0) +
+                   IF(oc.tg_one_user_id = #{inviterUserId}, oc.one_tg_commission, 0) +
+                   IF(oc.tg_two_user_id = #{inviterUserId}, oc.two_tg_commission, 0)) as fxMoney
+        from ${database.prefix.order}hou_order_commission oc
+        where (oc.share_user_id = #{inviterUserId} or oc.tg_one_user_id = #{inviterUserId} or
+               oc.tg_two_user_id = #{inviterUserId})
+          and oc.order_status != 5
+          and oc.buy_user_id = #{userId}
+        group by oc.buy_user_id
+    </select>
+    <select id="selectVkFreezeCommission" resultType="java.math.BigDecimal">
+        select sum(IF(oc.share_user_id = #{userId}, oc.fx_commission, 0) +
+                   IF(oc.tg_one_user_id = #{userId}, oc.one_tg_commission, 0) +
+                   IF(oc.tg_two_user_id = #{userId}, oc.two_tg_commission, 0))
+        from ${database.prefix.order}hou_order_commission oc
+        where (oc.share_user_id = #{userId} or oc.tg_one_user_id = #{userId} or oc.tg_two_user_id = #{userId})
+          and oc.order_status = 6
+          and oc.fx_settlement_status = 0
+    </select>
+    <select id="selectVkUserOrder" resultType="com.houjiang.userms.vo.VkUserListVO">
+        select count(distinct oc.order_id)                                     as totalSettlementOrderNum,
+               sum(IF(oc.tg_one_user_id = #{userId}, oc.one_tg_commission, 0)) as totalOneTgCommission,
+               sum(IF(oc.tg_two_user_id = #{userId}, oc.two_tg_commission, 0)) as totalTwoTgCommission
+        from ${database.prefix.order}hou_order_commission oc
+        where (oc.tg_one_user_id = #{userId} or oc.tg_two_user_id = #{userId})
+          and oc.order_status = 3
+          and oc.fx_settlement_status = 1
+    </select>
+    <select id="selectVkOrderGoodsCount" resultType="java.lang.Integer">
+        select count(distinct oc.goods_id)
+        from ${database.prefix.order}hou_order_commission oc
+        where oc.share_user_id = #{userId}
+    </select>
+    <select id="queryUserAccount" resultType="com.houjiang.commons.vo.user.UserVkVO">
+        SELECT
+            uv.id,
+            uv.user_id,
+            uv.user_name,
+            uv.real_name,
+            uv.mobile,
+            uv.tg_num,
+            uv.share_num,
+            uv.source,
+            uv.total_tg_commission,
+            uv.total_share_commission,
+            uv.create_time,
+            uv.withdrawn_commission,
+            ubc.bind_openid as openId,
+            uv.pending_withdrawn_commission
+        FROM
+            ${database.prefix.userms}hou_user_vk uv
+                LEFT JOIN ${database.prefix.userms}hou_user_bind_connect ubc ON uv.user_id = ubc.user_id
+        WHERE
+            uv.user_id = #{userId} order by ubc.bind_openid DESC limit 1
+    </select>
+
+</mapper>

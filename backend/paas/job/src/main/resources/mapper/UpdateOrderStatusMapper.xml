@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.UpdateOrderStatusMapper">
+    <update id="updateForUpdateOrder">
+        UPDATE
+            ${database.prefix.order}hou_order_base
+        SET order_status        = 6,
+            order_last_return_time = #{orderLastReturnTime},
+            order_finished_time = now()
+        WHERE order_id = #{orderId}
+    </update>
+    <update id="updateForUpdateGoods">
+        update ${database.prefix.order}hou_order_goods
+        set order_goods_status = 6
+        where order_id = #{orderId}
+    </update>
+    <update id="updateCommonStockByGoodsId">
+        UPDATE ${database.prefix.goods}hou_goods_common
+        SET common_stock = common_stock + #{goodsNum}
+--             common_salenum = #{commonSaleNum}
+        where common_id = #{commonId}
+    </update>
+    <update id="updateGoodsStockByGoodsId">
+        UPDATE ${database.prefix.goods}hou_goods_stock
+        SET goods_stock = goods_stock + #{goodsNum}
+        where goods_id = #{ goodsId}
+    </update>
+    <update id="updateTimeoutOrder2">
+        UPDATE ${database.prefix.order}hou_order_base
+        SET order_status        = 7,
+            order_finished_time = now(),
+            order_cancel_date   = now()
+        WHERE TIMESTAMPDIFF(MINUTE, order_create_time, now()) >= #{minutes}
+          and order_status = 1
+    </update>
+    <update id="updateTimeoutOrderGoods">
+        UPDATE ${database.prefix.order}hou_order_goods
+        SET order_goods_status = 7
+        WHERE order_id = #{orderId}
+    </update>
+    <update id="editApprovalId">
+        update ${database.prefix.order}hou_order_approval
+        set approval_status = 3
+        where order_approval_id = #{orderId}
+    </update>
+    <update id="updateOrderReturnById">
+        UPDATE ${database.prefix.order}hou_order_return
+        set
+        <if test="param.returnState != null">
+            return_state = #{param.returnState},
+        </if>
+        <if test="param.expirationTime != null">
+            expiration_time = #{param.expirationTime},
+        </if>
+        <if test="param.callStatus != null">
+            call_status = #{param.callStatus},
+        </if>
+        <if test="param.resubmissionsNumber != null">
+            resubmissions_number = #{param.resubmissionsNumber},
+        </if>
+        <if test="param.historicalReturnStatus != null">
+            historical_return_status = #{param.historicalReturnStatus},
+        </if>
+        <if test="param.returnNumber != null">
+            return_number = #{param.returnNumber},
+        </if>
+        <if test="param.returnRealName != null">
+            return_real_name = #{param.returnRealName},
+        </if>
+        <if test="param.returnAddrId != null and param.returnAddrId != ''">
+            return_addr_id = #{param.returnAddrId},
+        </if>
+        <if test="param.returnAddr != null and param.returnAddr != ''">
+            return_addr = #{param.returnAddr},
+        </if>
+        <if test="param.returnAddr != null and param.returnAddr != ''">
+            return_addr_name = #{param.returnAddr},
+        </if>
+        <if test="param.returnShopHandle != null">
+            return_shop_handle = #{param.returnShopHandle},
+        </if>
+        <if test="param.returnShopMessage != null">
+            return_shop_message = #{param.returnShopMessage},
+        </if>
+        <if test="param.returnShopTime != null">
+            return_shop_time = #{param.returnShopTime},
+        </if>
+        <if test="param.revokeNum != null">
+            revoke_num = #{param.revokeNum},
+        </if>
+        <if test="param.closeTime != null">
+            close_time = #{param.closeTime},
+        </if>
+        <if test="param.fillLogisticsTime != null">
+            fill_logistics_time = #{param.fillLogisticsTime},
+        </if>
+        <if test="param.returnShippingCode != null">
+            return_shipping_code = #{param.returnShippingCode},
+        </if>
+        <if test="param.returnFinishTime != null">
+            return_finish_time = #{param.returnFinishTime},
+        </if>
+        <if test="param.returnMobile != null">
+            return_mobile = #{param.returnMobile},
+        </if>
+        <if test="param.returnPostCode != null">
+            return_post_code = #{param.returnPostCode},
+        </if>
+        <if test="param.orderOperator != null">
+            order_operator = #{param.orderOperator},
+        </if>
+        order_operator_time = now()
+        WHERE return_code = #{param.returnCode}
+    </update>
+    <delete id="deleteTimeoutPlusOrder">
+        delete
+        from ${database.prefix.userms}hou_user_plus_order
+        where TIMESTAMPDIFF(MINUTE, creat_time, now()) >= #{minutes}
+          and is_pay = 0
+    </delete>
+    <delete id="cancelOrderUpdatePaymentVocher">
+        update ${database.prefix.order}hou_order_payment_vocher
+        set review_status  = 3,
+            review_time    = now()
+        where order_id = #{orderId}
+    </delete>
+
+    <select id="listForUpdateOrder" resultType="com.houjiang.job.dto.AppJiPushOrderDTO">
+        SELECT b.buyer_user_id,
+               b.order_id,
+               b.order_shipping_code,
+               e.express_pinyin
+        FROM ${database.prefix.order}hou_order_base b
+                 LEFT JOIN ${database.prefix.base}hou_base_express e ON b.order_shipping_express_id = e.express_id
+        WHERE b.order_status = '4'
+          AND order_receiver_date &lt; NOW()
+    </select>
+    <select id="listTimeoutOrder2" resultType="java.lang.String">
+        SELECT order_id
+        FROM ${database.prefix.order}hou_order_base
+        WHERE (TIMESTAMPDIFF(MINUTE, order_create_time, now()) >= #{minutes} and order_status = 1 and payment_code = 1)
+           or (TIMESTAMPDIFF(MINUTE, order_create_time, now()) >= 4320 and order_status = 1 and payment_code = 2)
+    </select>
+    <select id="queryGoodsXinXi" resultType="com.houjiang.commons.dto.order.WapGoodsSaleSumDTO">
+        SELECT goods_id,
+               common_id,
+               order_goods_num AS goodsNum
+        FROM ${database.prefix.order}hou_order_goods
+        WHERE order_id = #{orderId}
+    </select>
+    <select id="queryGoodsCommonStock" resultType="java.util.Map">
+        SELECT gb.goods_id,
+               gb.goods_salenum,
+               gc.common_salenum
+        FROM ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gb.common_id = gc.common_id
+        WHERE gb.goods_id = #{goodsId}
+    </select>
+    <select id="listTimeoutOrderDetail2" resultType="com.houjiang.job.dto.OrderStatusDTO">
+        SELECT payment_number,
+               redpacket_code,
+               order_id,
+               voucher_code,
+               payment_code
+        FROM ${database.prefix.order}hou_order_base
+        WHERE TIMESTAMPDIFF(MINUTE, order_create_time, now()) >= #{minutes}
+          and order_status = 1
+    </select>
+    <select id="queryOrderStatus" resultType="java.lang.Integer">
+        select order_status
+        from ${database.prefix.order}hou_order_base
+        where payment_number = #{paymentNumber}
+    </select>
+    <select id="queryReturnOrderNotHandle" resultType="com.houjiang.job.dto.BusinessOvertimeOrderDTO">
+        SELECT oor.order_id,
+               oor.return_cash,
+               oor.return_code,
+               oor.return_state,
+               oor.return_add_time,
+               oob.buyer_user_name,
+               oob.order_status
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob ON oob.order_id = oor.order_id
+        WHERE oor.return_state = 1
+          AND oor.return_type = 1
+          AND order_status = 6
+          AND HOUR(
+                      TIMEDIFF(now()
+                          , return_add_time))
+            >= 24
+          AND return_add_time
+            > '2019-08-01'
+    </select>
+    <select id="queryPaymentNumber" resultType="java.lang.String">
+        SELECT payment_number
+        FROM ${database.prefix.order}hou_order_base
+        WHERE order_id = #{orderId}
+    </select>
+    <select id="queryOrderRecordStatus" resultType="java.lang.Integer">
+        select order_refund_status
+        from ${database.prefix.order}hou_order_base
+        where payment_number = #{uOrderId}
+    </select>
+    <select id="queryRefundPara" resultType="com.houjiang.job.dto.RefundParamTwoDTO">
+        select oob.order_id,
+               oob.order_from,
+               oob.pay_code,
+               oob.payment_other_number,
+               oor.return_code,
+               sb.supplier_shop_id   as shopId,
+               sb.shop_type as shopType
+        from ${database.prefix.order}hou_order_base oob,
+             ${database.prefix.order}hou_order_return oor
+                 left join ${database.prefix.supplier}hou_shop_base sb on sb.supplier_shop_id = oor.shop_id
+        where oob.order_id = oor.order_id
+          and oob.order_id = #{orderId}
+    </select>
+    <select id="queryTuiHuoOrderNotHandle" resultType="com.houjiang.job.dto.BusinessOvertimeOrderDTO">
+        SELECT oor.order_id,
+               oor.return_cash,
+               oor.return_code,
+               oor.return_state,
+               oor.return_add_time,
+               oob.buyer_user_name,
+               oob.order_status
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob ON oob.order_id = oor.order_id
+        WHERE oor.return_state = 1
+          AND oor.return_type = 2
+          AND order_status = 6
+          AND HOUR(
+                      TIMEDIFF(now()
+                          , return_add_time))
+            >= 24
+          AND return_add_time
+            > '2019-08-01'
+    </select>
+    <!--    -->
+    <select id="queryBusinessOvertimeOrder" resultType="com.houjiang.job.dto.BusinessOvertimeOrderDTO">
+        select oor.order_id,
+               oor.return_cash,
+               oor.return_code,
+               oor.return_state,
+               oor.return_add_time,
+               oob.buyer_user_name,
+               oob.order_status
+        from ${database.prefix.order}hou_order_return oor
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob on oob.order_id = oor.order_id
+        where oor.return_state = 1
+          and oor.return_type = 1
+          AND (order_status = 3 or (order_status = 4 and virtual_goods = 0 ))
+          and HOUR(TIMEDIFF(now(), return_add_time)) &gt;= 24
+    </select>
+    <select id="queryUnpaidOrdersToBeCancelled" resultType="java.lang.String">
+        select order_id
+        from ${database.prefix.order}hou_order_base
+        where order_status = 1
+          and now() >= seckill_cancel_time
+    </select>
+    <select id="queryGoodsDetails" resultType="com.houjiang.commons.dto.order.AddInventoryDTO">
+        SELECT oog.goods_id,
+               oog.common_id,
+               oog.order_goods_num,
+               gc.common_salenum,
+               oob.order_promotion_id
+        FROM ${database.prefix.order}hou_order_base oob
+                 left join ${database.prefix.order}hou_order_goods oog on oog.order_id = oob.order_id
+                 left join ${database.prefix.goods}hou_goods_common gc on oog.common_id = gc.common_id
+        WHERE oog.order_id = #{orderId}
+    </select>
+    <select id="queryPaymentNumberAndRedpacketId"
+            resultType="com.houjiang.commons.dto.order.CancelParaEntityDTO">
+        select payment_number, redpacket_code, voucher_code, order_buy_id
+        from ${database.prefix.order}hou_order_base
+        where order_id = #{orderId}
+    </select>
+    <select id="selectFxCommissionOrderId" resultType="java.lang.String">
+        select order_id from ${database.prefix.order}hou_order_commission where order_id in
+        <foreach collection="orderIds" item="orderId" open="(" separator="," close=")">
+             #{orderId}
+        </foreach>
+        group by order_id
+    </select>
+
+    <update id="updateBusinessOvertimeOrderBase" parameterType="com.houjiang.job.dto.BusinessOvertimeOrderDTO">
+        update ${database.prefix.order}hou_order_base
+        set order_status       =#{orderStatus},
+            order_refund_status=#{orderRefundStatus},
+            order_finished_time=#{orderFinishedTime}
+        where order_id = #{orderId}
+    </update>
+
+    <update id="updateBusinessOvertimeOrderReturn" parameterType="com.houjiang.job.dto.BusinessOvertimeOrderDTO">
+        update ${database.prefix.order}hou_order_return
+        set return_shop_handle =#{returnShopHandle},
+            return_state=#{returnState},
+            return_shop_message=#{returnShopMessage},
+            return_shop_time=#{returnShopTime},
+            return_finish_time =#{returnFinishTime}
+        where return_code = #{returnCode}
+    </update>
+    <update id="updateSaleSum2">
+        UPDATE ${database.prefix.goods}hou_goods_common
+        SET common_salenum = #{param.goodsNum}
+        where common_id = #{param.commonId}
+    </update>
+    <update id="updateByOrderBase">
+        UPDATE ${database.prefix.order}hou_order_base
+        SET order_status          = #{orderStatus},
+            order_cancel_identity = #{orderCancelIdentity},
+            order_cancel_reason   = #{orderCancelReason},
+            order_cancel_date     = #{orderCancelDate}
+        where order_id = #{orderId}
+    </update>
+    <update id="updateByOrderGoods">
+        update ${database.prefix.order}hou_order_goods
+        set order_goods_status = #{orderStatus}
+        where order_id = #{orderId}
+    </update>
+    <update id="updateOrderStatus">
+        update ${database.prefix.order}hou_order_commission
+        set order_status = #{orderStatus}
+        where order_id = #{orderId}
+    </update>
+    <update id="updateFxCommissionOrder">
+        update ${database.prefix.order}hou_order_commission
+        set order_status = 6
+        where order_id in
+        <foreach collection="orderIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+</mapper>

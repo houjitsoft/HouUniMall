@@ -1,0 +1,36 @@
+server:
+  port: 8216
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER} # 数据库账号
+    password: ${APP_DATASOURCE_PASSWORD} # 数据库密码
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    config:
+      enabled: false
+    servlet:
+      multipart:
+        max-file-size: 50MB #  设置单个文件大小
+        max-request-size: 50MB # 设置单次请求文件的总大小
+    jmx:
+      enabled: false
+  resources:
+    static-locations: classpath:/META-INF/resources/,classpath:/static
+
+
+# CORS 放行域名  用英文逗号分隔多个 
+crosDomain: "*"
+
+#请求处理的超时时间
+ribbon.ReadTimeout: 120000
+#请求连接的超时时间
+ribbon.ConnectTimeout: 30000
+#mybatis
+mybatis:
+  mapperLocations: classpath:/*.xml
+  configuration:
+    cache-enabled: true

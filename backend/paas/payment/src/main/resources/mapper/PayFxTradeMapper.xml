@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayFxTradeMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayFxTradeEntity">
+            <id property="thirdPayId" column="third_pay_id" jdbcType="VARCHAR"/>
+            <result property="recordId" column="record_id" jdbcType="VARCHAR"/>
+            <result property="thirdTradeNo" column="third_trade_no" jdbcType="VARCHAR"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+            <result property="totalMoney" column="total_money" jdbcType="DECIMAL"/>
+            <result property="tradeRate" column="trade_rate" jdbcType="DECIMAL"/>
+            <result property="tradeDesc" column="trade_desc" jdbcType="VARCHAR"/>
+            <result property="tradeTypeId" column="trade_type_id" jdbcType="INTEGER"/>
+            <result property="tradeStatus" column="trade_status" jdbcType="INTEGER"/>
+            <result property="payType" column="pay_type" jdbcType="VARCHAR"/>
+            <result property="errorCode" column="error_code" jdbcType="VARCHAR"/>
+            <result property="errorMsg" column="error_msg" jdbcType="VARCHAR"/>
+            <result property="queryCount" column="query_count" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="notifyTime" column="notify_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        third_pay_id,record_id,third_trade_no,
+        user_id,user_name,total_money,
+        trade_rate,trade_desc,trade_type_id,
+        trade_status,pay_type,error_code,
+        error_msg,query_count,create_time,
+        notify_time,update_time
+    </sql>
+</mapper>

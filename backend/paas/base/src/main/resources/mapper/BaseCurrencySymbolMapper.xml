@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseCurrencySymbolMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseCurrencySymbolEntity" id="BaseCurrencySymbolMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="currencySymbol" column="currency_symbol" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="listCurrencySymbol" resultType="com.houjiang.base.vo.BaseCurrencySymbolVO">
+        select *
+        from ${database.prefix.userms}hou_base_currency_symbol
+        <if test="param.remark != null">
+            where remark like concat('%' ,#{param.remark} ,'%')
+        </if>
+        order by id asc
+    </select>
+    <select id="getByCurrencyDetection" resultType="com.houjiang.base.vo.BaseCurrencySymbolVO">
+        select currency_symbol,exchange_rate,currency_code
+        from ${database.prefix.userms}hou_base_currency_symbol
+        where currency_code = #{currencyCode}
+    </select>
+</mapper>

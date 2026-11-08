@@ -1,0 +1,20 @@
+{
+  "plugin": {
+    "activity": { "name": "营销活动" },
+    "aicode": { "name": "AI 开发" },
+    "cms": { "name": "内容管理" },
+    "crm": { "name": "CRM" },
+    "erp": { "name": "ERP" },
+    "finance": { "name": "财务中心" },
+    "geo": { "name": "GEO" },
+    "im": { "name": "IM" },
+    "logging": { "name": "日志管理" },
+    "mes": { "name": "MES 制造执行" },
+    "oa": { "name": "OA 办公" },
+    "orderfood": { "name": "餐饮管理" },
+    "pm": { "name": "项目管理" },
+    "supplier": { "name": "供应商管理" },
+    "webpos": { "name": "WebPOS 收银台" },
+    "demo-coupon": { "name": "演示优惠券" }
+  }
+}

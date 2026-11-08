@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterDiscountBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterDiscountBaseEntity">
+            <id property="discountId" column="discount_id" jdbcType="INTEGER"/>
+            <result property="discountName" column="discount_name" jdbcType="VARCHAR"/>
+            <result property="discountStartTime" column="discount_start_time" jdbcType="TIMESTAMP"/>
+            <result property="discountEndTime" column="discount_end_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        discount_id,discount_name,discount_start_time,
+        discount_end_time
+    </sql>
+    <select id="getDecenterDiscountBaseVOList" resultType="com.houjiang.job.vo.DcenterDiscountBaseVO">
+        select
+        <include refid="Base_Column_List"/>
+        from ${database.prefix.activity}hou_addon_activity_discount_base limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

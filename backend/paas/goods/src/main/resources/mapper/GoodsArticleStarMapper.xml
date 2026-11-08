@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsArticleStarMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsArticleStarEntity" id="GoodsArticleStarMap">
+        <result property="starId" column="star_id" jdbcType="INTEGER"/>
+        <result property="articleId" column="article_id" jdbcType="VARCHAR"/>
+        <result property="starUser" column="star_user" jdbcType="INTEGER"/>
+        <result property="starredUser" column="starred_user" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="lastUpdatedTime" column="last_updated_time" jdbcType="TIMESTAMP"/>
+        <result property="isRead" column="is_read" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertStar">
+    insert into ${database.prefix.goods}hou_goods_article_star(article_id,star_user,starred_user)
+		values (#{param.articleId},
+				#{param.starUser},
+				#{param.starredUser})
+    </insert>
+    <delete id="deleteStar">
+        delete
+		from ${database.prefix.goods}hou_goods_article_star
+		where article_id = #{param.articleId}
+		  and star_user = #{param.starUser}
+    </delete>
+    <select id="getStarFlag" resultType="java.lang.Integer">
+        select count(1)
+		from ${database.prefix.goods}hou_goods_article_star
+		where star_user = #{param.userId}
+		and article_id = #{param.articleId}
+    </select>
+    <select id="queryExistForStar" resultType="java.lang.Integer">
+        select count(*)
+		from ${database.prefix.goods}hou_goods_article_star
+		where article_id = #{param.articleId}
+		  and star_user = #{param.starUser}
+    </select>
+    <select id="getStarNum" resultType="java.lang.Integer">
+        select count(1)
+		from ${database.prefix.goods}hou_goods_article_star
+		where star_user = #{param.userId}
+    </select>
+    <select id="getStarredArticleList" resultType="com.houjiang.goods.vo.StarredArticleVO">
+        select article_id
+		from ${database.prefix.goods}hou_goods_article_star
+		where star_user = #{param.userId}
+    </select>
+
+
+</mapper>

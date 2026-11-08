@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.OrderCommissionMapper">
+    <update id="updateOrderSettleBatch">
+        update ${database.prefix.order}hou_order_commission ooc
+            LEFT JOIN ${database.prefix.order}hou_order_base oob ON ooc.order_id = oob.order_id
+        set ooc.order_status         = 3,
+            ooc.fx_settlement_status = 1,
+            ooc.fx_settlement_time   = NOW(),
+            ooc.settle_record_id     = #{settleRecordId}
+        where ooc.order_id = #{orderId}
+          and ooc.fx_settlement_status = 0
+          and ooc.commission_type = 1
+          AND oob.order_last_return_time &lt;= NOW()
+          AND oob.order_refund_status != 1
+          AND oob.order_return_status != 1
+          and oob.order_status in (5, 6, 9)
+    </update>
+
+
+    <select id="queryOrderSettle" resultType="com.houjiang.commons.vo.order.CommissionSettleVO">
+        SELECT ooc.order_commission_id,
+               ooc.order_id,
+               ooc.buy_user_id,
+               ooc.share_user_id,
+               ooc.share_user_name,
+               ooc.share_user_mobile,
+               ooc.tg_one_user_id,
+               ooc.tg_one_user_name,
+               ooc.tg_one_user_mobile,
+               ooc.tg_two_user_id,
+               ooc.tg_two_user_name,
+               ooc.tg_two_user_mobile,
+               ooc.commission_type
+        FROM ${database.prefix.order}hou_order_commission ooc
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob ON ooc.order_id = oob.order_id
+        WHERE ooc.fx_settlement_status = 0
+          and ooc.commission_type = 1
+          AND oob.order_last_return_time &lt;= NOW()
+          AND oob.order_refund_status != 1
+          AND oob.order_return_status != 1
+          and oob.order_status in ( 5, 6, 9)
+        GROUP BY ooc.order_id
+    </select>
+    <select id="queryWaitSettleAmount" resultType="com.houjiang.commons.vo.order.CommissionSettleVO">
+        SELECT sum(fx_commission - return_fx_commission)         as fxCommissionMoney,
+               sum(one_tg_commission - return_one_tg_commission) as oneTgCommissionMoney,
+               sum(two_tg_commission - return_two_tg_commission) as twoTgCommissionMoney
+        FROM ${database.prefix.order}hou_order_commission ooc
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob ON ooc.order_id = oob.order_id
+        WHERE ooc.fx_settlement_status = 0
+          and ooc.commission_type = 1
+          AND oob.order_last_return_time &lt;= NOW()
+          AND oob.order_refund_status != 1
+          AND oob.order_return_status != 1
+          and oob.order_status in (5, 6, 9)
+          and ooc.order_id = #{orderId}
+    </select>
+</mapper>

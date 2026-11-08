@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterUserFootprintMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterUserFootprintEntity">
+            <id property="footprintId" column="footprint_id" jdbcType="INTEGER"/>
+            <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+            <result property="footprintTime" column="footprint_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        footprint_id,common_id,footprint_time
+    </sql>
+    <select id="getDecenterUserFootprintVOList" resultType="com.houjiang.job.vo.DcenterUserFootprintVO">
+        select
+        <include refid="Base_Column_List"/>
+        from ${database.prefix.goods}hou_goods_user_footprint limit #{pageNum},#{pageSize}
+
+    </select>
+</mapper>

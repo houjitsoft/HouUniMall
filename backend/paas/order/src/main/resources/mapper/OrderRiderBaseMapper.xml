@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderRiderBaseMapper">
+
+    <select id="queryMerchantConfirmationPage" resultType="com.houjiang.order.vo.OrderRiderBasePageVO">
+        select  obase.*,gg.shop_gate_name,gg.detail_address,gg.longitude,gg.latitude,ui.user_mobile,ui.user_name,gg.province,gg.city,gg.county
+        from  ${database.prefix.order}hou_order_base obase
+        LEFT JOIN ${database.prefix.business}hou_shop_gate gg ON gg.shop_gate_id=obase.order_gate_shop_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info ui ON ui.user_id=obase.buyer_user_id
+        <where>
+            obase.is_delivery = '1' and
+            obase.shop_affirm = '1'
+            <if test="param.orderId!=null and param.orderId!=''">
+                and obase.order_id = #{param.orderId}
+            </if>
+            <if test="param.buyerUserName!=null and param.buyerUserName!=''">
+                and obase.buyer_user_name = #{param.buyerUserName}
+            </if>
+            <if test="param.status!=null">
+                and obase.order_status = #{param.status}
+            </if>
+            <if test="param.isDeliveryDel!=null">
+                and obase.is_delivery_del = #{param.isDeliveryDel}
+            </if>
+            <if test="param.distributorId!=null">
+                and obase.distributor_id = #{param.distributorId}
+            </if>
+            <if test="param.pickup!=null">
+                and obase.pickup = #{param.pickup}
+            </if>
+        </where>
+        order by obase.order_create_time desc
+    </select>
+
+    <select id="queryMerchantNotConfirmationPage" resultType="com.houjiang.order.vo.OrderRiderBasePageVO">
+        select  obase.*,gg.shop_gate_name,gg.detail_address,gg.longitude,gg.latitude,ui.user_mobile,ui.user_name,yb.rider_name,yb.rider_tel
+        from  ${database.prefix.order}hou_order_base obase
+        LEFT JOIN ${database.prefix.business}hou_shop_gate gg ON gg.shop_gate_id=obase.order_gate_shop_id
+        LEFT JOIN ${database.prefix.userms}hou_user_info ui ON ui.user_id=obase.buyer_user_id
+        LEFT JOIN `mall-rider`.rider_base yb ON yb.rider_id=obase.distributor_id
+        <where>
+            obase.is_delivery = '1'
+            <if test="param.orderId!=null and param.orderId!=''">
+                and obase.order_id like concat('%',#{param.orderId},'%')
+            </if>
+            <if test="param.buyerUserName!=null and param.buyerUserName!=''">
+                and obase.buyer_user_name like concat('%',#{param.buyerUserName},'%')
+            </if>
+            <if test="param.status!=null">
+                and obase.order_status = #{param.status}
+            </if>
+            <if test="param.isDeliveryDel!=null">
+                and obase.is_delivery_del = #{param.isDeliveryDel}
+            </if>
+            <if test="param.distributorId != null and param.distributorId == 0">
+                and obase.distributor_id = 0
+            </if>
+            <if test="param.distributorId != null and param.distributorId == 1">
+                and obase.distributor_id > 0
+            </if>
+            <if test="param.pickup!=null">
+                and obase.pickup = #{param.pickup}
+            </if>
+        </where>
+        order by obase.order_create_time desc
+    </select>
+
+    <select id="queryOrderRiderBase" resultType="com.houjiang.order.vo.OrderRiderBaseVO">
+        select * FROM ${database.prefix.order}hou_order_base
+        where order_id = #{orderId} and is_delivery = '1'
+    </select>
+
+    <select id="queryOrderGoodsItem" resultType="com.houjiang.order.vo.OrderDetailGoodsItemVO">
+        select og.goods_name,
+        og.order_goods_num,
+        og.goods_price,
+        og.order_goods_payment_amount,
+        ob.payment_name,
+        og.order_spec_chineseValue
+        FROM ${database.prefix.order}hou_order_goods og
+        left join ${database.prefix.order}hou_order_base ob
+        on og.order_id = ob.order_id
+        <where>
+            <if test="orderId!=null and orderId!=''">
+                and og.order_id = #{orderId}
+            </if>
+        </where>
+    </select>
+
+    <select id="shopGateInfoItem" resultType="com.houjiang.commons.vo.user.ShopGateInfo">
+        SELECT * FROM ${database.prefix.business}hou_shop_gate WHERE shop_gate_id=#{orderGateShopId}
+    </select>
+
+    <update id="updateDeliveryTime">
+        update ${database.prefix.order}hou_order_base SET delivery_time=#{format} WHERE order_id=#{orderId}
+    </update>
+
+    <select id="querySerial" resultType="java.lang.String">
+        SELECT pickup_num FROM ${database.prefix.order}hou_order_base WHERE delivery_time>#{orderCreateTime} AND distributor_id>0 ORDER BY delivery_time DESC LIMIT 1,1
+    </select>
+
+    <update id="updatePickupNum">
+        update ${database.prefix.order}hou_order_base SET pickup_num=#{serialCode} WHERE order_id=#{orderId}
+    </update>
+
+    <update id="updateTotalPrice">
+        update  `mall-rider`.rider_base SET total_price=total_price+#{totalPrice},total_num = total_num + 1,profit = profit + #{totalPrice} WHERE rider_id=#{userId}
+    </update>
+
+    <select id="queryRiderProcessingOrderNum" resultType="java.lang.Integer">
+        select  count(1) from  ${database.prefix.order}hou_order_base ob where ob.is_delivery = '1' and ob.shop_affirm = '1'
+        <if test="pickup != null">
+            and pickup = #{pickup}
+        </if>
+        <if test="orderStatus != null">
+            and order_status = #{orderStatus}
+        </if>
+        <if test="userId != null">
+            and distributor_id = #{userId}
+        </if>
+    </select>
+
+</mapper>

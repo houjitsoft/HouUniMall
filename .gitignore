@@ -1,0 +1,28 @@
+# ---- 密钥与运行期数据（install.sh 生成，绝不能提交） ----
+.env
+data/
+
+# ---- 系统与编辑器 ----
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# ---- Python ----
+__pycache__/
+*.pyc
+
+# ---- Node / 前端 ----
+node_modules/
+dist/
+.vite/
+
+# ---- Java 构建产物 ----
+target/
+*.class
+*.jar
+
+# ---- 日志与临时 ----
+*.log
+*.tmp
+*.bak

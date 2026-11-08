@@ -1,0 +1,275 @@
+# =====================================================================
+# 【2026-10-28 迁移】bff-web 原来只有 bootstrap.yml，且 pom 缺
+# spring-cloud-starter-alibaba-nacos-config：NacosPropertySourceLocator
+# 不在 classpath，spring.cloud.nacos.config.* 段形同虚设，bff-web.yaml /
+# mutual.yaml 远程配置从未被加载——@FeignClient(url="${feign.permission.url:
+# http://127.0.0.1:8300}") 落回注解默认值直连 127.0.0.1，Docker bridge
+# 网络下指向容器自身必拒连（/web/permission/user/menus 恒 22602）。
+# 已补 nacos-config 依赖并迁移 SB3 原生 Config Data（spring.config.import），
+# 与 11 个 paas 服务同款改造（见 backend/paas/auth/src/main/resources/application.yml）。
+# 原 bootstrap.yml 已删除；mutual.yaml 里的 feign.*.url 空值会让全部
+# Feign 客户端改走 Nacos 服务发现（url 为空串时 OpenFeign 按 name 走 LB），
+# bridge 网络部署不再依赖 host 时代的 127.0.0.1 直连默认值。
+# =====================================================================
+server:
+  port: 8391
+  tomcat:
+    max-http-form-post-size: 20971520
+    # 上传被拒时 Tomcat 需要吞掉剩余请求体，默认 2MB 会导致大制品直接断连报「连接被重置」
+    max-swallow-size: 104857600
+
+spring:
+  application:
+    name: bff-web
+  servlet:
+    multipart:
+      # 插件制品上限 64MB，加 multipart 边界与 JSON 字段开销取 100MB；
+      # 原 20MB 会让 64MB 制品在网关层直接 413。上传链路走 RestTemplate 流转发、不走 Feign。
+      max-file-size: 104857600
+      max-request-size: 104857600
+  # SB3 Config Data：服务私有 dataId 打头（优先级最高），后接原 bootstrap
+  # extension-configs 全量平移
+  config:
+    import:
+      - nacos:bff-web.yaml
+      - nacos:mutual.yaml
+      - nacos:mybatis.yaml
+      - nacos:redis.yaml
+      - nacos:sentinel.yaml
+      - nacos:seata.yaml
+      - nacos:dispose.yaml
+      - nacos:rocketmq.yaml
+  cloud:
+    config:
+      enabled: false
+    nacos:
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:houeoc}
+        username: nacos
+        password: ${NACOS_PASSWORD:}
+        file-extension: yaml
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:houeoc}
+        username: nacos
+        password: ${NACOS_PASSWORD:}
+    # 添加Feign配置（原 bootstrap.yml 原样平移；Feign 客户端的 url 属性值由
+    # mutual.yaml 的 feign.*.url 空值统一接管为服务发现）
+    openfeign:
+      # HTTPClient 连接池优化（替换默认 URLConnection，提升高并发下的吞吐能力）
+      httpclient:
+        enabled: true
+        max-connections: 200           # 全局最大连接数
+        max-connections-per-route: 50  # 每路由最大连接数
+        connection-timeout: 5000       # 连接超时（ms）
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 30000  # 增加到30秒，避免菜单数据序列化超时
+          auth:  # 认证服务 - 登录流程涉及多个下游调用，需较长超时
+            url: ${feign.auth.url:}
+            connectTimeout: 5000
+            readTimeout: 45000  # 略大于 auth 服务内部最长级联时间(30s)，避免 BFF 先超时
+          # permission/base/pm: 之前曾用 readTimeout: 60000 兜底，现已通过
+          # paas 服务层进程内 ConcurrentHashMap+TTL 缓存（参考 finance/spending/list 模式）替代，
+          # 全部回归 default.readTimeout=30000
+          # thirdparty: 短信发送包含配置、Redis、模板、阿里云调用及记录落库，需覆盖完整流程
+          thirdparty:
+            url: ${feign.thirdparty.url:}
+            connectTimeout: 5000
+            # 短信链路含 base 拉配置 + 阿里云调用，实测常 15–25s；30s 易被 Feign 先切断并误报「连接超时」
+            readTimeout: 60000
+          merchant:  # merchant商家后台服务
+            connectTimeout: 5000
+            readTimeout: 30000  # 商家后台查询可能涉及大量数据
+          userms:  # 用户服务
+            url: ${feign.userms.url:}
+            connectTimeout: 5000
+            readTimeout: 40000
+          permission:  # 权限服务；role/edit 全量菜单保存可能数秒
+            url: ${feign.permission.url:}
+            connectTimeout: 5000
+            readTimeout: 90000
+          # OA 独立服务；空地址使用服务发现。
+          oaServiceFeign:
+            url: ${feign.oa.url:}
+            connectTimeout: 5000
+            readTimeout: 180000  # 企微 SCRM/考勤同步（getcheckindata 全员）可能超过 2 分钟
+          oaContractServiceFeign:
+            url: ${feign.oa.url:}
+            connectTimeout: 5000
+            readTimeout: 180000
+          mallServiceFeign:
+            url: ${feign.mall.url:}
+            connectTimeout: 5000
+            readTimeout: 45000
+          orderServiceFeign:
+            url: ${feign.order.url:}
+            connectTimeout: 5000
+            readTimeout: 30000
+          goodsServiceFeign:
+            url: ${feign.goods.url:}
+            connectTimeout: 5000
+            readTimeout: 30000
+          geoServiceFeign:
+            url: ${feign.geo.url:}
+            connectTimeout: 5000
+            readTimeout: 180000
+          pluginCenterServiceFeign:
+            url: ${feign.base.url:}
+            connectTimeout: 5000
+            readTimeout: 180000
+          base:
+            url: ${feign.base.url:}
+            connectTimeout: 5000
+            # 文件识别会同步等待系统默认 AI 模型响应（客户端最长 180 秒），不能让 BFF 在 30 秒时提前断开
+            readTimeout: 210000
+          finance:
+            url: ${feign.finance.url:}
+            connectTimeout: 5000
+            readTimeout: 30000
+          payment:
+            url: ${feign.payment.url:}
+            connectTimeout: 5000
+            readTimeout: 30000
+          ai:
+            url: ${feign.ai.url:}
+            connectTimeout: 5000
+            readTimeout: 60000
+          aicustomer:
+            url: ${feign.aicustomer.url:}
+            connectTimeout: 5000
+            readTimeout: 60000
+          crm:
+            url: ${feign.crm.url:}
+            connectTimeout: 5000
+            readTimeout: 30000
+          cms:
+            url: ${feign.cms.url:}
+            connectTimeout: 5000
+            readTimeout: 30000
+          pm:
+            url: ${feign.pm.url:}
+            connectTimeout: 5000
+            readTimeout: 90000
+          jobServiceFeign:
+            url: ${feign.job.url:}
+            connectTimeout: 5000
+            readTimeout: 30000
+      # 熔断器：开启后 Feign 可能在独立线程执行，RequestContextHolder 丢失，导致 Authorization 无法传到 OA 等下游 → 11006 用户未登录
+      # 与下游稳定性权衡后关闭；若需开启请配合上下文传递方案
+      circuitbreaker:
+        enabled: false
+  main:
+    allow-bean-definition-overriding: true
+
+# 插件归属服务仅接受显式直连地址；留空时使用 Nacos。其余旧调用配置分阶段迁移。
+# 下方 FEIGN_*_URL 环境变量机制保留；Docker bridge 部署下 mutual.yaml 的
+# feign.*.url 空值覆盖直连默认值，统一改走服务发现。
+feign:
+  logging:
+    url: ${FEIGN_LOGGING_URL:}
+  auth:
+    url: ${FEIGN_AUTH_URL:}
+  userms:
+    url: ${FEIGN_USERMS_URL:}
+  permission:
+    url: ${FEIGN_PERMISSION_URL:}
+  mall:
+    # 尚未迁移的商城/插件管理接口临时保留，插件业务不使用此地址。
+    url: ${FEIGN_MALL_URL:}
+  order:
+    url: ${FEIGN_ORDER_URL:}
+  goods:
+    url: ${FEIGN_GOODS_URL:}
+  thirdparty:
+    url: ${FEIGN_THIRDPARTY_URL:}
+  geo:
+    url: ${FEIGN_GEO_URL:}
+  pm:
+    url: ${FEIGN_PM_URL:}
+  base:
+    url: ${FEIGN_BASE_URL:}
+  payment:
+    url: ${FEIGN_PAYMENT_URL:}
+  ai:
+    url: ${FEIGN_AI_URL:}
+  aicustomer:
+    url: ${FEIGN_AICUSTOMER_URL:}
+  crm:
+    url: ${FEIGN_CRM_URL:}
+  job:
+    url: ${FEIGN_JOB_URL:}
+  oa:
+    url: ${FEIGN_OA_URL:}
+  erp:
+    url: ${FEIGN_ERP_URL:}
+  mes:
+    url: ${FEIGN_MES_URL:}
+  cms:
+    url: ${FEIGN_CMS_URL:}
+  finance:
+    url: ${FEIGN_FINANCE_URL:}
+  im:
+    url: ${FEIGN_IM_URL:}
+  orderfood:
+    url: ${FEIGN_ORDERFOOD_URL:}
+  rider:
+    url: ${FEIGN_RIDER_URL:}
+  supplier:
+    url: ${FEIGN_SUPPLIER_URL:}
+  webpos:
+    url: ${FEIGN_WEBPOS_URL:}
+  # AI 网关是独立容器（FreeLLMAPI，unimall-aigateway），按自身编码解析，
+  # 不走 thirdparty（归属仅表示平台集成边界）。
+  aigateway:
+    url: ${FEIGN_AIGATEWAY_URL:http://127.0.0.1:18301}
+
+# 商城素材上传：local=写入 public/uploads/mall（默认，不经过 OSS）
+mall:
+  upload:
+    mode: ${MALL_UPLOAD_MODE:local}
+    url-prefix: ${MALL_UPLOAD_URL_PREFIX:/uploads/mall}
+
+local:
+  upload:
+    # 默认值不能再是 Windows 绝对路径（原为 X99 的 D:/wwwroot/...）：Linux 容器里
+    # 该路径必然不存在，/web/common/file/{fileName} 会把全部上传文件判成 404
+    # （2026-09-20 财务中心 4 张图全挂）。默认改为相对 user.dir，跨平台；
+    # 容器部署必须显式给 LOCAL_UPLOAD_PATH 并把该目录挂到宿主机持久卷。
+    path: ${LOCAL_UPLOAD_PATH:./uploads/mall}
+
+# 本地开发环境禁用 Zipkin 追踪（避免连接错误）
+management:
+  tracing:
+    enabled: false
+    sampling:
+      probability: 0.0
+
+# 一键重启接口配置（供 RestartController 使用）
+restart:
+  admin:
+    # 调用 /web/admin/restart 必须携带 X-Admin-Token 头，值需与此一致
+    token: ${RESTART_ADMIN_TOKEN}
+  script:
+    # 主重启脚本路径
+    path: ${RESTART_SCRIPT_PATH:D:/wwwroot/houcloud/jar/restart-all.ps1}
+  service:
+    # 单服务启停/状态查询脚本（ServiceManageController）
+    script:
+      path: ${RESTART_SERVICE_SCRIPT_PATH:D:/wwwroot/houcloud/jar/service-manage.ps1}
+  log:
+    # 脚本输出日志目录
+    dir: ${RESTART_LOG_DIR:D:/wwwroot/houcloud/jar/restart-logs}
+
+# xxl-job Admin API 配置（BFF 代理用）
+xxl:
+  job:
+    admin:
+      addresses: ${XXL_JOB_ADMIN:http://127.0.0.1:38082/xxl-job-admin}
+      username: ${XXL_JOB_USER:admin}
+      password: ${XXL_JOB_PASS}
+    executor:
+      job-group: ${XXL_JOB_GROUP:12}

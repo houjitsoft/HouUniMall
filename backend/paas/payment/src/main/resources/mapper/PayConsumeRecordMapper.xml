@@ -1,0 +1,586 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayConsumeRecordMapper">
+
+    <resultMap type="com.houjiang.payment.entity.PayConsumeRecordEntity" id="PayConsumeRecordMap">
+        <result property="consumeRecordId" column="consume_record_id" jdbcType="VARCHAR"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="userNickname" column="user_nickname" jdbcType="VARCHAR"/>
+        <result property="recordMoney" column="record_money" jdbcType="NUMERIC"/>
+        <result property="recordAfterMoney" column="record_after_money" jdbcType="NUMERIC"/>
+        <result property="recordDate" column="record_date" jdbcType="TIMESTAMP"/>
+        <result property="recordYear" column="record_year" jdbcType="INTEGER"/>
+        <result property="recordMonth" column="record_month" jdbcType="INTEGER"/>
+        <result property="recordDay" column="record_day" jdbcType="INTEGER"/>
+        <result property="recordTitle" column="record_title" jdbcType="VARCHAR"/>
+        <result property="recordDesc" column="record_desc" jdbcType="VARCHAR"/>
+        <result property="recordTime" column="record_time" jdbcType="TIMESTAMP"/>
+        <result property="tradeTypeId" column="trade_type_id" jdbcType="INTEGER"/>
+        <result property="userType" column="user_type" jdbcType="INTEGER"/>
+        <result property="recordStatus" column="record_status" jdbcType="INTEGER"/>
+        <result property="recordPayorder" column="record_payorder" jdbcType="VARCHAR"/>
+        <result property="recordPaytime" column="record_paytime" jdbcType="TIMESTAMP"/>
+        <result property="recordDelete" column="record_delete" jdbcType="INTEGER"/>
+        <result property="creditRemain" column="credit_remain" jdbcType="NUMERIC"/>
+        <result property="plusOrMinus" column="plus_or_minus" jdbcType="INTEGER"/>
+        <result property="recordWithdraw" column="record_withdraw" jdbcType="VARCHAR"/>
+        <result property="osCommisAmount" column="os_commis_amount" jdbcType="NUMERIC"/>
+        <result property="osCommisReturnAmount" column="os_commis_return_amount" jdbcType="NUMERIC"/>
+        <result property="recordOperator" column="record_operator" jdbcType="VARCHAR"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+        <result property="totalIntegral" column="total_integral" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertConsumeRecordToSeller">
+        INSERT INTO ${database.prefix.payment}hou_pay_consume_record (
+            order_id, user_id, user_nickname, record_money,
+            record_date, record_year, record_month, record_day,
+            record_title, record_desc, record_time,
+            trade_type_id, user_type, record_status,
+            record_payorder, record_paytime, plus_or_minus, is_current_user)
+        VALUES (#{paymentNumber}, #{sellerId}, #{userName}, #{paymentAmout},
+                #{tradeDate}, #{tradeYear}, #{tradeMonth}, #{tradeDay},
+                #{tradeTitle}, #{tradeDesc}, #{recordTime},
+                #{tradeTypeId}, #{userType}, #{recordStatus},
+                #{recordPayorderId}, #{recordTime}, 1, #{isCurrentUser})
+    </insert>
+    <insert id="insertBuyUserConsumeRecord">
+        INSERT INTO ${database.prefix.payment}hou_pay_consume_record (
+            order_id, user_id, user_nickname, record_money,
+            record_date, record_year, record_month, record_day,
+            record_title, record_desc, record_time,
+            trade_type_id, user_type, record_status,
+            record_payorder, record_paytime, plus_or_minus, is_current_user)
+        VALUES (#{paymentNumber}, #{userId}, #{userName}, #{paymentAmout},
+                #{tradeDate}, #{tradeYear}, #{tradeMonth}, #{tradeDay},
+                #{tradeTitle}, #{tradeDesc}, #{recordTime},
+                #{tradeTypeId}, #{userType}, #{recordStatus},
+                #{recordPayorderId}, #{recordTime}, 0, #{isCurrentUser})
+    </insert>
+    <insert id="insertRecord">
+ INSERT INTO ${database.prefix.payment}hou_pay_consume_record (order_id,
+                                        user_id,
+                                        user_nickname,
+                                        record_money,
+                                        record_date,
+                                        record_year,
+                                        record_month,
+                                        record_day,
+                                        record_title,
+                                        record_desc,
+                                        record_time,
+                                        trade_type_id,
+                                        user_type,
+                                        record_status,
+                                        record_payorder,
+                                        record_paytime,
+                                        plus_or_minus)
+        VALUES (#{recordPayorder}, #{userId}, #{userNickname}, #{recordMoney}, #{recordDate}, #{recordYear},
+                #{recordMonth},
+                #{recordDay}, #{recordTitle}, #{recordDesc}, #{recordTime}, #{tradeTypeId}, #{userType},
+                #{recordStatus},
+                #{orderId}, #{recordPaytime}, #{plusOrMinus})
+    </insert>
+    <insert id="insertConsumeRecord">
+  INSERT INTO ${database.prefix.payment}hou_pay_consume_record (
+            order_id,
+            user_id,
+            user_nickname,
+            record_money,
+            record_date,
+            record_year,
+            record_month,
+            record_day,
+            record_title,
+            record_desc,
+            record_time,
+            trade_type_id,
+            user_type,
+            record_status,
+            record_payorder,
+            record_paytime,
+            plus_or_minus)
+        VALUES (#{orderId}, #{userId}, #{userName}, #{fee}, #{date}, #{year}, #{month}, #{day}, #{title}, #{desc},
+                #{depositGmtCreate}, #{typeId}, #{userType}, #{recordStatus}, #{recordPayorder}, #{cardFetchTime},
+                #{plusOrMinus})
+    </insert>
+    <insert id="insertConsumeRecordport">
+        INSERT INTO ${database.prefix.payment}hou_pay_consume_record (
+            order_id,
+            user_id,
+            user_nickname,
+            record_money,
+            record_date,
+            record_year,
+            record_month,
+            record_day,
+            record_title,
+            record_desc,
+            record_time,
+            trade_type_id,
+            user_type,
+            record_status,
+            record_payorder,
+            record_paytime,
+            record_delete,
+            credit_remain,
+            plus_or_minus,
+            record_withdraw,
+            os_commis_amount,
+            os_commis_return_amount,
+            record_operator
+        )
+        VALUES
+            (#{depositTradeNo}, #{userId}, #{userNickname}, #{depositTotalFee}, #{recordDate}, #{year}, #{month},
+             #{day}, #{recordTitle}, #{record_desc},
+             NOW(),#{tradeTypeId}, #{userType}, 6, #{depositTradeNo}, NOW(), 0, 0.00, #{plusOrMinus},
+             #{recordWithdraw}, #{osCommisAmount}, #{osCommisReturnAmount},
+             #{operator})
+    </insert>
+    <insert id="insertSettlementRecord">
+  insert into ${database.prefix.payment}hou_pay_consume_record (order_id,  user_id, user_nickname, record_money, record_date,
+                                        record_year, record_month, record_day,
+                                        record_title, record_desc, record_time, trade_type_id, user_type, record_status,
+                                        record_payorder, plus_or_minus)
+        values (#{settlementId}, #{userId}, #{userName}, #{settlementMoney}, #{recordDate},
+                #{recordYear},
+                #{recordMonth}, #{recordDay}, #{recordTitle}, #{recordDesc}, #{recordTime}, #{tradeTypeId}, #{userType},
+                #{recordStatus}, #{recordPayorder}, #{plusOrMinus})
+    </insert>
+    <insert id="insertPayConsumeRecord">
+        insert into ${database.prefix.payment}hou_pay_consume_record
+        (order_id, user_id, user_nickname, record_money, record_date, record_year, record_month, record_day,
+         record_title, record_desc, record_time, trade_type_id, user_type, record_status, record_payorder)
+        values (#{orderId}, #{userId}, #{userName}, #{userMoney}, #{recordDate}, #{recordYear}, #{recordMonth},
+                #{recordDay},
+                #{recordTitle}, #{con}, #{createTime}, #{tradeTypeId}, #{userType}, #{recordStatus},
+                #{recordPayorder})
+    </insert>
+    <insert id="insertConsumeRecordportFeign">
+        INSERT INTO ${database.prefix.payment}hou_pay_consume_record (
+            order_id,
+            user_id,
+            record_money,
+            record_date,
+            record_year,
+            record_month,
+            record_day,
+            record_title,
+            record_desc,
+            record_time,
+            trade_type_id,
+            user_type,
+            record_status,
+            record_paytime,
+            record_delete,
+            credit_remain,
+            plus_or_minus,
+            record_withdraw,
+            os_commis_amount,
+            os_commis_return_amount,
+            is_current_user,
+            record_payorder
+        )
+        VALUES
+            (#{orderId},
+             #{userId},
+             #{recordMoney},
+             #{recordDate},
+             #{year},
+             #{month},
+             #{day},
+             #{recordTitle},
+             #{record_desc},
+             NOW(),
+             #{tradeTypeId},
+             #{userType},
+             6,
+             NOW(),
+             0,
+             0.00,
+             #{plusOrMinus},
+             #{recordWithdraw},
+             #{osCommisAmount},
+             #{osCommisReturnAmount},
+             #{isCurrentUser},
+             #{orderId})
+    </insert>
+    <update id="updateRecordDelete">
+        update ${database.prefix.payment}hou_pay_consume_record set record_delete = 1 where user_id = #{userId} and consume_record_id = #{recordId}
+    </update>
+    <update id="updateRecordByInt">
+        update ${database.prefix.payment}hou_pay_consume_record set record_status = 3,record_after_money = #{money},user_id = #{userId},plus_or_minus = 0,record_paytime = #{paymentTime},total_integral = #{amountAotalIntegral}
+        where record_payorder = #{orderId} and user_type = 2
+    </update>
+    <update id="updateRecordBySellerInt">
+         update ${database.prefix.payment}hou_pay_consume_record set record_status = 3,plus_or_minus = 1,record_paytime = #{paymentTime}
+         where record_payorder = #{orderId} and user_type = 1
+    </update>
+    <update id="updateRecord">
+        update ${database.prefix.payment}hou_pay_consume_record
+        set record_status      = 3,
+            record_after_money = #{money},
+            user_id            = #{userId},
+            plus_or_minus      = 0,
+            record_paytime     = #{paymentTime},
+            total_integral     = #{amountAotalIntegral}
+        where order_id = #{orderId}
+          and user_type = 2
+    </update>
+    <update id="updateRecordBySeller">
+        update ${database.prefix.payment}hou_pay_consume_record set record_status = 3,record_paytime = #{paymentTime}
+        where order_id = #{orderId} and user_type = 1
+    </update>
+    <update id="updateRecordRefuse">
+ update ${database.prefix.payment}hou_pay_consume_record
+        set record_status = #{recordStatus}
+        where record_payorder = #{orderId}
+          and trade_type_id = 5
+    </update>
+    <select id="queryRecentDealRecord" resultType="com.houjiang.payment.vo.ComsumeRecordParaVO">
+        SELECT
+        ppc.consume_record_id,
+        ppc.order_id,
+        ppc.trade_type_id,
+        ppc.record_money,
+        ppc.record_time,
+        ppc.record_status,
+        ppc.record_delete,
+        ppc.record_after_money,
+        ppc.record_payorder,
+        oob.order_status oob.pay_code,
+        oob.order_refund_status,
+        oob.order_return_status
+        FROM
+        ${database.prefix.payment}hou_pay_consume_record ppc
+        LEFT JOIN ${database.prefix.order}hou_order_base oob ON oob.payment_number = ppc.order_id
+        WHERE
+        user_id = #{userId}
+        <if test="null != tradeTypeId and 1 == tradeTypeId">
+            and trade_type_id in (1,5)
+        </if>
+        <if test="null != tradeTypeId and 1 != tradeTypeId">
+            and trade_type_id = #{tradeTypeId}
+        </if>
+        and record_delete = 0 order by record_time desc limit 10
+    </select>
+    <select id="queryGoodsPriceAndName" resultType="com.houjiang.payment.vo.QueryGoodsVO">
+        select trade_payment_amount,trade_desc,total_integral as totalIntegral,integral_goods as integralGoods
+        from ${database.prefix.payment}hou_pay_consume_trade where order_id = #{orderId} and buyer_id = #{userId}
+    </select>
+    <select id="queryRecordParaList" resultType="com.houjiang.payment.vo.RecordVO">
+        select record_money, record_desc, record_payorder
+        from ${database.prefix.payment}hou_pay_consume_record
+        where order_id = #{orderId}
+          and user_type = 2
+    </select>
+    <update id="updateComsumeRecordByPureDigital">
+        update ${database.prefix.payment}hou_pay_consume_record set record_status = #{recordStatus},record_paytime = #{paymentTime}
+        where record_payorder = #{outTradeNo} and user_type in(1,2)
+    </update>
+    <select id="queryRecodeStatus" resultType="java.lang.Integer">
+        select ppcr.record_status from ${database.prefix.payment}hou_pay_consume_record ppcr
+        where ppcr.order_id = #{outTradeNo} and ppcr.user_type = 2
+    </select>
+    <select id="queryorderNo" resultType="com.houjiang.payment.vo.ComsumeRecordVO">
+        select ppcr.order_id,ppcr.record_money,ppcr.user_nickname from ${database.prefix.payment}hou_pay_consume_record ppcr
+        where ppcr.order_id = #{orderId} and user_type = 2 and trade_type_id = 1
+    </select>
+    <update id="updateComsumeRecord">
+        update ${database.prefix.payment}hou_pay_consume_record set record_status = #{recordStatus},record_paytime = #{paymentTime}
+        where order_id = #{outTradeNo} and user_type in(1,2)
+    </update>
+    <update id="updateOrderRecordSettlements">
+        update ${database.prefix.payment}hou_pay_consume_record set record_withdraw = 0,record_status = 6
+        where trade_type_id = 11
+        <if test="list != null and list.size() > 0">
+            and order_id IN
+            <foreach collection="list" open="(" close=")"
+                     separator="," item="orderId">
+                #{orderId}
+            </foreach>
+        </if>
+    </update>
+    <update id="updateUserMoneyResource">
+         update ${database.prefix.payment}hou_pay_user_resource set user_money = user_money + #{money} where user_id = #{userId}
+    </update>
+    <update id="updateUserRechargeCardMoneyResource">
+         update ${database.prefix.payment}hou_pay_user_resource set user_recharge_card = user_recharge_card + #{money} where user_id = #{userId}
+    </update>
+    <update id="updateOrderRefund">
+         update ${database.prefix.payment}hou_pay_consume_record set record_status = 6 where record_payorder = #{refundOrderId}
+    </update>
+    <update id="updateOrderTrade">
+        update ${database.prefix.payment}hou_pay_consume_trade set order_state_id = 6 where order_id = #{refundOrderId}
+    </update>
+    <update id="updateRecordWithdraw">
+        update ${database.prefix.payment}hou_pay_consume_record set record_withdraw = 1,record_status = 6
+        where trade_type_id = 11 and order_id IN
+        <foreach collection="list" open="(" close=")" separator="," item="userId">
+            #{userId}
+        </foreach>
+    </update>
+
+    <select id="queryRecordPara" resultType="com.houjiang.payment.vo.RecordVO">
+        select SUM(record_money) as recordMoney, record_desc
+        from ${database.prefix.payment}hou_pay_consume_record
+        where order_id = #{orderId}
+          and user_type = 2
+    </select>
+    <select id="queryOrderNo" resultType="com.houjiang.payment.dto.PayConsumeRecordDTO">
+        select ppcr.user_id, ppcr.order_id, ppcr.record_money, ppcr.user_nickname
+        from ${database.prefix.payment}hou_pay_consume_record ppcr
+        where ppcr.order_id = #{outTradeNo}
+          and user_type = 2
+          and trade_type_id = 1
+    </select>
+    <select id="queryAllRecordStatus" resultType="java.lang.Integer">
+        select record_status
+        from ${database.prefix.payment}hou_pay_consume_record
+        where order_id = #{orderId}
+          and user_type = 2
+          and trade_type_id = 1
+    </select>
+    <select id="queryPayOrderId" resultType="java.lang.String">
+        select record_payorder
+        from ${database.prefix.payment}hou_pay_consume_record
+        where order_id = #{orderId}
+          and user_type = 2
+          and trade_type_id = 1
+    </select>
+    <select id="queryStatus" resultType="java.lang.Integer">
+        select record_status
+        from ${database.prefix.payment}hou_pay_consume_record
+        where order_id = #{orderId}
+          and user_id = #{userId}
+          and user_type = 2
+    </select>
+    <select id="querySalesStatistics" resultType="com.houjiang.commons.dto.shop.ShopSalesStatisticsDTO">
+        SELECT
+        abc.shop_name AS shopName,
+        abc.shop_id as shopId,
+        abc.cardPayment,
+        abc.balancePayment,
+        abc.communicationsPayment,
+        abc.weChatOnePayment,
+        abc.weChatTwoPayment,
+        abc.alipayPayment,
+        abc.voucherPrice,
+        abc.orderRptPrice,
+        abc.shippingFee,
+        abc.totalPayment,
+        ccc.refundMoney
+        FROM (SELECT ab.shop_name,ab.shop_id, sum( CASE ab.pay_code WHEN '卡支付' THEN ab.payprices
+        WHEN '支付宝+卡' THEN ab.payprices * c.trade_payment_recharge_card / (c.trade_third_party_amount +
+        trade_payment_money + c.trade_payment_recharge_card )
+        WHEN '微信+卡-10025054' THEN ab.payprices * c.trade_payment_recharge_card / (c.trade_third_party_amount +
+        trade_payment_money + c.trade_payment_recharge_card)
+        WHEN '微信+卡-1498662282' THEN ab.payprices * c.trade_payment_recharge_card /( c.trade_third_party_amount +
+        trade_payment_money + c.trade_payment_recharge_card)
+        ELSE '0' END ) AS cardPayment,
+        sum( CASE ab.pay_code WHEN '余额' THEN ab.payprices ELSE '0' END ) AS balancePayment,
+        sum( CASE ab.pay_code WHEN '通联' THEN ab.payprices ELSE '0' END ) AS communicationsPayment,
+        sum( CASE ab.pay_code WHEN '微信-10025054' THEN ab.payprices
+        WHEN '微信+卡-10025054' THEN ab.payprices * c.trade_third_party_amount / (c.trade_third_party_amount +
+        trade_payment_money + c.trade_payment_recharge_card)
+        ELSE '0' END ) AS weChatOnePayment,
+        sum( CASE ab.pay_code WHEN '微信-1498662282' THEN ab.payprices
+        WHEN '微信+卡-1498662282' THEN ab.payprices * c.trade_third_party_amount / (c.trade_third_party_amount +
+        trade_payment_money + c.trade_payment_recharge_card)
+        ELSE '0' END ) AS weChatTwoPayment,
+        sum( CASE ab.pay_code WHEN '支付宝' THEN ab.payprices
+        WHEN '支付宝+卡' THEN ab.payprices * c.trade_third_party_amount / (c.trade_third_party_amount + trade_payment_money
+        + c.trade_payment_recharge_card)
+        ELSE '0' END ) AS alipayPayment,
+        sum( ab.voucher_price ) AS voucherPrice,
+        sum( ab.order_rpt_price ) AS orderRptPrice,
+        sum( ab.shipping_fee ) AS shippingFee,
+        sum( ab.goods_price * ab.order_goods_num + shipping_fee - ab.voucher_price ) AS totalPayment
+        FROM ( SELECT a.ordeR_id,
+        b.goods_price,
+        b.order_goods_num,
+        b.order_goods_amount AS '订单总金额',
+        b.voucher_price,
+        b.order_rpt_price,
+        b.order_goods_payment_amount payprices,
+        a.shop_name,
+        a.shop_id,
+        a.order_from AS '订单来源',
+        CASE a.pay_code
+        WHEN 1 THEN '余额'
+        WHEN 2 THEN '支付宝'
+        WHEN 3 THEN CONCAT( '微信', IF ( a.order_from = 2, '-10025054', '-1498662282' ))
+        WHEN 4 THEN '通联'
+        WHEN 7 THEN '支付宝+卡'
+        WHEN 8 THEN CONCAT( '微信+卡', IF ( a.order_from = 3, '-1498662282', '-10025054' ))
+        ELSE '卡支付' END pay_code,
+        a.order_finished_time '订单完成时间',
+        b.shipping_fee,
+        a.order_refund_amount '退款金额'
+        FROM
+        ${database.prefix.order}hou_order_base a,
+        ${database.prefix.order}hou_order_goods b
+        WHERE
+        a.order_id = b.order_id
+        <if test="param.startTime != null and param.startTime != ''">
+            AND a.payment_time >= #{param.startTime}
+        </if>
+        <if test="param.endTime != null and param.endTime != ''">
+            AND a.payment_time &lt;=#{param.endTime}
+        </if>
+        AND a.order_status BETWEEN 2 AND 6
+        <if test="param.shopName != null and param.shopName != ''">
+            and a.shop_name like concat('%',#{param.shopName},'%')
+        </if>
+        ) ab
+        LEFT JOIN ${database.prefix.payment}hou_pay_consume_trade c ON ab.order_id = c.order_id
+        GROUP BY ab.shop_name ) abc
+        LEFT JOIN ( SELECT sum( return_cash ) refundMoney, shop_name
+        FROM ${database.prefix.order}hou_order_return
+        WHERE return_state in (2,4,5,8,13)
+        <if test="param.startTime != null and param.startTime != ''">
+            and return_finish_time >= #{param.startTime}
+        </if>
+        <if test="param.endTime != null and param.endTime != ''">
+            and return_finish_time &lt;=#{param.endTime}
+        </if>
+        group by shop_id) ccc
+        ON abc.shop_name = ccc.shop_name
+    </select>
+    <select id="platformQueryDetails" resultType="com.houjiang.payment.entity.PayConsumeRecordEntity">
+        SELECT
+        order_id,
+        trade_type_id,
+        user_nickname,
+        record_money,
+        record_title,
+        user_type,
+        record_status,
+        record_paytime,
+        record_date,
+        record_desc,
+        record_payorder
+        FROM
+        ${database.prefix.payment}hou_pay_consume_record
+        where user_type = 1
+        <if test="param.tradeTypeId != null">
+            and trade_type_id = #{param.tradeTypeId}
+        </if>
+        <if test="param.userNickname != null and param.userNickname != ''">
+            and user_nickname like concat ('%', #{param.userNickname},'%')
+        </if>
+        <if test="param.recordPayorder != null and param.recordPayorder != ''">
+            and record_payorder >= #{param.recordPayorder}
+        </if>
+        <if test="param.startTime != null and param.startTime != ''">
+            and record_paytime >= #{param.startTime}
+        </if>
+        <if test="param.afterTime != null and param.afterTime != ''">
+            and #{param.afterTime} >= record_paytime
+        </if>
+        order by record_date desc,record_paytime desc
+    </select>
+    <select id="selectYfPayConfig" resultType="java.util.Map">
+         Select * from ${database.prefix.payment}hou_pay_config where paymentMode =#{paymentMode,jdbcType=VARCHAR} and paymentStatus=1
+    </select>
+    <select id="queryRefundConsumeRecordMoney"
+            resultType="com.houjiang.commons.dto.payment.GroupBookingParamDTO">
+        SELECT
+        ppcr.order_id,
+        ppcr.user_id,
+        ppcr.user_nickname,
+        ppcr.record_money,
+        ppcr.record_payorder,
+        ppcr.user_type
+        FROM
+        ${database.prefix.payment}hou_pay_consume_record ppcr
+        WHERE
+        ppcr.trade_type_id = 5
+        <if test="null != orderId ">
+            and ppcr.record_payorder = #{orderId}
+        </if>
+    </select>
+    <select id="calculateAllOrderMoney" resultType="java.math.BigDecimal">
+         select sum(record_money) money from ${database.prefix.payment}hou_pay_consume_record where order_id = #{uOrderId} and user_type = 2 and trade_type_id = 1
+    </select>
+    <select id="queryAllTradePaymentRechargeCard" resultType="java.math.BigDecimal">
+         select sum(trade_payment_recharge_card) from ${database.prefix.payment}hou_pay_consume_trade where consume_trade_id = #{uOrderId}
+    </select>
+    <select id="queryRefundTrade" resultType="com.houjiang.commons.dto.payment.GroupBookingTradeDTO">
+    select payment_channel_id,trade_third_party_amount,trade_payment_recharge_card
+        from ${database.prefix.payment}hou_pay_consume_trade where order_id = #{orderId} limit 1
+    </select>
+    <select id="fkPayForBusinessWithdrawalByShopType"
+            resultType="com.houjiang.commons.vo.order.OrderSettlementVO">
+        select consume_record_id,
+               order_id,
+               record_time,
+               plus_or_minus,
+               CASE plus_or_minus WHEN '0' THEN (- 1 * record_money) WHEN '1' THEN record_money END as record_money
+        from ${database.prefix.payment}hou_pay_consume_record
+        where
+          and user_id = #{userId}
+          and trade_type_id = 11
+          and record_withdraw = 0
+          and record_status = 6
+    </select>
+    <select id="fkPayForBusinessWithdrawal" resultType="com.houjiang.commons.vo.order.OrderSettlementVO">
+        select consume_record_id,
+               order_id,
+               record_time,
+               plus_or_minus,
+               CASE plus_or_minus WHEN '0' THEN (- 1 * record_money) WHEN '1' THEN record_money END as record_money
+        from ${database.prefix.payment}hou_pay_consume_record
+        where user_id = #{userId}
+          and trade_type_id = 11
+          and record_withdraw = 0
+          and record_status = 6
+    </select>
+    <select id="getSumRecordMoney" resultType="java.math.BigDecimal">
+        SELECT sum(CASE plus_or_minus
+                       WHEN '0' THEN (- 1 * record_money)
+                       WHEN '1' THEN record_money END) AS sumRecordMoney
+        FROM ${database.prefix.payment}hou_pay_consume_record
+        WHERE user_id = #{userId}
+          AND trade_type_id = 11
+          AND record_withdraw = 0
+          AND record_status = 6
+    </select>
+    <select id="queryCalculateRecordMoney" resultType="java.math.BigDecimal">
+        SELECT
+        sum( CASE plus_or_minus WHEN '0' THEN ( - 1 * record_money ) WHEN '1' THEN record_money END ) AS record_money
+        FROM
+        ${database.prefix.payment}hou_pay_consume_record
+        WHERE
+        order_id IN
+        <foreach collection="list" open="(" close=")" separator="," item="orderId">
+            #{orderId}
+        </foreach>
+        <if test="null != userId and userId !=''">
+            and user_id = #{userId} and record_withdraw = 0
+        </if>
+    </select>
+    <select id="queryCalculateRecordCommission" resultType="java.math.BigDecimal">
+        SELECT
+        sum( CASE plus_or_minus WHEN '0' THEN ( - 1 * os_commis_amount ) WHEN '1' THEN os_commis_amount END ) AS
+        record_money
+        FROM
+        ${database.prefix.payment}hou_pay_consume_record
+        WHERE
+        order_id IN
+        <foreach collection="list" open="(" close=")" separator="," item="orderId">
+            #{orderId}
+        </foreach>
+        <if test="null != userId and userId !=''">
+            and user_id = #{userId} and record_withdraw = 0
+        </if>
+    </select>
+    <select id="queryAllStatementNo" resultType="java.lang.String">
+        select order_id
+        from ${database.prefix.payment}hou_pay_consume_record
+        where user_id = #{userId}
+          and trade_type_id = 11
+          and record_withdraw = 0
+          and record_status = 6
+    </select>
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.mall.mapper.decoration.H5DecorateDataMapper">
+
+    <!-- 进行中的秒杀场次：只取已开始且未结束的 -->
+    <select id="selectOngoingSeckill" resultType="java.util.Map">
+        SELECT b.seckill_id AS seckillId,
+               b.seckill_name AS seckillName,
+               DATE_FORMAT(b.seckill_end_time, '%Y-%m-%d %H:%i:%s') AS seckillEndTime,
+               b.seckill_hour AS seckillHour
+        FROM hou_addon_activity_seckill_base b
+        WHERE b.seckill_state = 1
+          AND b.seckill_start_time &lt;= NOW()
+          AND b.seckill_end_time &gt;= NOW()
+        ORDER BY b.seckill_hour ASC, b.seckill_id ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 秒杀场次下的商品，销量取商品主表 -->
+    <select id="selectSeckillGoods" resultType="java.util.Map">
+        SELECT g.goods_id AS goodsId,
+               g.common_id AS commonId,
+               g.goods_name AS goodsName,
+               g.goods_image AS goodsImage,
+               g.goods_price AS goodsPrice,
+               g.seckill_price AS seckillPrice,
+               IFNULL(c.common_salenum, 0) AS commonSalenum
+        FROM hou_addon_activity_seckill_goods g
+        LEFT JOIN hou_goods_common c ON c.common_id = g.common_id
+        WHERE g.seckill_id = #{seckillId}
+          AND g.seckill_goods_state = 1
+        ORDER BY g.seckill_goods_id ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 进行中的拼团活动 -->
+    <select id="selectOngoingPintuan" resultType="java.util.Map">
+        SELECT p.pintuan_id AS pintuanId,
+               p.common_id AS commonId,
+               p.person_num AS personNum,
+               p.name AS pintuanName,
+               IFNULL(c.common_name, '') AS commonName,
+               IFNULL(c.common_image, '') AS commonImage,
+               IFNULL(c.common_price, 0) AS commonPrice
+        FROM hou_addon_activity_piecing_together p
+        LEFT JOIN hou_goods_common c ON c.common_id = p.common_id
+        WHERE p.status = 1
+          AND p.start_time &lt;= NOW()
+          AND p.end_time &gt;= NOW()
+        ORDER BY p.display_order ASC, p.pintuan_id ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 在售商品：审核通过且正常上架，按销量倒序 -->
+    <select id="selectSaleGoods" resultType="java.util.Map">
+        SELECT c.common_id AS commonId,
+               c.common_name AS commonName,
+               c.common_image AS commonImage,
+               c.common_price AS commonPrice,
+               c.common_market_price AS commonMarketPrice,
+               IFNULL(c.common_salenum, 0) AS commonSalenum,
+               c.shop_id AS shopId,
+               c.shop_name AS shopName,
+               c.cat_id AS catId,
+               c.cat_name AS catName
+        FROM hou_goods_common c
+        WHERE c.common_state = 1
+          AND c.common_verify = 1
+        ORDER BY c.common_salenum DESC, c.common_id ASC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

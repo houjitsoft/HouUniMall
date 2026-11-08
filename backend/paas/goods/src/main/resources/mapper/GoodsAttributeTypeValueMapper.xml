@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsAttributeTypeValueMapper">
+    
+    <!-- 根据属性类型ID删除所有属性值 -->
+    <delete id="deleteByAttributeTypeId">
+        DELETE FROM goods_attribute_type_value WHERE attribute_type_id = #{attributeTypeId}
+    </delete>
+    
+    <!-- 批量插入属性值 -->
+    <insert id="insertBatch">
+        INSERT INTO goods_attribute_type_value (attribute_type_id, value_name, sort, create_time)
+        VALUES
+        <foreach collection="values" item="value" separator=",">
+            (#{value.attributeTypeId}, #{value.valueName}, #{value.sort}, NOW())
+        </foreach>
+    </insert>
+    
+    <!-- 根据属性类型ID查询属性值列表 -->
+    <select id="selectByAttributeTypeId" resultType="com.houjiang.goods.entity.GoodsAttributeTypeValueEntity">
+        SELECT id, attribute_type_id, value_name, sort, create_time
+        FROM goods_attribute_type_value
+        WHERE attribute_type_id = #{attributeTypeId}
+        ORDER BY sort ASC
+    </select>
+    
+</mapper>

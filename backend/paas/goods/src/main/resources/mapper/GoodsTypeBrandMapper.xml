@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsTypeBrandMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.goods.entity.GoodsTypeBrandEntity">
+            <id property="typeBrandId" column="type_brand_id" jdbcType="INTEGER"/>
+            <result property="typeId" column="type_id" jdbcType="INTEGER"/>
+            <result property="brandId" column="brand_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        type_brand_id,type_id,brand_id
+    </sql>
+    <select id="selectTypeBrand" resultType="com.houjiang.goods.entity.GoodsTypeBrandEntity">
+        select
+        <include refid="Base_Column_List" />
+        from goods_type_brand
+        where type_id = #{typeId}
+    </select>
+    <insert id="insertTypeBrandBatch">
+        insert into goods_type_brand (type_id,brand_id) values
+        <foreach collection="typeBrandList" item="brand" index="index"
+                 separator=",">
+            (
+            #{brand.typeId,jdbcType=INTEGER},
+            #{brand.brandId,jdbcType=INTEGER}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="delectTypeSpecBrand">
+        DELETE FROM goods_type_brand WHERE type_id = #{typeId,jdbcType=INTEGER}
+    </delete>
+    <update id="updateTypeBrandBatch"
+            parameterType="com.houjiang.goods.entity.GoodsTypeBrandEntity">
+        >
+        <foreach collection="typeBrandList" item="param" index="index"
+                 open="" close="" separator=";">
+            update goods_type_brand
+            <set>
+                <if test="param.typeId != null">
+                    type_id = #{param.typeId,jdbcType=INTEGER},
+                </if>
+                <if test="param.brandId != null">
+                    brand_id = #{param.brandId,jdbcType=INTEGER},
+                </if>
+            </set>
+            where type_brand_id = #{param.typeBrandId,jdbcType=INTEGER}
+        </foreach>
+    </update>
+    <delete id="deleteByTypeId">
+        delete from goods_type_brand where type_id = #{typeId,jdbcType=INTEGER}
+    </delete>
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseWebConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseWebConfigEntity">
+            <id property="configKey" column="config_key" jdbcType="VARCHAR"/>
+            <result property="configValue" column="config_value" jdbcType="VARCHAR"/>
+            <result property="configType" column="config_type" jdbcType="VARCHAR"/>
+            <result property="configEnable" column="config_enable" jdbcType="VARCHAR"/>
+            <result property="configComment" column="config_comment" jdbcType="VARCHAR"/>
+            <result property="configDatatype" column="config_datatype" jdbcType="VARCHAR"/>
+            <result property="configRemarks" column="config_remarks" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        config_key,config_value,config_type,
+        config_enable,config_comment,config_datatype,
+        config_remarks
+    </sql>
+</mapper>

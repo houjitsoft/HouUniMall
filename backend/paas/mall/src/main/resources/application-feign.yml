@@ -1,0 +1,13 @@
+# 同机部署时直连本地 PAAS，避免 Nacos 幽灵实例导致 Feign 30s 超时
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 20000
+  goods:
+    url: ${FEIGN_GOODS_URL:http://127.0.0.1:8208}
+  order:
+    url: ${FEIGN_ORDER_URL:http://127.0.0.1:8209}
+  base:
+    url: ${FEIGN_BASE_URL:http://127.0.0.1:8214}

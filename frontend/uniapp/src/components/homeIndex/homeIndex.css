@@ -1,0 +1,144 @@
+.section-index {
+  width: 100%;
+ position: fixed;
+  z-index: 100;
+  
+ /* #ifdef H5 */
+  top:88rpx;
+ /* #endif */
+ /* #ifdef MP */
+ top:128rpx;
+ /* #endif */
+  background-color:#FF0100; 
+  /* padding: 20rpx 0; */
+/* padding-bottom: 20rpx; */
+  border-top: 1px solid transparent; 
+}
+
+.section .index-header {
+  background: #fff;
+  width: 90%;
+  border-radius: 50rpx;
+  text-align: center;
+  font-size: 0;
+}
+
+.section .iconfont {
+	display:inline-block;
+	margin-right:10rpx;
+	margin-top:2rpx;
+    line-height: 60rpx;
+	vertical-align:top;
+	font-size:32rpx;
+	color:#888;
+}
+.section .icon-scan{
+	left: -76rpx !important;
+	color: #fff;
+	font-size: 50rpx;
+}
+.section .icon-list{
+	color: #fff;
+	font-size: 60rpx;
+}
+.section .input {
+  color: #777;
+  position: relative;
+  z-index: 5;
+  height: 60rpx;
+  line-height: 63rpx;
+  /* max-width:168rpx; */
+}
+.section .index-header {
+ /* width: 520rpx !important; */
+}
+.section .input{
+	display:inline-block;
+	font-size:26rpx;
+}
+.scroll-view-class{
+	padding:20rpx 0 0;
+	overflow:auto hidden;
+	white-space: nowrap;
+	
+}
+.scroll-view-class text{
+	display:inline-block;
+	margin-bottom:20rpx;
+	margin-right:20rpx;
+	font-size:28rpx;
+	color:#fff;
+}
+.scroll-view-class text.active{
+	font-size:32rpx;
+	font-weight:bold;
+}
+scroll-view ::-webkit-scrollbar {
+  display:none;
+  width:0;
+  height:0;
+  color:transparent;
+}
+.index-head-home{
+/* 	margin-top:142rpx; */
+	/* #ifdef MP */
+	/* margin-top:140rpx; */
+	/* #endif */
+}
+.index-head-home.yes{
+	margin-top:0 !important;
+}
+.img-search-btn{
+	position:absolute;
+	right:15rpx;
+	top:5rpx;
+	/* #ifdef APP */
+	top:10rpx;
+	/* #endif */
+	/* #ifdef MP */
+	top:8rpx;
+	/* #endif */
+}
+.pageBg{
+	position:absolute;
+	left:0;
+	top:0;
+}
+.headLeftImg{
+	position:absolute;
+	left:0;
+	top:50%;
+	transform: translateY(-50%);
+}
+.indexPopDialog{
+	position:fixed;
+	left:0;
+	top:0;
+	bottom:0;
+	z-index:1000;
+	width:100%;
+	display:flex;
+	flex-direction:column;
+	justify-content:center;
+	align-items:center;
+}
+.indexPopDialog .mask{
+	display:inline-block;
+	width:100%;
+	height:100%;
+	background:rgba(0,0,0,.5);
+	position:absolute;
+	left:0;
+	top:0;
+	bottom:0;
+	right:0;
+	z-index:1;
+}
+.indexPopDialog .contents{
+	position:relative;
+	z-index:2;
+}
+.iconBtnClose .iconfont{
+	color:#fff;
+	font-size:50rpx;
+}

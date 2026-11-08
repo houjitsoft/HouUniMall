@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserTagInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserTagInfoEntity">
+            <id property="tagId" column="tag_id" jdbcType="INTEGER"/>
+            <result property="tagName" column="tag_name" jdbcType="VARCHAR"/>
+            <result property="tagWeight" column="tag_weight" jdbcType="INTEGER"/>
+            <result property="tagImage" column="tag_image" jdbcType="VARCHAR"/>
+            <result property="tagDescribe" column="tag_describe" jdbcType="VARCHAR"/>
+            <result property="tagAddData" column="tag_add_data" jdbcType="TIMESTAMP"/>
+            <result property="tagIsactive" column="tag_isActive" jdbcType="INTEGER"/>
+            <result property="tagUpdData" column="tag_upd_data" jdbcType="TIMESTAMP"/>
+            <result property="date" column="date" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        tag_id,tag_name,tag_weight,
+        tag_image,tag_describe,tag_add_data,
+        tag_isActive,tag_upd_data,date
+    </sql>
+    <insert id="addTagInfo">
+        insert into ${database.prefix.userms}hou_user_tag_info
+        (tag_name,
+        tag_weight,
+        tag_image,
+        tag_describe)
+        values
+        (#{tagName},
+        #{tagWeight},
+        #{tagImage},
+        #{tagDescribe})
+    </insert>
+    <update id="updateTagInfo">
+        update ${database.prefix.userms}hou_user_tag_info
+        <set >
+            <if test="tagName != null" >
+                tag_name = #{tagName},
+            </if>
+            <if test="tagWeight != null" >
+                tag_weight = #{tagWeight},
+            </if>
+            <if test="tagImage != null" >
+                tag_image = #{tagImage},
+            </if>
+            <if test="tagDescribe != null" >
+                tag_describe = #{tagDescribe},
+            </if>
+            tag_upd_data=#{tagUpdData}
+        </set>
+        where tag_id = #{tagId}
+    </update>
+    <update id="updateTag">
+    UPDATE ${database.prefix.base}hou_base_tag_class SET tag_id =#{tagId} WHERE member_id = #{memberId}
+    </update>
+</mapper>

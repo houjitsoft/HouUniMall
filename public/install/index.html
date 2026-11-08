@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>HouCloud · 安装向导</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="header">
+    <div class="brand">
+      <span class="logo">HC</span>
+      <div>
+        <h1>HouCloud <small>插件化电商平台 · 开源版</small></h1>
+        <div class="subtitle">安装向导</div>
+      </div>
+    </div>
+    <div class="header-state" id="headerState">正在检查安装状态…</div>
+  </header>
+
+  <ol class="steps" id="stepper">
+    <li data-step="1" class="active"><i>1</i>环境检测</li>
+    <li data-step="2"><i>2</i>选择安装方式</li>
+    <li data-step="3"><i>3</i>配置确认</li>
+    <li data-step="4"><i>4</i>安装</li>
+    <li data-step="5"><i>5</i>完成</li>
+  </ol>
+
+  <main>
+    <!-- 1 环境检测 -->
+    <section class="panel" id="step1">
+      <h2>环境检测</h2>
+      <p class="hint">检测本机运行条件（Docker、资源、端口）。存在红色<b>致命项</b>时无法继续安装。</p>
+      <div id="preflightList" class="checklist"><div class="loading">检测中…</div></div>
+      <div class="actions">
+        <button class="btn primary" id="btnPreflightRetry">重新检测</button>
+        <button class="btn primary" id="btnPreflightNext" disabled>下一步</button>
+      </div>
+    </section>
+
+    <!-- 2 模式选择 -->
+    <section class="panel" id="step2" hidden>
+      <h2>选择安装方式</h2>
+      <div class="mode-grid">
+        <div class="mode-card" id="cardDocker">
+          <div class="mode-badge">推荐</div>
+          <h3>Docker 默认安装</h3>
+          <p>自动创建预定义的中间件与数据库容器（MySQL / Redis / Nacos / RocketMQ），全自动初始化、随机化口令。</p>
+          <ul>
+            <li>需要本机 Docker ≥ 24，安装期间占用约 8GB 内存</li>
+            <li>数据库初始化约 10-40 分钟（670+ 张表）</li>
+            <li>安装完成后展示各服务的访问信息</li>
+          </ul>
+        </div>
+        <div class="mode-card" id="cardCustom">
+          <h3>自定义安装（外部中间件）</h3>
+          <p>使用你已有的数据库 / Redis / Nacos，仅部署应用服务（宿主机 host 网络直连）。</p>
+          <ul>
+            <li>填写各自的地址、端口、账号密码并测试连接</li>
+            <li>数据库需可写（安装向导自动建库、建表、灌种子）</li>
+            <li>应用服务直接占用宿主机端口（8391 等）</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 配置确认 -->
+    <section class="panel" id="step3" hidden>
+      <!-- Docker 模式：预览 -->
+      <div id="dockerPreview">
+        <h2>确认安装内容</h2>
+        <p class="hint">以下容器将被创建（全部由本仓库编排，口令随机生成写入服务器 .env，请妥善保管）：</p>
+        <table class="tbl" id="dockerPlanTable">
+          <thead><tr><th>服务</th><th>镜像</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>MySQL 8.0</td><td>mysql:8.0.39</td><td>数据库容器，数据落 docker 卷，首启自动建 670+ 表并灌种子</td></tr>
+            <tr><td>Redis 7.2</td><td>redis:7.2-alpine</td><td>缓存与会话</td></tr>
+            <tr><td>Nacos v2.3.2</td><td>nacos/nacos-server</td><td>注册/配置中心，自动导入 39 项配置</td></tr>
+            <tr><td>RocketMQ 5.1.4</td><td>apache/rocketmq</td><td>消息队列（NameServer + Broker）</td></tr>
+            <tr><td>业务服务 ×5</td><td>源码构建</td><td>permission / auth / userms / base / bff-web</td></tr>
+            <tr><td>管理后台</td><td>源码构建（nginx）</td><td>安装完成后一键接管本端口</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Custom 模式：表单 -->
+      <div id="customForm" hidden>
+        <h2>填写中间件连接信息</h2>
+        <p class="hint">凭据只写入服务器上的 <code>.env</code>（权限 600），不会出现在日志或安装记录里。</p>
+
+        <fieldset>
+          <legend>MySQL 数据库 <span class="req">必填</span></legend>
+          <div class="form-grid">
+            <label>地址<input id="cMysqlHost" placeholder="127.0.0.1"></label>
+            <label>端口<input id="cMysqlPort" value="3306"></label>
+            <label>账号<input id="cMysqlUser" value="meoc"></label>
+            <label>密码<input id="cMysqlPass" type="password" placeholder="数据库口令"></label>
+            <label>库名<input id="cMysqlDb" value="meoc"><small>不存在时自动创建</small></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Redis <span class="req">必填</span></legend>
+          <div class="form-grid">
+            <label>地址<input id="cRedisAddr" placeholder="127.0.0.1:6379"></label>
+            <label>密码<input id="cRedisPass" type="password" placeholder="无密码可留空"></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Nacos 配置中心 <span class="req">必填</span></legend>
+          <div class="form-grid">
+            <label>地址<input id="cNacosAddr" placeholder="127.0.0.1:8848"></label>
+            <label>账号<input id="cNacosUser" value="nacos"></label>
+            <label>密码<input id="cNacosPass" type="password" placeholder="Nacos 口令"></label>
+            <label>命名空间<input id="cNacosNs" value="houeoc"><small>不存在时自动创建</small></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>RocketMQ <span class="opt">选填</span></legend>
+          <div class="form-grid">
+            <label>NameServer 地址<input id="cMqAddr" placeholder="127.0.0.1:9876（最小集可不填）"></label>
+          </div>
+        </fieldset>
+
+        <div class="conn-result" id="connResult" hidden></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnBackTo2">上一步</button>
+        <button class="btn" id="btnTestConn" hidden>测试连接</button>
+        <button class="btn primary" id="btnStartInstall" disabled>开始安装</button>
+      </div>
+    </section>
+
+    <!-- 4 安装进度 -->
+    <section class="panel" id="step4" hidden>
+      <h2 id="installTitle">正在安装</h2>
+      <div class="stagebar" id="stageBar"></div>
+      <div class="meta" id="installMeta"></div>
+      <pre class="console" id="console">正在连接安装服务…</pre>
+      <div class="actions" id="failedActions" hidden>
+        <button class="btn primary" id="btnRetry">从失败阶段重试</button>
+        <button class="btn danger" id="btnResetShow">重置安装</button>
+      </div>
+      <div class="reset-box" id="resetBox" hidden>
+        <p class="hint danger-text">危险操作：</p>
+        <p>输入 <b>RESET</b> 停止全部服务并保留数据；输入 <b>PURGE</b> 删除全部数据卷（数据库数据不可恢复）。两者都会回到未安装状态。</p>
+        <div class="actions">
+          <input id="resetInput" placeholder="输入 RESET 或 PURGE" class="reset-input">
+          <button class="btn danger" id="btnResetDo">执行</button>
+          <button class="btn" id="btnResetCancel">取消</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 完成 -->
+    <section class="panel" id="step5" hidden>
+      <div class="done-head"><span class="done-icon">✓</span>
+        <div><h2 id="doneTitle">安装完成</h2><p class="hint" id="doneSub"></p></div>
+      </div>
+
+      <div id="doneInfo"></div>
+
+      <div class="warn-box" id="sandboxWarn" hidden>
+        <b>⚠ 插件购买当前为沙箱模式：</b>不扣真实资金，任何登录用户都能把订单刷成已支付。
+        正式收费前请在服务器改 <code>.env</code>：<code>HOU_PLUGIN_PAY_SANDBOX=false</code> 并配置收款密钥，然后重建 base 容器。
+      </div>
+
+      <div class="finish-note" id="finishNote" hidden>
+        <p>点击下方按钮后，安装向导将停止并把端口交还给管理后台（约 30 秒）。</p>
+        <p>之后请直接访问 <code id="finalUrl"></code> 进入管理后台。</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary big" id="btnFinish">启动管理后台并退出向导</button>
+      </div>
+      <p class="agent-down-note" id="agentDownNote" hidden>
+        安装服务未运行。若系统已安装完成，请从域名根路径进入管理后台；
+        若要重新进入向导，在服务器执行 <code>bash deploy/install.sh --wizard</code>。
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    安装期间请勿将本端口暴露到公网（安装代理持有 Docker 权限） ·
+    命令行同样可用：<code>bash deploy/install.sh</code> ·
+    手册：<code>public/docs/docker/操作手册.md</code>
+  </footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

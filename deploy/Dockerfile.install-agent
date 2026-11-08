@@ -1,0 +1,28 @@
+# =====================================================================
+# HouCloud 安装向导代理镜像（install profile，仅在安装期运行）
+#
+# 构建：docker build -f deploy/Dockerfile.install-agent -t unimall/install-agent:latest .
+# 运行：由 docker-compose.yml 的 install profile 定义（install.sh --wizard 拉起），
+#       挂载仓库（rw，要执行 install.sh / 写 install-state）与 docker.sock（要编排 compose）。
+#
+# 基镜像选 docker:27-cli：自带与宿主同源的 docker CLI；compose 用 alpine 的
+# docker-cli-compose 插件包（与 docker compose v2 等价的 CLI 入口）。
+# 本镜像只在「未安装完成」的窗口期存在，安装完成即被 agent 主动停止。
+# =====================================================================
+FROM docker:27-cli
+
+RUN apk add --no-cache \
+      bash python3 \
+      docker-cli-compose \
+      mysql-client redis \
+      git curl openssl tzdata
+
+ENV TZ=Asia/Shanghai \
+    INSTALL_PROJECT_DIR=/project
+
+WORKDIR /project
+COPY deploy/install-agent/app.py /app/app.py
+
+EXPOSE 8370
+# -u：日志实时进 docker logs；agent 被 SIGTERM 结束（finish 流程的自我退出）
+CMD ["python3", "-u", "/app/app.py"]

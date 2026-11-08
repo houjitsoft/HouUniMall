@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseShopModularizationdMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseShopModularizationdEntity">
+        <id property="pageId" column="page_id" jdbcType="INTEGER"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="pageName" column="page_name" jdbcType="VARCHAR"/>
+        <result property="pageData" column="page_data" jdbcType="VARCHAR"/>
+        <result property="pageType" column="page_type" jdbcType="INTEGER"/>
+        <result property="pageStart" column="page_start" jdbcType="INTEGER"/>
+        <result property="pageIsIndex" column="page_is_index" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="goodsallidjson" column="goodsAllIdJson" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        page_id,shop_id,page_name,
+        page_data,page_type,page_start,
+        page_is_index,create_time,goodsAllIdJson
+    </sql>
+    <insert id="add">
+    INSERT into ${database.prefix.userms}hou_base_shop_modularizationd
+     (  page_id,
+        shop_id,
+        page_name,
+        page_data,
+        page_type,
+        create_time,
+        page_is_index,
+        goodsAllIdJson,
+        page_start )
+    VALUES
+    (#{param.pageId},
+    #{param.shopId},
+    #{param.pageName},
+    #{param.pageData},
+    #{param.pageType},
+    now(),
+    #{param.pageIsIndex},
+    #{param.goodsAllIdJson},
+    #{param.pageStart})
+    </insert>
+    <update id="updateInfo">
+    UPDATE ${database.prefix.userms}hou_base_shop_modularizationd
+    SET shop_id = #{param.shopId},
+    page_name =#{param.pageName} ,
+    page_data =#{param.pageData} ,
+    page_type =#{param.pageType} ,
+    create_time =now(),
+    page_is_index = #{param.pageIsIndex},
+    goodsAllIdJson =#{param.goodsAllIdJson}
+    where page_id = #{param.pageId}
+    </update>
+
+    <select id="selectModularizationdByStart"
+            resultType="com.houjiang.base.dto.ModularizationdDTO" parameterType="java.lang.Integer">
+        select page_id,shop_id,page_name,page_data,page_type,page_is_index,page_start,create_time,goodsAllIdJson
+        from ${database.prefix.userms}hou_base_shop_modularizationd where page_start = 1 and page_is_index = 1 and shop_id =#{shopId}
+    </select>
+
+    <select id="queryModularizationdAll" resultType="com.houjiang.base.entity.BaseShopModularizationdEntity">
+        SELECT
+        page_id,
+        shop_id,
+        page_name,
+        page_data,
+        page_type,
+        page_start,
+        create_time,
+        page_is_index
+        FROM
+        ${database.prefix.userms}hou_base_shop_modularizationd
+        WHERE
+        1 =1
+        <if test="param.pageIsIndex != null">
+            and page_is_index = #{param.pageIsIndex}
+        </if>
+        <if test="null != param.pageName">
+            and page_name  LIKE CONCAT('%',#{param.pageName},'%')
+        </if>
+        <if test="null != param.pageId">
+            and page_id  = #{param.pageId}
+        </if>
+        <if test="null != param.shopId">
+            and shop_id  = #{param.shopId}
+        </if>
+        <if test="null != param.pageIsIndex">
+            and page_is_index  = #{param.pageIsIndex}
+        </if>
+        ORDER BY create_time desc
+    </select>
+    <select id="queryModularizationdById" resultType="com.houjiang.base.dto.ModularizationdDTO">
+        select page_id,shop_id,page_name,page_data,page_type,page_start,create_time,page_is_index,goodsAllIdJson
+        from ${database.prefix.userms}hou_base_shop_modularizationd
+        where 1 = 1
+        <if test="null != param.pageId">
+            and page_id  = #{param.pageId}
+        </if>
+    </select>
+</mapper>

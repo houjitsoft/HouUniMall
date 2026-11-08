@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseLanguageTranslationMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseLanguageTranslationEntity" id="BaseLanguageTranslationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="cnText" column="cn_text" jdbcType="VARCHAR"/>
+        <result property="languageCode" column="language_code" jdbcType="VARCHAR"/>
+        <result property="originalTranslation" column="original_translation" jdbcType="VARCHAR"/>
+        <result property="correctedTranslation" column="corrected_translation" jdbcType="VARCHAR"/>
+        <result property="isCorrected" column="is_corrected" jdbcType="INTEGER"/>
+        <result property="translationSource" column="translation_source" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 查询语言包翻译列表 -->
+    <select id="queryLanguageList" resultType="com.houjiang.base.vo.BaseLanguageTranslationVO">
+        SELECT 
+            id,
+            cn_text AS cnText,
+            language_code AS languageCode,
+            original_translation AS originalTranslation,
+            corrected_translation AS correctedTranslation,
+            IFNULL(corrected_translation, original_translation) AS translation,
+            is_corrected AS isCorrected,
+            translation_source AS translationSource,
+            create_time AS createTime,
+            update_time AS updateTime
+        FROM ${database.prefix.userms}hou_base_language_translation
+        <where>
+            <if test="param.keyword != null and param.keyword != ''">
+                AND cn_text LIKE CONCAT('%', #{param.keyword}, '%')
+            </if>
+            <if test="param.cnText != null and param.cnText != ''">
+                AND cn_text LIKE CONCAT('%', #{param.cnText}, '%')
+            </if>
+            <if test="param.languageCode != null and param.languageCode != ''">
+                AND language_code = #{param.languageCode}
+            </if>
+            <if test="param.isCorrected != null">
+                AND is_corrected = #{param.isCorrected}
+            </if>
+            <if test="param.translationSource != null and param.translationSource != ''">
+                AND translation_source = #{param.translationSource}
+            </if>
+        </where>
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 根据中文原文和语言代码查询翻译 -->
+    <select id="getTranslation" resultType="com.houjiang.base.vo.BaseLanguageTranslationVO">
+        SELECT 
+            id,
+            cn_text AS cnText,
+            language_code AS languageCode,
+            original_translation AS originalTranslation,
+            corrected_translation AS correctedTranslation,
+            IFNULL(corrected_translation, original_translation) AS translation,
+            is_corrected AS isCorrected,
+            translation_source AS translationSource,
+            create_time AS createTime,
+            update_time AS updateTime
+        FROM ${database.prefix.userms}hou_base_language_translation
+        WHERE cn_text = #{cnText}
+        AND language_code = #{languageCode}
+        LIMIT 1
+    </select>
+
+    <!-- 批量插入翻译数据 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO ${database.prefix.userms}hou_base_language_translation
+        (cn_text, language_code, original_translation, corrected_translation, is_corrected, translation_source)
+        VALUES
+        <foreach collection="translations" item="item" separator=",">
+            (
+                #{item.cnText},
+                #{item.languageCode},
+                #{item.originalTranslation},
+                #{item.correctedTranslation},
+                #{item.isCorrected},
+                #{item.translationSource}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            original_translation = VALUES(original_translation),
+            update_time = CURRENT_TIMESTAMP
+    </insert>
+
+</mapper>

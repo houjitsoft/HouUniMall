@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivitySeckillBaseMapper">
+
+    <resultMap type="com.houjiang.activity.entity.ActivitySeckillBaseEntity" id="ActivitySeckillBaseMap">
+        <result property="seckillId" column="seckill_id" jdbcType="VARCHAR"/>
+        <result property="seckillName" column="seckill_name" jdbcType="VARCHAR"/>
+        <result property="seckillStartTime" column="seckill_start_time" jdbcType="TIMESTAMP"/>
+        <result property="seckillEndTime" column="seckill_end_time" jdbcType="TIMESTAMP"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="VARCHAR"/>
+        <result property="userNickName" column="user_nick_name" jdbcType="VARCHAR"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="seckillState" column="seckill_state" jdbcType="VARCHAR"/>
+        <result property="seckillHour" column="seckill_hour" jdbcType="INTEGER"/>
+        <result property="seckillCreateTime" column="seckill_create_time" jdbcType="TIMESTAMP"/>
+        <result property="seckillStartDate" column="seckill_start_date" jdbcType="TIMESTAMP"/>
+        <result property="cancelTime" column="cancel_time" jdbcType="INTEGER"/>
+        <result property="seckillDoodsRecommend" column="seckill_doods_recommend" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertShopSeckillBase" useGeneratedKeys="true" keyProperty="seckillId">
+        insert into ${database.prefix.activity}hou_addon_activity_seckill_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.seckillId != null">
+                seckill_id,
+            </if>
+            <if test="param.seckillName != null">
+                seckill_name,
+            </if>
+            <if test="param.seckillCreateTime != null">
+                seckill_create_time,
+            </if>
+            <if test="param.seckillStartTime != null">
+                seckill_start_time,
+            </if>
+            <if test="param.seckillEndTime != null">
+                seckill_end_time,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.shopId != null">
+                shop_id,
+            </if>
+            <if test="param.userNickName != null">
+                user_nick_name,
+            </if>
+            <if test="param.shopName != null">
+                shop_name,
+            </if>
+            <if test="param.seckillState != null">
+                seckill_state,
+            </if>
+            <if test="param.seckillHour != null">
+                seckill_hour,
+            </if>
+            <if test="param.seckillStartDate != null">
+                seckill_start_date,
+            </if>
+            <if test="param.cancelTime != null">
+                cancel_time,
+            </if>
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.seckillId != null">
+                #{param.seckillId,jdbcType=INTEGER},
+            </if>
+            <if test="param.seckillName != null">
+                #{param.seckillName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.seckillCreateTime != null">
+                #{param.seckillCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.seckillStartTime != null">
+                #{param.seckillStartTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.seckillEndTime != null">
+                #{param.seckillEndTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shopId != null">
+                #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.userNickName != null">
+                #{param.userNickName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.shopName != null">
+                #{param.shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.seckillState != null">
+                #{param.seckillState,jdbcType=INTEGER},
+            </if>
+            <if test="param.seckillHour != null">
+                #{param.seckillHour,jdbcType=INTEGER},
+            </if>
+            <if test="param.seckillStartDate != null">
+                #{param.seckillStartDate},
+            </if>
+            <if test="param.cancelTime != null">
+                #{param.cancelTime,jdbcType=INTEGER},
+            </if>
+
+        </trim>
+    </insert>
+    <update id="updateShopSeckillBase">
+        update ${database.prefix.activity}hou_addon_activity_seckill_base
+        <set>
+            <if test="param.seckillName != null">
+                seckill_name = #{param.seckillName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.seckillCreateTime != null">
+                seckill_create_time =
+                #{param.seckillCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.seckillStartTime != null">
+                seckill_start_time =
+                #{param.seckillStartTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.seckillEndTime != null">
+                seckill_end_time =
+                #{param.seckillEndTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.userId != null">
+                user_id = #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shopId != null">
+                shop_id = #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.userNickName != null">
+                user_nick_name = #{param.userNickName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.shopName != null">
+                shop_name = #{param.shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.seckillState != null">
+                seckill_state = #{param.seckillState,jdbcType=INTEGER},
+            </if>
+            <if test="param.seckillHour != null">
+                seckill_hour = #{param.seckillHour,jdbcType=INTEGER},
+            </if>
+            <if test="param.seckillStartDate != null">
+                seckill_start_date = #{param.seckillStartDate},
+            </if>
+            <if test="param.cancelTime != null">
+                cancel_time = #{param.cancelTime},
+            </if>
+
+        </set>
+        where seckill_id = #{param.seckillId,jdbcType=INTEGER}
+    </update>
+    <select id="selectFinishTimeSecondkillPojo" resultType="java.util.Map">
+        SELECT
+        b.seckill_id AS activityId,
+        b.seckill_name AS activityName,
+        DATE_FORMAT( b.seckill_start_time, "%Y-%m-%d %H:%i:%s" ) AS startTime,
+        DATE_FORMAT( b.seckill_end_time, "%Y-%m-%d %H:%i:%s" ) AS endTime,
+        sb.shop_name AS shopName,
+        '正常' AS stateLabel,
+        b.seckill_state AS seckillState,
+        b.seckill_hour AS seckillHour,
+        DATE_FORMAT( b.seckill_create_time, "%Y-%m-%d %H:%i:%s" ) AS seckillCreateTime
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_base b
+        LEFT JOIN ${database.prefix.business}hou_shop_base sb ON b.shop_id = sb.supplier_shop_id
+        <where>
+            <if test="null != param.shopName and '' != param.shopName ">
+                and sb.shop_name like CONCAT('%',#{param.shopName},'%')
+            </if>
+            <if test="null != param.shopId and '' != param.shopId ">
+                and b.shop_id = #{param.shopId}
+            </if>
+            <if test="null != param.seckillName and '' != param.seckillName ">
+                and b.seckill_name like CONCAT('%',#{param.seckillName},'%')
+            </if>
+            <if test="null != param.seckillState">
+                and b.seckill_state = #{param.seckillState}
+            </if>
+        </where>
+        order by b.seckill_create_time desc
+    </select>
+    <select id="querySecondKill" resultType="java.util.Map">
+        SELECT
+            seckill_id AS activityId,
+            seckill_name AS activityName,
+            DATE_FORMAT( seckill_end_time, '%Y-%m-%d %H:%i:%S' ) AS endTime,
+            '正常' AS stateLabel
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_base
+        WHERE
+            seckill_id = #{seckillId}
+    </select>
+    <select id="selectBySeckillIdByPage"
+            resultType="com.houjiang.commons.vo.activity.AppSeckillGoodsQueryResultVO">
+
+    SELECT
+	a.seckill_goods_id,
+	a.common_id,
+	a.goods_name,
+	a.goods_price,
+	a.seckill_price,
+	a.goods_id,
+	a.goods_start_time AS startDateTime,
+	a.goods_end_time AS endDateTime,
+	a.shop_id,
+	a.goods_image,
+	a.seckill_id,
+	a.goods_upper_limit,
+	a.seckill_num,
+	b.common_name,
+	c.goods_spec,
+	b.common_is_xian,
+	gs.goods_stock
+    FROM ${database.prefix.activity}hou_addon_activity_seckill_goods a
+    	LEFT JOIN ${database.prefix.goods}hou_goods_common b ON a.common_id = b.common_id
+    	LEFT JOIN ${database.prefix.goods}hou_goods_base c ON a.goods_id = c.goods_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on c.goods_id = gs.goods_id
+    WHERE
+	a.seckill_id =#{param.seckillId,jdbcType=INTEGER}
+    </select>
+    <select id="selectShopSeckillBaseList" resultType="com.houjiang.activity.entity.ActivitySeckillBaseEntity">
+        select
+        seckill_id,
+        seckill_name,
+        seckill_start_time,
+        seckill_end_time,
+        user_id,
+        shop_id,
+        user_nick_name,
+        shop_name,
+        seckill_state,
+        seckill_hour
+        from ${database.prefix.activity}hou_addon_activity_seckill_base
+        where shop_id = #{param.shopId}
+        <if test="param.seckillName != null and param.seckillName != ''">
+            and seckill_name like concat('%', #{param.seckillName} ,'%')
+        </if>
+        <if test="param.seckillState != null">
+            and seckill_state = #{param.seckillState}
+        </if>
+        order by seckill_create_time desc
+    </select>
+    <select id="selectByPrimaryKey" resultType="com.houjiang.activity.vo.GdbSeckillBaseVO">
+        select
+        seckill_id, seckill_name,
+		seckill_start_time,
+		seckill_end_time, user_id, shop_id,
+		user_nick_name, shop_name,
+		seckill_state,
+		seckill_hour
+        from ${database.prefix.activity}hou_addon_activity_seckill_base
+        where seckill_id = #{seckillId,jdbcType=INTEGER}
+    </select>
+    <select id="getByPage" resultType="java.util.Map">
+	    SELECT a.seckill_id                                         as activityId,
+			   a.seckill_name                                       as activityName,
+			   b.shop_name                                          as shopName,
+			   DATE_FORMAT(a.seckill_end_time, '%Y-%m-%d %H:%i:%S') as endTime,
+			   '正常'                                                as stateLabel
+		FROM ${database.prefix.activity}hou_addon_activity_seckill_base a
+				 left join ${database.prefix.business}hou_shop_base b on a.shop_id = b.supplier_shop_id
+		WHERE a.seckill_state = 1
+         and b.supplier_shop_id = #{shopId}
+		order by seckill_create_time desc
+    </select>
+    <select id="selectSeckilById" resultType="com.houjiang.commons.dto.goods.ManageSeckillBaseUpdateDTO">
+        SELECT
+            seckill_id,
+            seckill_name,
+            seckill_end_time,
+            seckill_hour,
+            seckill_start_time,
+            cancel_time,
+            seckill_start_date
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_base
+        WHERE
+            seckill_id = #{seckillId}
+    </select>
+    <select id="selectSeckilGoodsById" resultType="com.houjiang.commons.dto.goods.SeckillGoodsListDTO">
+        SELECT
+            goods_id,
+            common_id,
+            shop_id,
+            goods_name,
+            goods_price,
+            seckill_price,
+            goods_image,
+            goods_upper_limit,
+            seckill_num
+        FROM ${database.prefix.activity}hou_addon_activity_seckill_goods
+        WHERE
+            seckill_id = #{seckillId}
+    </select>
+
+
+</mapper>

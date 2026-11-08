@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayConsumeTradeBackMapper">
+
+    <select id="queryGoodsPriceAndName" resultType="com.houjiang.payment.dto.GoodsDTO">
+        select trade_payment_amount,trade_desc,total_integral ,integral_goods  from ${database.prefix.payment}hou_pay_consume_trade
+         where order_id = #{orderId} and buyer_id = #{userId}
+    </select>
+    <select id="queryRecordPriceAndName" resultType="com.houjiang.payment.dto.RecordDTO">
+        select order_id,order_state_id,trade_payment_amount,trade_desc,buyer_id
+        from ${database.prefix.payment}hou_pay_consume_trade where order_id = #{outTradeNo}
+    </select>
+    <update id="updateConsumeTradeByPureDigital">
+        update ${database.prefix.payment}hou_pay_consume_trade set order_state_id = #{orderStateId},trade_pay_time = #{paymentTime},trade_finish_time = #{closeTime}
+        where order_id = #{outTradeNo}
+    </update>
+    <update id="updateConsumeTrade">
+        update ${database.prefix.payment}hou_pay_consume_trade set order_state_id = #{orderStateId},trade_pay_time = #{paymentTime},trade_finish_time = #{closeTime}
+        where consume_trade_id = #{outTradeNo}
+    </update>
+    <select id="queryRecordPriceAndNameByTradeId" resultType="com.houjiang.payment.dto.RecordDTO">
+        select order_id,order_state_id,trade_payment_amount,trade_desc,buyer_id
+        from ${database.prefix.payment}hou_pay_consume_trade where consume_trade_id = #{orderId}
+    </select>
+
+</mapper>

@@ -1,0 +1,5 @@
+# 单测夹具：二开 demo 的专属配置（被 ExtensionConfigEnvironmentPostProcessorTest 装载）
+price:
+  discount: "0.88"
+feature:
+  enabled: true

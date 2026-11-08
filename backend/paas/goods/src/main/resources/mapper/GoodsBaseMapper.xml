@@ -1,0 +1,2460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsBaseMapper">
+    <resultMap id="BaseResultMap"
+               type="com.houjiang.commons.vo.goods.GdbMerchantShopBaseVO">
+        <id column="shop_id" property="shopId" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="shop_name" property="shopName"
+                jdbcType="VARCHAR"/>
+        <result column="shop_grade_id" property="shopGradeId"
+                jdbcType="INTEGER"/>
+        <result column="shop_class_id" property="shopClassId"
+                jdbcType="INTEGER"/>
+        <result column="shop_self_support" property="shopSelfSupport"
+                jdbcType="CHAR"/>
+        <result column="shop_business" property="shopBusiness"
+                jdbcType="BIT"/>
+        <result column="shop_create_time" property="shopCreateTime"
+                jdbcType="TIMESTAMP"/>
+        <result column="shop_end_time" property="shopEndTime"
+                jdbcType="TIMESTAMP"/>
+        <result column="shop_settlement_cycle"
+                property="shopSettlementCycle" jdbcType="INTEGER"/>
+        <result column="shop_settlement_last_time"
+                property="shopSettlementLastTime" jdbcType="TIMESTAMP"/>
+        <result column="shop_logo" property="shopLogo"
+                jdbcType="VARCHAR"/>
+        <result column="shop_banner" property="shopBanner"
+                jdbcType="VARCHAR"/>
+        <result column="shop_status" property="shopStatus"
+                jdbcType="BIT"/>
+        <result column="shop_collect" property="shopCollect"
+                jdbcType="INTEGER"/>
+        <result column="shop_tel" property="shopTel" jdbcType="VARCHAR"/>
+        <result column="shop_free_shipping" property="shopFreeShipping"
+                jdbcType="BIGINT"/>
+        <result column="shop_stamp" property="shopStamp"
+                jdbcType="VARCHAR"/>
+        <result column="shop_type" property="shopType"
+                jdbcType="TINYINT"/>
+        <result column="district_id" property="districtId"
+                jdbcType="INTEGER"/>
+        <result column="shop_display_order" property="shopDisplayOrder"
+                jdbcType="INTEGER"/>
+        <result column="shop_slide" property="shopSlide"
+                jdbcType="LONGVARCHAR"/>
+        <result column="shop_image" property="shopImage"
+                jdbcType="VARCHAR"/>
+        <result column="wap_shop_logo" property="wapShopLogo"
+                jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap type="com.houjiang.goods.entity.GoodsBaseEntity" id="GoodsBaseMap">
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="supplierShopId" column="supplier_shop_id" jdbcType="INTEGER"/>
+        <result property="supplierGoodsId" column="supplier_goods_id" jdbcType="INTEGER"/>
+        <result property="goodsName" column="goods_name" jdbcType="VARCHAR"/>
+        <result property="goodsPromotionTips" column="goods_promotion_tips" jdbcType="VARCHAR"/>
+        <result property="catId" column="cat_id" jdbcType="INTEGER"/>
+        <result property="brandId" column="brand_id" jdbcType="INTEGER"/>
+        <result property="goodsSpec" column="goods_spec" jdbcType="VARCHAR"/>
+        <result property="goodsPrice" column="goods_price" jdbcType="NUMERIC"/>
+        <result property="goodsMarketPrice" column="goods_market_price" jdbcType="NUMERIC"/>
+        <result property="goodsShopGateStock" column="goods_shop_gate_stock" jdbcType="INTEGER"/>
+        <result property="goodsAlarm" column="goods_alarm" jdbcType="INTEGER"/>
+        <result property="goodsCode" column="goods_code" jdbcType="VARCHAR"/>
+        <result property="goodsIsRecommend" column="goods_is_recommend" jdbcType="INTEGER"/>
+        <result property="goodsClick" column="goods_click" jdbcType="INTEGER"/>
+        <result property="goodsSalenum" column="goods_salenum" jdbcType="INTEGER"/>
+        <result property="goodsCollect" column="goods_collect" jdbcType="INTEGER"/>
+        <result property="goodsImage" column="goods_image" jdbcType="VARCHAR"/>
+        <result property="goodsEvaluationGoodStar" column="goods_evaluation_good_star" jdbcType="INTEGER"/>
+        <result property="goodsEvaluationCount" column="goods_evaluation_count" jdbcType="INTEGER"/>
+        <result property="goodsMaxSale" column="goods_max_sale" jdbcType="INTEGER"/>
+        <result property="goodsIsShelves" column="goods_is_shelves" jdbcType="INTEGER"/>
+        <result property="goodsCubage" column="goods_cubage" jdbcType="NUMERIC"/>
+        <result property="goodsMinSale" column="goods_min_sale" jdbcType="INTEGER"/>
+        <result property="merchantCode" column="merchant_code" jdbcType="VARCHAR"/>
+        <result property="commodityBarTypeCode" column="commodity_bar_type_code" jdbcType="VARCHAR"/>
+        <result property="specValue" column="spec_value" jdbcType="VARCHAR"/>
+        <result property="goodsVolume" column="goods_volume" jdbcType="NUMERIC"/>
+        <result property="goodsCostPrice" column="goods_cost_price" jdbcType="NUMERIC"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createUser" column="create_user" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+        <result property="needIntegral" column="need_integral" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        shop_id
+        , user_id, shop_name, shop_grade_id, shop_class_id,
+		shop_self_support,
+		shop_business,
+		shop_create_time, shop_end_time,
+		shop_settlement_cycle, shop_settlement_last_time,
+		shop_logo, shop_banner, shop_status,
+		shop_collect,shop_tel,
+		shop_free_shipping,
+		shop_stamp,shop_type, district_id,
+		shop_display_order,
+		shop_slide,shop_image,wap_shop_logo
+    </sql>
+    <update id="updateGoodsClick">
+        update
+            ${database.prefix.goods}hou_goods_base
+        set goods_click = goods_click + 1
+        where goods_id
+                  = #{goodsId,jdbcType=INTEGER}
+    </update>
+    <update id="updateGoodsCollect">
+        update
+        ${database.prefix.goods}hou_goods_base
+        <set>
+            <if test="param.type == 1">
+                goods_collect = goods_collect + 1
+            </if>
+            <if test="param.type == 2">
+                goods_collect = goods_collect -1
+            </if>
+        </set>
+        where common_id = #{param.commonId,jdbcType=INTEGER}
+    </update>
+    <update id="updateStock">
+        update ${database.prefix.goods}hou_goods_stock set
+        <if test="param.goodsNum != null">
+            ${database.prefix.goods}hou_goods_stock = ${database.prefix.goods}hou_goods_stock - #{param.goodsNum}
+        </if>
+        where goods_id = #{param.goodsId}
+    </update>
+    <select id="selectAll" resultType="com.houjiang.commons.dto.shop.ArticleDTO">
+        select gc.common_id          as commonId,
+               gc.common_name        as commonName,
+               gc.goods_id           as goodsId,
+               gc.brand_id           as brandId,
+               gc.brand_name         as brandName,
+               gc.common_price       as commonPrice,
+               gc.common_collect     as commonCollect,
+               gc.common_evaluate    as commonEvaluate,
+               gc.common_salenum     as commonSalenum,
+               gc.common_update_time as updateTime,
+               gc.shop_self_support  as shopSelfSupport,
+               gc.cat_id             as catId,
+               gc.common_market_price    AS commonMarketPrice,
+               gc.common_image           AS commonImage,
+               gc.common_promotion_tips  AS commonPromotionTips,
+               gc.shop_id                AS shopId,
+               gc.shop_name              AS shopName,
+               se.evaluation_create_time AS avgShippingTime,
+               gc.virtual_goods          as virtualGoods,
+               gc.period_of_validity     as periodOfValidity,
+               sl.goods_list_first_show  as goodsListFirstShow,
+               sl.id as levelId,
+               gc.past_due               as pastDue,
+               gc.common_is_xian         as commonIsXian,
+               gc.goods_type             as goodsType
+        from ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gb.common_id
+                 LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON gc.shop_id = sb.supplier_shop_id
+                 LEFT JOIN ${database.prefix.business}hou_shop_evaluation se ON se.shop_id = gc.shop_id
+                 left join ${database.prefix.business}hou_shop_level sl on sl.id = sb.shop_level_id
+        where (gc.is_delete is null or gc.is_delete = 0)
+          and gc.common_is_screen = 1
+          and ${database.prefix.goods}hou_goods_type != 2
+          and gc.common_verify = 1
+          and gc.common_state = 1
+          and gc.shop_status = 3
+          and gc.common_is_locked = 1
+          and gc.common_is_screen = 1
+          and gc.virtual_goods &lt;&gt; 3
+          and (period_of_validity is null || period_of_validity > now())
+          and (integral_goods != 0 or integral_goods is null)
+          AND gc.common_price != 0
+          AND NOW() > gc.common_sell_time
+          GROUP BY gc.common_id
+          Limit #{page},#{pageSize}
+    </select>
+    <select id="selectAllCount" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.goods}hou_goods_common gc
+        where (gc.is_delete is null or gc.is_delete = 0)
+          and gc.common_is_screen = 1
+          and ${database.prefix.goods}hou_goods_type != 2
+          and gc.common_verify = 1
+          and gc.common_state = 1
+          and gc.shop_status = 3
+          and gc.common_is_locked = 1
+          and gc.common_is_screen = 1
+          and gc.virtual_goods &lt;&gt; 3
+          and (period_of_validity is null || period_of_validity > now())
+          and (integral_goods != 0 or integral_goods is null)
+          AND gc.common_price != 0
+          AND NOW() > gc.common_sell_time
+    </select>
+    <select id="selectEsGoodsbyId" resultType="com.houjiang.commons.dto.shop.ArticleDTO">
+        select gc.common_id          as commonId,
+               gc.common_name        as commonName,
+               gc.goods_id           as goodsId,
+               gc.brand_id           as brandId,
+               gc.brand_name         as brandName,
+               gc.common_price       as commonPrice,
+               gc.common_collect     as commonCollect,
+               gc.common_evaluate    as commonEvaluate,
+               gc.common_salenum     as commonSalenum,
+               gc.common_update_time as updateTime,
+               gc.shop_self_support  as shopSelfSupport,
+               gc.cat_id             as catId,
+               gc.common_market_price    AS commonMarketPrice,
+               gc.common_image           AS commonImage,
+               gc.common_promotion_tips  AS commonPromotionTips,
+               gc.shop_id                AS shopId,
+               gc.shop_name              AS shopName,
+               se.evaluation_create_time AS avgShippingTime,
+               gc.virtual_goods          as virtualGoods,
+               gc.period_of_validity     as periodOfValidity,
+               sl.goods_list_first_show  as goodsListFirstShow,
+               sl.id as levelId,
+               gc.past_due               as pastDue,
+               gc.common_is_xian         as commonIsXian,
+               gc.goods_type             as goodsType
+        from ${database.prefix.goods}hou_goods_common gc
+                 LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON gc.shop_id = sb.supplier_shop_id
+                 LEFT JOIN ${database.prefix.business}hou_shop_evaluation se ON se.shop_id = gc.shop_id
+                 left join ${database.prefix.business}hou_shop_level sl on sl.id = sb.shop_level_id
+        where (gc.is_delete is null or gc.is_delete = 0)
+          and gc.common_is_screen = 1
+          and ${database.prefix.goods}hou_goods_type != 2
+          and gc.common_verify = 1
+          and gc.common_state = 1
+          and gc.shop_status = 3
+          and gc.common_is_locked = 1
+          and gc.common_is_screen = 1
+          and gc.virtual_goods &lt;&gt; 3
+          and (period_of_validity is null || period_of_validity > now())
+          and (integral_goods != 0 or integral_goods is null)
+          AND gc.common_price != 0
+          AND NOW() > gc.common_sell_time
+		   and gc.common_id = #{commonId}
+        GROUP BY gc.common_id
+    </select>
+    <select id="selectByCommonIdEs" resultType="com.houjiang.commons.dto.goods.GoodsListQueryEsDTO">
+        SELECT gc.common_id              AS commonId,
+               gb.goods_id               AS goodsId,
+               gc.cat_id                 AS catId,
+               gc.common_name            AS commonName,
+               gc.common_price           AS commonPrice,
+               gc.common_market_price    AS commonMarketPrice,
+               gc.common_image           AS commonImage,
+               gc.common_salenum         AS commonSalenum,
+               gc.common_evaluate        AS commonEvaluate,
+               gc.common_promotion_tips  AS commonPromotionTips,
+               gc.common_collect         AS commonCollect,
+               gc.shop_id                AS shopId,
+               gc.shop_name              AS shopName,
+               se.evaluation_create_time AS avgShippingTime,
+               gc.virtual_goods          as virtualGoods,
+               gc.period_of_validity     as periodOfValidity,
+               sl.goods_list_first_show,
+               sl.id as levelId,
+               gc.past_due               as pastDue,
+               gc.common_is_xian         as commonIsXian
+        FROM ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gb.common_id
+                 LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON gc.shop_id = sb.supplier_shop_id
+                 LEFT JOIN ${database.prefix.business}hou_shop_evaluation se ON se.shop_id = gc.shop_id
+                 left join ${database.prefix.business}hou_shop_level sl on sl.id = sb.shop_level_id
+        WHERE gc.common_state = 1
+          AND gc.common_verify = 1
+          AND gc.common_price != 0
+          and gc.virtual_goods &lt;&gt; 3
+          AND gc.common_is_screen = 1
+          AND NOW() > gc.common_sell_time
+          AND sb.shop_status = 3
+          AND gc.common_id = #{commonId}
+          and (gc.goods_type = 1
+           or gc.goods_type is null)
+        GROUP BY gc.common_id
+    </select>
+    <select id="selectByGoodsIdEs" resultType="com.houjiang.commons.dto.goods.GoodsListQueryEsDTO">
+        SELECT gc.common_id             AS commonId,
+               gb.goods_id              AS goodsId,
+               gc.cat_id                AS catId,
+               gc.common_name           AS commonName,
+               gc.common_price          AS commonPrice,
+               gc.common_market_price   AS commonMarketPrice,
+               gc.common_image          AS commonImage,
+               gc.common_salenum        AS commonSalenum,
+               gc.common_evaluate       AS commonEvaluate,
+               gc.common_promotion_tips AS commonPromotionTips,
+               gc.common_collect        AS commonCollect,
+               gc.shop_id               AS shopId,
+               gc.shop_name             AS shopName,
+               se.avg_shipping_time     AS avgShippingTime,
+               gc.virtual_goods         as virtualGoods,
+               gc.period_of_validity    as periodOfValidity,
+               gc.past_due              as pastDue,
+               gb.goods_name            as goodsName,
+               gs.goods_stock           as goodsStock,
+               gb.goods_spec            as goodsSpec,
+               gb.goods_price           as goodsPrice,
+               gc.brand_name            as beandName
+        FROM ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gb.common_id
+                 LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON gc.shop_id = sb.supplier_shop_id
+                 LEFT JOIN ${database.prefix.business}hou_shop_evaluation se ON se.shop_id = gc.shop_id
+        WHERE gc.common_state = 1
+          AND gc.common_verify = 1
+          AND gb.goods_is_shelves = 1
+          AND gc.common_is_screen = 1
+          AND NOW() > gc.common_sell_time
+          AND sb.shop_status = 3
+          AND gb.goods_id = #{goodsId}
+          and (gc.goods_type = 1 or gc.goods_type is null)
+    </select>
+    <select id="queryGoodsDealerInfo" resultType="java.lang.Integer">
+        select gb.goods_id
+        from ${database.prefix.goods}hou_goods_base gb
+        left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = gb.common_id
+        where gb.shop_id = #{shopId}
+          and gb.supplier_goods_id = #{supplierGoodsId}
+          and gc.common_state = 1
+          and gb.goods_is_shelves = 1
+          and gb.is_delete != 1
+    </select>
+    <select id="querySeckillInfo" resultType="java.lang.Integer">
+        select seckill_id
+        from ${database.prefix.activity}hou_addon_activity_seckill_goods dg
+                 left join ${database.prefix.goods}hou_goods_common gc
+                           on gc.common_id = dg.common_id
+        where dg.seckill_goods_state = 1
+          and gc.common_state = 1
+          and dg.goods_id = #{goodsId}
+    </select>
+    <select id="selectByCommonId" resultType="com.houjiang.goods.vo.ManageGdsBaseAddResultVO">
+        select
+        gb.spec_value,gb.goods_id,gb.goods_spec,gb.goods_name,gs.goods_stock,gb.goods_price,gb.goods_market_price
+        from ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        where gb.goods_is_shelves = 1
+        <if test="commonId != null and commonId != ''">
+            and gb.common_id = #{commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectByCommonId2" resultType="com.houjiang.goods.vo.ManageGdsBaseAddResultVO">
+        select
+        gb.spec_value,gb.goods_id,gb.goods_spec,gb.goods_name,gs.goods_stock,gb.goods_price,gb.goods_market_price
+        from ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        where 1 = 1
+        <if test="commonId != null and commonId != ''">
+            and gb.common_id = #{commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectSpecValueByGoodsId" resultType="com.houjiang.goods.vo.ManageGdsBaseAddResultVO">
+        select spec_value,
+               goods_id
+        from ${database.prefix.goods}hou_goods_base
+        where 1 = 1
+          and goods_is_shelves = 1
+          and common_id = (select common_id from ${database.prefix.goods}hou_goods_base where goods_id = #{goodsId})
+    </select>
+    <select id="selectByGoodsId" resultType="com.houjiang.commons.vo.goods.GdsBaseDetailResultVO">
+        select gb.common_id,
+               gb.shop_id,
+               gb.shop_name,
+               gb.goods_id,
+               gb.goods_name,
+               gb.goods_promotion_tips,
+               gb.cat_id,
+               gb.brand_id,
+               gb.goods_spec,
+               gb.goods_price,
+               gb.goods_market_price,
+               gs.goods_stock,
+               gb.goods_alarm,
+               gb.goods_code,
+               gb.goods_is_recommend,
+               gb.goods_click,
+               gc.common_salenum,
+               gb.goods_collect,
+               gb.goods_image,
+               gb.goods_evaluation_good_star,
+               gb.goods_evaluation_count,
+               gb.goods_max_sale,
+               gb.goods_is_shelves,
+               gc.common_verify,
+               gc.common_state,
+               gc.common_is_shop_take,
+               gb.goods_min_sale,
+               gc.type,
+               gc.common_video,
+               gb.spec_value,
+               gc.common_is_xian,
+               gc.goods_type,
+               gc.dealer_goods_flag,
+               gb.need_integral,
+               gc.integral_goods,
+               gc.plus_goods,
+               gc.virtual_goods,
+               gb.goods_salenum
+        FROM ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON (gb.common_id = gc.common_id)
+        where gb.goods_id = #{goodsId,jdbcType=INTEGER}
+          and gc.shop_status = 3
+          and gc.common_state = 1
+    </select>
+    <select id="selectCartMessage" resultType="com.houjiang.commons.dto.goods.ReceiveGoodsDetailsDTO">
+        SELECT
+        gb.goods_id,
+        gb.goods_name,
+        gb.goods_price,
+        gc.virtual_goods,
+        gc.plus_goods AS plusGoods,
+        gb.goods_image,
+        gb.shop_name,
+        gb.shop_id,
+        gs.goods_stock,
+        gb.goods_spec,
+        gb.common_id,
+        gb.goods_is_shelves,
+        gb.goods_max_sale,
+        gb.goods_min_sale,
+        gc.common_state,
+        gc.common_verify,
+        gc.common_is_xian,
+        gc.integral_goods,
+        gb.need_integral,
+        gc.dealer_goods_flag,
+        gc.goods_type,
+        gc.common_stock,
+        gc.points_rate
+        FROM
+        ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gb.common_id = gc.common_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = gb.shop_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        <where>
+            <if test="goodsId != null and goodsId != ''">
+                and gb.goods_id = #{goodsId,jdbcType=INTEGER}
+            </if>
+        </where>
+    </select>
+    <!-- 商家后台 -->
+    <update id="updateCommonDel" parameterType="java.lang.Integer">
+        update
+        ${database.prefix.goods}hou_goods_base set
+        goods_is_shelves = 2,is_delete = 1
+        where common_id
+        in (
+        <foreach collection="commonIds" separator="," item="commonId">
+            #{commonId}
+        </foreach>
+        )
+    </update>
+    <update id="cancelDealerGoodsBase">
+        update ${database.prefix.goods}hou_goods_base set goods_is_shelves = 2 , is_delete = 1 , update_time = NOW()
+        where common_id in
+        <foreach item="comminId" collection="commonIdList" separator="," open="(" close=")" index="index">
+            #{comminId}
+        </foreach>
+    </update>
+    <select id="selectByGoodsList"
+            resultType="com.houjiang.goods.vo.ManageGoodsBaseListVO"
+            parameterType="java.lang.Integer">
+        select
+        gmgb.goods_id, gmgb.common_id, gmgb.goods_name,gmgb.goods_spec,gmgb.goods_price,
+        gs.goods_stock,gmgb.goods_shop_gate_stock as shopGateStockMax,gmgb.goods_image,
+        gmgb.goods_cubage,gmgb.goods_click,gmgb.goods_salenum,gmgb.goods_collect,gc.plu
+        from ${database.prefix.goods}hou_goods_base gmgb
+        left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = gmgb.common_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gmgb.goods_id = gs.goods_id
+        where gmgb.is_delete != 1
+        <if test="commonId != null and commonId != ''">
+            and gmgb.common_id = #{commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectByGoodsList3"
+            resultType="com.houjiang.goods.vo.ManageGoodsBaseListVO"
+            parameterType="java.lang.Integer">
+        select
+        gmgb.goods_id, gmgb.common_id, gmgb.goods_name,gmgb.goods_spec,
+        gmgb.goods_price,
+        gs.goods_stock,gmgb.goods_shop_gate_stock as
+        shopGateStockMax,gmgb.goods_image,gmgb.goods_cubage,gmgb.goods_click,gmgb.goods_salenum,gmgb.goods_collect
+        from ${database.prefix.goods}hou_goods_base gmgb
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gmgb.goods_id = gs.goods_id
+        where goods_is_shelves=1 and gmgb.goods_id not in (
+        select goods_id from ${database.prefix.activity}hou_addon_activity_seckill_goods where now() &lt;= goods_end_time
+        and seckill_goods_state in (0,1)
+        ) and gmgb.is_delete != 1
+        <if test="commonId != null and commonId != ''">
+            and gmgb.common_id = #{commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="querySeckillGoodsList" resultType="com.houjiang.goods.vo.ManageGoodsBaseListVO">
+        select gmgb.goods_id,
+               gmgb.common_id,
+               gmgb.goods_name,
+               gmgb.goods_spec,
+               gmgb.goods_price,
+               gs.goods_stock,
+               gmgb.goods_shop_gate_stock as
+                   shopGateStockMax,
+               gmgb.goods_image,
+               gmgb.goods_cubage,
+               gmgb.goods_click,
+               gmgb.goods_salenum,
+               gmgb.goods_collect
+        from ${database.prefix.goods}hou_goods_base gmgb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gmgb.goods_id = gs.goods_id
+        where gmgb.goods_is_shelves = 1
+          and gmgb.common_id = #{commonId}
+          and gmgb.is_delete != 1
+    </select>
+    <select id="queryGoodsStock" parameterType="com.houjiang.goods.dto.ManageGoodsBaseListResultDTO"
+            resultType="java.lang.Integer">
+        select ggb.goods_stock
+        from ${database.prefix.goods}hou_goods_stock ggb
+        where goods_id = #{goodsId}
+    </select>
+    <update id="updateCommonStock">
+        update ${database.prefix.goods}hou_goods_common
+        set common_stock = common_stock + #{gateShopStock}
+        where common_id = #{commonId}
+    </update>
+    <update id="updateCommonStock2">
+        UPDATE ${database.prefix.goods}hou_goods_common
+        SET common_stock = common_stock - #{gateShopStock}
+        WHERE common_id = #{commonId}
+    </update>
+    <update id="updateGoodsBaseByCommonIdAndGoodsId"
+            parameterType="com.houjiang.goods.dto.ManageGoodsBaseListResultDTO">
+        update ${database.prefix.goods}hou_goods_stock set ${database.prefix.goods}hou_goods_stock = #{param.goodsStock}
+        <if test="param.shopGateGoodsStock != null and param.shopGateGoodsStock != ''">
+            ,goods_shop_gate_stock = #{param.shopGateGoodsStock}
+        </if>
+        where common_id = #{param.commonId} and goods_id = #{param.goodsId}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap"
+            parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from ${database.prefix.supplier}hou_shop_base
+        where supplier_shop_id = #{shopId,jdbcType=INTEGER}
+    </select>
+    <insert id="insertGdsBasesObj"
+            parameterType="com.houjiang.commons.dto.goods.ManageGdsBaseAddParamvDTO"
+            useGeneratedKeys="true" keyProperty="goodsId">
+        insert into ${database.prefix.goods}hou_goods_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null">
+                goods_id,
+            </if>
+            <if test="commonId != null">
+                common_id,
+            </if>
+            <if test="shopId != null">
+                shop_id,
+            </if>
+            <if test="shopName != null">
+                shop_name,
+            </if>
+            <if test="goodsName != null">
+                goods_name,
+            </if>
+            <if test="goodsPromotionTips != null">
+                goods_promotion_tips,
+            </if>
+            <if test="catId != null">
+                cat_id,
+            </if>
+            <if test="brandId != null">
+                brand_id,
+            </if>
+            <if test="goodsSpec != null">
+                goods_spec,
+            </if>
+            <if test="goodsPrice != null">
+                goods_price,
+            </if>
+            <if test="goodsMarketPrice != null">
+                goods_market_price,
+            </if>
+            <if test="goodsShopGateStock != null">
+                goods_shop_gate_stock,
+            </if>
+            <if test="goodsAlarm != null">
+                goods_alarm,
+            </if>
+            <if test="goodsCode != null">
+                goods_code,
+            </if>
+            <if test="goodsIsRecommend != null">
+                goods_is_recommend,
+            </if>
+            <if test="goodsImage != null">
+                goods_image,
+            </if>
+            <if test="goodsMaxSale != null">
+                goods_max_sale,
+            </if>
+            <if test="goodsMinSale != null">
+                goods_min_sale,
+            </if>
+            <if test="goodsIsShelves != null">
+                goods_is_shelves,
+            </if>
+            <if test="goodsCubage != null">
+                goods_cubage,
+            </if>
+            <if test="specValue != null and specValue != ''">
+                spec_value,
+            </if>
+            <if test="goodsVolume != null">
+                goods_volume,
+            </if>
+            <if test="goodsCostPrice != null">
+                goods_cost_price,
+            </if>
+            <if test="merchantCode != null">
+                merchant_code,
+            </if>
+            <if test="commodityBarTypeCode != null">
+                commodity_bar_type_code,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null">
+                #{goodsId,jdbcType=INTEGER},
+            </if>
+            <if test="commonId != null">
+                #{commonId,jdbcType=INTEGER},
+            </if>
+            <if test="shopId != null">
+                #{shopId,jdbcType=INTEGER},
+            </if>
+            <if test="shopName != null">
+                #{shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsName != null">
+                #{goodsName,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsPromotionTips != null">
+                #{goodsPromotionTips,jdbcType=VARCHAR},
+            </if>
+            <if test="catId != null">
+                #{catId,jdbcType=INTEGER},
+            </if>
+            <if test="brandId != null">
+                #{brandId,jdbcType=INTEGER},
+            </if>
+            <if test="goodsSpec != null">
+                #{goodsSpec,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsPrice != null">
+                #{goodsPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsMarketPrice != null">
+                #{goodsMarketPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsShopGateStock != null">
+                #{goodsShopGateStock,jdbcType=INTEGER},
+            </if>
+            <if test="goodsAlarm != null">
+                #{goodsAlarm,jdbcType=INTEGER},
+            </if>
+            <if test="goodsCode != null">
+                #{goodsCode,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsIsRecommend != null">
+                #{goodsIsRecommend,jdbcType=BIT},
+            </if>
+            <if test="goodsImage != null">
+                #{goodsImage,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsMaxSale != null">
+                #{goodsMaxSale,jdbcType=INTEGER},
+            </if>
+            <if test="goodsMinSale != null">
+                #{goodsMinSale,jdbcType=INTEGER},
+            </if>
+            <if test="goodsIsShelves != null">
+                #{goodsIsShelves,jdbcType=BIT},
+            </if>
+            <if test="goodsCubage != null">
+                #{goodsCubage,jdbcType=DECIMAL},
+            </if>
+            <if test="specValue != null and specValue != ''">
+                #{specValue,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsVolume != null">
+                #{goodsVolume,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsCostPrice != null">
+                #{goodsCostPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="merchantCode != null">
+                #{merchantCode,jdbcType=VARCHAR},
+            </if>
+            <if test="commodityBarTypeCode != null">
+                #{commodityBarTypeCode,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertGoodsBase">
+        insert into ${database.prefix.goods}hou_goods_base
+        (
+        common_id,
+        shop_id,
+        shop_name,
+        supplier_shop_id,
+        supplier_goods_id,
+        goods_name,
+        goods_promotion_tips,
+        cat_id,
+        brand_id,
+        goods_spec,
+        goods_price,
+        goods_market_price,
+        goods_alarm,
+        goods_code,
+        goods_is_recommend,
+        goods_click,
+        goods_salenum,
+        goods_collect,
+        goods_image,
+        goods_evaluation_good_star,
+        goods_evaluation_count,
+        goods_max_sale,
+        goods_is_shelves,
+        goods_cubage,
+        goods_min_sale,
+        merchant_code,
+        commodity_bar_type_code,
+        spec_value,
+        goods_volume,
+        goods_cost_price,
+        is_delete,
+        create_user,
+        create_time,
+        update_user,
+        update_time,
+        ts)
+        VALUES
+            (
+            #{item.commonId,jdbcType=INTEGER},
+            #{item.shopId,jdbcType=INTEGER},
+            #{item.shopName,jdbcType=VARCHAR},
+            #{item.supplierShopId,jdbcType=INTEGER},
+            #{item.supplierGoodsId,jdbcType=INTEGER},
+            #{item.goodsName,jdbcType=VARCHAR},
+            #{item.goodsPromotionTips,jdbcType=VARCHAR},
+            #{item.catId,jdbcType=INTEGER},
+            #{item.brandId,jdbcType=INTEGER},
+            #{item.goodsSpec,jdbcType=VARCHAR},
+            #{item.goodsPrice,jdbcType=DECIMAL},
+            #{item.goodsMarketPrice,jdbcType=DECIMAL},
+            #{item.goodsAlarm,jdbcType=INTEGER},
+            #{item.goodsCode,jdbcType=VARCHAR},
+            #{item.goodsIsRecommend,jdbcType=BIT},
+            #{item.goodsClick,jdbcType=INTEGER},
+            #{item.goodsSalenum,jdbcType=INTEGER},
+            #{item.goodsCollect,jdbcType=INTEGER},
+            #{item.goodsImage,jdbcType=VARCHAR},
+            #{item.goodsEvaluationGoodStar,jdbcType=TINYINT},
+            #{item.goodsEvaluationCount,jdbcType=INTEGER},
+            #{item.goodsMaxSale,jdbcType=INTEGER},
+            #{item.goodsIsShelves,jdbcType=BIT},
+            #{item.goodsCubage,jdbcType=DECIMAL},
+            #{item.goodsMinSale,jdbcType=INTEGER},
+            #{item.merchantCode,jdbcType=VARCHAR},
+            #{item.commodityBarTypeCode,jdbcType=VARCHAR},
+            #{item.specValue,jdbcType=VARCHAR},
+            #{item.goodsVolume,jdbcType=DECIMAL},
+            #{item.goodsCostPrice,jdbcType=DECIMAL},
+            #{item.isDelete,jdbcType=INTEGER},
+            #{item.createUser,jdbcType=VARCHAR},
+            #{item.createTime,jdbcType=TIMESTAMP},
+            #{item.updateUser,jdbcType=VARCHAR},
+            #{item.updateTime,jdbcType=TIMESTAMP},
+            #{item.ts,jdbcType=TIMESTAMP})
+    </insert>
+    <insert id="insertReport">
+        INSERT INTO ${database.prefix.base}hou_base_report (user_id, user_account, goods_id, goods_name, goods_pic, report_type_id,
+                                             report_type_name, report_message, report_image, report_date, shop_id,
+                                             shop_name, report_state)
+        VALUES (#{userId}, #{userName}, #{goodsId}, #{goodsName}, #{image}, #{typeId}, #{typeName}, #{reportContent},
+                #{reportImage}, NOW(), #{shopId}, #{shopName}, 1)
+    </insert>
+    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="goodsId">
+        insert into ${database.prefix.goods}hou_goods_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null">
+                goods_id,
+            </if>
+            <if test="commonId != null">
+                common_id,
+            </if>
+            <if test="shopId != null">
+                shop_id,
+            </if>
+            <if test="shopName != null">
+                shop_name,
+            </if>
+            <if test="goodsName != null">
+                goods_name,
+            </if>
+            <if test="goodsPromotionTips != null">
+                goods_promotion_tips,
+            </if>
+            <if test="catId != null">
+                cat_id,
+            </if>
+            <if test="brandId != null">
+                brand_id,
+            </if>
+            <if test="goodsSpec != null">
+                goods_spec,
+            </if>
+            <if test="goodsPrice != null">
+                goods_price,
+            </if>
+            <if test="goodsMarketPrice != null">
+                goods_market_price,
+            </if>
+            <if test="goodsAlarm != null">
+                goods_alarm,
+            </if>
+            <if test="goodsCode != null">
+                goods_code,
+            </if>
+            <if test="goodsIsRecommend != null">
+                goods_is_recommend,
+            </if>
+            <if test="goodsClick != null">
+                goods_click,
+            </if>
+            <if test="goodsSalenum != null">
+                goods_salenum,
+            </if>
+            <if test="goodsCollect != null">
+                goods_collect,
+            </if>
+            <if test="goodsImage != null">
+                goods_image,
+            </if>
+            <if test="goodsEvaluationGoodStar != null">
+                goods_evaluation_good_star,
+            </if>
+            <if test="goodsEvaluationCount != null">
+                goods_evaluation_count,
+            </if>
+            <if test="goodsMaxSale != null">
+                goods_max_sale,
+            </if>
+            <if test="goodsIsShelves != null">
+                goods_is_shelves,
+            </if>
+            <if test="specValue != null">
+                spec_value,
+            </if>
+            <if test="goodsCostPrice != null">
+                goods_cost_price,
+            </if>
+            <if test="goodsVolume != null">
+                goods_volume,
+            </if>
+            <if test="goodsCubage != null">
+                goods_cubage,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null">
+                #{goodsId,jdbcType=INTEGER},
+            </if>
+            <if test="commonId != null">
+                #{commonId,jdbcType=INTEGER},
+            </if>
+            <if test="shopId != null">
+                #{shopId,jdbcType=INTEGER},
+            </if>
+            <if test="shopName != null">
+                #{shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsName != null">
+                #{goodsName,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsPromotionTips != null">
+                #{goodsPromotionTips,jdbcType=VARCHAR},
+            </if>
+            <if test="catId != null">
+                #{catId,jdbcType=INTEGER},
+            </if>
+            <if test="brandId != null">
+                #{brandId,jdbcType=INTEGER},
+            </if>
+            <if test="goodsSpec != null">
+                #{goodsSpec,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsPrice != null">
+                #{goodsPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsMarketPrice != null">
+                #{goodsMarketPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsAlarm != null">
+                #{goodsAlarm,jdbcType=INTEGER},
+            </if>
+            <if test="goodsCode != null">
+                #{goodsCode,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsIsRecommend != null">
+                #{goodsIsRecommend,jdbcType=BIT},
+            </if>
+            <if test="goodsClick != null">
+                #{goodsClick,jdbcType=INTEGER},
+            </if>
+            <if test="goodsSalenum != null">
+                #{goodsSalenum,jdbcType=INTEGER},
+            </if>
+            <if test="goodsCollect != null">
+                #{goodsCollect,jdbcType=INTEGER},
+            </if>
+            <if test="goodsImage != null">
+                #{goodsImage,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsEvaluationGoodStar != null">
+                #{goodsEvaluationGoodStar,jdbcType=TINYINT},
+            </if>
+            <if test="goodsEvaluationCount != null">
+                #{goodsEvaluationCount,jdbcType=INTEGER},
+            </if>
+            <if test="goodsMaxSale != null">
+                #{goodsMaxSale,jdbcType=INTEGER},
+            </if>
+            <if test="goodsIsShelves != null">
+                #{goodsIsShelves,jdbcType=BIT},
+            </if>
+            <if test="specValue != null">
+                #{specValue,jdbcType=INTEGER},
+            </if>
+            <if test="goodsCostPrice != null">
+                #{goodsCostPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsVolume != null">
+                #{goodsVolume,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsCubage != null">
+                #{goodsCubage,jdbcType=DECIMAL},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertDealerGdsBases">
+        insert into ${database.prefix.goods}hou_goods_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="commonId != null">
+                common_id,
+            </if>
+            <if test="shopId != null">
+                shop_id,
+            </if>
+            <if test="shopName != null">
+                shop_name,
+            </if>
+            <if test="goodsName != null">
+                goods_name,
+            </if>
+            <if test="goodsPromotionTips != null">
+                goods_promotion_tips,
+            </if>
+            <if test="catId != null">
+                cat_id,
+            </if>
+            <if test="brandId != null">
+                brand_id,
+            </if>
+            <if test="goodsSpec != null">
+                goods_spec,
+            </if>
+            <if test="goodsPrice != null">
+                goods_price,
+            </if>
+            <if test="goodsMarketPrice != null">
+                goods_market_price,
+            </if>
+            <if test="goodsAlarm != null">
+                goods_alarm,
+            </if>
+            <if test="goodsCode != null">
+                goods_code,
+            </if>
+            <if test="goodsIsRecommend != null">
+                goods_is_recommend,
+            </if>
+            <if test="goodsImage != null">
+                goods_image,
+            </if>
+            <if test="goodsMaxSale != null">
+                goods_max_sale,
+            </if>
+            <if test="goodsMinSale != null">
+                goods_min_sale,
+            </if>
+            <if test="goodsIsShelves != null">
+                goods_is_shelves,
+            </if>
+            <if test="goodsCubage != null">
+                goods_cubage,
+            </if>
+            <if test="specValue != null and specValue != ''">
+                spec_value,
+            </if>
+            <if test="goodsVolume != null">
+                goods_volume,
+            </if>
+            <if test="goodsCostPrice != null">
+                goods_cost_price,
+            </if>
+            <if test="merchantCode != null">
+                merchant_code,
+            </if>
+            <if test="commodityBarTypeCode != null">
+                commodity_bar_type_code,
+            </if>
+            <if test="supplierShopId != null">
+                supplier_shop_id,
+            </if>
+            <if test="supplierGoodsId != null">
+                supplier_goods_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="commonId != null">
+                #{commonId,jdbcType=INTEGER},
+            </if>
+            <if test="shopId != null">
+                #{shopId,jdbcType=INTEGER},
+            </if>
+            <if test="shopName != null">
+                #{shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsName != null">
+                #{goodsName,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsPromotionTips != null">
+                #{goodsPromotionTips,jdbcType=VARCHAR},
+            </if>
+            <if test="catId != null">
+                #{catId,jdbcType=INTEGER},
+            </if>
+            <if test="brandId != null">
+                #{brandId,jdbcType=INTEGER},
+            </if>
+            <if test="goodsSpec != null">
+                #{goodsSpec,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsPrice != null">
+                #{goodsPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsMarketPrice != null">
+                #{goodsMarketPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsAlarm != null">
+                #{goodsAlarm,jdbcType=INTEGER},
+            </if>
+            <if test="goodsCode != null">
+                #{goodsCode,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsIsRecommend != null">
+                #{goodsIsRecommend,jdbcType=BIT},
+            </if>
+            <if test="goodsImage != null">
+                #{goodsImage,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsMaxSale != null">
+                #{goodsMaxSale,jdbcType=INTEGER},
+            </if>
+            <if test="goodsMinSale != null">
+                #{goodsMinSale,jdbcType=INTEGER},
+            </if>
+            <if test="goodsIsShelves != null">
+                #{goodsIsShelves,jdbcType=BIT},
+            </if>
+            <if test="goodsCubage != null">
+                #{goodsCubage,jdbcType=DECIMAL},
+            </if>
+            <if test="specValue != null and specValue != ''">
+                #{specValue,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsVolume != null">
+                #{goodsVolume,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsCostPrice != null">
+                #{goodsCostPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="merchantCode != null">
+                #{merchantCode,jdbcType=VARCHAR},
+            </if>
+            <if test="commodityBarTypeCode != null">
+                #{commodityBarTypeCode,jdbcType=VARCHAR},
+            </if>
+            <if test="supplierShopId != null">
+                #{supplierShopId,jdbcType=INTEGER},
+            </if>
+            <if test="supplierGoodsId != null">
+                #{supplierGoodsId,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <select id="newSelectWebFloorMobConfig" resultType="com.houjiang.commons.vo.goods.GoodsIdsVO">
+        select
+            goods_id, common_id,goods_name, goods_price,
+            goods_market_price,
+            goods_image,shop_id,shop_name,goods_salenum
+        from
+            ${database.prefix.goods}hou_goods_base
+        where goods_is_shelves =1
+          and goods_id = #{goodsId,jdbcType=INTEGER}
+    </select>
+    <select id="getByGoodsId" resultType="java.lang.Integer">
+        select LAST_INSERT_ID()
+    </select>
+    <update id="updateGoodsIsShelves2"
+            parameterType="java.lang.Integer">
+        update
+        ${database.prefix.goods}hou_goods_base set
+        goods_is_shelves = 2,is_delete = 1
+        where common_id =
+        #{commonId,jdbcType=INTEGER}
+        <if test="goodsIds != null and goodsIds.size()>0">
+            and goods_id not in
+            <foreach collection="goodsIds" item="goodId" open="("
+                     close=")" separator=",">
+                #{goodId}
+            </foreach>
+        </if>
+    </update>
+    <update id="updateGdsBasesBatch2Obj"
+            parameterType="com.houjiang.commons.dto.goods.ManageGdsBaseAddParamvDTO">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            <if test="commonId != null">
+                common_id = #{commonId,jdbcType=INTEGER},
+            </if>
+            <if test="shopId != null">
+                shop_id = #{shopId,jdbcType=INTEGER},
+            </if>
+            <if test="shopName != null">
+                shop_name = #{shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsName != null">
+                goods_name = #{goodsName,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsPromotionTips != null">
+                goods_promotion_tips =
+                #{goodsPromotionTips,jdbcType=VARCHAR},
+            </if>
+            <if test="catId != null">
+                cat_id = #{catId,jdbcType=INTEGER},
+            </if>
+            <if test="goodsSpec != null">
+                goods_spec = #{goodsSpec,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsPrice != null">
+                goods_price = #{goodsPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsMarketPrice != null">
+                goods_market_price =
+                #{goodsMarketPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsShopGateStock != null">
+                goods_shop_gate_stock = #{goodsShopGateStock,jdbcType=INTEGER},
+            </if>
+            <if test="goodsAlarm != null">
+                goods_alarm = #{goodsAlarm,jdbcType=INTEGER},
+            </if>
+            <if test="brandId != null">
+                brand_id= #{brandId},
+            </if>
+            <if test="goodsCode != null">
+                goods_code = #{goodsCode,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsIsRecommend != null">
+                goods_is_recommend =
+                #{goodsIsRecommend,jdbcType=BIT},
+            </if>
+            <if test="goodsImage != null">
+                goods_image = #{goodsImage,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsMaxSale != null">
+                goods_max_sale =
+                #{goodsMaxSale,jdbcType=INTEGER},
+            </if>
+            <if test="goodsMinSale != null">
+                goods_min_sale =
+                #{goodsMinSale,jdbcType=INTEGER},
+            </if>
+            <if test="goodsIsShelves != null">
+                goods_is_shelves =
+                #{goodsIsShelves,jdbcType=BIT},
+            </if>
+            <if test="goodsCubage != null">
+                goods_cubage =
+                #{goodsCubage,jdbcType=DECIMAL},
+            </if>
+            <if test="specValue != null and specValue != ''">
+                spec_value = #{specValue,jdbcType=VARCHAR},
+            </if>
+            <if test="goodsVolume != null">
+                goods_volume = #{goodsVolume,jdbcType=DECIMAL},
+            </if>
+            <if test="goodsCostPrice != null">
+                goods_cost_price = #{goodsCostPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="merchantCode != null">
+                merchant_code = #{merchantCode,jdbcType=VARCHAR},
+            </if>
+            <if test="commodityBarTypeCode != null">
+                commodity_bar_type_code = #{commodityBarTypeCode,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where goods_id = #{goodsId,jdbcType=INTEGER}
+    </update>
+    <update id="updateGoodsBaseByMap">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            <if test="param.shopName != null and param.shopName != ''">
+                shop_name = #{param.shopName}
+            </if>
+        </set>
+        where shop_id = #{param.shopId}
+    </update>
+    <update id="updateGoodsBaseState">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            <if test="goodsIsShelves != null">
+                goods_is_shelves = #{goodsIsShelves}
+            </if>
+        </set>
+        <where>
+            <if test="shopId != null">
+                and shop_id = #{shopId}
+            </if>
+        </where>
+    </update>
+    <update id="updateGoodsBaseStateList">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            <if test="param.commonState != null">
+                goods_is_shelves = #{param.commonState,jdbcType=BIT}
+            </if>
+        </set>
+        where common_id
+        in (
+        <foreach collection="param.commonIdList" separator=","
+                 item="commonId">
+            #{commonId}
+        </foreach>
+        )
+    </update>
+    <update id="updateGoodsPriceUni1">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            goods_market_price = #{param.commonMarketPrice},
+            goods_price = #{param.commonPrice},
+        </set>
+        where common_id in
+        <foreach item="commonId" collection="param.commonIds" separator="," open="(" close=")" index="index">
+            #{commonId}
+        </foreach>
+    </update>
+    <update id="updateGoodsPriceSep">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            goods_market_price = #{param.commonMarketPrice},
+            goods_price = #{param.commonPrice},
+        </set>
+        where common_id = #{param.commonId}
+    </update>
+    <update id="updateGoodsPriceSep2">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            goods_market_price = #{param.commonMarketPrice},
+            goods_price = #{param.commonPrice},
+        </set>
+        where goods_id = #{param.goodsId}
+    </update>
+    <update id="updateGoodsPrice">
+        update ${database.prefix.goods}hou_goods_base
+        set goods_price = #{param.goodsPrice}
+        <if  test="param.catId != null">
+            , cat_id = #{param.catId}
+        </if>
+        where goods_id = #{param.goodsId}
+    </update>
+    <update id="updateOnline">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            goods_is_shelves = 1
+        </set>
+        where common_id in (
+        <foreach collection="commonIds" separator="," item="commonId">
+            #{commonId}
+        </foreach>
+        )
+        and goods_is_shelves = 2
+    </update>
+    <update id="updateDealerGoodsBase">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            <if test="gdsBases.goodsIsShelves != null">
+                goods_is_shelves = #{gdsBases.goodsIsShelves,jdbcType=BIT},
+            </if>
+        </set>
+        where goods_id = #{gdsBases.goodsId}
+    </update>
+    <update id="updateDealerGoodsStock">
+        update ${database.prefix.goods}hou_goods_stock
+        <set>
+            <if test="gdsBases.goodsStock != null and gdsBases.dealerType == 1">
+                ${database.prefix.goods}hou_goods_stock = #{gdsBases.goodsStock,jdbcType=INTEGER},
+            </if>
+            <if test="gdsBases.goodsStock != null and gdsBases.dealerType == 2">
+                ${database.prefix.goods}hou_goods_stock = ${database.prefix.goods}hou_goods_stock + #{gdsBases.goodsStock,jdbcType=INTEGER},
+            </if>
+        </set>
+        where goods_id = #{gdsBases.goodsId}
+    </update>
+    <update id="updateAddStock">
+        update ${database.prefix.goods}hou_goods_stock set
+        <if test="param.goodsNum != null">
+            ${database.prefix.goods}hou_goods_stock = ${database.prefix.goods}hou_goods_stock + #{param.goodsNum}
+        </if>
+        where goods_id = #{param.goodsId}
+    </update>
+    <update id="updateWeighingGoodsBaseStock">
+        update ${database.prefix.goods}hou_goods_base set
+        <if test="param.goodsStock != null">
+            goods_shop_gate_stock = #{param.goodsStock}
+        </if>
+        where common_id = #{param.commonId}
+    </update>
+    <update id="updateSkuIsShelves">
+        update ${database.prefix.goods}hou_goods_base
+        set
+            goods_is_shelves = #{goodsIsShelves},
+            is_auto_off_shelf = 0
+        where goods_id = #{goodsId}
+    </update>
+    <update id="updateSupperGoodsBaseStart">
+        update ${database.prefix.goods}hou_goods_base set goods_is_shelves = 1  where common_id in
+        <foreach item="commonId" collection="commonIds" separator="," open="(" close=")" index="index">
+            #{commonId}
+        </foreach>
+    </update>
+    <update id="updateSpplierGoodsBaseStateList">
+        update ${database.prefix.supplier}hou_supplier_goods_base
+        set
+        <if test="param.commonState != null">
+            goods_is_shelves = #{param.commonState}
+        </if>
+        where supplier_common_id
+        in (
+        <foreach collection="param.supplierCommonIdList" separator=","
+                 item="commonId">
+            #{commonId}
+        </foreach>
+        )
+    </update>
+    <update id="updateDealerGoodsBaseStateList">
+        update ${database.prefix.goods}hou_goods_base
+        set goods_is_shelves  = 2,
+            is_auto_off_shelf = 0
+        where common_id = #{dealerGoodsId}
+    </update>
+    <update id="updateDealerGoods">
+        update ${database.prefix.goods}hou_goods_base
+        <set>
+            <if test="param.goodsName !=null and param.goodsName != '' ">
+                goods_name =#{param.goodsName},
+            </if>
+            <if test="param.catId !=null  ">
+                cat_id =#{param.catId},
+            </if>
+            <if test="param.goodsMarketPrice !=null ">
+                goods_market_price =#{param.goodsMarketPrice},
+            </if>
+            <if test="param.goodsImage !=null ">
+                goods_image =#{param.goodsImage},
+            </if>
+            <if test="param.goodsCubage !=null  ">
+                goods_cubage =#{param.goodsCubage},
+            </if>
+            <if test="param.brandId !=null">
+                brand_id =#{param.brandId},
+            </if>
+        </set>
+        where goods_id = #{dealerGoodsId}
+    </update>
+    <select id="selectGoodsSpecBygoodsIsShelves"
+            resultType="com.houjiang.goods.vo.ManageGdsBaseAddResultVO"
+            parameterType="java.lang.Integer">
+        select
+        gb.goods_id,
+        gb.common_id,
+        gb.shop_id,
+        gb.shop_name,
+        gb.goods_name,
+        gb.goods_promotion_tips,
+        gb.cat_id,
+        gb.goods_spec,
+        gb.goods_price,
+        gb.goods_market_price,
+        gb.goods_shop_gate_stock,
+        gb.goods_alarm,
+        gb.goods_code,
+        gb.goods_is_recommend,
+        gb.goods_image,
+        gb.is_delete,
+        gb.supplier_goods_id,
+        gb.goods_max_sale,
+        gb.goods_is_shelves,
+        gb.goods_cubage,
+        gb.goods_min_sale,
+        gb.spec_value,
+        gb.goods_volume,
+        gb.goods_cost_price,
+        gb.commodity_bar_type_code,
+        gb.merchant_code,
+        gs.goods_stock
+        from ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        where 1 = 1
+        <if test="isVersion == null">
+            and gb.is_delete != 1
+        </if>
+        -- and goods_is_shelves = 1
+        <if test="commonId != null and commonId != ''">
+            and gb.common_id = #{commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="isMeGoods" resultType="java.lang.Integer">
+        select count(*)
+        from ${database.prefix.goods}hou_goods_base
+        where common_id = #{commonId}
+          and shop_id = #{shopId}
+          and supplier_goods_id is null
+    </select>
+    <select id="selectByAllGoods" resultType="com.houjiang.goods.vo.PlatFormAllGoodsVO">
+        SELECT
+        gc.common_id,
+        gc.common_name,
+        gc.common_promotion_tips,
+        gc.cat_id,
+        gc.cat_name,
+        gc.shop_id,
+        gc.shop_name,
+        gc.brand_id,
+        gc.brand_name,
+        gc.common_image,
+        gc.common_state,
+        gc.common_verify,
+        gc.common_add_time,
+        gc.common_sell_time,
+        gc.common_price,
+        gc.common_market_price,
+        gc.common_cost_price,
+        gc.common_alarm,
+        gc.goods_type,
+        gc.common_update_time,
+        gc.common_is_locked,
+        gc.type,
+        gc.common_is_screen,
+        sc.tax_id as business_id,
+        sc.business_licence_pic as businessLicenseElectronic,
+        sb.shop_business,
+        gc.common_verify_time,
+        gc.order_operator,
+        gc.order_operator_time,
+        gc.virtual_goods ,sb.shop_type,sb.shop_self_support
+        FROM
+        ${database.prefix.goods}hou_goods_common gc
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = gc.shop_id
+        LEFT JOIN ${database.prefix.supplier}hou_supplier_shop_join_base sc ON sc.user_id = sb.user_id
+        left join ${database.prefix.base}hou_base_dealer_putaway_record dr on gc.common_id = dr.dealer_common_id
+        WHERE
+        common_state NOT IN (3, 5) and gc.integral_goods = 1 and
+        gc.shop_status = 3 and (dr.is_price_update = 1 or dr.is_price_update is null)
+        AND (gc.integral_goods &lt;&gt; 0 or gc.integral_goods is null)
+        <if test="param.shopBusiness != null and param.shopBusiness == 1">
+            and sb.shop_business in (0,1,2) and sb.shop_self_support = 'false'
+        </if>
+        <if test="param.shopBusiness != null and param.shopBusiness == 2">
+            and sb.shop_self_support = 'true'
+        </if>
+        <if test="param.shopBusiness != null and param.shopBusiness != 1 and param.shopBusiness != 2">
+            and sb.shop_business = #{param.shopBusiness} and sb.shop_self_support = 'false'
+        </if>
+        <if test="param.shopId != null and param.shopId != ''">
+            and gc.shop_id = #{param.shopId}
+        </if>
+        <if test="param.productIndex == 0">
+            and gc.goods_type &lt;&gt; 3
+        </if>
+        <if test="param.shopType != null and param.shopType != ''">
+            and sb.shop_type &lt;&gt; 2
+        </if>
+        <if test="param.virtualGoods!=null">
+            and gc.virtual_goods= #{param.virtualGoods}
+        </if>
+        <if test="param.inventoryWarning != null">
+            and gc.common_alarm &lt;= #{param.inventoryWarning,jdbcType=INTEGER}
+        </if>
+        <if test="param.commonVerify != null">
+            and gc.common_verify= #{param.commonVerify,jdbcType=INTEGER}
+        </if>
+        <if test="param.commonIsLocked != null">
+            and gc.common_is_locked= #{param.commonIsLocked,jdbcType=INTEGER}
+        </if>
+        <if test="param.commonIsScreen != null">
+            and gc.common_is_screen = #{param.commonIsScreen,jdbcType=INTEGER}
+        </if>
+        <if test="param.catId != null">
+            and gc.cat_id in (
+            SELECT
+            cat_id
+            FROM
+            (
+            SELECT
+            t1.cat_id,
+            t1.cat_parent_id,
+            t1.cat_level,
+            IF
+            ( FIND_IN_SET( cat_parent_id, @pids ) > 0, @pids := CONCAT( @pids, ',', cat_id ), 0 ) AS ischild,
+            @l := @l + 1 AS LEVEL
+            FROM
+            ( SELECT cat_id, cat_level, cat_parent_id FROM ${database.prefix.goods}hou_goods_cat t ORDER BY cat_parent_id, cat_id ) t1,
+            ( SELECT @pids := #{param.catId,jdbcType=INTEGER}, @l := 0 ) t2
+            ) t3
+            WHERE
+            (ischild != 0 OR cat_id = #{param.catId,jdbcType=INTEGER})
+            and
+            cat_level not in (1,2)
+            )
+        </if>
+        <if test="param.commonState != null">
+            and gc.common_state=
+            #{param.commonState,jdbcType=INTEGER}
+        </if>
+        <if test="param.commonName != null and param.commonName != ''">
+            and gc.common_name LIKE CONCAT('%',#{param.commonName },'%')
+        </if>
+        <if test="param.shopName != null and param.shopName != ''">
+            and sb.shop_name LIKE CONCAT('%',#{param.shopName },'%')
+        </if>
+        <if test="param.brandName != null and param.brandName != ''">
+            and gc.brand_name LIKE CONCAT('%',#{param.brandName },'%')
+        </if>
+        <if test="param.opType != null and param.opType != ''">
+            and gc.common_id NOT IN (SELECT common_id from
+            gdb_promotion_none_common
+            where activity_none_type = #{param.opType})
+        </if>
+        <if test="param.goodsType!=null and param.goodsType != 3">
+            and gc.goods_type = #{param.goodsType}
+        </if>
+        GROUP BY gc.common_id
+        ORDER BY gc.common_update_time desc
+    </select>
+    <select id="selectStocks" resultType="com.houjiang.goods.vo.GoodsStockVO">
+        select goods_stock,
+               goods_alarm
+        from ${database.prefix.goods}hou_goods_stock
+        where common_id = #{commonId}
+    </select>
+    <select id="queryGoodsCommonId" resultType="com.houjiang.goods.vo.GoodsBaseVO">
+        select gb.goods_id,
+               gb.common_id,
+               gb.shop_id,
+               gb.shop_name,
+               gb.supplier_shop_id,
+               gb.supplier_goods_id,
+               gb.goods_name,
+               gb.goods_promotion_tips,
+               gb.cat_id,
+               gb.brand_id,
+               gb.goods_spec,
+               gb.goods_price,
+               gb.goods_market_price,
+               gs.goods_stock,
+               gs.goods_alarm,
+               gb.goods_code,
+               gb.goods_is_recommend,
+               gb.goods_click,
+               gb.goods_salenum,
+               gb.goods_collect,
+               gb.goods_image,
+               gb.goods_evaluation_good_star,
+               gb.goods_evaluation_count,
+               gb.goods_max_sale,
+               gb.goods_is_shelves,
+               gb.goods_cubage,
+               gb.goods_min_sale,
+               gb.merchant_code,
+               gb.commodity_bar_type_code,
+               gb.spec_value,
+               gb.goods_volume,
+               gb.goods_cost_price,
+               gb.is_delete,
+               gb.create_user,
+               gb.create_time,
+               gb.update_user,
+               gb.update_time,
+               gb.ts
+        from ${database.prefix.goods}hou_goods_base gb
+            LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        where gb.common_id = #{commonId,jdbcType=INTEGER}
+        <if test="isVersion == null">
+            and gb.is_delete != 1
+        </if>
+    </select>
+    <select id="selectByCatIds" resultType="com.houjiang.goods.vo.GoodsIdsQueryVO">
+        SELECT
+        gb.goods_id,
+        gb.common_id,
+        gb.goods_name,
+        gb.goods_price,
+        gb.goods_market_price,
+        gb.goods_image,
+        gb.shop_id,
+        gb.shop_name,
+        gb.goods_salenum
+        FROM
+        ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON ( gb.common_id = gc.common_id )
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        WHERE
+        gc.common_state = 1
+        AND gc.goods_type = #{goodsType} and
+        gc.common_verify = 1
+        AND gb.goods_is_shelves = 1
+        AND gs.goods_stock > 0
+        AND gb.cat_id IN
+        <foreach collection="catIdList" item="catId" open="(" close=")" separator=",">
+            #{catId}
+        </foreach>
+        ORDER BY
+        gb.goods_salenum DESC
+        LIMIT 8
+    </select>
+    <select id="selectCommodityDetails" resultType="com.houjiang.goods.dto.GoodsDetailsDTO">
+        SELECT
+        b.goods_id,
+        b.common_id,
+        b.shop_id,
+        b.shop_name,
+        b.goods_name,
+        b.goods_price,
+        gs.goods_stock,
+        b.goods_spec
+        FROM
+        ${database.prefix.goods}hou_goods_base b
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on b.goods_id = gs.goods_id
+        WHERE
+        1 = 1
+        <if test="null != param.getGoodsName() and !''.equals(param.getGoodsName())">
+            AND b.goods_name LIKE CONCAT(
+            '%',#{param.goodsName},'%')
+        </if>
+        <if test="null != param.getShopName() and !''.equals(param.getShopName())">
+            AND b.shop_name LIKE CONCAT(
+            '%',#{param.shopName},'%')
+        </if>
+    </select>
+    <select id="selectCommodityDetailsByPage" resultType="com.houjiang.goods.dto.GoodsDetailsDTO">
+        SELECT
+        b.goods_id,
+        b.common_id,
+        b.shop_id,
+        b.shop_name,
+        b.goods_name,
+        b.goods_price,
+        gs.goods_stock,
+        b.goods_spec
+        FROM
+        ${database.prefix.goods}hou_goods_base b
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on b.goods_id = gs.goods_id
+        WHERE
+        1 = 1
+        <if test="null != param.getGoodsName() and !''.equals(param.getGoodsName())">
+            AND b.goods_name LIKE CONCAT('%',#{param.goodsName},'%')
+        </if>
+        <if test="null != param.getShopName() and !''.equals(param.getShopName())">
+            AND b.shop_name LIKE CONCAT('%',#{param.shopName},'%')
+        </if>
+    </select>
+    <select id="selectGoodsDetailByRct" resultType="com.houjiang.goods.entity.GoodsBaseEntity">
+        SELECT gb.shop_name,
+               gb.goods_name,
+               gb.goods_price,
+               gb.goods_image
+        FROM ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.activity}hou_addon_activity_redpacket_template art ON art.goods_cat_limit = gb.goods_id
+        WHERE art.redpacket_t_id = #{param.redpacketTId}
+    </select>
+    <select id="selectByGoodsIds" resultType="com.houjiang.goods.vo.WapHallGoodsQueryVO">
+        SELECT c.common_id,
+        c.goods_id,
+        c.common_name,
+        c.common_promotion_tips,
+        c.common_image,
+        c.common_price,
+        c.common_market_price,
+        c.common_salenum,c.common_is_xian,c.corner_url from ( select
+        gb.common_id,
+        gb.goods_id,
+        gc.common_name,
+        gc.common_promotion_tips,
+        gc.common_image,
+        gc.common_price,
+        gc.common_market_price,
+        gc.common_salenum,gc.common_is_xian
+        FROM
+        ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gb.common_id = gc.common_id
+        where gb.goods_is_shelves =1 and gb.goods_id in
+        <foreach collection="goodsIds" item="goodId" open="("
+                 close=")" separator=",">
+            #{goodId}
+        </foreach>
+        order by field(
+        gb.goods_id,
+        <foreach collection="goodsIds" separator="," item="goodId">
+            #{goodId}
+        </foreach>
+        )
+        ) c GROUP BY c.common_id
+    </select>
+    <select id="queryIntegralGoodsAll" resultType="com.houjiang.goods.vo.IntegraMallGoodsVO">
+        select
+        ggb.goods_id,ggb.common_id,
+        ggb.create_time,ggb.goods_name,
+        ggb.goods_image,ggb.goods_price,
+        ggb.need_integral,gs.goods_stock,
+        ggb.goods_is_shelves,ggb.goods_is_recommend,
+        ggc.integral_goods,ggb.goods_salenum
+        from ${database.prefix.goods}hou_goods_base as ggb
+        LEFT JOIN ${database.prefix.goods}hou_goods_common as ggc ON ggb.common_id=ggc.common_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on ggb.goods_id = gs.goods_id
+        where
+        ggc.integral_goods=0
+        and (ggb.is_delete = 0 or ggb.is_delete is null )
+        and ggc.common_state != 3
+        <if test=" param.goodsName !=null and  param.goodsName!=''  ">
+            and ggb.goods_name like CONCAT('%',#{param.goodsName},'%')
+        </if>
+        <if test="param.beginIntegral !=null and  param.endIntegral !=null and  param.endIntegral != '' and param.beginIntegral != ''">
+            and ggb.need_integral BETWEEN #{param.beginIntegral} and #{param.endIntegral}
+        </if>
+        ORDER BY ggb.create_time desc
+    </select>
+    <select id="selectCartMessageByCommonId" resultType="com.houjiang.commons.vo.goods.ReceiveGoodsDetailsVO">
+        SELECT
+        gb.goods_id,
+        gb.goods_name,
+        gb.goods_price,
+        gb.goods_image,
+        gb.shop_name,
+        gb.shop_id,
+        gs.goods_stock,
+        gb.goods_spec,
+        gb.common_id,
+        gb.goods_is_shelves,
+        gb.goods_max_sale,
+        gb.goods_min_sale,
+        gc.common_state,
+        gc.common_verify,
+        gc.common_is_xian,
+        gc.dealer_goods_flag,
+        gc.goods_type
+        FROM
+        ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON ( gb.common_id = gc.common_id )
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON ( sb.supplier_shop_id = gb.shop_id )
+        WHERE
+        1 =1
+        <if test="commonId != null and commonId != ''">
+            and gc.common_id = #{commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectByGoodsList2" resultType="com.houjiang.goods.dto.ManageGoodsBaseListResultDTO">
+        SELECT
+        gmgb.goods_id,
+        gmgb.common_id,
+        gmgb.goods_name,
+        gmgb.goods_spec,
+        gmgb.goods_price,
+        ggb.shop_gate_goods_stock,
+        gs.goods_stock,
+        gmgb.goods_shop_gate_stock AS shopGateStockMax,
+        gmgb.goods_image,
+        gmgb.goods_cubage,
+        gmgb.goods_click,
+        gmgb.goods_salenum,
+        gmgb.goods_collect,
+        gmgb.goods_market_price
+        FROM
+        ${database.prefix.goods}hou_goods_base gmgb
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gmgb.goods_id = gs.goods_id
+        LEFT JOIN ${database.prefix.business}hou_shop_gate_goods_base ggb ON gmgb.goods_id = ggb.goods_id
+        WHERE
+        gmgb.is_delete != 1
+        <if test="commonIds != null">
+            and gmgb.common_id in (
+            <foreach item="commonId" collection="commonIds" separator="," index="index">
+                #{commonId}
+            </foreach>
+            )
+        </if>
+    </select>
+    <select id="selectGoodsId" resultType="java.lang.Integer">
+        select
+        goods_id
+        FROM ${database.prefix.goods}hou_goods_base
+        where 1=1
+        <if test="commonId != null and commonId != ''">
+            and common_id = #{commonId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectShopDetailByShopId" resultType="com.houjiang.commons.vo.shop.GdsShopDetailResultVO">
+        select sb.supplier_shop_id,
+               sb.shop_name,
+               sb.user_name,
+               sb.shop_collect,
+               sb.wap_shop_logo,
+               sb.shop_logo,
+               sc.audit_status as depositStatus,
+               sb.shop_self_support
+        from ${database.prefix.supplier}hou_shop_base sb
+                 LEFT JOIN ${database.prefix.supplier}hou_supplier_shop_join_pay sc on sb.user_id = sc.user_id
+        where sb.supplier_shop_id =
+              #{shopId,jdbcType=INTEGER}
+    </select>
+    <select id="queryInvoiceSwitch" resultType="com.houjiang.commons.vo.shop.InvoiceSwitchEntityVO">
+        select invoice_switch_status,
+               invoice_audit_status,
+               platform_comment
+        from ${database.prefix.supplier}hou_shop_base
+        where supplier_shop_id = #{param.shopId}
+    </select>
+    <select id="selectManjianzengzhePromotionContent"
+            resultType="com.houjiang.commons.vo.activity.ManjianzengzhePromotionContentQueryResultVO">
+        select a.promotion_content,
+               a.discount_type,
+               a.has_giveaway,
+               a.discount_content,
+               a.meet_amount,
+               a.giveaway_id
+        from ${database.prefix.activity}hou_addon_activity_reduction_policy_rule a
+                 left join ${database.prefix.activity}hou_addon_activity_reduction_policy_goods b on a.promotion_id = b.promotion_id
+                 left join ${database.prefix.activity}hou_addon_activity_reduction_policy_base c on a.promotion_id = c.promotion_id
+        where b.common_id = #{commonId,jdbcType=INTEGER}
+          and c.promotion_status = 1
+    </select>
+
+    <select id="selectAppGuessLikeH5" resultType="com.houjiang.goods.vo.WapCommonBaseUserFootVO">
+        select
+        common_id,
+        common_name,
+        goods_id,
+        common_price,
+        common_image,
+        common_salenum,
+        common_market_price,
+        common_state,
+        common_is_xian,
+        common_promotion_tips,
+        shop_id,
+        points_rate
+        from ${database.prefix.goods}hou_goods_common gc
+        where shop_status = 3
+        and common_verify =1
+        and common_state = 1
+        and gc.common_is_xian = 0
+        and gc.integral_goods = 1
+        <if test="param.shopId != null and param.shopId != ''">
+            and gc.shop_id = #{param.shopId}
+        </if>
+        <if test="param.shopId == null or param.shopId == ''">
+            and gc.goods_type not in (2,3)
+        </if>
+        <if test="param.catIds != null and param.catIds.size()>0">
+            and cat_id in (
+            <foreach collection="param.catIds" separator="," item="catId">
+                #{catId}
+            </foreach>
+            )
+        </if>
+        ORDER BY common_salenum DESC
+        LIMIT 1000
+    </select>
+    <select id="selectCartGuessLikeGoods2" resultType="java.lang.Integer">
+        select DISTINCT(cat_id)
+        from goods_user_footprint
+        where user_id = #{userId,jdbcType=VARCHAR}
+    </select>
+    <select id="getGoodsPoster" resultType="com.houjiang.goods.vo.GoodsPosterVO">
+        SELECT gc.common_id             AS commonId,
+               gc.common_name           AS commonName,
+               gc.common_price          AS commonPrice,
+               gb.goods_id              AS goodsId,
+               gc.cat_id                AS catId,
+               gb.goods_name            AS goodsName,
+               gb.goods_price           AS goodsPrice,
+               gc.common_market_price   AS commonMarketPrice,
+               gb.goods_image           AS goodsImage,
+               gc.common_salenum        AS commonSalenum,
+               gc.common_evaluate       AS commonEvaluate,
+               gc.common_promotion_tips AS commonPromotionTips,
+               gc.common_collect        AS commonCollect,
+               gc.common_image          AS commonImage,
+               gc.shop_id               AS shopId,
+               gc.shop_name             AS shopName,
+               gc.virtual_goods         as virtualGoods,
+               gc.period_of_validity    as periodOfValidity,
+               gc.past_due              as pastDue,
+               gc.points_rate           as pointsRate,
+               gs.goods_stock           as goodsStock
+        FROM ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gb.common_id
+                 LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON gc.shop_id = sb.supplier_shop_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gs.goods_id = gb.goods_id
+        WHERE gc.common_state = 1
+          AND gc.common_verify = 1
+          AND gc.common_is_screen = 1
+          AND NOW() > gc.common_sell_time
+          AND sb.shop_status = 3
+          AND gb.goods_id = #{goodsId}
+          and (gc.goods_type = 1 or gc.goods_type is null)
+    </select>
+    <select id="queryDelayGoodsConfig" resultType="com.houjiang.commons.vo.base.BaseGoodsConfigVO">
+        select common_id,
+               sell_check,
+               sell_edit,
+               sell_edit_price,
+               sell_deliver
+        from goods_delay_config
+        where common_id = #{commonId,jdbcType=INTEGER}
+    </select>
+    <select id="selectNoneGoods" resultType="com.houjiang.commons.vo.goods.GoodsRecResultDetailVO">
+        SELECT
+        gc.common_id,
+        gc.common_name,
+        gc.goods_id,
+        gc.common_price,
+        gc.common_image,
+        gc.common_salenum,
+        gc.common_market_price,
+        gc.common_state,
+        gc.common_promotion_tips,
+        gc.common_is_xian,
+        gc.common_is_locked,
+        gr.update_date,
+        gc.shop_id,
+        gr.id,
+        gr.activity_verify,
+        gr.activity_verify_remark,
+        gr.none_type opType
+        FROM
+        ${database.prefix.activity}hou_addon_activity_none_goods gr
+        LEFT JOIN
+        ${database.prefix.goods}hou_goods_common gc ON (gc.common_id =gr.common_id)
+        WHERE
+        gc.shop_status = 3
+        AND
+        gc.common_verify = 1
+        AND
+        gc.common_state = 1
+        and gr.activity_verify = 1 and gc.common_stock > 0
+        and gc.common_is_screen = 1
+        <if test="param.commonName != null and param.commonName != ''">
+            and gc.common_name LIKE
+            CONCAT('%',#{param.commonName},'%')
+        </if>
+        <if test="param.noneType != null and param.noneType != ''">
+            and gr.none_type = #{param.noneType}
+        </if>
+        ORDER BY
+        gr.display_order ,
+        gc.common_salenum DESC,
+        gc.common_price ASC,
+        gc.common_add_time DESC
+    </select>
+    <select id="queryByGoodsId" resultType="com.houjiang.goods.vo.GoodsBaseVO">
+        select gb.goods_id,
+               gb.common_id,
+               gb.shop_id,
+               gb.shop_name,
+               gb.supplier_shop_id,
+               gb.supplier_goods_id,
+               gb.goods_name,
+               gb.goods_promotion_tips,
+               gb.cat_id,
+               gb.brand_id,
+               gb.goods_spec,
+               gb.goods_price,
+               gb.goods_market_price,
+               gs.goods_stock,
+               gb.goods_alarm,
+               gb.goods_code,
+               gb.goods_is_recommend,
+               gb.goods_click,
+               gb.goods_salenum,
+               gb.goods_collect,
+               gb.goods_image,
+               gb.goods_evaluation_good_star,
+               gb.goods_evaluation_count,
+               gb.goods_max_sale,
+               gb.goods_is_shelves,
+               gb.goods_cubage,
+               gb.goods_min_sale,
+               gb.merchant_code,
+               gb.commodity_bar_type_code,
+               gb.spec_value,
+               gb.goods_volume,
+               gb.goods_cost_price,
+               gb.is_delete,
+               gb.create_user,
+               gb.create_time,
+               gb.update_user,
+               gb.update_time,
+               gb.ts
+        from ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gs.goods_id = gb.goods_id
+        where gb.goods_id = #{goodsId,jdbcType=INTEGER}
+    </select>
+    <select id="queryProductVoucherGoods" resultType="com.houjiang.commons.vo.order.WapShippingQueryResultVO">
+        select gb.goods_id,gb.common_id,gb.goods_name,gb.cat_id,gb.goods_price,gb.goods_image,gs.goods_stock,gb.goods_spec
+        from ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gs.goods_id = gb.goods_id
+        where gb.goods_id = #{goodsId} and gb.goods_is_shelves = 1
+    </select>
+    <select id="queryStorageInventoryFlowGoods" resultType="com.houjiang.commons.vo.goods.StorageInventoryFlowGoodsVO">
+        select mgb.goods_id,
+        mgb.common_id,
+        mgb.goods_name,
+        mgb.goods_spec
+        from ${database.prefix.goods}hou_goods_base mgb
+        left join ${database.prefix.goods}hou_goods_common mgc on mgc.common_id = mgb.common_id
+        left join storage_goods_base sgb on sgb.goods_id = mgb.goods_id
+        where mgb.shop_id = #{param.shopId} and mgb.is_delete = 0
+            and mgc.common_state != 3 and mgc.is_delete = 0 and mgc.supplier_source != 2
+        <if test="param.goodsType != null and param.goodsType == 1">
+            and mgc.dealer_goods_flag = 0
+        </if>
+        <if test="param.goodsType != null and param.goodsType == 2">
+            and mgc.dealer_goods_flag in (1,2,3)
+        </if>
+        <if test="param.goodsName != null and param.goodsName != ''">
+            and mgb.goods_name like concat('%',#{param.goodsName},'%')
+        </if>
+        <if test="param.outStorageId != null">
+            and sgb.storage_id = #{param.outStorageId}
+        </if>
+        group by mgb.goods_id
+    </select>
+    <select id="selectGoodsInfo" resultType="com.houjiang.commons.vo.goods.StorageInventoryFlowGoodsVO">
+        select mgb.goods_id,
+               mgb.common_id,
+               mgb.goods_name,
+               mgb.goods_spec
+        from ${database.prefix.goods}hou_goods_base mgb
+        where mgb.goods_id = #{goodsId}
+    </select>
+    <select id="selectGoodsIdListByGoodsName" resultType="java.lang.Integer">
+        select goods_id from ${database.prefix.goods}hou_goods_base where goods_name like concat('%',#{goodsName},'%') and shop_id =#{shopId}
+    </select>
+    <select id="queryGoodsByCommonIds" resultType="java.lang.Integer">
+        select goods_id from ${database.prefix.goods}hou_goods_base
+        where common_id
+        in (
+        <foreach collection="commonIds" separator="," item="commonId">
+            #{commonId}
+        </foreach>
+        )
+    </select>
+    <select id="selectByOffOrOnline" resultType="com.houjiang.goods.vo.GoodsBaseVO">
+        select
+            gb.goods_id, gb.common_id, gb.shop_id, gb.shop_name, gb.goods_name, gb.goods_promotion_tips, gb.cat_id,
+            gb.brand_id, gb.goods_spec,gb.goods_price, gb.goods_market_price, mgs.goods_stock, mgs.goods_alarm,
+            gb.goods_code, gb.goods_is_recommend, gb.goods_click, gb.goods_salenum, gb.goods_collect,
+            gb.goods_image, gb.goods_evaluation_good_star, gb.goods_evaluation_count, gb.goods_max_sale,
+            gb.goods_is_shelves
+        from ${database.prefix.goods}hou_goods_base gb
+                 left join ${database.prefix.goods}hou_goods_stock mgs on mgs.goods_id = gb.goods_id
+        where gb.goods_is_shelves = #{goodsIsShelves} AND gb.common_id = #{commonId}
+    </select>
+    <select id="selectCommonIsShelves" resultType="java.lang.Integer">
+        select count(goods_id)
+        from ${database.prefix.goods}hou_goods_base
+        where common_id = #{commonId}
+    </select>
+    <select id="selectGoodsIsShelves" resultType="java.lang.Integer">
+        select count(goods_id)
+        from ${database.prefix.goods}hou_goods_base
+        where goods_is_shelves = #{goodsIsShelves}
+          and common_id = #{commonId}
+    </select>
+    <select id="selectByCommonIdZ" resultType="com.houjiang.commons.vo.goods.BaseDetailVO">
+        select gb.common_id,
+               gb.shop_id,
+               gb.shop_name,
+               gb.supplier_goods_id,
+               gb.goods_id,
+               gb.goods_name,
+               gb.goods_promotion_tips,
+               gb.cat_id,
+               gb.brand_id,
+               gbr.brand_name,
+               gbr.brand_pic,
+               gb.goods_spec,
+               gb.goods_price,
+               gb.goods_market_price,
+               mgs.goods_stock,
+               gb.goods_alarm,
+               gb.goods_code,
+               gb.goods_is_recommend,
+               gb.goods_click,
+               gc.common_salenum as goodsSalenum,
+               gb.goods_collect,
+               gb.goods_image,
+               gb.goods_evaluation_good_star,
+               gb.goods_evaluation_count,
+               gb.goods_max_sale,
+               gb.goods_is_shelves,
+               gc.common_verify,
+               gc.common_state,
+               gc.common_is_shop_take,
+               gb.goods_min_sale,
+               gc.type,
+               gc.common_video,
+               gb.spec_value,
+               gc.common_is_xian,
+               gc.goods_type,
+               gc.dealer_goods_flag,
+               gb.need_integral,
+               gc.integral_goods,
+               gc.delivery_date,
+               gc.supplier_source
+        FROM ${database.prefix.goods}hou_goods_base gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON (gb.common_id = gc.common_id)
+                 left join ${database.prefix.goods}hou_goods_brand gbr on gbr.brand_id = gb.brand_id
+                 left join ${database.prefix.goods}hou_goods_stock mgs on mgs.goods_id = gc.goods_id
+        where gb.common_id = #{commonId,jdbcType=INTEGER}
+    </select>
+    <select id="selectSupplierByCommonIdZ" resultType="com.houjiang.commons.vo.goods.BaseDetailVO">
+        select gb.supplier_common_id as common_id,
+               gb.supplier_shop_id as shop_id,
+               gb.shop_name,
+               gb.supplier_goods_id as goods_id,
+               gb.goods_name,
+               gb.supplier_cat_id,
+               gb.brand_id,
+               gb.goods_spec,
+               gb.goods_price,
+               gb.goods_market_price,
+               gb.goods_stock,
+               gb.goods_alarm,
+               gb.goods_code,
+               gb.goods_click,
+               gc.common_salenum as goodsSalenum,
+               gb.goods_collect,
+               gb.goods_image,
+               gb.goods_evaluation_good_star,
+               gb.goods_evaluation_count,
+               gb.goods_max_sale,
+               gb.goods_is_shelves,
+               gc.common_verify,
+               gc.common_state,
+               gc.common_is_shop_take,
+               gc.type,
+               gc.common_video,
+               gb.spec_value,
+               gc.goods_type,
+               gc.dealer_goods_flag,
+               gc.delivery_date
+        FROM ${database.prefix.supplier}hou_supplier_goods_base gb
+                 LEFT JOIN ${database.prefix.supplier}hou_supplier_common_base gc ON (gb.supplier_common_id = gc.supplier_common_id)
+        where gb.supplier_common_id =  #{commonId,jdbcType=INTEGER}
+    </select>
+    <select id="querySupplierCommonBaseInfo" resultType="com.houjiang.goods.entity.GoodsCommonEntity">
+        SELECT supplier_common_id as commonId,
+               common_name,
+               common_price,
+               common_market_price,
+               common_cost_price,
+               goods_recommended_min_price,
+               goods_recommended_max_price,
+               transport_area_id,
+               transport_template,
+               common_image,
+               supplier_cat_id    as catId,
+               cat_name,
+               brand_id,
+               brand_name,
+               custom_information,
+               after_service,
+               issued_on_behalf   as issuedOnBehalf
+        FROM ${database.prefix.supplier}hou_supplier_common_base
+        WHERE supplier_common_id = #{supplierCommonId}
+    </select>
+    <select id="querySupplierGoodsBaseInfo" resultType="com.houjiang.goods.entity.GoodsBaseEntity">
+        SELECT supplier_goods_id as goods_id,
+               goods_name,
+               supplier_cat_id   as cat_id,
+               goods_price,
+               goods_market_price,
+               goods_image,
+               goods_cubage,
+               brand_id
+        FROM ${database.prefix.supplier}hou_supplier_goods_base
+        WHERE supplier_common_id = #{supplierCommonId}
+    </select>
+    <select id="querySupplierCommonBodyInfo" resultType="java.lang.String">
+        select common_body
+        from ${database.prefix.supplier}hou_supplier_goods_common_detail
+        where supplier_common_id = #{supplierCommonId}
+    </select>
+    <select id="selectGoodsById" resultType="com.houjiang.commons.vo.activity.ActivityCombinationGoodsVO">
+        select goods_id, goods_name, goods_price
+        from ${database.prefix.goods}hou_goods_base
+        where goods_id = #{goodsId}
+    </select>
+    <select id="selectGoodsIdList" resultType="com.houjiang.commons.vo.goods.GoodsIdsQueryResultVO">
+        select gb.goods_id,
+               gb.common_id,
+               gc.dealer_goods_flag
+        from ${database.prefix.goods}hou_goods_base gb
+                 left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = gb.common_id
+        where gb.goods_id = #{goodsId}
+    </select>
+    <select id="selectCommonId" resultType="java.lang.Integer">
+        select
+        common_id
+        from ${database.prefix.goods}hou_goods_base
+        where 1=1
+        <if test="goodsId != null and goodsId != ''">
+            and goods_id = #{goodsId,jdbcType=INTEGER}
+        </if>
+    </select>
+
+    <update id="updateGoodsBase">
+        update ${database.prefix.goods}hou_goods_base
+        set goods_is_shelves = 0,is_delete = 1
+        where shop_id = #{shopId}
+    </update>
+    <update id="updateBaseStock">
+        update ${database.prefix.goods}hou_goods_base
+        set goods_shop_gate_stock = goods_shop_gate_stock + #{param.shopGateGoodsStock,jdbcType=INTEGER}
+        where 1=1
+          and common_id = #{param.commonId,jdbcType=INTEGER}
+          and goods_id = #{param.goodsId,jdbcType=INTEGER}
+          and shop_id = #{param.shopId,jdbcType=INTEGER}
+    </update>
+    <update id="lessGoodsBySales">
+        UPDATE ${database.prefix.goods}hou_goods_base
+        set goods_salenum = CASE
+                                WHEN goods_salenum > #{param.goodsNum} THEN goods_salenum - #{param.goodsNum}
+                                ELSE 0 END
+        where goods_id = #{param.goodsId}
+    </update>
+    <select id="queryGoodsBaseInfo" resultType="com.houjiang.commons.vo.goods.GateStoreIndexGoodsVO">
+        SELECT
+            gc.common_id,gc.common_name,gc.common_image,gb.goods_price as commonPrice,gb.goods_id,
+            gc.spec_param,
+            gb.spec_value
+        FROM
+           ${database.prefix.goods}hou_goods_base gb
+                LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gb.common_id = gc.common_id
+        WHERE
+            gc.common_state = 1
+          AND gc.common_verify = 1
+          AND gb.goods_is_shelves = 1
+          AND gc.common_id = #{param.commonId}
+    </select>
+    <select id="queryByGoodsIdFeign" resultType="java.util.Map">
+        select
+            goods_id,
+            common_id,
+            shop_id,
+            shop_name,
+            supplier_shop_id,
+            supplier_goods_id,
+            goods_name,
+            goods_promotion_tips,
+            cat_id,
+            brand_id,
+            goods_spec,
+            goods_price,
+            goods_market_price,
+            goods_alarm,
+            goods_code,
+            goods_is_recommend,
+            goods_click,
+            goods_salenum,
+            goods_collect,
+            goods_image,
+            goods_evaluation_good_star,
+            goods_evaluation_count,
+            goods_max_sale,
+            goods_is_shelves,
+            goods_cubage,
+            goods_min_sale,
+            merchant_code,
+            commodity_bar_type_code,
+            spec_value,
+            goods_volume,
+            goods_cost_price,
+            is_delete,
+            create_user,
+            create_time,
+            update_user,
+            update_time,
+            sys_version,
+            ts
+        from
+        ${database.prefix.goods}hou_goods_base
+        where goods_id = #{goodsId,jdbcType=INTEGER}
+    </select>
+
+    <select id="queryGoodsInfo" resultType="com.houjiang.commons.dto.goods.ModularizationdGoodsDataDTO">
+        select gb.goods_id,gb.common_id,gc.common_name,gc.common_image,gc.common_price
+        from ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc on gb.common_id = gc.common_id
+        where 1 = 1
+        <if test="null != param.goodsId">
+            and gb.goods_id = #{param.goodsId}
+        </if>
+        <if test="null != param.commonId">
+            and gb.common_id = #{param.commonId}
+        </if>
+        limit 1
+    </select>
+    <select id="queryModularizationdGoodsInfo"
+            resultType="com.houjiang.commons.vo.goods.ModularizationdGoodsVO">
+        SELECT
+            common_name,
+            common_image,
+            gb.goods_id,
+            gc.common_price,
+            gc.common_salenum,
+            gc.points_rate
+        FROM
+            ${database.prefix.goods}hou_goods_base gb
+                LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gb.common_id = gc.common_id
+        WHERE
+            gb.goods_id = #{goodsId} and (gc.is_delete is null or gc.is_delete = 0)
+
+          AND gc.common_is_screen = 1
+          AND ( ${database.prefix.goods}hou_goods_type = 1 OR ${database.prefix.goods}hou_goods_type IS NULL )
+          AND gc.common_verify = 1
+          AND gc.common_state = 1
+          AND gc.shop_status = 3
+          AND common_is_locked = 1
+          AND common_is_screen = 1
+          AND (
+            integral_goods != 0
+	OR integral_goods IS NULL)
+    </select>
+    <select id="queryModularizationdGoodsInfo2"
+            resultType="com.houjiang.commons.vo.goods.ModularizationdGoodsVO">
+        select common_name,
+               common_image,
+               gb.goods_id,
+               gc.common_price,
+               gc.common_salenum,
+               gs.goods_stock,
+               gb.goods_price
+        from ${database.prefix.goods}hou_goods_base  gb
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc on gb.common_id = gc.common_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+        where gb.goods_id = #{goodsId}
+          and (gc.is_delete is null or gc.is_delete = 0)
+          and gc.common_is_screen = 1
+          and (goods_type in(1,3)  or ${database.prefix.goods}hou_goods_type is null)
+          and gc.common_verify = 1
+          and gc.common_state = 1
+          and gc.shop_status = 3
+          and common_is_locked = 1
+          and common_is_screen = 1
+          and (integral_goods != 0 or integral_goods is null)
+    </select>
+    <select id="selectFoodExhibitionHallByGoodsIds"
+            resultType="com.houjiang.goods.vo.WapHallGoodsQueryResultVO">
+        SELECT c.common_id,
+        c.goods_id,
+        c.common_name,
+        c.common_promotion_tips,
+        c.common_image,
+        c.common_price,
+        c.common_market_price,
+        c.common_salenum,c.common_is_xian from ( select
+        gb.common_id,
+        gb.goods_id,
+        gc.common_name,
+        gc.common_promotion_tips,
+        gc.common_image,
+        gc.common_price,
+        gc.common_market_price,
+        gc.common_salenum,gc.common_is_xian
+        FROM
+        ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gb.common_id = gc.common_id
+        where gb.goods_is_shelves =1  and gb.goods_id in
+        <foreach collection="goodsIds" item="goodId" open="("
+                 close=")" separator=",">
+            #{goodId}
+        </foreach>
+        order by field(
+        gb.goods_id,
+        <foreach collection="goodsIds" separator="," item="goodId">
+            #{goodId}
+        </foreach>
+        )
+        ) c GROUP BY c.common_id
+    </select>
+    <select id="queryGoodsToBarter" resultType="com.houjiang.commons.vo.order.OrderGoodsBarterVO">
+        select
+            gb.goods_id, gb.common_id, gb.shop_id, gb.shop_name, gb.goods_name,
+            gb.cat_id, gb.goods_spec, gb.goods_price, mgs.goods_stock, mgs.goods_alarm, gb.goods_code, gb.goods_image,
+            gb.goods_is_shelves, gb.goods_cubage, gb.spec_value,
+            gb.is_delete, gc.dealer_goods_flag,gc.supplier_source,gb.supplier_goods_id
+        from ${database.prefix.goods}hou_goods_base gb
+                 left join ${database.prefix.goods}hou_goods_stock mgs on mgs.goods_id = gb.goods_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON (gc.common_id = gb.common_id)
+        where gb.goods_id = #{goodsId}
+    </select>
+    <select id="getGoodsSpecNameList" resultType="java.util.Map">
+        select gb.goods_price as goodsPrice, gb.shop_id as shopId, gb.spec_value as specValue,
+               gb.goods_id as goodsId, gb.common_id as commonId,
+               mgs.goods_stock as goodsStock
+        from ${database.prefix.goods}hou_goods_base gb
+                 left join ${database.prefix.goods}hou_goods_stock mgs on mgs.goods_id = gb.goods_id
+        where gb.common_id = #{commonId} and gb.goods_is_shelves = 1
+    </select>
+    <select id="selectGoodsListByCommonId" resultType="java.lang.Integer">
+        select goods_id from ${database.prefix.goods}hou_goods_base where common_id = #{commonId} and goods_is_shelves = 1 and is_delete = 0
+    </select>
+    <select id="queryGoodsSpecStr" resultType="java.lang.String">
+        select goods_spec from ${database.prefix.goods}hou_goods_base where common_id = #{commonId}
+    </select>
+</mapper>
+

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsAttributeTypeMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsAttributeTypeEntity" id="MerchantGoodsAttributeTypeMap">
+        <result property="attributeId" column="attribute_id" jdbcType="INTEGER"/>
+        <result property="attributeName" column="attribute_name" jdbcType="VARCHAR"/>
+        <result property="attributeItem" column="attribute_item" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="queryPage" resultType="com.houjiang.goods.vo.GoodsAttributeTypeVO">
+        select
+            attribute_id,
+            attribute_name,
+            attribute_item,
+            create_time,
+            attribute_notes
+        from
+        goods_attribute_type
+        <where>
+            <if test="param.attributeName != null and param.attributeName != ''">
+                and attribute_name like concat('%',#{param.attributeName},'%')
+            </if>
+            <if test="param.attributeValueName != null and param.attributeValueName != ''">
+                and attribute_item like concat('%',#{param.attributeValueName},'%')
+            </if>
+        </where>
+    </select>
+    <select id="selectAttributeNameStr" resultType="java.lang.String">
+        SELECT GROUP_CONCAT(attribute_name)
+        FROM goods_attribute_type
+        where attribute_id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="queryGroupAttributeList" resultType="com.houjiang.goods.vo.GoodsAttributeTypeVO">
+        select
+            mggba.attribute_id,
+            mgat.attribute_name,
+            mggba.is_required,
+            mggba.is_search,
+            mggba.display_order
+        from goods_group_bind_attribute mggba
+        left join goods_attribute_type mgat on mggba.attribute_id = mgat.attribute_id
+        where mggba.group_id = #{param.groupId}
+    </select>
+
+</mapper>

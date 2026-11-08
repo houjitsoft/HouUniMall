@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseSensitiveRecordMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseSensitiveRecordEntity" id="BaseSensitiveRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sensitiveTxt" column="sensitive_txt" jdbcType="VARCHAR"/>
+        <result property="sensitiveName" column="sensitive_name" jdbcType="VARCHAR"/>
+        <result property="classificationId" column="classification_id" jdbcType="INTEGER"/>
+        <result property="recordAddTime" column="record_add_time" jdbcType="TIMESTAMP"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="userType" column="user_type" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="querybaseSensitiveRecord" resultType="com.houjiang.base.vo.BaseSensitiveRecordVO">
+       select bsr.id, bsr.sensitive_txt,bsr.sensitive_name,bsr.classification_id,bsr.record_add_time,bsr.user_id,bsr.user_name,bsr.user_type,bsc.classification_name
+       from hou_base_sensitive_record bsr
+       LEFT JOIN hou_base_sensitive_classification bsc on bsr.classification_id = bsc.classification_id
+       where 1 = 1
+       <if test="param.sensitiveName != null and param.sensitiveName != '' ">
+           and bsr.sensitive_name like CONCAT('%',#{param.sensitiveName},'%')
+       </if>
+       <if test="param.classificationId != null">
+           and bsr.classification_id = #{param.classificationId}
+       </if>
+       <if test="param.recordStartTime != null ">
+           and bsr.record_add_time >= #{param.recordStartTime}
+       </if>
+        <if test="param.recordEndTime != null">
+           and bsr.record_add_time &lt;= #{param.recordEndTime}
+       </if>
+       <if test="param.userName != null and param.userName != ''">
+           and bsr.user_name = #{param.userName}
+       </if>
+       <if test="param.userType != null">
+           and  bsr.user_type = #{param.userType}
+       </if>
+        order by bsr.record_add_time desc
+    </select>
+
+
+</mapper>

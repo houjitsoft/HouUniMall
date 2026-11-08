@@ -1,0 +1,1726 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderSettlementMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.order.entity.OrderSettlementEntity">
+        <id property="osId" column="os_id" jdbcType="VARCHAR"/>
+        <result property="osStartDate" column="os_start_date" jdbcType="TIMESTAMP"/>
+        <result property="osEndDate" column="os_end_date" jdbcType="TIMESTAMP"/>
+        <result property="osOrderAmount" column="os_order_amount" jdbcType="DECIMAL"/>
+        <result property="osShippingAmount" column="os_shipping_amount" jdbcType="DECIMAL"/>
+        <result property="osOrderReturnAmount" column="os_order_return_amount" jdbcType="DECIMAL"/>
+        <result property="osCommisAmount" column="os_commis_amount" jdbcType="DECIMAL"/>
+        <result property="osCommisReturnAmount" column="os_commis_return_amount" jdbcType="DECIMAL"/>
+        <result property="osShopCostAmount" column="os_shop_cost_amount" jdbcType="DECIMAL"/>
+        <result property="osPlatformBearAmount" column="os_platform_bear_amount" jdbcType="DECIMAL"/>
+        <result property="osPlatformBearReturnAmount" column="os_platform_bear_return_amount" jdbcType="DECIMAL"/>
+        <result property="osDealerCommission" column="os_dealer_commission" jdbcType="DECIMAL"/>
+        <result property="osDealerReturnCommission" column="os_dealer_return_commission" jdbcType="DECIMAL"/>
+        <result property="osSupplyCommission" column="os_supply_commission" jdbcType="DECIMAL"/>
+        <result property="osSupplyReturnCommission" column="os_supply_return_commission" jdbcType="DECIMAL"/>
+        <result property="osAmount" column="os_amount" jdbcType="DECIMAL"/>
+        <result property="osDatetime" column="os_datetime" jdbcType="TIMESTAMP"/>
+        <result property="osDate" column="os_date" jdbcType="DATE"/>
+        <result property="osState" column="os_state" jdbcType="TINYINT"/>
+        <result property="osPayDate" column="os_pay_date" jdbcType="TIMESTAMP"/>
+        <result property="osPayContent" column="os_pay_content" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="osOrderType" column="os_order_type" jdbcType="BOOLEAN"/>
+        <result property="osRedpacketAmount" column="os_redpacket_amount" jdbcType="DECIMAL"/>
+        <result property="osRedpacketReturnAmount" column="os_redpacket_return_amount" jdbcType="DECIMAL"/>
+        <result property="districtId" column="district_id" jdbcType="INTEGER"/>
+        <result property="osIsDisplay" column="os_is_display" jdbcType="BOOLEAN"/>
+        <result property="osBaseMemberDiscount" column="os_base_member_discount" jdbcType="DECIMAL"/>
+        <result property="osReturnMemberDiscount" column="os_return_member_discount" jdbcType="DECIMAL"/>
+        <result property="osTgCommission" column="os_tg_commission" jdbcType="DECIMAL"/>
+        <result property="osFxCommission" column="os_fx_commission" jdbcType="DECIMAL"/>
+        <result property="osSupperDiscountFee" column="os_supper_discount_fee" jdbcType="DECIMAL"/>
+        <result property="osReturnSupperDiscountFee" column="os_return_supper_discount_fee" jdbcType="DECIMAL"/>
+        <result property="osSupplyPrice" column="os_supply_price" jdbcType="DECIMAL"/>
+        <result property="osReturnSupplyPrice" column="os_return_supply_price" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        os_id
+        ,os_start_date,os_end_date,
+        os_order_amount,os_shipping_amount,os_order_return_amount,
+        os_commis_amount,os_commis_return_amount,os_shop_cost_amount,
+        os_platform_bear_amount,os_platform_bear_return_amount,os_dealer_commission,
+        os_dealer_return_commission,os_supply_commission,os_supply_return_commission,
+        os_amount,os_datetime,os_date,
+        os_state,os_pay_date,os_pay_content,
+        shop_id,shop_name,os_order_type,
+        os_redpacket_amount,os_redpacket_return_amount,district_id,os_is_display,
+        os_base_member_discount,os_return_member_discount,os_tg_commission,
+        os_fx_commission,os_supper_discount_fee,os_return_supper_discount_fee,
+        os_supply_price,os_return_supply_price
+    </sql>
+    <update id="updateOrderSettlementByMap">
+        update ${database.prefix.order}hou_order_settlement
+        <set>
+            <if test="param.shopName != null and param.shopName != ''">
+                shop_name =#{param.shopName}
+            </if>
+        </set>
+        where shop_id = #{param.shopId}
+    </update>
+    <update id="updateSettlementOrder">
+        update ${database.prefix.order}hou_order_settlement
+        set os_state = 4
+        where os_id = #{settlementId}
+          and shop_id = #{shopId}
+    </update>
+    <update id="updateOrderSettlementStatus">
+        update ${database.prefix.order}hou_order_settlement set os_state = 5
+        where os_id IN
+        <foreach collection="list" open="(" close=")"
+                 separator="," item="osId">
+            #{osId}
+        </foreach>
+    </update>
+    <update id="updateSettlementStatus">
+        update ${database.prefix.order}hou_order_settlement set os_state = 4
+        where os_id  IN
+        <foreach collection="list" open="(" close=")"
+                 separator="," item="osId">
+            #{osId}
+        </foreach>
+    </update>
+    <select id="checkSettlementAmount" resultType="java.lang.Boolean">
+        SELECT CASE WHEN A._SUM > 0 THEN "true" ELSE "false" END FROM
+            (SELECT COUNT(*) AS _SUM FROM ${database.prefix.order}hou_order_settlement
+             WHERE shop_id = #{shopId} AND os_state = 1 AND os_amount &lt; 0) AS A
+    </select>
+    <select id="getMerchantAmountExp" resultType="com.houjiang.order.dto.FinancialSettlementDTO">
+        SELECT
+        a.shop_id,
+        a.shop_name,
+        a.osAmount + IFNULL( roc.notSettlementMoney, 0 ) AS osAmount,
+        a.osOrderReturnAmount,
+        a.osRedpacketAmount,
+        a.osRedpacketReturnAmount,
+        IFNULL( b.withdrawalAmount, 0 ) AS withdrawalAmount,
+        c.undrawnAmount,
+        IFNULL( roc.notSettlementMoney, 0 ) AS notSettlementMoney
+        FROM
+        (
+        SELECT
+        shop_id,
+        shop_name,
+        sum( os_order_amount ) AS osAmount,
+        sum( os_order_return_amount ) AS osOrderReturnAmount,
+        sum( os_redpacket_amount ) AS osRedpacketAmount,
+        sum( os_redpacket_return_amount ) AS osRedpacketReturnAmount
+        FROM
+        ${database.prefix.order}hou_order_settlement
+        WHERE
+        os_datetime BETWEEN #{param.startTime} and #{param.endTime} GROUP BY shop_id ) a
+        left join (select shop_id,sum(os_amount) as withdrawalAmount FROM ${database.prefix.order}hou_order_settlement where os_state = 5 and
+        os_datetime BETWEEN #{param.startTime} and #{param.endTime} GROUP BY shop_id ) b
+        on a.shop_id = b.shop_id
+        LEFT JOIN (select shop_id,sum(os_amount) as undrawnAmount FROM ${database.prefix.order}hou_order_settlement where os_state in (1,4) and
+        os_datetime BETWEEN #{param.startTime} and #{param.endTime} GROUP BY shop_id ) c
+        on a.shop_id = c.shop_id
+        left join (SELECT oa.orderAmount - IFNULL(ro.returnAmount,0) as notSettlementMoney,oa.shop_id FROM (SELECT (
+        sum( order_payment_amount ) + sum( order_rpt_price ) ) AS orderAmount, shop_id,shop_name FROM ${database.prefix.order}hou_order_base WHERE
+        order_is_settlement = '0' and order_status BETWEEN 2 and 6 and payment_time BETWEEN #{param.startTime} AND #{param.endTime}
+        GROUP BY shop_id ) oa
+        LEFT JOIN ( SELECT (sum( return_cash ) + sum( return_rpt_cash ) )AS returnAmount,shop_id,shop_name from
+        ${database.prefix.order}hou_order_return WHERE order_is_settlement = '0' AND return_state = '4' and return_add_time BETWEEN #{param.startTime} AND
+        #{param.endTime}
+
+        GROUP BY
+        shop_id
+        ) ro ON oa.shop_id = ro.shop_id
+        ) roc ON a.shop_id = roc.shop_id
+        <if test="param.shopName !=null and !''.equals(param.shopName)">
+            and a.shop_name like concat('%',#{param.shopName},'%')
+        </if>
+    </select>
+
+    <select id="businessList" resultType="com.houjiang.order.vo.OrderSettlementVO">
+        SELECT
+        os.os_id,
+        os.os_start_date,
+        os.os_end_date,
+        os.os_order_amount,
+        os.os_shipping_amount,
+        os.os_order_return_amount,
+        os.os_commis_amount,
+        os.os_commis_return_amount,
+        os.os_shop_cost_amount,
+        os.os_platform_bear_amount,
+        os.os_platform_bear_return_amount,
+        os.os_amount,
+        os.os_datetime,
+        os.os_date,
+        os.os_state,
+        os.os_pay_date,
+        os.os_pay_content,
+        os.shop_id,
+        os.shop_name,
+        os.os_order_type,
+        os.os_redpacket_amount,
+        os.os_redpacket_return_amount,
+        os.district_id,
+        os.os_dealer_commission,
+        os.os_dealer_return_commission,
+        os.os_supply_commission,
+        os.os_supply_return_commission,
+        os.os_base_member_discount,
+        os.os_return_member_discount,
+        os.os_tg_commission,
+        os.os_fx_commission,
+        os.os_supper_discount_fee,
+        os.os_return_supper_discount_fee,
+        os.os_supply_price,
+        os.os_return_supply_price
+--         ,
+--         oog.goods_id,
+--         oog.goods_name,
+--         oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_settlement os
+--         left join ${database.prefix.order}hou_order_base oob on (oob.order_settlement_id = os.os_id
+--         or oob.order_supply_settlement_id = os.os_id)
+--         left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+        where os.shop_id = #{paraMap.shopId}
+        and os.os_is_display = 1
+        <if test="null != paraMap.osId and paraMap.osId != ''">
+            and os.os_id = #{paraMap.osId}
+        </if>
+        <if test="null != paraMap.osState and paraMap.osState != ''">
+            and os.os_state =#{paraMap.osState}
+        </if>
+        <if test="null != paraMap.osOrderType and paraMap.osOrderType != ''">
+            AND os.os_order_type = #{paraMap.osOrderType}
+        </if>
+        order by os.os_datetime desc
+    </select>
+
+    <select id="exportexcelSettlementBusiness" resultType="com.houjiang.order.vo.OrderSettlementVO">
+        SELECT
+        os.os_id,
+        os.os_start_date,
+        os.os_end_date,
+        os.os_order_amount,
+        os.os_shipping_amount,
+        os.os_order_return_amount,
+        os.os_commis_amount,
+        os.os_commis_return_amount,
+        os.os_shop_cost_amount,
+        os.os_platform_bear_amount,
+        os.os_platform_bear_return_amount,
+        os.os_amount,
+        os.os_datetime,
+        os.os_date,
+        os.os_state,
+        os.os_pay_date,
+        os.os_pay_content,
+        os.shop_id,
+        os.shop_name,
+        os.os_order_type,
+        os.os_redpacket_amount,
+        os.os_redpacket_return_amount,
+        os.district_id,
+        os.os_dealer_commission,
+        os.os_dealer_return_commission,
+        os.os_supply_commission,
+        os.os_supply_return_commission,
+        os.os_base_member_discount,
+        os.os_return_member_discount,
+        os.os_tg_commission,
+        os.os_fx_commission,
+        os.os_supper_discount_fee,
+        os.os_return_supper_discount_fee,
+        os.os_supply_price,
+        os.os_return_supply_price
+--         ,
+--         oog.goods_id,
+--         oog.goods_name,
+--         oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_settlement os
+--         left join ${database.prefix.order}hou_order_base oob on (oob.order_settlement_id = os.os_id
+--         or oob.order_supply_settlement_id = os.os_id)
+--         left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+        where os.shop_id = #{paraMap.shopId}
+        and os.os_is_display = 1
+        <if test="null != paraMap.osId and paraMap.osId != ''">
+            and os.os_id = #{paraMap.osId}
+        </if>
+        <if test="null != paraMap.osState and paraMap.osState != ''">
+            and os.os_state =#{paraMap.osState}
+        </if>
+        <if test="null != paraMap.osOrderType and paraMap.osOrderType != ''">
+            AND os.os_order_type = #{paraMap.osOrderType}
+        </if>
+        order by os.os_datetime desc
+    </select>
+
+    <select id="settlementDetail" resultType="com.houjiang.order.vo.OrderSettlementVO">
+        select os_id,
+               shop_name,
+               os_start_date,
+               os_end_date,
+               os_datetime,
+               os_amount,
+               os_order_amount,
+               os_redpacket_amount,
+               os_shipping_amount,
+               os_commis_amount,
+               os_order_return_amount,
+               os_redpacket_return_amount,
+               os_commis_return_amount,
+               os_dealer_commission,
+               os_dealer_return_commission,
+               os_supply_commission,
+               os_supply_return_commission,
+               os_shop_cost_amount,
+               os_state,
+               os_order_type,
+               os_base_member_discount,
+               os_return_member_discount,
+               os_tg_commission,
+               os_fx_commission,
+               os_supper_discount_fee,
+               os_return_supper_discount_fee,
+               os_supply_price,
+               os_return_supply_price,
+               os_return_tg_commission,
+               os_return_fx_commission,
+               self_selling_commission,
+               self_selling_shipping_fee,
+               self_selling_return_cash,
+               self_selling_return_commission,
+               sell_on_amount,
+               sell_on_commission,
+               sell_on_return_cash,
+               sell_on_return_commission
+        FROM ${database.prefix.order}hou_order_settlement
+        where os_id = #{paraMap.osId}
+    </select>
+
+    <select id="getSettlementDate" resultType="com.houjiang.order.vo.OrderSettlementVO">
+        select os_date, os_start_date, os_end_date, os_datetime, shop_id, os_order_type
+        FROM ${database.prefix.order}hou_order_settlement
+        where os_id = #{paraMap.orderSettlementId}
+    </select>
+
+    <select id="listSupplyBaseInfo" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        SELECT ob.order_id ,( if(oog.drop_shipping = 1,sob.goods_payment_amount -
+        ob.order_shipping_fee,ob.order_payment_amount) ) AS orderPaymentAmount,
+        ob.order_shipping_fee ,
+        ( if(oog.drop_shipping = 1,sob.supper_commission,ob.order_commission_fee) ) AS order_commission_fee ,
+        ob.order_create_time ,
+        ob.order_finished_time ,
+        ob.buyer_user_id ,
+        ob.buyer_user_name ,
+        ob.base_member_discount ,
+        ob.distribution_discount as orderDiscountFee,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+        LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+        WHERE
+        ob.order_status IN ( '6', '9' ) and order_supply_is_settlement = 1
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and ob.order_finished_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and ob.order_finished_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and (ob.shop_id = #{paraMap.shopId} or oog.deliver_shop_id = #{paraMap.shopId})
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and ob.order_supply_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and paraMap.osDatetime != ''">
+            and ob.order_supply_settlement_time like concat('%',#{paraMap.osDatetime},'%')
+        </if>
+        group by ob.order_id,oog.goods_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="listShopSupplyBaseInfo" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        SELECT ob.order_id ,( if(oog.drop_shipping = 1,sob.goods_payment_amount -
+        oog.shipping_fee,oog.order_goods_payment_amount) ) AS orderPaymentAmount,
+        oog.shipping_fee as orderShippingFee,
+        ( if(oog.drop_shipping = 1,sob.supper_commission,oog.order_goods_commission) ) AS order_commission_fee ,
+        ob.order_create_time ,
+        ob.order_finished_time ,
+        ob.buyer_user_id ,
+        ob.buyer_user_name ,
+        oog.goods_member_discount as baseMemberDiscount,
+        ob.distribution_discount as orderDiscountFee,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+        LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+        WHERE
+        ob.order_status IN ( '6', '9' ) and order_supply_is_settlement = 1
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and ob.order_finished_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and ob.order_finished_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and (ob.shop_id = #{paraMap.shopId} or oog.deliver_shop_id = #{paraMap.shopId})
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and ob.order_supply_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and paraMap.osDatetime != ''">
+            and ob.order_supply_settlement_time like concat('%',#{paraMap.osDatetime},'%')
+        </if>
+        group by ob.order_id,oog.goods_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="listBaseInfo2" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        select b.order_id,b.order_payment_amount,b.order_rpt_price,b.order_shipping_fee,c.commission_money as
+        order_commission_fee,
+        b.order_create_time, b.order_finished_time,b.buyer_user_id,b.buyer_user_name,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base b
+        left join ${database.prefix.order}hou_order_goods oog on b.order_id = oog.order_id
+        left join ${database.prefix.order}hou_order_commission c on b.order_id = c.order_id
+        where b.order_status = 6
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and b.order_live_settlement_id = = #{paraMap.orderSettlementId}
+        </if>
+        group by b.order_id,oog.goods_id
+        order by b.order_finished_time desc
+    </select>
+
+    <select id="listDealerBaseInfo" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        SELECT
+        ob.order_id,
+        ob.order_payment_amount - ob.order_shipping_fee as order_payment_amount,
+        ob.order_supply_amount,
+        ob.order_rpt_price,
+        ob.order_shipping_fee,
+        ob.order_commission_fee,
+        ob.order_create_time,
+        ob.order_finished_time,
+        ob.buyer_user_id,
+        ob.buyer_user_name,
+        ob.base_member_discount,
+        oc.one_tg_commission + two_tg_commission as tg_commission ,
+        oc.fx_commission,
+        sob.goods_price_sum,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+        LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+        WHERE
+        ( ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and is_cancel= 2))
+        and ob.order_is_settlement = 1 and oog.drop_shipping =1 and ob.payment_code &lt;&gt; 3
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and ob.order_finished_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and ob.order_finished_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and ob.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and ob.order_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and paraMap.osDatetime != ''">
+            and ob.order_settlement_time like concat('%',#{paraMap.osDatetime},'%')
+        </if>
+        group by ob.order_id,oog.goods_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="listShopDealerBaseInfo" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        SELECT
+        ob.order_id,
+        oog.order_goods_payment_amount as order_payment_amount,
+        sob.goods_price as order_supply_amount,
+        oog.order_rpt_price,
+        oog.shipping_fee as order_shipping_fee,
+        oog.order_goods_commission as order_commission_fee,
+        ob.order_create_time,
+        ob.order_finished_time,
+        ob.buyer_user_id,
+        ob.buyer_user_name,
+        oog.goods_member_discount as base_member_discount,
+        oc.one_tg_commission + two_tg_commission as tg_commission ,
+        oc.fx_commission,
+        sob.goods_price_sum,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+        LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+        WHERE
+        ( ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and is_cancel= 2))
+        and ob.order_is_settlement = 1 and oog.drop_shipping =1 and ob.payment_code &lt;&gt; 3
+        and ob.shop_id != oog.deliver_shop_id
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and ob.order_finished_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and ob.order_finished_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and ob.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and ob.order_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and paraMap.osDatetime != ''">
+            and ob.order_settlement_time like concat('%',#{paraMap.osDatetime},'%')
+        </if>
+        group by ob.order_id,oog.goods_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="listBaseInfo" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        SELECT
+        ob.order_id,
+        ob.order_payment_amount - ob.order_shipping_fee-ob.end_free as order_payment_amount,
+        ob.order_supply_amount,
+        ob.order_rpt_price,
+        ob.order_shipping_fee,
+        ob.order_commission_fee,
+        ob.order_create_time,
+        ob.order_finished_time,
+        ob.buyer_user_id,
+        ob.buyer_user_name,
+        ob.base_member_discount,
+        oc.one_tg_commission + two_tg_commission as tg_commission ,
+        oc.fx_commission,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+        LEFT join ${database.prefix.order}hou_order_commission oc on ob.order_id = oc.order_id
+        WHERE
+        ( ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and is_cancel= 2))
+        and
+        ob.order_is_settlement = 1 and ob.payment_code != 3
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and ob.order_finished_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and ob.order_finished_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and ob.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and ob.order_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and paraMap.osDatetime != ''">
+            and ob.order_settlement_time like concat('%',#{paraMap.osDatetime},'%')
+        </if>
+        group by ob.order_id,oog.goods_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="listShopBaseInfo" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        SELECT
+        ob.order_id,
+        ob.order_payment_amount,
+        ob.order_supply_amount,
+        ob.order_rpt_price,
+        ob.order_shipping_fee,
+        ob.order_commission_fee,
+        ob.order_create_time,
+        ob.order_finished_time,
+        ob.buyer_user_id,
+        ob.buyer_user_name,
+        ob.base_member_discount,
+        oc.one_tg_commission + two_tg_commission as tg_commission ,
+        oc.fx_commission,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+        LEFT join ${database.prefix.order}hou_order_commission oc on ob.order_id = oc.order_id
+        WHERE
+        ( ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and is_cancel= 2))
+        and
+        ob.order_is_settlement = 1 and ob.payment_code != 3
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and ob.order_finished_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and ob.order_finished_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and ob.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and ob.order_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and paraMap.osDatetime != ''">
+            and ob.order_settlement_time like concat('%',#{paraMap.osDatetime},'%')
+        </if>
+        group by ob.order_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="listSupplyReutrnOrder" resultType="com.houjiang.order.vo.ReturnOrderDetailListVO">
+        SELECT
+        oor.return_code ,
+        oor.order_id,
+        if(oog.drop_shipping = 1,if(oor.return_method_status = 1,sob.order_refund_price,sob.order_return_price),
+        oor.return_cash) AS return_cash,
+        if(oog.drop_shipping = 1,sob.supper_return_commission,oor.return_commision_fee) AS return_commision_fee ,
+        oor.return_state ,
+        oor.return_add_time,
+        oor.return_finish_time,
+        oor.buyer_user_account ,
+        oor.return_rpt_cash ,
+        oor.return_reason,
+        oor.return_member_discount ,
+        oor.return_supper_discount_fee,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount,
+        oog.order_goods_amount
+        FROM ${database.prefix.order}hou_order_return oor
+        LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = oob.order_id
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oor.order_id
+        WHERE
+        oor.order_supply_is_settlement = 1
+        AND oor.return_state IN ( 2,4 )
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and oor.return_finish_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and oor.return_finish_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and (oob.shop_id = #{paraMap.shopId} or oog.deliver_shop_id = #{paraMap.shopId})
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and oor.order_supply_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        group by oob.order_id,oog.goods_id
+        order by oor.return_add_time desc
+    </select>
+
+    <select id="listReutrnOrder2" resultType="com.houjiang.order.vo.ReturnOrderDetailListVO">
+        SELECT r.return_code,r.order_id,r.return_cash,r.return_rpt_cash,c.commission_money as return_commision_fee,
+        r.return_state,r.return_add_time,r.buyer_user_account,r.order_id,r.shop_name,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_return r
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = r.order_id
+        left join ${database.prefix.order}hou_order_commission c on r.order_id = c.order_id
+        where 1=1
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and r.order_live_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.returnShopHandle and paraMap.returnShopHandle != ''">
+            and r.return_shop_handle in (0,2,4)
+        </if>
+        group by r.order_id
+        order by r.return_add_time desc
+    </select>
+
+    <select id="listDealerReutrnOrder" resultType="com.houjiang.order.vo.ReturnOrderDetailListVO">
+        SELECT
+        oor.return_code,
+        oor.order_id,
+        oor.return_cash,
+        oor.return_rpt_cash,
+        oor.return_commision_fee,
+        oor.return_state,
+        oor.return_add_time,
+        oor.return_finish_time,
+        oor.buyer_user_account,
+        oor.shop_name,
+        oor.return_member_discount,
+        sob.order_return_price,
+        oor.return_reason,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount,
+        oog.order_goods_amount
+        FROM ${database.prefix.order}hou_order_return oor
+        LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = oob.order_id
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oob.order_id
+        WHERE 1=1
+        and oor.order_is_settlement ='1'
+        AND oog.drop_shipping = 1
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and oor.return_finish_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and oor.return_finish_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and oor.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and oor.order_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        group by oob.order_id,oog.goods_id
+        order by oor.return_add_time desc
+    </select>
+
+    <select id="listReutrnOrder" resultType="com.houjiang.order.vo.ReturnOrderDetailListVO">
+        SELECT
+        oor.return_code,
+        oor.order_id,
+        oor.return_cash,
+        oor.return_rpt_cash,
+        oor.return_commision_fee,
+        oor.return_state,
+        oor.return_add_time,
+        oor.return_finish_time,
+        oor.buyer_user_account,
+        oor.shop_name,
+        oor.return_reason,
+        date_format( oor.return_finish_time, '%Y-%m-%d %H:%i:%s' ) AS returnFinishTime,
+        oor.return_member_discount,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount,
+        oog.order_goods_amount
+        FROM ${database.prefix.order}hou_order_return oor
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = oor.order_id
+        WHERE 1=1
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and oor.return_finish_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and oor.return_finish_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and oor.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and oor.order_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and !''.equals(paraMap.osDatetime)">
+            and oor.order_settlement_time like CONCAT('%',#{paraMap.osDatetime},'%')
+        </if>
+        <if test="null != paraMap.returnShopHandle and paraMap.returnShopHandle != ''">
+            and oor.return_shop_handle in (0,2,4,5)
+        </if>
+        group by oor.order_id ,oog.goods_id
+        order by oor.return_finish_time desc
+    </select>
+
+    <select id="listShopReutrnOrder" resultType="com.houjiang.order.vo.ReturnOrderDetailListVO">
+        SELECT
+        oor.return_code,
+        oor.order_id,
+        oor.return_cash,
+        oor.return_rpt_cash,
+        oor.return_commision_fee,
+        oor.return_state,
+        oor.return_add_time,
+        oor.buyer_user_account,
+        oor.shop_name,
+        oor.return_reason,
+        date_format( oor.return_finish_time, '%Y-%m-%d %H:%i:%s' ) AS returnFinishTime,
+        oor.return_member_discount,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_return oor
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = oor.order_id
+        WHERE oog.drop_shipping = 2
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and oor.return_finish_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and oor.return_finish_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and oor.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and oor.order_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and !''.equals(paraMap.osDatetime)">
+            and oor.order_settlement_time like CONCAT('%',#{paraMap.osDatetime},'%')
+        </if>
+        <if test="null != paraMap.returnShopHandle and paraMap.returnShopHandle != ''">
+            and oor.return_shop_handle in (0,2,4,5)
+        </if>
+        group by oor.order_id
+        order by oor.return_finish_time desc
+    </select>
+
+    <select id="listSupplyBaseInfoExport" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        SELECT
+        ob.order_id,
+        ( oog.order_goods_payment_amount - oog.shipping_fee ) AS order_payment_amount,
+        ( if(oog.drop_shipping = 1,sob.goods_price_sum,oog.order_goods_amount)) AS order_supply_amount,
+        oog.order_rpt_price,
+        oog.shipping_fee,
+        if(oog.drop_shipping = 1,sob.supper_commission,oog.order_goods_commission) AS order_commission_fee,
+        ob.order_create_time,
+        ob.order_finished_time,
+        ob.buyer_user_id,
+        ob.buyer_user_name,
+        ob.distribution_discount as orderDiscountFee,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = ob.order_id
+        LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+        and oog.deliver_shop_id = sob.supplier_shop_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_base gb on oog.goods_id = gb.goods_id
+        WHERE
+        ob.order_status IN ( '6', '9' ) and order_supply_is_settlement = 1
+        AND gb.supplier_goods_id = sob.goods_id
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and ob.order_finished_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and ob.order_finished_time &lt; #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and (ob.shop_id = #{paraMap.shopId} or oog.deliver_shop_id = #{paraMap.shopId})
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and ob.order_supply_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        group by ob.order_id,oog.goods_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="listBaseInfoExport" resultType="com.houjiang.order.vo.OrderBaseInfoVO">
+        SELECT
+        ob.order_id,
+        ob.order_payment_amount,
+        ob.order_supply_amount,
+        ob.order_rpt_price,
+        ob.order_shipping_fee,
+        ob.order_commission_fee,
+        ob.order_create_time,
+        ob.order_finished_time,
+        ob.buyer_user_id,
+        ob.buyer_user_name,
+        ob.base_member_discount,
+        oc.one_tg_commission + two_tg_commission as tg_commission,
+        oc.fx_commission
+        FROM ${database.prefix.order}hou_order_base ob
+        LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+        WHERE
+        ( ob.order_status IN ( '6', '9' ) OR ( ob.virtual_goods = 0 AND is_cancel = 2 ) )
+        AND ob.order_is_settlement = 1 and ob.payment_code != 3
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and ob.order_finished_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and ob.order_finished_time &lt; #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and ob.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and ob.order_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and paraMap.osDatetime != ''">
+            and ob.order_settlement_time like concat('%',#{paraMap.osDatetime},'%')
+        </if>
+        group by ob.order_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="listSupplyReutrnOrderExport" resultType="com.houjiang.order.vo.ReturnOrderDetailListVO">
+        SELECT
+        oor.return_code,
+        oor.order_id,
+        if(oog.drop_shipping = 1,if(oor.return_method_status = 1,sob.order_refund_price,sob.order_return_price),
+        oor.return_cash) AS return_cash,
+        ( if(oog.drop_shipping = 1,sob.goods_price_sum,oog.order_goods_amount)) AS order_supply_amount,
+        if(oog.drop_shipping = 1,sob.supper_return_commission,oor.return_commision_fee) AS return_commision_fee,
+        oor.return_state,
+        oor.return_add_time,
+        oor.buyer_user_account,
+        oor.order_id,
+        oor.shop_name,
+        date_format( oor.return_finish_time, '%Y-%m-%d %H:%i:%s' ) AS return_finish_time,
+        oor.return_rpt_cash ,
+        oor.return_reason,
+        oor.return_supper_discount_fee,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_return oor
+        LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = oob.order_id
+        LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oor.order_id
+        and oog.deliver_shop_id = sob.supplier_shop_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_base gb on oog.goods_id = gb.goods_id
+        where 1=1
+        AND oor.order_supply_is_settlement = 1
+        AND oor.return_state IN ( 2,4 )
+        AND (oog.goods_return_status = 2 or oog.goods_refund_status = 2)
+        AND gb.supplier_goods_id = sob.goods_id
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and oor.return_finish_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and oor.return_finish_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and (oob.shop_id = #{paraMap.shopId} or oog.deliver_shop_id = #{paraMap.shopId})
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and oor.order_supply_settlement_id = #{paraMap.orderSettlementId}
+        </if>
+        group by oob.order_id,oog.goods_id
+        order by oor.return_finish_time desc
+    </select>
+
+    <select id="listReutrnOrderExport" resultType="com.houjiang.order.vo.ReturnOrderDetailListVO">
+        SELECT
+        oor.return_code,
+        oor.order_id,
+        oor.return_cash,
+        oor.return_commision_fee,
+        oor.return_state,
+        oor.return_add_time,
+        oor.buyer_user_account,
+        oor.shop_name,
+        oor.return_reason,
+        date_format( oor.return_finish_time, '%Y-%m-%d %H:%i:%s' ) AS return_finish_time,
+        oor.return_member_discount,
+        oog.goods_id,
+        oog.goods_name,
+        oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_return oor
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = oor.order_id
+        where 1=1
+        <if test="null != paraMap.returnShopHandle and paraMap.returnShopHandle != ''">
+            and oor.return_shop_handle in (0,2,4,5)
+        </if>
+        <if test="null != paraMap.osStartDate and paraMap.osStartDate != ''">
+            and oor.return_finish_time >= #{paraMap.osStartDate}
+        </if>
+        <if test="null != paraMap.osEndDate and paraMap.osEndDate != ''">
+            and oor.return_finish_time &lt;= #{paraMap.osEndDate}
+        </if>
+        <if test="null != paraMap.shopId and paraMap.shopId != ''">
+            and oor.shop_id = #{paraMap.shopId}
+        </if>
+        <if test="null != paraMap.orderSettlementId and paraMap.orderSettlementId != ''">
+            and oor.order_settlement_id =#{paraMap.orderSettlementId}
+        </if>
+        <if test="null != paraMap.osDatetime and paraMap.osDatetime != ''">
+            and oor.order_settlement_time like CONCAT('%',#{paraMap.osDatetime},'%')
+        </if>
+        group by oor.order_id,oog.goods_id
+        order by oor.return_finish_time desc
+    </select>
+
+    <select id="getBeformDate" resultType="java.util.Date">
+        select os_date FROM ${database.prefix.order}hou_order_settlement
+        where shop_id = #{shopId}
+        <if test="null != osOrderType and osOrderType != ''">
+            and os_order_type = #{osOrderType}
+        </if>
+        order by os_datetime desc limit 1
+    </select>
+    <select id="getCombinationOrder" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(ob.order_payment_amount)              as orderBasePaymentAmount,
+               sum(ob.base_member_discount)             as orderBaseMemberDiscount,
+               sum(ob.order_commission_fee)             as orderBaseCommissionFee
+        FROM ${database.prefix.order}hou_order_base ob
+        where ob.shop_id = #{shopId} and ob.combination_type = 1
+          and ob.drop_shipping = #{dropShipping}
+          and ob.order_is_settlement = '0'
+          AND (ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          and ob.order_finished_time >= #{dBefore}
+          and ob.order_finished_time &lt;= now()
+          and ob.payment_code != 3
+    </select>
+    <select id="getSettleAllAccountOrder" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT
+            sum(  ob.order_shipping_fee ) AS orderShippingFee,
+            sum( ob.order_payment_amount ) AS orderPaymentAmount,
+            sum( ob.order_rpt_price ) AS orderRptPrice,
+            sum( ob.base_member_discount ) AS baseMemberDiscount
+        FROM
+            ${database.prefix.order}hou_order_base ob
+        WHERE
+            ob.shop_id = #{param.shopId}
+          AND ob.order_is_settlement ='0'
+          AND ob.original_order IS NULL
+          AND ob.payment_code != 3
+          AND ob.pay_code != 13
+          AND ((
+            ob.order_status IN ( '6', '9' )
+          AND ob.virtual_goods = 1
+            )
+           OR ( ob.order_status = '9' AND ob.virtual_goods = 1 AND ob.order_refund_status = 2 )
+           OR ( ob.virtual_goods = 0 AND ob.is_cancel = 0 AND ob.order_status IN ( '6' ) )
+           OR ( ob.virtual_goods = 0 AND ob.is_cancel = 2 AND ob.order_status IN ( '9', '12' ) )
+            )
+        <if test="param.dBefore != null">
+            and ob.order_finished_time >= #{param.dBefore} and ob.order_finished_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and ob.order_finished_time >= #{param.start} and ob.order_finished_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getSettleOrderCommission" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+       select sum(tgCommission) as tgCommission,sum(fxCommission) as fxCommission,
+              sum(selfSellingCommission) as selfSellingCommission,sum(selfSellingShippingFee) as selfSellingShippingFee
+       from (
+
+        select
+               oc.one_tg_commission+oc.two_tg_commission            AS tgCommission,
+               oc.fx_commission            AS fxCommission,
+               IFNULL(og.order_goods_commission,0) as selfSellingCommission,
+               IFNULL(og.shipping_fee,0) as selfSellingShippingFee
+        FROM ${database.prefix.order}hou_order_base ob
+            LEFT join ${database.prefix.order}hou_order_goods og on ob.order_id = og.order_id
+            LEFT join ${database.prefix.order}hou_order_commission oc on ob.order_id = oc.order_id
+        where ob.shop_id = #{param.shopId}
+        AND (ob.combination_type != 1  OR ob.combination_type is null )
+        AND og.drop_shipping != 1
+        AND ob.original_order is null
+        AND ob.payment_code != 3
+        AND ob.pay_code != 13
+        AND ob.order_is_settlement ='0'
+        AND ((ob.order_status IN (  '6', '9' ) AND ob.virtual_goods = 1 )
+            OR (ob.order_status = '9'  AND ob.virtual_goods = 1 AND ob.order_refund_status = 2 )
+            OR (ob.virtual_goods = 0 AND ob.is_cancel = 0  AND ob.order_status IN ( '6' ) )
+            OR (ob.virtual_goods = 0 AND ob.is_cancel = 2   AND ob.order_status IN ( '9','12' ) ) )
+        <if test="param.dBefore != null">
+            and ob.order_finished_time >= #{param.dBefore} and ob.order_finished_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and ob.order_finished_time >= #{param.start} and ob.order_finished_time &lt;= #{param.end}
+        </if>
+
+
+        UNION ALL
+
+
+        select
+            0           AS tgCommission,
+            0           AS fxCommission,
+            IFNULL(ob.order_commission_fee,0) as selfSellingCommission,
+            IFNULL(ob.order_shipping_fee,0) as selfSellingShippingFee
+        FROM ${database.prefix.order}hou_order_base ob
+                 LEFT join ${database.prefix.order}hou_order_goods og on ob.order_id = og.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc on ob.order_id = oc.order_id
+        where ob.shop_id = #{param.shopId}
+          AND ob.combination_type = 1
+          AND og.drop_shipping != 1
+        AND ob.original_order is null
+        AND ob.payment_code != 3
+        AND ob.pay_code != 13
+        AND ob.order_is_settlement ='0'
+        AND ((ob.order_status IN (  '6', '9' ) AND ob.virtual_goods = 1 )
+            OR (ob.order_status = '9'  AND ob.virtual_goods = 1 AND ob.order_refund_status = 2 )
+            OR (ob.virtual_goods = 0 AND ob.is_cancel = 0  AND ob.order_status IN ( '6' ) )
+            OR (ob.virtual_goods = 0 AND ob.is_cancel = 2   AND ob.order_status IN ( '9','12' ) ) )
+        <if test="param.dBefore != null">
+            and ob.order_finished_time >= #{param.dBefore} and ob.order_finished_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and ob.order_finished_time >= #{param.start} and ob.order_finished_time &lt;= #{param.end}
+        </if>
+        group by ob.order_id
+    ) a
+    </select>
+    <select id="getSettleAllOrderList" resultType="java.lang.String">
+        SELECT
+            ob.order_id
+        FROM
+            ${database.prefix.order}hou_order_base ob
+        WHERE
+            ob.shop_id = #{param.shopId}
+          AND ob.order_is_settlement ='0'
+          AND ob.original_order IS NULL
+          AND ob.payment_code != 3
+          AND ob.pay_code != 13
+          AND ((
+            ob.order_status IN ( '6', '9' )
+          AND ob.virtual_goods = 1
+            )
+           OR ( ob.order_status = '9' AND ob.virtual_goods = 1 AND ob.order_refund_status = 2 )
+           OR ( ob.virtual_goods = 0 AND ob.is_cancel = 0 AND ob.order_status IN ( '6' ) )
+           OR ( ob.virtual_goods = 0 AND ob.is_cancel = 2 AND ob.order_status IN ( '9', '12' ) )
+            )
+        <if test="param.dBefore != null">
+            and ob.order_finished_time >= #{param.dBefore} and ob.order_finished_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and ob.order_finished_time >= #{param.start} and ob.order_finished_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getSettleAllAccountReturn" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(IFNULL(oor.return_rpt_cash,0))        as returnRptCash,
+               sum(IFNULL(oor.return_member_discount,0)) AS returnMemberDiscount,
+               sum(IFNULL(oc.return_one_tg_commission,0)+IFNULL(oc.return_two_tg_commission,0)) AS returnTgCommission,
+               sum(IFNULL(oc.return_fx_commission,0))            AS returnFxCommission,
+               SUM(IFNULL(oor.return_cash,0))               as selfSellingReturnCash,
+               SUM(IFNULL(oor.return_commision_fee,0))      as selfSellingReturnCommission
+        FROM ${database.prefix.order}hou_order_return oor
+        LEFT join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+        LEFT join ${database.prefix.order}hou_order_commission oc on oob.order_id = oc.order_id and oc.order_status = 4
+        where oor.shop_id = #{param.shopId} and oob.original_order is null
+          and oor.order_is_settlement = '0' and oob.payment_code != 3 and oob.pay_code != 13
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+        <if test="param.dBefore != null">
+            and oor.return_finish_time >= #{param.dBefore} and oor.return_finish_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and oor.return_finish_time >= #{param.start} and oor.return_finish_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getSettleSupplierAndShopOrder" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT
+        IFNULL( SUM( og.goods_return_price ), 0 ) AS selfSellingReturnCash,
+        IFNULL( SUM( og.dealer_return_commission), 0 ) AS selfSellingReturnCommission
+        FROM ${database.prefix.order}hou_order_return oor
+        LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+        LEFT join ${database.prefix.order}hou_order_goods og ON og.order_id = oob.order_id
+        WHERE oob.original_order IS NULL
+        AND oor.shop_id = #{param.shopId}
+        AND og.drop_shipping = 1
+        AND og.order_goods_returnnum > 0
+        AND (og.goods_return_status = 2 OR og.goods_refund_status = 2)
+        AND oob.pay_code != 13
+        AND oob.payment_code != 3
+        AND ( oor.return_type IN ( 1, 2 ) OR ( oob.virtual_goods = 0 AND oob.is_cancel = 2 ) )
+        AND oor.order_is_settlement = '0'
+        AND oor.return_state IN ( 2, 4 )
+        <if test="param.dBefore != null">
+            and oor.return_finish_time >= #{param.dBefore} and oor.return_finish_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and oor.return_finish_time >= #{param.start} and oor.return_finish_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getReturnSellOnSupplierAndShopOrder"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT
+        IFNULL( SUM( og.goods_return_price ), 0 ) AS sellOnReturnCash,
+        IFNULL( SUM( og.dealer_return_commission ), 0 ) AS sellOnReturnCommission
+        FROM ${database.prefix.order}hou_order_return AS oor
+        LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+        LEFT join ${database.prefix.order}hou_order_goods og ON og.order_id = oob.order_id
+        WHERE oob.original_order is null
+        and oor.shop_id = #{param.shopId}
+        AND og.drop_shipping = 1
+        AND og.order_goods_returnnum > 0
+        AND (og.goods_return_status = 2 OR og.goods_refund_status = 2)
+        and oob.pay_code != 13
+        and oob.payment_code != 3
+        and (oor.return_type in (1, 2) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+        and oor.order_is_settlement = '0'
+        and oor.return_state in (2, 4)
+        <if test="param.dBefore != null">
+            and oor.return_finish_time >= #{param.dBefore} and oor.return_finish_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and oor.return_finish_time >= #{param.start} and oor.return_finish_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getReturnSellOnAmount" resultType="java.math.BigDecimal">
+        select
+        SUM(oor.return_cash)
+        FROM ${database.prefix.order}hou_order_return AS oor
+        LEFT join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+        where oob.original_order is not null
+        and oor.shop_id = #{param.shopId} and oob.pay_code != 13 and oob.payment_code != 3
+        and (oor.return_type in (1, 2) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+        and oor.order_is_settlement = '0'
+        and oor.return_state in (2, 4)
+        <if test="param.dBefore != null">
+            and oor.return_finish_time >= #{param.dBefore} and oor.return_finish_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and oor.return_finish_time >= #{param.start} and oor.return_finish_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getSettleAllReturnOrderIdList" resultType="java.lang.String">
+        select oob.order_id
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc on oob.order_id = oc.order_id and oc.order_status = 4
+        where oor.shop_id = #{param.shopId} and oob.original_order is null
+          and oor.order_is_settlement = '0' and oob.payment_code != 3 and oob.pay_code != 13
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+        <if test="param.dBefore != null">
+            and oor.return_finish_time >= #{param.dBefore} and oor.return_finish_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and oor.return_finish_time >= #{param.start} and oor.return_finish_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getCombinationOrderReturn" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(ob.order_payment_amount)              as orderBasePaymentAmount,
+               sum(ob.base_member_discount)              as orderBaseMemberDiscount,
+               sum(ob.order_commission_fee)              as orderBaseCommissionFee
+        FROM ${database.prefix.order}hou_order_return oor
+                 left join ${database.prefix.order}hou_order_base ob on oor.order_id = ob.order_id
+        where ob.shop_id = #{shopId} and ob.combination_type is not null and ob.combination_type != 0
+          and ob.order_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          and ob.order_finished_time >= #{dBefore}
+          and ob.order_finished_time &lt;= now()
+          and ob.payment_code != 3
+    </select>
+
+    <select id="selectWaitOrderList" resultType="com.houjiang.commons.vo.order.OrderBaseListVO">
+        select ob.order_id                                       as orderId,
+               (ob.order_payment_amount - ob.order_shipping_fee-ob.end_free) as orderPaymentAmount,
+               oog.order_rpt_price                               as orderRptPrice,
+               oog.shipping_fee                                  as orderShippingFee,
+               sum(oog.order_goods_commission)                   as orderCommissionFee,
+               ob.order_create_time                              as orderCreateTime,
+               ob.order_finished_time                            as orderFinishedTime,
+               ob.buyer_user_id                                  as buyerUserId,
+               ob.buyer_user_name                                as buyerUserName,
+               ob.base_member_discount                        as baseMemberDiscount,
+               oc.one_tg_commission + oc.two_tg_commission          as tgCommission,
+               oc.fx_commission                                  as fxCommission,
+               ob.combination_type                               as combinationType,
+               ob.order_payment_amount                           as orderBasePaymentAmount,
+               ob.base_member_discount                           as orderBaseMemberDiscount,
+               ob.order_commission_fee                           as orderBaseCommissionFee,
+               ob.drop_shipping                                  AS dropShipping
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id AND oog.drop_shipping = 2
+        LEFT join ${database.prefix.order}hou_order_commission oc on ob.order_id = oc.order_id
+        where ob.shop_id = #{param.shopId} and ob.original_order is null
+          and ob.payment_code &lt;&gt; 3
+          and ob.order_is_settlement = '0'
+          AND (ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          and ob.order_finished_time >= #{dBefore}
+          and ob.order_finished_time &lt;= now()
+          group by ob.order_id
+        order by ob.order_finished_time desc
+    </select>
+
+    <select id="selectWaitReturnList" resultType="com.houjiang.order.vo.ReturnBaseListVO">
+        SELECT oor.return_code            AS returnCode,
+               oor.order_id               AS orderId,
+               oor.return_cash            AS returnCash,
+               oor.return_commision_fee   AS returnCommisionFee,
+               oor.return_state           AS returnState,
+               oor.return_add_time        AS returnAddTime,
+               oor.buyer_user_account     AS buyerUserAccount,
+               oor.return_rpt_cash        AS returnRptCash,
+               oor.return_reason          AS returnReason,
+               oor.return_member_discount AS returnMemberDiscount
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+        WHERE oor.shop_id = #{param.shopId} and oob.original_order is null
+          and oor.order_is_settlement = '0' AND oob.order_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          and oor.return_finish_time >= #{dBefore}
+          and oor.return_finish_time &lt;= now()
+          group by oob.order_id
+        order by oor.return_add_time desc
+    </select>
+    <select id="getMerchantAmount" resultType="com.houjiang.order.dto.FinancialSettlementDTO">
+        SELECT
+        a.shop_id,
+        a.shop_name,
+        a.osAmount + IFNULL( roc.notSettlementMoney, 0 ) AS osAmount,
+        a.osOrderReturnAmount,
+        a.osRedpacketAmount,
+        a.osRedpacketReturnAmount,
+        IFNULL( b.withdrawalAmount, 0 ) AS withdrawalAmount,
+        c.undrawnAmount,
+        IFNULL( roc.notSettlementMoney, 0 ) AS notSettlementMoney
+        FROM
+        (
+        SELECT
+        shop_id,
+        shop_name,
+        sum( os_order_amount ) AS osAmount,
+        sum( os_order_return_amount ) AS osOrderReturnAmount,
+        sum( os_redpacket_amount ) AS osRedpacketAmount,
+        sum( os_redpacket_return_amount ) AS osRedpacketReturnAmount
+        FROM
+        ${database.prefix.order}hou_order_settlement
+        WHERE
+        os_datetime BETWEEN #{param.startTime} and #{param.endTime} GROUP BY shop_id
+        ) a
+        left join (select shop_id,sum(os_amount) as withdrawalAmount FROM ${database.prefix.order}hou_order_settlement where os_state = 5 and
+        os_datetime BETWEEN #{param.startTime} and #{param.endTime} GROUP BY shop_id
+        ) b
+        on a.shop_id = b.shop_id
+        left join (select shop_id,sum(os_amount) as undrawnAmount FROM ${database.prefix.order}hou_order_settlement where os_state in (1,4) and
+        os_datetime BETWEEN #{param.startTime} and #{param.endTime} GROUP BY shop_id
+        ) c
+        on a.shop_id = c.shop_id
+        left join (SELECT oa.orderAmount - IFNULL(ro.returnAmount,0) as notSettlementMoney,oa.shop_id
+        FROM (SELECT ( sum( order_payment_amount ) + sum( order_rpt_price )) AS orderAmount, shop_id,shop_name
+        FROM ${database.prefix.order}hou_order_base WHERE order_is_settlement = '0' and order_status BETWEEN 2 and 6 and payment_time BETWEEN
+        #{param.startTime} AND #{param.endTime} GROUP BY shop_id
+        ) oa
+        LEFT JOIN (SELECT( sum( return_cash ) + sum( return_rpt_cash ) ) AS returnAmount,shop_id,shop_name
+        FROM
+        ${database.prefix.order}hou_order_return
+        WHERE
+        order_is_settlement = '0'
+        AND return_state = '4' AND return_add_time BETWEEN #{param.startTime} AND #{param.endTime} GROUP BY shop_id
+        ) ro
+        on oa.shop_id = ro.shop_id) roc on a.shop_id = roc.shop_id
+        <where>
+            <if test="null != param.shopName and param.shopName != ''">
+                a.shop_name like CONCAT('%',#{param.shopName},'%')
+            </if>
+        </where>
+
+    </select>
+    <select id="queryPlatFormListSettlement" resultType="com.houjiang.order.vo.PlatFormOrderSettlementVO">
+        SELECT
+        os.os_id,
+        os.os_start_date,
+        os.os_end_date,
+        os.os_order_amount,
+        os.os_shipping_amount,
+        os.os_order_return_amount,
+        os.os_commis_amount,
+        os.os_shop_cost_amount,
+        os.os_commis_return_amount,
+        os.os_platform_bear_amount,
+        os.os_platform_bear_return_amount,
+        os.os_amount,
+        os.os_datetime,
+        os.os_date,
+        os.os_state,
+        os.os_pay_date,
+        os.os_pay_content,
+        os.shop_id,
+        sb.shop_name,
+        os.os_order_type,
+        os.os_redpacket_amount,
+        os.os_redpacket_return_amount,
+        os.district_id,
+        os.os_base_member_discount,
+        os.os_return_member_discount,
+        os.os_tg_commission,
+        os.os_fx_commission,
+        os.os_supper_discount_fee,
+        os.os_return_supper_discount_fee,
+        os.os_supply_price,
+        os.os_return_supply_price,
+        sb.shop_settlement_cycle
+        FROM
+        ${database.prefix.order}hou_order_settlement os
+        left join ${database.prefix.supplier}hou_shop_base sb on sb.supplier_shop_id = os.shop_id
+        WHERE
+        os.os_is_display = 1
+        <if test="null != refundMap.osId and refundMap.osId != ''">
+            and os.os_id = #{refundMap.osId}
+        </if>
+        <if test="null != refundMap.shopType">
+            and sb.shop_type = #{refundMap.shopType}
+        </if>
+        <if test="null != refundMap.osId and !''.equals(refundMap.osId)">
+            and os_id = #{refundMap.osId}
+        </if>
+        <if test="null != refundMap.osState and !''.equals(refundMap.osState)">
+            and os_state = #{refundMap.osState}
+        </if>
+        <if test="null != refundMap.shopName and !''.equals(refundMap.shopName)">
+            and sb.shop_name like concat('%',#{refundMap.shopName},'%')
+        </if>
+        <if test="null != refundMap.osStartDate and !''.equals(refundMap.osStartDate)">
+            and os_datetime >= #{refundMap.osStartDate}
+        </if>
+        <if test="null != refundMap.osFinishTime and !''.equals(refundMap.osFinishTime)">
+            and os_datetime &lt;= #{refundMap.osFinishTime}
+        </if>
+        order by os.os_datetime desc
+    </select>
+    <select id="queryPlatFormListSettlementExcel" resultType="com.houjiang.order.vo.PlatFormOrderSettlementVO">
+        SELECT
+        os_id,
+        os_start_date,
+        os_end_date,
+        os_order_amount,
+        os_shipping_amount,
+        os_order_return_amount,
+        os_commis_amount,
+        os_shop_cost_amount,
+        os_commis_return_amount,
+        os_platform_bear_amount,
+        os_platform_bear_return_amount,
+        os_amount,
+        os_datetime,
+        os_date,
+        os_state,
+        os_pay_date,
+        os_pay_content,
+        shop_id,
+        shop_name,
+        os_order_type,
+        os_redpacket_amount,
+        os_redpacket_return_amount,
+        district_id,
+        os_base_member_discount,
+        os_return_member_discount,
+        os_tg_commission,
+        os_fx_commission,
+        os_supper_discount_fee,
+        os_return_supper_discount_fee,
+        os_supply_price,
+        os_return_supply_price
+        FROM
+        ${database.prefix.order}hou_order_settlement
+        WHERE
+        os_is_display = 1
+        <if test="null != refundMap.osId and refundMap.osId != ''">
+            and os_id = #{refundMap.osId}
+        </if>
+        <if test="null != refundMap.osState and refundMap.osState != ''">
+            and os_state = #{refundMap.osState}
+        </if>
+        <if test="null != refundMap.shopName and refundMap.shopName != ''">
+            and shop_name like concat('%',#{refundMap.shopName},'%')
+        </if>
+        <if test="null != refundMap.osStartDate and refundMap.osStartDate != ''">
+            and os_datetime >= #{refundMap.osStartDate}
+        </if>
+        <if test="null != refundMap.osFinishTime and refundMap.osFinishTime !=''">
+            and os_datetime &lt;= #{refundMap.osFinishTime}
+        </if>
+        limit 6000
+    </select>
+    <select id="selectWaitDealerReturnList" resultType="com.houjiang.order.vo.ReturnBaseListVO">
+        SELECT oor.return_code                                                                  AS returnCode,
+               oor.order_id                                                                     AS orderId,
+               oog.goods_id,
+			   oog.goods_name,
+			   oog.order_goods_payment_amount,
+               oor.return_cash                                                                  AS returnCash,
+               oor.return_commision_fee                                                         AS returnCommisionFee,
+               oor.return_state                                                                 AS returnState,
+               oor.return_add_time                                                              AS returnAddTime,
+               oor.buyer_user_account                                                           AS buyerUserAccount,
+               oor.return_rpt_cash                                                              AS returnRptCash,
+               oor.return_reason                                                                AS returnReason,
+               oor.return_member_discount                                                       AS returnMemberDiscount,
+               if(oor.return_method_status = 1, sob.order_refund_price, sob.order_return_price) AS supperReturnPrice
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oob.order_id
+        WHERE oor.shop_id = #{shopId} and sob.supplier_shop_id != #{shopId}
+          and oor.order_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or
+               (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          AND oog.drop_shipping = 1
+          and (oog.goods_return_status = 2 or oog.goods_refund_status = 2)
+          AND oor.return_finish_time >= #{dBefore}
+          and oor.return_finish_time &lt;= now()
+          group by oob.order_id
+        order by oor.return_add_time desc
+    </select>
+    <select id="selectWaitDealerOrderList" resultType="com.houjiang.commons.vo.order.OrderBaseListVO">
+        SELECT ob.order_id                                       AS orderId,
+        		oog.goods_id,
+				oog.goods_name,
+				oog.order_goods_payment_amount,
+               (ob.order_payment_amount - ob.order_shipping_fee) AS orderPaymentAmount,
+               ob.order_rpt_price                                AS orderRptPrice,
+               oog.shipping_fee                             AS orderShippingFee,
+               oog.order_goods_commission                           AS orderCommissionFee,
+               ob.order_create_time                              AS orderCreateTime,
+               ob.order_finished_time                            AS orderFinishedTime,
+               ob.buyer_user_id                                  AS buyerUserId,
+               ob.buyer_user_name                                AS buyerUserName,
+               oog.goods_member_discount                         AS baseMemberDiscount,
+               oc.one_tg_commission + two_tg_commission          AS tgCommission,
+               oc.fx_commission                                  AS fxCommission,
+               sob.goods_price_sum                               AS supperPriceSum
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+                 and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE ob.shop_id = #{param.shopId} and oog.deliver_shop_id != #{param.shopId}
+          and oog.drop_shipping = 1
+          and ob.order_is_settlement = '0'
+          AND (ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          AND ob.order_finished_time >= #{dBefore}
+          AND ob.order_finished_time &lt;= now()
+          and ob.payment_code != 3
+          group by ob.order_id,oog.goods_id
+        ORDER BY
+            ob.order_finished_time DESC
+    </select>
+    <select id="getSettleDealerAccountOrder"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT sum(ob.order_shipping_fee)       AS orderShippingFee,
+               sum(oog.order_goods_payment_amount)     AS orderPaymentAmount,
+               sum(sob.goods_price)      AS orderSupplyAmount,
+               sum(oog.order_goods_amount)       AS orderGoodsAmount,
+               sum(ob.order_rpt_price)          AS orderRptPrice,
+               sum(oog.voucher_price)            AS orderVoucherPrice,
+               sum(oog.order_goods_commission)     AS orderCommissionFee,
+               sum(ob.dealer_commission)        AS dealerCommission,
+               sum(ob.dealer_return_commission) AS dealerReturnCommission,
+               sum(ob.supply_commission)        AS supplyCommission,
+               sum(ob.supply_return_commission) AS supplyReturnCommission,
+               sum(oog.goods_member_discount)     AS baseMemberDiscount,
+               sum(oc.one_tg_commission + oc.two_tg_commission)            AS tgCommission,
+               sum(oc.fx_commission)            AS fxCommission,
+               sum(sob.goods_price_sum)         as supperPriceSum
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+                 and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE ob.shop_id = #{shopId} and oog.deliver_shop_id != #{shopId}
+          and oog.drop_shipping = 1
+          and ob.order_is_settlement = '0'
+          AND (ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          AND ob.order_finished_time >= #{dBefore}
+          AND ob.order_finished_time &lt;= now()
+          AND ob.payment_code != 3
+    </select>
+    <select id="getSettleDealerAccountReturn"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT sum(oor.return_rpt_cash)                                                              AS returnRptCash,
+               sum(oor.return_cash)                                                                  AS returnCash,
+               sum(oor.return_commision_fee)                                                         AS orderReturnCommissionFee,
+               sum(oor.return_member_discount)                                                       AS returnMemberDiscount,
+               sum(oor.return_rpt_cash)                                                              AS returnRptCash,
+               sum(if(oor.return_cash = oog.order_goods_payment_amount,oog.voucher_price,0))               AS returnVoucherPrice,
+               sum(if(oor.return_method_status = 1, sob.order_refund_price,
+                      sob.order_return_price))                                                       AS supperReturnPrice
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oob.order_id
+                 and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE oor.shop_id = #{shopId} and oog.deliver_shop_id != #{shopId}
+          and oor.order_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          AND oog.drop_shipping = 1
+          AND oor.return_finish_time >= #{dBefore}
+          and oor.return_finish_time &lt;= now()
+    </select>
+    <select id="selectSupplyWaitReturnList" resultType="com.houjiang.order.vo.ReturnBaseListVO">
+        SELECT oor.return_code                                                                   AS returnCode,
+               oor.order_id                                                                      AS orderId,
+               if(oog.drop_shipping = 1,
+                  if(oor.return_method_status = 1, sob.order_refund_price, sob.order_return_price),
+                  oor.return_cash)                                                               AS returnCash,
+               if(oog.drop_shipping = 1, sob.supper_return_commission, oor.return_commision_fee) AS returnCommisionFee,
+               oor.return_state                                                                  AS returnState,
+               oor.return_add_time                                                               AS returnAddTime,
+               oor.buyer_user_account                                                            AS buyerUserAccount,
+               oor.return_rpt_cash                                                               AS returnRptCash,
+               oor.return_reason                                                                 AS returnReason,
+               oor.return_member_discount                                                        AS returnMemberDiscount,
+               oor.return_supper_discount_fee                                                    AS returnSupperDiscountFee,
+                oog.goods_id,
+                oog.goods_name,
+                oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oor.order_id
+                 and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE oog.deliver_shop_id = #{shopId}
+          and oor.order_supply_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or
+               (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          AND oor.return_finish_time >= #{dBefore}
+          and oor.return_finish_time &lt;= now()
+          group by oob.order_id,oog.goods_id
+        order by returnAddTime desc
+    </select>
+    <select id="selectSupplyWaitOrderList" resultType="com.houjiang.commons.vo.order.OrderBaseListVO">
+        SELECT ob.order_id                                                                                           AS orderId,
+               (if(oog.drop_shipping = 1, sob.goods_payment_amount - oog.shipping_fee,
+                   oog.order_goods_payment_amount))                                                                         AS orderPaymentAmount,
+               oog.shipping_fee                                                                                 AS orderShippingFee,
+               (if(oog.drop_shipping = 1, sob.supper_commission,
+                   oog.shipping_fee))                                                                         AS orderCommissionFee,
+               ob.order_create_time                                                                                  AS orderCreateTime,
+               ob.order_finished_time                                                                                AS orderFinishedTime,
+               ob.buyer_user_id                                                                                      AS buyerUserId,
+               ob.buyer_user_name                                                                                    AS buyerUserName,
+               oog.goods_member_discount                                                                               AS baseMemberDiscount,
+               ob.distribution_discount                                                                              AS supperDiscountFee,
+                oog.goods_id,
+                oog.goods_name,
+                oog.order_goods_payment_amount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = ob.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+                 and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE  oog.deliver_shop_id = #{shopId}
+          and ob.order_supply_is_settlement = '0'
+          AND ob.order_status IN ('6', '9')
+          AND ob.order_finished_time >= #{dBefore}
+          AND ob.order_finished_time &lt;= now()
+          group by ob.order_id,oog.goods_id
+        ORDER BY ob.order_finished_time DESC
+    </select>
+    <select id="getSupplySettleAccountOrder"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT sum(ob.order_shipping_fee)                                                       AS orderShippingFee,
+               sum(if(oog.drop_shipping = 1, sob.goods_payment_amount, oog.order_goods_payment_amount)) AS orderPaymentAmount,
+               sum(oog.order_goods_amount)                                                       AS orderGoodsAmount,
+               sum(oog.order_rpt_price)                                                          AS orderRptPrice,
+               sum(if(oog.drop_shipping = 1, sob.supper_commission, oog.order_goods_commission))    AS orderCommissionFee,
+               sum(ob.distribution_discount)                                                    AS supperDiscountFee,
+               sum(oog.goods_member_discount)                                                     as baseMemberDiscount
+        FROM ${database.prefix.order}hou_order_base ob
+        left join ${database.prefix.order}hou_order_goods oog on oog.order_id = ob.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+                 and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE oog.deliver_shop_id = #{shopId}
+          AND ob.order_supply_is_settlement = '0'
+          AND ob.order_status IN ('6', '9')
+          AND ob.order_finished_time >= #{dBefore}
+          AND ob.order_finished_time &lt;= now()
+    </select>
+    <select id="getSupplySettleAccountReturn"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT sum(oor.return_rpt_cash)                                                               AS returnRptCash,
+               sum(if(oog.drop_shipping = 1,
+                      if(oor.return_method_status = 1, sob.order_refund_price, sob.order_return_price),
+                      oor.return_cash))                                                               AS returnCash,
+               sum(if(oog.drop_shipping = 1, sob.supper_return_commission,
+                      oor.return_commision_fee))                                                      AS orderReturnCommissionFee,
+               sum(oor.return_member_discount)                                                        AS returnMemberDiscount,
+               sum(oor.return_supper_discount_fee)                                                    AS returnSupperDiscountFee
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 left join ${database.prefix.order}hou_order_goods oog on oog.order_id = oob.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oor.order_id
+                 and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE (oob.shop_id = #{shopId} or oog.deliver_shop_id = #{shopId})
+          AND oor.order_supply_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          AND oor.return_finish_time >= #{dBefore}
+          AND oor.return_finish_time &lt;= now()
+    </select>
+    <select id="queryWebPostAmount" resultType="java.math.BigDecimal">
+        select sum(pay_total_amount) from  ${database.prefix.webpos}hou_wps_order where shop_id = #{shopId} and order_status = 1
+    </select>
+    <select id="queryWebPostReturnAmount" resultType="java.math.BigDecimal">
+        select sum(pay_total_amount) from  ${database.prefix.webpos}hou_wps_order where shop_id = #{shopId} and order_status = 3
+    </select>
+    <select id="getSettleAccountOrderFeign"
+            resultType="com.houjiang.commons.dto.order.SupplierShopSettleAccountInfoDTO">
+        select sum(ob.order_shipping_fee) as orderShippingFee,
+        sum(ob.order_payment_amount) as orderPaymentAmount,
+        sum(ob.order_commission_fee) AS orderCommissionFee
+        FROM ${database.prefix.order}hou_order_base ob
+        where
+        ((ob.deliver_shop_id = #{param.shopId} and ob.original_order IS NOT null) or ob.shop_id=#{param.shopId})
+        and ob.payment_code != 3 and ob.pay_code != 13 and ob.order_is_settlement ='0'
+        AND ((ob.order_status IN ( '5', '6' ) AND ob.virtual_goods = 1 )
+        OR (ob.order_status IN ( '9','12' ) AND ob.virtual_goods = 1 AND (ob.order_refund_status = 2 or
+        ob.order_return_status = 2))
+        OR (ob.virtual_goods = 0 AND ob.is_cancel = 0 AND ob.order_status IN ( '6' ) )
+        OR (ob.virtual_goods = 0 AND ob.is_cancel = 2 AND ob.order_status IN ( '9','12' ) ) )
+        <if test="param.dBefore != null">
+            and ob.order_finished_time >= #{param.dBefore} and ob.order_finished_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and ob.order_finished_time >= #{param.start} and ob.order_finished_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getSettleAccountOrderIdListFeign" resultType="java.lang.String">
+        select ob.order_id
+        FROM ${database.prefix.order}hou_order_base ob
+        where
+        ((ob.deliver_shop_id = #{param.shopId} and ob.original_order IS NOT null) or ob.shop_id=#{param.shopId})
+        and ob.payment_code != 3 and ob.pay_code != 13 and ob.order_is_settlement ='0'
+        AND ((ob.order_status IN ( '5', '6' ) AND ob.virtual_goods = 1 )
+        OR (ob.order_status IN ( '9','12' ) AND ob.virtual_goods = 1 AND (ob.order_refund_status = 2 or
+        ob.order_return_status = 2))
+        OR (ob.virtual_goods = 0 AND ob.is_cancel = 0 AND ob.order_status IN ( '6' ) )
+        OR (ob.virtual_goods = 0 AND ob.is_cancel = 2 AND ob.order_status IN ( '9','12' ) ) )
+        <if test="param.dBefore != null">
+            and ob.order_finished_time >= #{param.dBefore} and ob.order_finished_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and ob.order_finished_time >= #{param.start} and ob.order_finished_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getSettleAccountReturnOrderFeign"
+            resultType="com.houjiang.commons.dto.order.SupplierShopSettleAccountInfoDTO">
+        select
+        sum(oor.return_cash)            as returnCash,
+        sum(oor.return_commision_fee)   AS orderReturnCommissionFee,
+        sum(oor.return_shipping_fee)    AS returnShippingFee
+        FROM ${database.prefix.order}hou_order_return oor
+        left join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+        where   ((oob.deliver_shop_id = #{param.shopId}  and oob.original_order IS NOT null) or oob.shop_id=#{param.shopId})
+        and oob.pay_code != 13 and oob.payment_code != 3
+        and (oor.return_type in (1, 2) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+        and oor.order_is_settlement = '0'
+        and oor.return_state in (2, 4)
+        <if test="param.dBefore != null">
+            and oor.return_finish_time >= #{param.dBefore} and oor.return_finish_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and oor.return_finish_time >= #{param.start} and oor.return_finish_time &lt;= #{param.end}
+        </if>
+    </select>
+    <select id="getSettleAccountReturnOrderIdListFeign" resultType="java.lang.String">
+        select
+        oor.order_id
+        FROM ${database.prefix.order}hou_order_return oor
+        left join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+        where   ((oob.deliver_shop_id = #{param.shopId}  and oob.original_order IS NOT null) or oob.shop_id=#{param.shopId})
+        and oob.pay_code != 13 and oob.payment_code != 3
+        and (oor.return_type in (1, 2) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+        and oor.order_is_settlement = '0'
+        and oor.return_state in (2, 4)
+        <if test="param.dBefore != null">
+            and oor.return_finish_time >= #{param.dBefore} and oor.return_finish_time &lt;= now()
+        </if>
+        <if test="param.start != null and param.end != null">
+            and oor.return_finish_time >= #{param.start} and oor.return_finish_time &lt;= #{param.end}
+        </if>
+    </select>
+</mapper>

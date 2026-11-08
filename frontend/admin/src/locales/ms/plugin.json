@@ -1,0 +1,20 @@
+{
+  "plugin": {
+    "activity": { "name": "Aktiviti Pemasaran" },
+    "aicode": { "name": "Pembangunan AI" },
+    "cms": { "name": "Pengurusan Kandungan" },
+    "crm": { "name": "CRM" },
+    "erp": { "name": "ERP" },
+    "finance": { "name": "Pusat Kewangan" },
+    "geo": { "name": "GEO" },
+    "im": { "name": "IM" },
+    "logging": { "name": "Pengurusan Log" },
+    "mes": { "name": "Pengilangan MES" },
+    "oa": { "name": "Pejabat OA" },
+    "orderfood": { "name": "Pengurusan Restoran" },
+    "pm": { "name": "Pengurusan Projek" },
+    "supplier": { "name": "Pengurusan Pembekal" },
+    "webpos": { "name": "WebPOS" },
+    "demo-coupon": { "name": "Demo Kupon" }
+  }
+}

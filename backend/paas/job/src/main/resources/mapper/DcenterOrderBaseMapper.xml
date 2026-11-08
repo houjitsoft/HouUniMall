@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterOrderBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterOrderBaseEntity">
+            <id property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+            <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+            <result property="payCode" column="pay_code" jdbcType="INTEGER"/>
+            <result property="orderPaymentAmount" column="order_payment_amount" jdbcType="DECIMAL"/>
+            <result property="orderStatus" column="order_status" jdbcType="TINYINT"/>
+            <result property="buyerUserId" column="buyer_user_id" jdbcType="VARCHAR"/>
+            <result property="buyerUserName" column="buyer_user_name" jdbcType="VARCHAR"/>
+            <result property="orderReceiverName" column="order_receiver_name" jdbcType="VARCHAR"/>
+            <result property="orderReceiverAddress" column="order_receiver_address" jdbcType="VARCHAR"/>
+            <result property="orderReceiverContact" column="order_receiver_contact" jdbcType="VARCHAR"/>
+            <result property="orderFrom" column="order_from" jdbcType="TINYINT"/>
+            <result property="integralGoods" column="integral_goods" jdbcType="INTEGER"/>
+            <result property="orderReturnStatus" column="order_return_status" jdbcType="BOOLEAN"/>
+            <result property="orderRefundStatus" column="order_refund_status" jdbcType="BOOLEAN"/>
+            <result property="orderReceiverProvinceId" column="order_receiver_province_id" jdbcType="INTEGER"/>
+            <result property="orderPromotionId" column="order_promotion_id" jdbcType="BOOLEAN"/>
+            <result property="orderCreateTime" column="order_create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        order_id,shop_id,shop_name,
+        pay_code,order_payment_amount,order_status,
+        buyer_user_id,buyer_user_name,order_receiver_name,
+        order_receiver_address,order_receiver_contact,order_from,
+        integral_goods,order_return_status,order_refund_status,
+        order_receiver_province_id,order_promotion_id,order_create_time,order_discount_fee
+    </sql>
+
+    <select id="getDecenterOrderBaseVOList" resultType="com.houjiang.job.vo.DecenterOrderBaseVO">
+        select
+            order_id,
+            shop_id,
+            shop_name,
+            pay_code,
+            order_payment_amount,
+            order_status,
+            buyer_user_id,
+            buyer_user_name,
+            order_receiver_name,
+            order_receiver_address,
+            order_receiver_contact,
+            order_from,
+            integral_goods,
+            order_return_status,
+            order_refund_status,
+            order_receiver_province_id,
+            order_promotion_id,
+            order_create_time,
+            order_discount_fee
+        from
+            ${database.prefix.order}hou_order_base
+             limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivitySpinwinPersonMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.activity.entity.ActivitySpinwinPersonEntity">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="prizeId" column="prize_id" jdbcType="INTEGER"/>
+        <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="userAvatar" column="user_avatar" jdbcType="VARCHAR"/>
+        <result property="updateDate" column="update_date" jdbcType="TIMESTAMP"/>
+        <result property="redpacketId" column="redpacket_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id
+        ,prize_id,activity_id,
+        user_id,user_name,user_avatar,
+        update_date,redpacket_id
+    </sql>
+    <insert id="insertLuckyDraw">
+        insert into activity_spinwin_person (prize_id, activity_id, user_id, user_name, user_avatar, update_date,
+                                             redpacket_id)
+        values (#{prizeId,jdbcType=INTEGER}, #{activityId,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER},
+                #{userName,jdbcType=VARCHAR},
+                #{userAvatar,jdbcType=VARCHAR}, #{updateDate,jdbcType=TIMESTAMP}, #{redpacketId,jdbcType=INTEGER})
+    </insert>
+    <select id="querySpinwinPersonList" resultType="com.houjiang.activity.vo.SpinwinPersonListVO">
+        SELECT
+        sp.id,
+        sp.prize_id,
+        sp.activity_id,
+        sp.user_id,
+        sp.user_name,
+        sp.user_avatar,
+        sp.update_date,
+        pp.prize_grade,
+        pp.prize_name,
+        sa.activity_title
+        FROM activity_spinwin_person sp
+        LEFT JOIN activity_spinwin_prize pp ON sp.prize_id = pp.prize_id
+        LEFT JOIN activity_spinwin_gift sg ON sg.gift_id = pp.gift_id
+        LEFT JOIN activity_spinwin sa ON sa.activity_id = sp.activity_id
+        where 1=1
+        <if test="param.userName != null and param.userName != ''">
+            and sp.user_name LIKE CONCAT('%',#{param.userName },'%')
+        </if>
+        <if test="param.activityTitle != null and param.activityTitle != ''">
+            and sa.activity_title LIKE CONCAT('%',#{param.activityTitle},'%')
+        </if>
+        order by sp.update_date desc
+    </select>
+    <select id="selectPrizeRecord" resultType="com.houjiang.activity.vo.PrizeRecordResultVO">
+        SELECT
+        rt.redpacket_t_id,
+        rt.redpacket_t_type,
+        rt.redpacket_t_title,
+        rt.redpacket_t_desc,
+        rt.redpacket_t_start_date,
+        rt.redpacket_t_end_date,
+        rt.redpacket_t_price,
+        rt.redpacket_t_orderlimit,
+        rt.redpacket_t_total,
+        rt.redpacket_t_giveout,
+        rt.redpacket_t_add_date,
+        rt.redpacket_t_update_date,
+        rt.redpacket_t_eachlimit,
+        sp.user_id,
+        sp.user_name,
+        sp.user_avatar,
+        sp.update_date,
+        sg.gift_name,
+        sg.gift_image,
+        sg.gift_is_redpacket,
+        pp.is_win,
+        rt.redpacket_t_state,
+        rb.redpacket_state
+        FROM
+        activity_spinwin_person sp
+        LEFT JOIN activity_spinwin_prize pp ON sp.prize_id = pp.prize_id
+        LEFT JOIN activity_spinwin_gift sg ON sg.gift_id = pp.gift_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_redpacket_base rb ON sp.redpacket_id = rb.redpacket_id
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_redpacket_template rt ON rb.redpacket_t_id = rt.redpacket_t_id
+        WHERE pp.activity_id = #{param.activityId}
+        <if test="param.userId != null and param.userId != ''">
+            and sp.user_id = #{param.userId}
+        </if>
+        order by sp.update_date desc,rt.redpacket_t_price DESC
+    </select>
+    <select id="selectPrizeRecordCount" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM activity_spinwin_person
+        WHERE activity_id = #{param.activityId}
+          and user_id = #{param.userId}
+    </select>
+</mapper>

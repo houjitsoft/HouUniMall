@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderInvoiceAddressMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderInvoiceAddressEntity" id="OrderInvoiceAddressMap">
+        <result property="addressId" column="address_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="userMobile" column="user_mobile" jdbcType="VARCHAR"/>
+        <result property="userMail" column="user_mail" jdbcType="VARCHAR"/>
+        <result property="addressProvince" column="address_province" jdbcType="INTEGER"/>
+        <result property="addressCity" column="address_city" jdbcType="INTEGER"/>
+        <result property="addressArea" column="address_area" jdbcType="INTEGER"/>
+        <result property="addressDetail" column="address_detail" jdbcType="VARCHAR"/>
+        <result property="isDefault" column="is_default" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="lastUpdateTime" column="last_update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="insertAddressTmp">
+        insert INTO ${database.prefix.order}hou_order_invoice_address(
+                    user_id,
+                    user_name,
+                    user_mobile,
+                    user_mail,
+                    address_province,
+                    address_city,
+                    address_area,
+                    address_detail,
+                    is_default
+                ) values(
+                    #{param.userId},
+                    #{param.userName},
+                    #{param.userMobile},
+                    #{param.userMail},
+                    #{param.addressProvince},
+                    #{param.addressCity},
+                    #{param.addressArea},
+                    #{param.addressDetail},
+                    #{param.isDefault}
+                )
+    </insert>
+    <update id="updateAddressDefault">
+        update ${database.prefix.order}hou_order_invoice_address
+        set is_default = 0
+        where user_id = #{param.userId}
+    </update>
+    <update id="updateAddressTmp">
+         update ${database.prefix.order}hou_order_invoice_address set
+            user_id = #{param.userId},
+            user_name =  #{param.userName},
+            user_mobile = #{param.userMobile},
+            user_mail = #{param.userMail},
+            address_province = #{param.addressProvince},
+            address_city = #{param.addressCity},
+            address_area = #{param.addressArea},
+            address_detail = #{param.addressDetail},
+            is_default = #{param.isDefault}
+        where address_id = #{param.addressId}
+    </update>
+    <select id="list" resultType="com.houjiang.order.entity.OrderInvoiceAddressEntity">
+        select address_id,
+               user_name,
+               user_id,
+               user_mobile,
+               user_mail,
+               address_province,
+               address_city,
+               address_area,
+               address_detail,
+               is_default
+        FROM ${database.prefix.order}hou_order_invoice_address
+        where user_id = #{param.userId}
+        order by create_time desc
+    </select>
+    <select id="queryAddressTmpListCount" resultType="java.lang.Integer">
+        select count(*)
+        FROM ${database.prefix.order}hou_order_invoice_address
+        where user_id = #{param.userId}
+    </select>
+
+
+</mapper>

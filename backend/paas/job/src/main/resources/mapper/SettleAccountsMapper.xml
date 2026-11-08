@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.SettleAccountsMapper">
+
+    <select id="getBeformDate" resultType="java.lang.String">
+        select os_date
+        from ${database.prefix.order}hou_order_settlement
+        where shop_id = #{shopId}
+          and os_order_type = #{osOrderType}
+        order by os_datetime desc
+        limit 1
+    </select>
+
+    <select id="getSettleAccountOrder" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(oog.shipping_fee)       as orderShippingFee,
+               sum(oog.order_goods_payment_amount - oog.shipping_fee)     as orderPaymentAmount,
+               sum(ob.order_supply_amount)      as orderSupplyAmount,
+               sum(oog.order_goods_amount)       as orderGoodsAmount,
+               sum(oog.order_rpt_price)          as orderRptPrice,
+               sum(oog.order_goods_commission)     AS orderCommissionFee,
+               sum(oog.dealer_commission)        as dealerCommission,
+               sum(oog.dealer_return_commission) as dealerReturnCommission,
+               sum(oog.supply_commission)        as supplyCommission,
+               sum(oog.supply_return_commission) as supplyReturnCommission,
+               sum(oog.goods_member_discount)     as baseMemberDiscount,
+               sum(oc.one_tg_commission+oc.two_tg_commission)            AS tgCommission,
+               sum(oc.fx_commission)            AS fxCommission
+        FROM ${database.prefix.order}hou_order_base ob
+                 LEFT join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc
+                           on ob.order_id = oc.order_id and oog.goods_id = oc.goods_id and oc.order_status != 5
+        where ob.shop_id = #{shopId} and ob.original_order is null
+          and ob.payment_code &lt;&gt; 3 and ob.pay_code != 13
+          and ob.order_is_settlement = '0'
+          AND ((ob.order_status IN ( '5', '6', '9' ) AND ob.virtual_goods = 1 )
+           OR (ob.order_status = '9'  AND ob.virtual_goods = 1 AND ob.order_refund_status = 2 )
+           OR (ob.virtual_goods = 0 AND ob.is_cancel = 0  AND ob.order_status IN ( '6' ) )
+           OR (ob.virtual_goods = 0 AND ob.is_cancel = 2   AND ob.order_status IN ( '9','12' ) ) )
+          and ob.order_finished_time >= #{start}
+          and ob.order_finished_time &lt;= #{end}
+    </select>
+
+    <select id="getSettleAccountReturn" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(oor.return_rpt_cash)                                       as return_rpt_cash,
+               sum(oor.return_cash)                                           as return_cash,
+               sum(oor.return_commision_fee)                                  AS orderReturnCommissionFee,
+               sum(oor.return_member_discount)                                AS returnMemberDiscount,
+               sum(oor.return_shipping_fee)                                   AS returnShippingFee,
+               sum(oc.return_one_tg_commission + oc.return_two_tg_commission) AS returnTgCommission,
+               sum(oc.return_fx_commission)                                   AS returnFxCommission
+        from ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+                 LEFT join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc
+                           on oor.order_id = oc.order_id and oog.goods_id = oc.goods_id and oc.order_status = 4
+        where oor.shop_id = #{shopId}
+          and oor.order_is_settlement = '0'
+          and oob.payment_code != 3
+          and oob.pay_code != 13
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          and oor.return_finish_time &gt;= #{start}
+          and oor.return_finish_time &lt;= #{end}
+    </select>
+
+    <select id="getSettleAccountOrderId" resultType="java.lang.String">
+        select ob.order_id
+        FROM ${database.prefix.order}hou_order_base ob
+        where ob.shop_id = #{shopId} and ob.original_order is null
+          and ob.payment_code &lt;&gt; 3 and ob.pay_code != 13
+          and ob.order_is_settlement = '0'
+          and (ob.order_status IN ('5', '6', '9') or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          and ob.order_finished_time >= #{start}
+          and ob.order_finished_time &lt;= #{end}
+    </select>
+    <select id="getSettleAccountReturnId" resultType="java.lang.String">
+        select oor.order_id
+        from ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+                 LEFT join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+                 LEFT join ${database.prefix.order}hou_order_commission oc
+                           on oor.order_id = oc.order_id and oog.goods_id = oc.goods_id and oc.order_status = 4
+        where oor.shop_id = #{shopId}
+          and oor.order_is_settlement = '0'
+          and oob.payment_code != 3
+          and oob.pay_code != 13
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or (oob.order_status = 9) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          and oor.return_finish_time >= #{start}
+          and oor.return_finish_time &lt;= #{end}
+        group by oob.order_id
+    </select>
+    <select id="getDealerSettleAccountOrder"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT sum(oog.shipping_fee)               AS order_shipping_fee,
+               sum(oog.order_goods_payment_amount) AS order_payment_amount,
+               sum(oog.order_goods_amount)         AS order_goods_amount,
+               sum(oog.order_rpt_price)            AS order_rpt_price,
+               sum(oog.dealer_commission)          AS orderDealerCommission,
+               sum(oog.supply_commission)          AS orderSupplyCommission,
+               sum(oog.order_goods_commission)     AS orderCommissionFee,
+               sum(oog.goods_member_discount)      AS baseMemberDiscount,
+               sum(sob.goods_price_sum)            as supperPriceSum
+        FROM ${database.prefix.order}hou_order_base ob
+                 left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+                 LEFT JOIN ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+                 LEFT JOIN ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+        WHERE oog.deliver_shop_id = #{paraMap.shopId}
+          and oog.drop_shipping = 1
+          and ob.payment_code &lt;&gt; 3
+          and ob.order_is_settlement = '0'
+          AND (ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          AND ob.order_finished_time >= #{paraMap.start}
+          and ob.order_finished_time &lt;= #{paraMap.end}
+    </select>
+    <select id="getDealerSettleAccountReturn"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT sum(oor.return_rpt_cash)                                                              AS returnRptCash,
+               sum(oor.return_cash)                                                                  AS returnCash,
+               sum(oor.return_commision_fee)                                                         AS orderReturnCommissionFee,
+               sum(oor.return_member_discount)                                                       AS returnMemberDiscount,
+               sum(if(oor.return_method_status = 1, sob.order_refund_price,
+                      sob.order_return_price))                                                       AS supperReturnPrice
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+                 LEFT JOIN ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oob.order_id
+        WHERE oog.deliver_shop_id = #{paraMap.shopId}
+          and oor.order_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          AND oog.drop_shipping = 1
+          AND oor.return_finish_time >= #{paraMap.start}
+          and oor.return_finish_time &lt;= #{paraMap.end}
+    </select>
+    <select id="getSupplySettleAccountOrder"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT sum(oog.shipping_fee)                                                             AS orderShippingFee,
+               sum(if(oog.drop_shipping = 1, sob.goods_payment_amount - oog.shipping_fee,
+                      oog.order_goods_payment_amount))                                           AS orderPaymentAmount,
+               sum(oog.order_goods_amount)                                                       AS orderGoodsAmount,
+               sum(oog.order_rpt_price)                                                          AS orderRptPrice,
+               sum(oog.voucher_price)                                                            AS orderVoucherPrice,
+               sum(oog.dealer_commission)                                                        AS orderDealerCommission,
+               sum(oog.supply_commission)                                                        AS orderSupplyCommission,
+               sum(ob.distribution_discount)                                                     AS supperDiscountFee,
+               sum(oog.goods_member_discount)                                                    AS baseMemberDiscount,
+               sum(if(oog.drop_shipping = 1, sob.supper_commission, oog.order_goods_commission)) AS orderCommissionFee
+        FROM ${database.prefix.order}hou_order_base ob
+                 left join ${database.prefix.order}hou_order_goods oog on ob.order_id = oog.order_id
+                 LEFT JOIN ${database.prefix.order}hou_order_commission oc ON ob.order_id = oc.order_id
+                 LEFT JOIN ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = ob.order_id
+            and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE oog.deliver_shop_id = #{param.shopId}
+          and ob.order_supply_is_settlement = '0'
+          AND ob.order_status IN ('6', '9')
+          AND order_finished_time >= #{param.start}
+          and order_finished_time &lt;= #{param.end}
+    </select>
+    <select id="getSupplySettleAccountReturn"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT sum(oor.return_rpt_cash)                                                               AS returnRptCash,
+               sum(if(oog.drop_shipping = 1,
+                      if(oor.return_method_status = 1, sob.order_refund_price, sob.order_return_price),
+                      oor.return_cash))                                                               AS returnCash,
+               sum(if(oor.return_cash = oog.order_goods_payment_amount, oog.voucher_price,
+                      0))                                                                             AS returnVoucherPrice,
+               sum(if(oog.drop_shipping = 1, sob.supper_return_commission,
+                      oor.return_commision_fee))                                                      AS orderReturnCommissionFee,
+               sum(oor.return_supper_discount_fee)                                                    AS returnSupperDiscountFee
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+                 LEFT JOIN ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oor.order_id
+            and oog.deliver_shop_id = sob.supplier_shop_id
+        WHERE oog.deliver_shop_id = #{param.shopId}
+          and oor.order_supply_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          AND oor.return_finish_time >= #{param.start}
+          and oor.return_finish_time &lt;= #{param.end}
+    </select>
+    <select id="querySupplyOrderBaseInfo" resultType="java.lang.String">
+        SELECT oor.order_id
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 left join ${database.prefix.order}hou_order_goods oog on oob.order_id = oog.order_id
+                 LEFT JOIN ${database.prefix.order}hou_order_supplier_base sob on sob.order_id = oor.order_id
+        WHERE (oob.shop_id = #{param.shopId} or oog.deliver_shop_id = #{param.shopId})
+          and oor.order_supply_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          AND oor.return_finish_time >= #{param.start}
+          and oor.return_finish_time &lt;= #{param.end}
+    </select>
+    <select id="getSettleWebPosOrder" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(if(pay_way_id != 4, pay_total_amount, 0)) as orderPaymentAmount,
+               sum(order_commission_fee)                     as orderCommissionFee,
+               sum(discount_amount)                          as baseMemberDiscount
+        from ${database.prefix.webpos}hou_wps_order
+        where shop_id = #{param.shopId}
+          and order_is_settlement = 0
+          and order_status in (1, 2, 3)
+          and pay_time >= #{param.start}
+          and pay_time &lt;= #{param.end}
+    </select>
+    <select id="getSettleWebPosReturn" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(if(pay_way_id != 4, pay_total_amount, 0)) as orderPaymentAmount,
+               sum(order_commission_fee)                     as orderCommissionFee,
+               sum(discount_amount)                          as baseMemberDiscount
+        from ${database.prefix.webpos}hou_wps_order
+        where shop_id = #{param.shopId}
+          and order_is_settlement = 0
+          and order_status = 3
+          and refund_status = 1
+          and refund_time >= #{param.start}
+          and refund_time &lt;= #{param.end}
+    </select>
+    <select id="getSettleWebPosOrderId" resultType="java.lang.String">
+        select order_no
+        from ${database.prefix.webpos}hou_wps_order
+        where shop_id = #{param.shopId}
+          and order_is_settlement = 0
+          and order_status in (1, 2)
+          and refund_status = 0
+          and pay_time >= #{param.start}
+          and pay_time &lt;= #{param.end}
+    </select>
+    <select id="getSettleWebPosReturnId" resultType="java.lang.String">
+        select order_no
+        from ${database.prefix.webpos}hou_wps_order
+        where shop_id = #{param.shopId}
+          and order_is_settlement = 0
+          and order_status = 3
+          and refund_status = 1
+          and pay_time >= #{param.start}
+          and pay_time &lt;= #{param.end}
+    </select>
+    <select id="getCombinationOrder" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(ob.order_payment_amount) as orderBasePaymentAmount,
+               sum(ob.base_member_discount) as orderBaseMemberDiscount,
+               sum(ob.order_commission_fee) as orderBaseCommissionFee
+        FROM ${database.prefix.order}hou_order_base ob
+        where ob.shop_id = #{shopId}
+          and ob.combination_type = 1
+          and ob.payment_code &lt;&gt; 3
+          and ob.order_is_settlement = '0'
+          and ob.drop_shipping = 2
+          and ob.order_is_settlement = '0'
+          AND (ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          and ob.order_finished_time >= #{start}
+          and ob.order_finished_time &lt;= #{end}
+    </select>
+    <select id="getCombinationOrderId" resultType="java.lang.String">
+        select ob.order_id
+        FROM ${database.prefix.order}hou_order_base ob
+        where ob.shop_id = #{shopId}
+          and ob.combination_type = 1
+          and ob.payment_code &lt;&gt; 3
+          and ob.order_is_settlement = '0'
+          and ob.drop_shipping = 2
+          and ob.order_is_settlement = '0'
+          AND (ob.order_status IN ('6', '9') or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          and ob.order_finished_time >= #{start}
+          and ob.order_finished_time &lt;= #{end}
+    </select>
+    <select id="getCombinationOrderReturn" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(ob.order_payment_amount) as orderBasePaymentAmount,
+               sum(ob.base_member_discount) as orderBaseMemberDiscount,
+               sum(ob.order_commission_fee) as orderBaseCommissionFee
+        from ${database.prefix.order}hou_order_return oor
+                 left join ${database.prefix.order}hou_order_base ob on oor.order_id = ob.order_id
+        where ob.shop_id = #{shopId}
+          and ob.combination_type is not null
+          and ob.combination_type != 0
+          and ob.drop_shipping = #{dropShipping}
+          and ob.order_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          and ob.order_finished_time >= #{dBefore}
+          and ob.order_finished_time &lt;= now()
+          and ob.payment_code != 3
+    </select>
+    <select id="getCombinationOrderReturnId" resultType="java.lang.String">
+        select ob.order_id
+        from ${database.prefix.order}hou_order_return oor
+                 left join ${database.prefix.order}hou_order_base ob on oor.order_id = ob.order_id
+        where ob.shop_id = #{shopId}
+          and ob.combination_type is not null
+          and ob.combination_type != 0
+          and ob.drop_shipping = #{dropShipping}
+          and ob.order_is_settlement = '0'
+          and ((oor.return_state = 2 and oor.return_method_status in (1, 2)) or
+               (oor.return_state = 4 and oor.return_method_status = 3) or (ob.virtual_goods = 0 and ob.is_cancel = 2))
+          and ob.order_finished_time >= #{dBefore}
+          and ob.order_finished_time &lt;= now()
+          and ob.payment_code != 3
+    </select>
+    <select id="getSupplierSettleAccountOrder"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(ob.order_shipping_fee)                           as order_shipping_fee,
+               sum(ob.order_payment_amount - ob.order_shipping_fee) as order_payment_amount,
+               sum(ob.order_goods_amount)                           as order_goods_amount,
+               sum(ob.order_rpt_price)                              as order_rpt_price,
+               sum(ob.order_commission_fee)                         AS orderCommissionFee,
+               sum(ob.order_supply_amount)                          as order_supply_amount,
+               sum(ob.base_member_discount)                         as baseMemberDiscount,
+               sum(oc.one_tg_commission+oc.two_tg_commission)                                AS tgCommission,
+               sum(oc.fx_commission)                                AS fxCommission
+        FROM ${database.prefix.order}hou_order_base ob
+                 LEFT JOIN ${database.prefix.order}hou_order_commission oc on ob.order_id = oc.order_id
+        where  ((ob.deliver_shop_id = #{shopId}  and ob.original_order IS NOT null) or ob.shop_id=#{shopId})
+          and ob.payment_code != 3
+          and ob.pay_code != 13
+          and ob.order_is_settlement = '0'
+          AND ((ob.order_status IN ('5', '6') AND ob.virtual_goods = 1)
+            OR (ob.order_status = '9' AND ob.virtual_goods = 1 AND order_refund_status = 2)
+            OR (ob.virtual_goods = 0 AND ob.is_cancel = 0 AND ob.order_status IN ('6'))
+            OR (ob.virtual_goods = 0 AND ob.is_cancel = 2 AND ob.order_status IN ('9', '12')))
+          and ob.order_finished_time >= #{start}
+          and order_finished_time &lt;= #{end}
+    </select>
+    <select id="getSupplierSettleAccountOrderId" resultType="java.lang.String">
+        select ob.order_id
+        FROM ${database.prefix.order}hou_order_base ob
+        where ((ob.deliver_shop_id = #{shopId}  and ob.original_order IS NOT null) or ob.shop_id=#{shopId})
+          and ob.payment_code not in (3, 4)
+          and ob.order_is_settlement = '0'
+          AND ((ob.order_status IN ('6', '9') AND ob.virtual_goods = 1 AND order_refund_status in (0, 2))
+            OR (ob.virtual_goods = 0 AND ob.is_cancel = 0 AND ob.order_status IN ('6'))
+            or (ob.virtual_goods = 0 AND ob.is_cancel = 2 AND ob.order_status IN ('9', '12')))
+          and ob.order_finished_time >= #{start}
+          and order_finished_time &lt;= #{end}
+    </select>
+    <select id="getSupplierSettleAccountReturn"
+            resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select sum(oor.return_rpt_cash)        as return_rpt_cash,
+               sum(oor.return_cash)            as return_cash,
+               sum(oor.return_commision_fee)   AS orderReturnCommissionFee,
+               sum(oor.return_member_discount) AS returnMemberDiscount,
+               sum(oor.return_shipping_fee)    AS returnShippingFee
+        from ${database.prefix.order}hou_order_return oor
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+        where ((oob.deliver_shop_id = #{shopId}  and oob.original_order IS NOT null) or oob.shop_id=#{shopId})
+          and oob.payment_code != 3
+          and oob.pay_code != 13
+          and (oor.return_type in (1, 2) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          and oor.order_is_settlement = '0'
+          and oor.return_state in (2, 4)
+          and oor.return_finish_time &gt;= #{start}
+          and oor.return_finish_time &lt;= #{end}
+    </select>
+    <select id="getSupplierSettleAccountReturnId" resultType="java.lang.String">
+        select oor.order_id
+        from ${database.prefix.order}hou_order_return oor
+                 LEFT JOIN ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+        where ((oob.deliver_shop_id = #{shopId}  and oob.original_order IS NOT null) or oob.shop_id=#{shopId})
+          and (oor.return_type in (1, 2) or (oob.virtual_goods = 0 and oob.is_cancel = 2))
+          and oor.order_is_settlement = '0'
+          and oob.payment_code not in (3, 4)
+          and oor.return_state in (2, 4)
+          and oor.return_finish_time >= #{start}
+          and oor.return_finish_time &lt;= #{end}
+    </select>
+    <select id="getSelfSellingCommission" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT
+        IFNULL(SUM(og.order_goods_commission),0) as selfSellingCommission,
+        IFNULL(SUM(og.shipping_fee),0) as selfSellingShippingFee
+        FROM
+        ${database.prefix.order}hou_order_goods og
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.goods_id = og.goods_id
+        AND og.common_id = gc.common_id
+        WHERE
+        gc.dealer_goods_flag != 1
+        AND og.order_id in
+        <foreach item="orderId" collection="orderIds" separator="," open="(" close=")" index="index">
+            #{orderId}
+        </foreach>
+    </select>
+    <select id="getSelfSellingReturnCash" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT
+        IFNULL(SUM(ore.return_cash),0)as selfSellingReturnCash,
+        IFNULL(SUM(ore.return_commision_fee),0)as selfSellingReturnCommission
+        FROM
+        ${database.prefix.order}hou_order_return ore
+        LEFT JOIN ${database.prefix.order}hou_order_base ob  on ob.order_id = ore.order_id
+        WHERE ob.order_id in
+        <foreach item="orderId" collection="orderIds" separator="," open="(" close=")" index="index">
+            #{orderId}
+        </foreach>
+    </select>
+    <select id="getSellOnAccountOrder" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        select
+        IFNULL(SUM(ob.order_payment_amount),0) as sellOnAmount,
+        IFNULL(SUM(ob.order_refund_amount),0) as sellOnReturnCash,
+        IFNULL(SUM(ob.order_commission_fee),0) as sellOnCommission,
+        IFNULL(SUM(ob.order_commission_return_fee),0) as sellOnReturnCommission,
+        IFNULL(SUM(selloob.order_payment_amount),0) as sellAgreementAmount,
+        IFNULL(SUM(selloob.order_refund_amount),0) as sellAgreementReturnAmount
+        FROM ${database.prefix.order}hou_order_base ob
+        left JOIN (SELECT order_commission_fee,order_commission_return_fee,original_order,order_payment_amount,order_refund_amount
+        from ${database.prefix.order}hou_order_base where original_order is not null ) selloob ON selloob.original_order = ob.order_id
+        where ob.shop_id = #{shopId} and ob.drop_shipping = 1
+                and ob.payment_code != 3 and ob.pay_code != 13 and ob.order_is_settlement ='0'
+                AND ((ob.order_status IN ( '5', '6', '9', '13' ) AND ob.virtual_goods = 1 )
+                 OR (ob.order_status = '9'  AND ob.virtual_goods = 1 AND ob.order_refund_status = 2 )
+                 OR (ob.virtual_goods = 0 AND ob.is_cancel = 0  AND ob.order_status IN ( '6' ) )
+                 OR (ob.virtual_goods = 0 AND ob.is_cancel = 2   AND ob.order_status IN ( '9','12' ) ) )
+                and ob.order_finished_time >= #{start}
+                and ob.order_finished_time &lt;= #{end}
+    </select>
+    <select id="getSellOnReturnCash" resultType="com.houjiang.commons.dto.job.ShopSettleAccountInfoDTO">
+        SELECT
+        IFNULL(SUM(ore.return_cash),0)as sellOnReturnCash,
+        IFNULL(SUM(ore.return_commision_fee),0)as sellOnReturnCommission
+        FROM
+        ${database.prefix.order}hou_order_return ore
+        LEFT JOIN ${database.prefix.order}hou_order_goods og  on og.order_id=ore.order_id 
+        LEFT JOIN ${database.prefix.goods}hou_ goods_common gc ON og.goods_id = gc.goods_id
+        AND og.common_id = gc.common_id
+        WHERE
+        gc.dealer_goods_flag = 1
+        AND og.order_id in
+        <foreach item="orderId" collection="orderIds" separator="," open="(" close=")" index="index">
+            #{orderId}
+        </foreach>
+    </select>
+
+    <insert id="insertSettlement">
+        insert
+            ignore into ${database.prefix.order}hou_order_settlement (os_start_date,os_end_date,os_id,os_order_amount,os_shipping_amount,
+                                                       os_order_return_amount, os_commis_amount,os_commis_return_amount,os_redpacket_amount,os_redpacket_return_amount,
+                                                       os_amount,os_datetime,os_date,os_state,shop_id,shop_name,os_order_type,os_dealer_commission,
+                                                       os_dealer_return_commission,os_supply_commission,os_supply_return_commission,os_base_member_discount,os_return_member_discount,
+                                                       os_tg_commission,os_fx_commission,os_supper_discount_fee,os_return_supper_discount_fee,os_supply_price,os_return_supply_price,
+                                                       self_selling_commission,self_selling_shipping_fee,self_selling_return_cash,self_selling_return_commission,
+                                                       sell_on_amount,sell_on_commission,sell_on_return_cash,sell_on_return_commission)
+        values(
+                  #{osStartDate},
+                  #{osEndDate},
+                  #{osId},
+                  #{orderPaymentAmount},
+                  #{osShippingAmount},
+                  #{osOrderReturnAmount},
+                  #{osCommisAmount},
+                  #{osCommisReturnAmount},
+                  #{osRedpacketAmount},
+                  #{osRedpacketReturnAmount},
+                  #{osAmount},
+                  #{osDatetime},
+                  #{osDate},
+                  #{osState},
+                  #{shopId},
+                  #{shopName},
+                  #{osOrderType},
+                  #{orderDealerCommission},
+                  #{returnDealerCommission},
+                  #{orderSupplyCommission},
+                  #{returnSupplyCommission},
+                  #{osBaseMemberDiscount},
+                  #{osReturnMemberDiscount},
+                  #{osTgCommission},
+                  #{osFxCommission},
+                  #{osSupperDiscountFee},
+                  #{osReturnSupperDiscountFee},
+                  #{osSupplyPrice},
+                  #{osReturnSupplyPrice},
+                  #{selfSellingCommission},
+                  #{selfSellingShippingFee},
+                  #{selfSellingReturnCash},
+                  #{selfSellingReturnCommission},
+                  #{sellOnAmount},
+                  #{sellOnCommission},
+                  #{sellOnReturnCash},
+                  #{sellOnReturnCommission}
+              )
+    </insert>
+    <insert id="insertSupplierSettlement">
+        INSERT IGNORE INTO ${database.prefix.supplier}hou_supplier_order_settlement (os_start_date,
+                                                                      os_end_date,
+                                                                      os_id,
+                                                                      os_order_amount,
+                                                                      os_shipping_amount,
+                                                                      os_order_return_amount,
+                                                                      os_commis_amount,
+                                                                      os_commis_return_amount,
+                                                                      os_redpacket_amount,
+                                                                      os_redpacket_return_amount,
+                                                                      os_amount,
+                                                                      os_datetime,
+                                                                      os_date,
+                                                                      os_state,
+                                                                      supplier_shop_id,
+                                                                      shop_name,
+                                                                      os_order_type,
+                                                                      os_dealer_commission,
+                                                                      os_dealer_return_commission,
+                                                                      os_supply_commission,
+                                                                      os_supply_return_commission)
+        values (#{osStartDate},
+                #{osEndDate},
+                #{osId},
+                #{orderPaymentAmount},
+                #{osShippingAmount},
+                #{osOrderReturnAmount},
+                #{osCommisAmount},
+                #{osCommisReturnAmount},
+                #{osRedpacketAmount},
+                #{osRedpacketReturnAmount},
+                #{osAmount},
+                #{osDatetime},
+                #{osDate},
+                #{osState},
+                #{shopId},
+                #{shopName},
+                #{osOrderType},
+                #{orderDealerCommission},
+                #{returnDealerCommission},
+                #{orderSupplyCommission},
+                #{returnSupplyCommission})
+    </insert>
+
+    <update id="updateOrderBaseSettlement">
+        update ${database.prefix.order}hou_order_base ob set order_settlement_id = #{osId},order_settlement_time = NOW(),
+        order_is_settlement = '1' where order_id in
+        <foreach item="orderId" collection="orderIds" separator="," open="(" close=")" index="index">
+            #{orderId}
+        </foreach>
+    </update>
+    <update id="updateOrderReturnSettlement">
+        update ${database.prefix.order}hou_order_return set order_settlement_id = #{osId}, order_settlement_time = NOW(),
+        order_is_settlement = '1' where order_id in
+        <foreach item="orderId" collection="orderIds" separator="," open="(" close=")" index="index">
+            #{orderId}
+        </foreach>
+    </update>
+    <update id="updateShopSettlement">
+        update ${database.prefix.supplier}hou_shop_base
+        set shop_settlement_last_time = now()
+        where shop_id = #{shopId}
+    </update>
+    <update id="updateSupplyOrderBaseSettlement">
+        UPDATE ${database.prefix.order}hou_order_base
+        SET order_supply_settlement_id   = #{param.settlementOsId},
+            order_supply_settlement_time = NOW(),
+            order_supply_is_settlement   = 1
+        WHERE (shop_id = #{param.shopId} or deliver_shop_id = #{param.shopId})
+          and order_supply_is_settlement = 0
+          and order_status in ('6', '9')
+          AND order_finished_time >= #{param.start}
+          and order_finished_time &lt;= #{param.end}
+    </update>
+    <update id="updateSupplyOrderReturnSettlement">
+        update ${database.prefix.order}hou_order_return set order_supply_settlement_id =#{param.settlementOsId},
+        order_supply_settlement_time = NOW(),
+        order_supply_is_settlement = 1 where order_id in
+        <foreach collection="param.orderIdList" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+    </update>
+    <update id="updateWebPosSettlement">
+        update ${database.prefix.webpos}hou_wps_order ob
+        set order_settlement_id = #{osId},order_settlement_time = NOW(),order_is_settlement = 1
+        where order_no in
+        <foreach item="orderId" collection="orderIds" separator="," open="(" close=")" index="index">
+            #{orderId}
+        </foreach>
+    </update>
+    <update id="updateOrderBaseSettlement2">
+        update ${database.prefix.order}hou_order_base ob set order_settlement_id = #{osId},order_settlement_time = NOW(),
+        order_is_settlement = '1' where order_id in
+        <foreach item="orderId" collection="orderIds" separator="," open="(" close=")" index="index">
+            #{orderId}
+        </foreach>
+    </update>
+    <update id="updateOrderReturnSettlement2">
+        update ${database.prefix.order}hou_order_return set order_settlement_id = #{osId}, order_settlement_time = NOW(),
+        order_is_settlement = '1' where order_id in
+        <foreach item="orderId" collection="orderIds" separator="," open="(" close=")" index="index">
+            #{orderId}
+        </foreach>
+    </update>
+    <update id="updateSupplierShopSettlement">
+        update ${database.prefix.supplier}hou_shop_base
+        set shop_settlement_last_time = now()
+        where supplier_shop_id = #{shopId}
+    </update>
+</mapper>

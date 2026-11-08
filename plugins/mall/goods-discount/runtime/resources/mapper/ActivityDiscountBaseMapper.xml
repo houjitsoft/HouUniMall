@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivityDiscountBaseMapper">
+
+    <resultMap type="com.houjiang.activity.entity.ActivityDiscountBaseEntity" id="ActivityDiscountBaseMap">
+        <result property="discountId" column="discount_id" jdbcType="INTEGER"/>
+        <result property="discountName" column="discount_name" jdbcType="VARCHAR"/>
+        <result property="discountStartTime" column="discount_start_time" jdbcType="TIMESTAMP"/>
+        <result property="discountEndTime" column="discount_end_time" jdbcType="TIMESTAMP"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="userNickName" column="user_nick_name" jdbcType="VARCHAR"/>
+        <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+        <result property="discountLowerLimit" column="discount_lower_limit" jdbcType="INTEGER"/>
+        <result property="discountState" column="discount_state" jdbcType="INTEGER"/>
+        <result property="discountUpperLimit" column="discount_upper_limit" jdbcType="INTEGER"/>
+        <result property="discountCreateTime" column="discount_create_time" jdbcType="TIMESTAMP"/>
+        <result property="preStartHour" column="pre_start_hour" jdbcType="INTEGER"/>
+        <result property="discountUpperTime" column="discount_upper_time" jdbcType="INTEGER"/>
+        <result property="preStartTime" column="pre_start_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="queryDiscountInfo" resultType="com.houjiang.activity.vo.CheckDiscountLimitVO">
+        select goods_upper_limit,discount_upper_time,discount_price,discount_id
+		from ${database.prefix.activity}hou_addon_activity_discount_goods
+		where now() between goods_start_time and goods_end_time
+		and discount_goods_state = 1
+		and goods_id = #{goodsId}
+    </select>
+    <!-- 不依赖已退役 hou_goods_common：折扣商品行 + mall 商品表 -->
+    <select id="queryAllZheKou" resultType="java.util.Map">
+        SELECT
+        COALESCE(mg.name, dg.goods_name) AS commonName,
+        dg.common_id AS commonId,
+        dg.goods_id AS goodsId,
+        COALESCE(mg.image, dg.goods_image) AS commonImage,
+        dg.shop_id AS shopId,
+        db.shop_name AS shopName,
+        COALESCE(mg.min_price, dg.goods_price) AS commonPrice,
+        dg.discount_price AS activityPrice,
+        0 AS commonEvaluate,
+        COALESCE(mg.sale_num, 0) AS commonSalenum,
+        date_format( db.discount_start_time, '%Y-%m-%d %H:%i:%S' ) AS startTime,
+        date_format( db.discount_end_time, '%Y-%m-%d %H:%i:%S' ) AS endTime
+        FROM
+        ${database.prefix.activity}hou_addon_activity_discount_base db
+        INNER JOIN ${database.prefix.activity}hou_addon_activity_discount_goods dg ON db.discount_id = dg.discount_id
+        LEFT JOIN ${database.prefix.goods}hou_mall_goods mg ON dg.common_id = mg.id
+        where db.discount_state in (1,4)
+        and dg.discount_goods_state in (1,4)
+        <if test="param.shopId != null and param.shopId != ''">
+             and dg.shop_id = #{param.shopId}
+        </if>
+        <if test="param.minPrice != null and param.minPrice != ''">
+            <![CDATA[ and dg.discount_price >=]]>
+            #{param.minPrice,jdbcType=DECIMAL}
+        </if>
+        <if test="param.maxPrice != null and param.maxPrice != ''">
+            <![CDATA[ and dg.discount_price <=]]>
+            #{param.maxPrice,jdbcType=DECIMAL}
+        </if>
+        GROUP BY dg.common_id
+        <if test="param.orderType != '' and param.orderType != null and param.orderType ==1">
+            <if test="param.priceOrder != '' and param.priceOrder != null and param.priceOrder ==1">
+                ORDER BY dg.discount_price desc
+            </if>
+            <if test="param.priceOrder != '' and param.priceOrder != null and param.priceOrder ==2">
+                ORDER BY dg.discount_price ASC
+            </if>
+        </if>
+        <if test="param.orderType == null or param.orderType == '' or param.orderType == 3">
+            ORDER BY dg.discount_price ASC
+        </if>
+    </select>
+    <select id="selectDiscountBaseList"
+            resultType="com.houjiang.activity.vo.DiscountBaseListVO"
+            parameterType="com.houjiang.activity.dto.DiscountBaseListQueryDTO">
+        select
+        discount_id, discount_name, discount_start_time,
+        discount_end_time,discount_lower_limit,
+        discount_state,
+        discount_upper_limit
+        from ${database.prefix.activity}hou_addon_activity_discount_base
+        WHERE 1=1
+        <if test="param.shopId != null">
+            and shop_id =
+            #{param.shopId,jdbcType=INTEGER}
+        </if>
+        <if test="param.discountId != null">
+            and discount_id =
+            #{param.discountId,jdbcType=INTEGER}
+        </if>
+        <if test="param.discountState != null">
+            and discount_state =
+            #{param.discountState,jdbcType=INTEGER}
+        </if>
+        <if test="param.discountName != null and param.discountName != ''">
+            and discount_name LIKE CONCAT('%',#{param.discountName
+			},'%')
+        </if>
+        order by discount_create_time desc
+        <if test="param.page != null and param.limit != ''">
+            limit #{param.page},#{param.limit}
+        </if>
+    </select>
+    <select id="selectDiscountBaseListCount" resultType="java.lang.Integer"
+            parameterType="com.houjiang.activity.dto.DiscountBaseListQueryDTO">
+        select
+        count(1)
+        from ${database.prefix.activity}hou_addon_activity_discount_base
+        WHERE 1=1
+        <if test="param.shopId != null">
+            and shop_id =
+            #{param.shopId,jdbcType=INTEGER}
+        </if>
+        <if test="param.discountId != null">
+            and discount_id =
+            #{param.discountId,jdbcType=INTEGER}
+        </if>
+        <if test="param.discountState != null">
+            and discount_state =
+            #{param.discountState,jdbcType=INTEGER}
+        </if>
+        <if test="param.discountName != null and param.discountName != ''">
+            and discount_name LIKE CONCAT('%',#{param.discountName
+			},'%')
+        </if>
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from
+            ${database.prefix.activity}hou_addon_activity_discount_base
+        where discount_id =
+              #{discountId,jdbcType=INTEGER}
+    </delete>
+    <insert id="insertDiscountBase"
+            parameterType="com.houjiang.activity.dto.DiscountBaseAddParamDTO"
+            useGeneratedKeys="true" keyProperty="param.discountId">
+        insert into ${database.prefix.activity}hou_addon_activity_discount_base
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.discountId != null">
+                discount_id,
+            </if>
+            <if test="param.discountName != null">
+                discount_name,
+            </if>
+            <if test="param.discountCreateTime != null">
+                discount_create_time,
+            </if>
+            <if test="param.discountStartTime != null">
+                discount_start_time,
+            </if>
+            <if test="param.discountEndTime != null">
+                discount_end_time,
+            </if>
+            <if test="param.userId != null">
+                user_id,
+            </if>
+            <if test="param.shopId != null">
+                shop_id,
+            </if>
+            <if test="param.userNickName != null">
+                user_nick_name,
+            </if>
+            <if test="param.shopName != null">
+                shop_name,
+            </if>
+            <if test="param.discountLowerLimit != null">
+                discount_lower_limit,
+            </if>
+            <if test="param.discountState != null">
+                discount_state,
+            </if>
+            <if test="param.discountUpperLimit != null">
+                discount_upper_limit,
+            </if>
+            <if test="param.preStartHour != null">
+                pre_start_hour,
+            </if>
+            <if test="param.discountUpperTime != null">
+                discount_upper_time,
+            </if>
+            <if test="param.preStartTime != null">
+                pre_start_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.discountId != null">
+                #{param.discountId,jdbcType=INTEGER},
+            </if>
+            <if test="param.discountName != null">
+                #{param.discountName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.discountCreateTime != null">
+                #{param.discountCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.discountStartTime != null">
+                #{param.discountStartTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.discountEndTime != null">
+                #{param.discountEndTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.userId != null">
+                #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shopId != null">
+                #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.userNickName != null">
+                #{param.userNickName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.shopName != null">
+                #{param.shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.discountLowerLimit != null">
+                #{param.discountLowerLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.discountState != null">
+                #{param.discountState,jdbcType=INTEGER},
+            </if>
+            <if test="param.discountUpperLimit != null">
+                #{param.discountUpperLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.preStartHour != null">
+                #{param.preStartHour,jdbcType=INTEGER},
+            </if>
+            <if test="param.discountUpperTime != null">
+                #{param.discountUpperTime,jdbcType=INTEGER},
+            </if>
+            <if test="param.preStartTime != null">
+                #{param.preStartTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <select id="selectDiscountBaseDetail2"
+            resultType="com.houjiang.activity.vo.DiscountBaseDetailResultVO"
+            parameterType="java.lang.Integer">
+        SELECT
+        discount_id,
+        discount_name,
+        discount_start_time,
+        discount_end_time,
+        discount_lower_limit,
+        discount_state,
+        discount_upper_limit,
+        pre_start_hour,
+        discount_upper_time
+        FROM
+        ${database.prefix.activity}hou_addon_activity_discount_base
+        WHERE 1=1
+        <if test="discountId != null">
+            and discount_id =
+            #{discountId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectFinishBaseList" resultType="java.util.Map">
+        SELECT
+        a.discount_id AS activity_id,
+        a.discount_name AS activity_name,
+        DATE_FORMAT( a.discount_end_time, '%Y-%m-%d %H:%i:%S' ) AS end_time,
+        a.shop_name,
+        '正常' AS state_label
+        FROM
+        ${database.prefix.activity}hou_addon_activity_discount_base a
+        WHERE
+        a.discount_state = 1
+        <if test="null != param.shopId and '' != param.shopId">
+            and a.shop_id = #{param.shopId}
+        </if>
+		order by a.discount_start_time desc
+    </select>
+    <update id="updateDiscountBase"
+            parameterType="com.houjiang.activity.dto.DiscountBaseAddParamDTO">
+        update ${database.prefix.activity}hou_addon_activity_discount_base
+        <set>
+            <if test="param.discountName != null">
+                discount_name = #{param.discountName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.discountCreateTime != null">
+                discount_create_time =
+                #{param.discountCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.discountStartTime != null">
+                discount_start_time =
+                #{param.discountStartTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.discountEndTime != null">
+                discount_end_time =
+                #{param.discountEndTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.userId != null">
+                user_id = #{param.userId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shopId != null">
+                shop_id = #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.userNickName != null">
+                user_nick_name = #{param.userNickName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.shopName != null">
+                shop_name = #{param.shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.discountLowerLimit != null">
+                discount_lower_limit =
+                #{param.discountLowerLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.discountState != null">
+                discount_state = #{param.discountState,jdbcType=INTEGER},
+            </if>
+            <if test="param.discountUpperLimit != null">
+                discount_upper_limit =
+                #{param.discountUpperLimit,jdbcType=INTEGER},
+            </if>
+            <if test="param.preStartTime != null">
+                pre_start_time = #{param.preStartTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.preStartHour != null">
+                pre_start_hour = #{param.preStartHour,jdbcType=INTEGER},
+            </if>
+            <if test="param.discountUpperTime != null">
+                discount_upper_time = #{param.discountUpperTime,jdbcType=INTEGER},
+            </if>
+
+        </set>
+        where discount_id = #{param.discountId,jdbcType=INTEGER}
+    </update>
+    <select id="selectDiscountBaseDetail"
+            resultType="com.houjiang.activity.vo.DiscountBaseDetailVO"
+            parameterType="java.lang.Integer">
+        SELECT
+        discount_id,
+        discount_name,
+        discount_start_time,
+        discount_end_time,
+        discount_lower_limit,
+        discount_state,
+        discount_upper_limit,
+        discount_upper_time,
+        pre_start_hour
+        FROM
+        ${database.prefix.activity}hou_addon_activity_discount_base
+        WHERE 1=1
+        <if test="discountId != null">
+            and discount_id =
+            #{discountId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="queryDiscountBase" resultType="java.util.Map">
+	select discount_id as activity_id,
+	    discount_name as activity_name ,
+		DATE_FORMAT(discount_end_time,  '%Y-%m-%d %H:%i:%S') as end_time,
+		 '正常' as state_label
+		from ${database.prefix.activity}hou_addon_activity_discount_base
+		where discount_id = #{discountId}
+    </select>
+    <select id="queryPlatformDiscountBaseList" resultType="com.houjiang.activity.vo.DiscountBaseListVO">
+        select
+        discount_id,
+        discount_name,
+        discount_start_time,
+        discount_end_time,
+        discount_lower_limit,
+        discount_state,
+        discount_upper_limit,
+        shop_name,
+        discount_create_time
+        from ${database.prefix.activity}hou_addon_activity_discount_base
+        <where>
+            <if test="param.discountState != null">
+                and discount_state = #{param.discountState,jdbcType=INTEGER}
+            </if>
+            <if test="param.discountName != null and param.discountName != ''">
+                and discount_name LIKE CONCAT('%',#{param.discountName},'%')
+            </if>
+            <if test="param.shopName != null and param.shopName != ''">
+                and shop_name LIKE CONCAT('%',#{param.shopName},'%')
+            </if>
+        </where>
+        order by discount_start_time desc
+    </select>
+    <select id="selectDiscountGoodsDetail" resultType="com.houjiang.commons.dto.goods.DiscountGoodsListVO">
+        SELECT
+        a.discount_goods_id,
+        a.goods_id,
+        a.common_id,
+        a.shop_id,
+        a.goods_name,
+        a.goods_price,
+        a.discount_price,
+        3 AS common_is_xian,
+        a.goods_image,
+        a.discount_id,
+        a.discount_amount,
+        CAST(NULL AS CHAR) AS specValueName,
+        CAST(NULL AS CHAR) AS goods_spec
+        FROM
+        ${database.prefix.activity}hou_addon_activity_discount_goods a
+        where 1=1
+        <if test="param.discountId != null">
+            and a.discount_id = #{param.discountId,jdbcType=INTEGER}
+        </if>
+    </select>
+
+
+</mapper>

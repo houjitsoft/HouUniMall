@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterOrderGoodsMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterOrderGoodsEntity">
+            <id property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+            <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+            <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+            <result property="goodsClassId" column="goods_class_id" jdbcType="INTEGER"/>
+            <result property="orderGoodsNum" column="order_goods_num" jdbcType="SMALLINT"/>
+            <result property="goodsName" column="goods_name" jdbcType="VARCHAR"/>
+            <result property="goodsReturnStatus" column="goods_return_status" jdbcType="BOOLEAN"/>
+            <result property="goodsRefundStatus" column="goods_refund_status" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        order_id,goods_id,common_id,
+        shop_id,shop_name,goods_class_id,order_goods_num,
+        goods_name,goods_return_status,goods_refund_status
+    </sql>
+    <select id="getDecenterOrderGoodsVOList" resultType="com.houjiang.job.vo.DcenterOrderGoodsVO">
+        select
+            order_id,
+            goods_id,
+            common_id,
+            shop_id,
+            shop_name,
+            goods_class_id,
+            order_goods_num,
+            goods_name,
+            goods_return_status,
+            goods_refund_status
+        from ${database.prefix.order}hou_order_goods
+        limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

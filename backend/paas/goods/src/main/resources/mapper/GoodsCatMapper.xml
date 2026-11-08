@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsCatMapper">
+    <resultMap id="ManageCatsResultMap"
+               type="com.houjiang.commons.vo.goods.ManageShopCatMenuVO">
+        <id column="cat_id" property="catId" jdbcType="INTEGER" />
+        <result column="cat_name" property="catName" jdbcType="VARCHAR" />
+        <result column="cat_parent_id" property="catParentId" jdbcType="INTEGER" />
+        <result column="type_id" property="typeId" jdbcType="INTEGER" />
+        <result column="cat_commission" property="catCommission" jdbcType="REAL" />
+    </resultMap>
+    <resultMap id="ManageCatResultMap"
+               type="com.houjiang.goods.vo.ManageCatVO">
+        <id column="cat_id" property="catId" jdbcType="INTEGER" />
+        <result column="cat_name" property="catName" jdbcType="VARCHAR" />
+        <result column="cat_parent_id" property="catParentId" jdbcType="INTEGER" />
+        <result column="cat_pic" property="catPic" jdbcType="VARCHAR" />
+        <result column="type_id" property="typeId" jdbcType="INTEGER" />
+    </resultMap>
+    <sql id="Manage_Cat_Column_List">
+        cat_id, cat_name, cat_parent_id, cat_pic,type_id,cat_commission, cat_level
+    </sql>
+    <sql id="Manage_Cats_Column_List">
+        cat_id, cat_name, cat_parent_id,type_id,cat_commission
+    </sql>
+    <sql id="Web_Cats_Column_List">
+		cat_id, cat_name, cat_parent_id
+	</sql>
+    <insert id="addPlatFormCatsBatch2" useGeneratedKeys="true" keyProperty="param.catId">
+        insert into ${database.prefix.goods}hou_goods_cat
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.catIsVirtual != null">
+                cat_is_virtual,
+            </if>
+            <if test="param.catName != null">
+                cat_name,
+            </if>
+            <if test="param.catParentId != null">
+                cat_parent_id,
+            </if>
+            <if test="param.catPic != null">
+                cat_pic,
+            </if>
+            <if test="param.typeId != null">
+                type_id,
+            </if>
+            <if test="param.catCommission != null">
+                cat_commission,
+            </if>
+            <if test="param.catDisplayorder != null">
+                cat_displayorder,
+            </if>
+            <if test="param.catLevel != null">
+                cat_level,
+            </if>
+            <if test="param.catShowStatus != null">
+                cat_show_status,
+            </if>
+            <if test="param.babyCommission != null">
+                baby_commission,
+            </if>
+            <if test="param.refundRatio != null">
+                refund_ratio,
+            </if>
+            <if test="param.refundProportion != null">
+                refund_proportion,
+            </if>
+            <if test="param.groupId != null">
+                group_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.catIsVirtual != null">
+                #{param.catIsVirtual,jdbcType=INTEGER},
+            </if>
+            <if test="param.catName != null">
+                #{param.catName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.catParentId != null">
+                #{param.catParentId,jdbcType=INTEGER},
+            </if>
+            <if test="param.catPic != null">
+                #{param.catPic,jdbcType=VARCHAR},
+            </if>
+            <if test="param.typeId != null">
+                #{param.typeId,jdbcType=INTEGER},
+            </if>
+            <if test="param.catCommission != null">
+                #{param.catCommission,jdbcType=DECIMAL},
+            </if>
+            <if test="param.catDisplayorder != null">
+                #{param.catDisplayorder,jdbcType=SMALLINT},
+            </if>
+            <if test="param.catLevel != null">
+                #{param.catLevel,jdbcType=BIT},
+            </if>
+            <if test="param.catShowStatus != null">
+                #{param.catShowStatus,jdbcType=BIT},
+            </if>
+            <if test="param.babyCommission != null">
+                #{param.babyCommission,jdbcType=DECIMAL},
+            </if>
+            <if test="param.refundRatio != null">
+                #{param.refundRatio},
+            </if>
+            <if test="param.refundProportion != null">
+                #{param.refundProportion},
+            </if>
+            <if test="param.groupId != null">
+                #{param.groupId},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertclassbind">
+        replace into ${database.prefix.supplier}hou_supplier_shop_class_bind_tmp (supplier_shop_id,supplier_cat_id,batch_id,start,cat_name,creat_time) values
+        <foreach collection="param.catId" item="id" separator=",">
+            (#{param.shopId},#{id.catId},#{param.batchId},#{param.start},#{id.catName},now())
+        </foreach>
+    </insert>
+
+    <delete id="deleteclassbind">
+		delete from ${database.prefix.supplier}hou_supplier_shop_class_bind_tmp where supplier_shop_id = #{param.shopId} and batch_id = #{param.batchId}
+	</delete>
+    <update id="updateGoodsCat">
+        update ${database.prefix.goods}hou_goods_cat
+        <set>
+            <if test="param.catName != null and param.catName != ''">
+                cat_name = #{param.catName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.catParentId != null">
+                cat_parent_id = #{param.catParentId,jdbcType=INTEGER},
+            </if>
+            <if test="param.catPic != null and param.catPic != ''">
+                cat_pic = #{param.catPic,jdbcType=VARCHAR},
+            </if>
+            <if test="param.typeId != null">
+                type_id = #{param.typeId,jdbcType=INTEGER},
+            </if>
+            <if test="param.catCommission != null">
+                cat_commission = #{param.catCommission,jdbcType=REAL},
+            </if>
+            <if test="param.babyCommission != null">
+                baby_commission = #{param.babyCommission,jdbcType=REAL},
+            </if>
+            <if test="param.catIsVirtual != null">
+                cat_is_virtual = #{param.catIsVirtual,jdbcType=BIT},
+            </if>
+            <if test="param.catDisplayorder != null">
+                cat_displayorder =
+                #{param.catDisplayorder,jdbcType=SMALLINT},
+            </if>
+            <if test="param.catLevel != null">
+                cat_level = #{param.catLevel,jdbcType=BIT},
+            </if>
+            <if test="param.catShowStatus != null and param.catShowStatus != ''">
+                cat_show_status = #{param.catShowStatus,jdbcType=BIT},
+            </if>
+            <if test="param.refundRatio != null ">
+                refund_ratio = #{param.refundRatio,jdbcType=BIT},
+            </if>
+            <if test="param.refundProportion != null and param.refundProportion != ''">
+                refund_proportion = #{param.refundProportion,jdbcType=INTEGER},
+            </if>
+            <if test="param.groupId != null">
+                group_id = #{param.groupId},
+            </if>
+            <if test="param.groupId == null">
+                group_id = null,
+            </if>
+        </set>
+        where cat_id = #{param.catId,jdbcType=INTEGER}
+    </update>
+    <select id="queryParentCatId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select cat_parent_id
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_id = #{param.productClassId,jdbcType=INTEGER}
+    </select>
+    <select id="queryChildCount" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_parent_id = #{param,jdbcType=INTEGER}
+    </select>
+    <select id="selectAllCat" resultType="com.houjiang.commons.vo.goodscat.WebCatMenuVO">
+        select
+        <include refid="Web_Cats_Column_List" />
+        from ${database.prefix.goods}hou_goods_cat
+    </select>
+    <select id="selectAllCat2" resultMap="ManageCatsResultMap"
+            parameterType="java.lang.Integer">
+        select
+        <include refid="Manage_Cats_Column_List" />
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1 and is_integral_goods != 1
+    </select>
+    <select id="selectByCatParentId" resultMap="ManageCatResultMap">
+        select
+        <include refid="Manage_Cat_Column_List" />
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1 and (is_integral_goods != 1 or is_integral_goods is null)
+        <if test="catParentId != null">
+            and cat_parent_id = #{catParentId,jdbcType=INTEGER}
+        </if>
+        <!--	<if test="shopType != null and shopType == 2">
+                and cat_is_supply = 1
+            </if>-->
+        order by cat_displayorder asc
+    </select>
+    <select id="queryRuZhuCat" resultType="java.lang.Integer">
+        select  product_class_id from ${database.prefix.supplier}hou_supplier_shop_class_bind where supplier_shop_id = #{shopId}  GROUP BY product_class_id
+    </select>
+    <select id="queryByCatId2" parameterType="java.lang.Integer" resultType="com.houjiang.goods.vo.ManageCatVO">
+        select cat_id, cat_name, cat_parent_id, cat_pic,type_id from ${database.prefix.goods}hou_goods_cat where cat_id = #{catId} and cat_show_status = 1 and (is_integral_goods != 1 or is_integral_goods is null) order by cat_displayorder asc
+    </select>
+    <select id="queryByCatIds2" resultType="com.houjiang.goods.vo.ManageCatVO">
+        select cat_id, cat_name, cat_parent_id, cat_pic,type_id  from ${database.prefix.goods}hou_goods_cat where cat_show_status = 1 and (is_integral_goods != 1 or is_integral_goods is null)
+        <if test="list != null and list.size()>0">
+            and cat_id  in
+            <foreach collection="list" item="catid" open="("
+                     close=")" separator=",">
+                <if test="catid != null">
+                    #{catid}
+                </if>
+            </foreach>
+        </if>
+        order by cat_displayorder asc
+    </select>
+    <select id="queryByPranent" resultType="java.lang.Integer">
+        select cat_id from ${database.prefix.goods}hou_goods_cat where cat_parent_id = #{catParentId} and cat_show_status = 1 and (is_integral_goods != 1 or is_integral_goods is null)
+    </select>
+    <select id="queryRuZhuPranentCat" resultType="java.lang.Integer">
+        select cat_parent_id from ${database.prefix.goods}hou_goods_cat where cat_show_status = 1 and (is_integral_goods != 1 or is_integral_goods is null)
+        <if test="list != null and list.size()>0">
+            and cat_id  in
+            <foreach collection="list" item="catid" open="("
+                     close=")" separator=",">
+                <if test="catid != null">
+                    #{catid}
+                </if>
+            </foreach>
+        </if>
+    </select>
+    <select id="queryByCatIds" resultType="com.houjiang.goods.vo.ManageCatVO">
+        select cat_id, cat_name, cat_parent_id, cat_pic,type_id  from ${database.prefix.goods}hou_goods_cat where cat_show_status = 1 and (is_integral_goods != 1 or is_integral_goods is null)
+        <if test="list != null and list.size()>0">
+            and cat_id  in
+            <foreach collection="list" item="catid" open="("
+                     close=")" separator=",">
+                <if test="catid != null">
+                    #{catid}
+                </if>
+            </foreach>
+        </if>
+        order by cat_displayorder asc
+    </select>
+    <select id="selectByParam" resultType="com.houjiang.commons.vo.goods.GoodsCatVO">
+        select
+        cat_id, cat_name, cat_parent_id, cat_pic
+        from
+        ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+        <if test="param.isIntegralGoods == null or param.isIntegralGoods == 2 ">
+            and (is_integral_goods != 1 or is_integral_goods is null)
+        </if>
+        <if test="param.isIntegralGoods != null and param.isIntegralGoods == 1 ">
+            and is_integral_goods = 1
+        </if>
+        <if test="param.catId != null">
+            and cat_parent_id = #{param.catId,jdbcType=INTEGER}
+        </if>
+        <if test="param.catIdList != null and param.catIdList.size()>0">
+            and (select
+            count(1)
+            from ${database.prefix.goods}hou_goods_base gb
+            LEFT JOIN ${database.prefix.goods}hou_goods_stock gs on gb.goods_id = gs.goods_id
+            left join ${database.prefix.goods}hou_goods_common gc on (gb.common_id = gc.common_id)
+            where gc.common_state=1 and gc.common_verify = 1 and gb.goods_is_shelves=1
+            and gs.goods_stock >0 and gb.cat_id in
+            <foreach collection="param.catIdList" item="catId" open="("
+                     close=")" separator=",">
+                #{catId}
+            </foreach>
+            )>0
+        </if>
+        order by cat_displayorder asc
+    </select>
+    <select id="getGoodscatByPage" resultType="com.houjiang.goods.entity.GoodsCatEntity">
+        select
+        cat_id  as catId,
+        cat_name as catName
+         from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+        and (is_integral_goods != 1 or is_integral_goods is null)
+         and cat_level = 1
+        <if test="param.catName != null and param.catName != ''">
+            and cat_name like CONCAT('%',#{param.catName },'%')
+        </if>
+    </select>
+    <select id="selectPlatFormCats" resultType="com.houjiang.commons.vo.goods.ManageShopCatMenuVO">
+        select
+        gc.cat_id,
+        gc.cat_name,
+        gc.cat_pic,
+        gc.type_id,
+        gc.cat_commission,
+        gc.cat_is_virtual,
+        gc.cat_displayorder,
+        gc.cat_show_status,
+        gc.cat_parent_id,
+        gc.cat_level,
+        gt.type_name,
+        gc.is_integral_goods,
+        gc.refund_ratio,
+        gc.refund_proportion,
+        gc.group_id
+        FROM
+        ${database.prefix.goods}hou_goods_cat gc
+        LEFT JOIN
+        ${database.prefix.goods}hou_goods_type gt ON gc.type_id = gt.type_id
+        where gc.is_integral_goods = 0
+        <if test="param.catShowStatus != null">
+            and gc.cat_show_status = #{param.catShowStatus,jdbcType=BIT}
+        </if>
+        <if test="param.isIntegralGoods != null">
+            and gc.is_integral_goods = #{param.isIntegralGoods,jdbcType=BIT}
+        </if>
+        order by gc.cat_displayorder,gc.cat_id asc
+    </select>
+    <select id="selectPlatFormCatsCount" resultType="java.lang.Integer">
+        select
+        count( 1 )
+        FROM
+        ${database.prefix.goods}hou_goods_cat gc
+        LEFT JOIN
+        ${database.prefix.goods}hou_goods_type gt ON gc.type_id = gt.type_id
+        where gc.is_integral_goods = 0
+        <if test="param.catParentId != null">
+            and gc.cat_parent_id = #{param.catParentId}
+        </if>
+        <if test="param.catShowStatus != null">
+            and gc.cat_show_status = #{param.catShowStatus,jdbcType=BIT}
+        </if>
+        <if test="param.isIntegralGoods != null">
+            and gc.is_integral_goods = #{param.isIntegralGoods,jdbcType=BIT}
+        </if>
+        order by gc.cat_displayorder asc
+    </select>
+    <select id="getShopCats" resultType="java.lang.Integer">
+        select distinct product_class_id
+        from ${database.prefix.supplier}hou_supplier_shop_class_bind where supplier_shop_id =#{param.shopId}
+    </select>
+    <select id="selectPlatFormCatsNotIntegral" resultType="com.houjiang.commons.vo.goods.PlatFormGoodsCatsVO">
+        select
+        gc.cat_id,
+        gc.cat_name,
+        gc.cat_pic,
+        gc.type_id,
+        gc.cat_commission,
+        gc.cat_is_virtual,
+        gc.cat_displayorder,
+        gc.cat_show_status,
+        gc.cat_parent_id,
+        gc.cat_level,
+        gt.type_name,
+        gc.is_integral_goods
+        FROM
+        ${database.prefix.goods}hou_goods_cat gc
+        LEFT JOIN
+        ${database.prefix.goods}hou_goods_type gt ON gc.type_id = gt.type_id
+        where  is_integral_goods != 1
+        <if test="catShowStatus != null">
+            and gc.cat_show_status = #{catShowStatus,jdbcType=BIT}
+        </if>
+
+        order by gc.cat_displayorder asc
+    </select>
+    <select id="selectPlatFormCatsCountNotIntegral" resultType="java.lang.Integer">
+        select
+        count( 1 )
+        FROM
+        ${database.prefix.goods}hou_goods_cat gc
+        LEFT JOIN
+        ${database.prefix.goods}hou_goods_type gt ON gc.type_id = gt.type_id
+        where gc.cat_parent_id = 0 and is_integral_goods != 1
+        <if test="catShowStatus != null">
+            and gc.cat_show_status = #{catShowStatus,jdbcType=BIT}
+        </if>
+        order by gc.cat_displayorder asc
+    </select>
+    <select id="queryDealerApplyListByShop" resultType="com.houjiang.goods.vo.BaseDealerApplyInfoVO">
+        select
+        id,
+        supplier_shop_id,
+        supplier_shop_name,
+        supplier_user_id,
+        supplier_user_name,
+        dealer_shop_id,
+        dealer_shop_name,
+        dealer_user_id,
+        dealer_user_name,
+        dealer_user_phone,
+        dealer_status,
+        dealer_remark,
+        dealer_level_id,
+        dealer_level_name,
+        dealer_discount,
+        create_time
+        from ${database.prefix.userms}hou_base_dealer_apply_info
+        where dealer_shop_id = #{dealerShopId}
+        <if test="supplierShopList != null and supplierShopList.size > 0">
+            and supplier_shop_id in
+            <foreach item="shopId" collection="supplierShopList" separator="," open="(" close=")" index="index">
+                #{shopId}
+            </foreach>
+        </if>
+        and dealer_status = 2
+    </select>
+    <select id="selectShopType" resultType="java.lang.Integer">
+        select shop_type from ${database.prefix.supplier}hou_shop_base where supplier_shop_id=#{shopId}
+    </select>
+    <select id="selectByCatParentId2" resultType="com.houjiang.commons.vo.goodscat.WebCatMenuVO">
+        select
+        <include refid="Web_Cats_Column_List" />
+        from ${database.prefix.goods}hou_goods_cat
+        where 1=1
+        <if test="catParentId != null">
+            and cat_parent_id = #{catParentId,jdbcType=INTEGER}
+        </if>
+    </select>
+    <select id="selectByCatParentId3" resultType="com.houjiang.commons.vo.goodscat.WebCatMenuVO">
+        select
+        <include refid="Web_Cats_Column_List" />
+        from ${database.prefix.goods}hou_goods_cat
+        where 1=1
+        and cat_parent_id in (
+        <foreach collection="list" item="catId" separator="," >
+            #{catId}
+        </foreach>
+        )
+    </select>
+    <select id="querySonCatByParentId" resultType="java.lang.String">
+    SELECT t.cat_name
+        FROM (
+                 SELECT @r AS _id,
+		( SELECT cat_name FROM ${database.prefix.goods}hou_goods_cat WHERE cat_id = _id ) AS cat_name,
+		( SELECT @r := cat_parent_id FROM ${database.prefix.goods}hou_goods_cat WHERE cat_id = _id ) AS cat_parent_id
+                 FROM
+                     ( SELECT @r := #{productClassId} ) temp, ${database.prefix.goods}hou_goods_cat a WHERE @r != 0
+                      ORDER BY
+                     cat_parent_id ASC
+             ) AS t
+    </select>
+    <select id="queryIntegralItemCat" resultType="com.houjiang.goods.entity.GoodsCatEntity">
+        select
+        <include refid="Manage_Cat_Column_List" />
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+        <if test="catParentId != null and catParentId == 0">
+            and is_integral_goods = 1
+        </if>
+        <if test="catParentId != null">
+            and cat_parent_id = #{catParentId,jdbcType=INTEGER}
+        </if>
+        order by cat_displayorder asc
+    </select>
+    <select id="selectIntegralCatByParentId" resultType="com.houjiang.commons.vo.goods.GoodsCatResultVO">
+        select
+        cat_id, cat_name, cat_parent_id, cat_pic
+        from
+        ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1 and is_integral_goods = 1
+        and cat_parent_id = #{catId}
+        order by cat_displayorder asc
+    </select>
+    <select id="selectIntegralCat" resultType="com.houjiang.commons.vo.goods.GoodsCatResultVO">
+        select
+        cat_id, cat_name, cat_parent_id, cat_pic
+        from
+        ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+        <if test="catId != null">
+            and cat_parent_id = #{catId}
+        </if>
+        order by cat_displayorder asc
+    </select>
+    <select id="selectCatLevel" resultType="java.lang.Integer">
+        SELECT
+	        a.cat_id
+        FROM ${database.prefix.goods}hou_goods_cat gcat
+	LEFT JOIN (SELECT cat_id, cat_name, cat_parent_id FROM ${database.prefix.goods}hou_goods_cat ) AS a ON a.cat_parent_id = gcat.cat_id
+    WHERE
+	cat_show_status = 1
+	AND is_integral_goods = 0
+	AND gcat.cat_id = #{catId}
+    </select>
+    <select id="selectGoodsCountByCatIds" resultType="java.lang.Integer">
+        SELECT count(gc.common_id) FROM ${database.prefix.goods}hou_goods_common gc
+        WHERE gc.common_state = 1 and gc.common_verify = 1 and gc.shop_status = 3 and gc.is_delete = 0 AND gc.cat_id in
+        <foreach collection="catIds" close=")" open="(" separator="," item="catId">
+            #{catId}
+        </foreach>
+    </select>
+    <select id="queryShopBindCat" resultType="java.lang.Integer">
+        select count(1) from  ${database.prefix.supplier}hou_supplier_shop_class_bind where
+        product_class_id in (
+        <foreach collection="catIds" item="catId"
+                 index="index" separator=",">
+            #{catId}
+        </foreach>
+        )
+    </select>
+    <select id="queryByCatId" resultType="com.houjiang.commons.vo.goodscat.WebCatMenuVO">
+        select
+        <include refid="Manage_Cat_Column_List" />
+        from ${database.prefix.goods}hou_goods_cat
+        where 1=1
+        <if test="catId != null">
+            and cat_id = #{catId,jdbcType=INTEGER}
+        </if>
+    </select>
+
+    <select id="queryVirtualByCatId" resultType="com.houjiang.goods.vo.ManageCatResultVO">
+		select cat_id, cat_name,cat_parent_id,cat_is_virtual from ${database.prefix.goods}hou_goods_cat where cat_id = #{catId}
+	</select>
+    <select id="selectAllCat1" resultType="com.houjiang.commons.vo.goods.ManageShopCatMenuVO">
+        select
+        <include refid="Manage_Cats_Column_List" />
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1 and is_integral_goods != 1
+        and cat_id not in (select product_class_id from ${database.prefix.supplier}hou_supplier_shop_class_bind where supplier_shop_id = #{shopId}
+        UNION
+        select supplier_cat_id  from ${database.prefix.supplier}hou_supplier_shop_class_bind_tmp where supplier_shop_id = #{shopId} and start = 1)
+        <if test="catName != null and catName != ''">
+            and cat_name like CONCAT('%',#{catName},'%')
+        </if>
+    </select>
+    <select id="queryCatName" resultType="java.lang.String">
+    select t.cat_name from (
+                select
+                @r as _id,
+                (select cat_name from ${database.prefix.goods}hou_goods_cat where cat_id = _id) as cat_name,
+                (select @r := cat_parent_id from ${database.prefix.goods}hou_goods_cat where cat_id = _id) as cat_parent_id
+                from
+                (select @r := #{catId}) temp, ${database.prefix.goods}hou_goods_cat a
+                where @r!=0 ORDER BY cat_parent_id asc
+                ) as t
+    </select>
+    <select id="qureyApplyCat" resultType="com.houjiang.commons.vo.shop.ApplyCatVO">
+        select batch_id,start,reason from ${database.prefix.supplier}hou_supplier_shop_class_bind_tmp where supplier_shop_id = #{param.shopId}
+        <if test="param.catName != null and param.catName != ''">
+            and cat_name like concat('%',#{param.catName},'%')
+        </if>
+        group by batch_id
+        order by creat_time desc
+    </select>
+    <select id="querycat" resultType="com.houjiang.commons.vo.shop.ApplyCatVO">
+        select bt.supplier_cat_id,bt.cat_name,gc.cat_commission from ${database.prefix.supplier}hou_supplier_shop_class_bind_tmp bt
+        left join ${database.prefix.goods}hou_goods_cat gc on gc.cat_id = bt.supplier_cat_id
+        where batch_id = #{param.batchId}
+        <if test="param.catName != null and param.catName != ''">
+            and bt.cat_name like concat('%',#{param.catName},'%')
+        </if>
+    </select>
+    <select id="selectPlatFormCats2" resultType="com.houjiang.commons.vo.goods.ManageShopCatMenuVO">
+        select
+        gc.cat_id,
+        gc.cat_name,
+        gc.cat_pic,
+        gc.type_id,
+        gc.cat_commission,
+        gc.cat_is_virtual,
+        gc.refund_ratio,
+        gc.refund_proportion,
+        gc.cat_displayorder,
+        gc.cat_show_status,
+        gc.cat_parent_id,
+        gc.cat_level,
+        gt.type_name,
+        gc.is_integral_goods
+        FROM
+        ${database.prefix.goods}hou_goods_cat gc
+        LEFT JOIN
+        ${database.prefix.goods}hou_goods_type gt ON gc.type_id = gt.type_id
+        <if test="catShowStatus != null">
+            and gc.cat_show_status = #{catShowStatus,jdbcType=BIT}
+        </if>
+        order by gc.cat_displayorder,gc.cat_id asc
+    </select>
+    <select id="selectPlatFormCatsCount2" resultType="java.lang.Integer">
+        select
+        count( 1 )
+        FROM
+        ${database.prefix.goods}hou_goods_cat gc
+        LEFT JOIN
+        ${database.prefix.goods}hou_goods_type gt ON gc.type_id = gt.type_id
+        where gc.cat_parent_id = 0
+        <if test="catShowStatus != null">
+            and gc.cat_show_status = #{catShowStatus,jdbcType=BIT}
+        </if>
+        order by gc.cat_displayorder asc
+    </select>
+    <select id="selectByConfigType" resultType="com.houjiang.commons.vo.base.BaseSysConfigsVO">
+        select
+       config_key, op_type, config_value, op_value,config_comment,config_enable
+        from ${database.prefix.base}hou_base_sys_configs
+        where config_key =
+        #{configType,jdbcType=VARCHAR} order by config_sort asc
+    </select>
+    <select id="queryJoinCat" resultType="com.houjiang.commons.vo.shop.ApplyCatVO">
+        select cb.product_class_id as catId,gc.cat_name,gc.cat_commission
+        from ${database.prefix.supplier}hou_supplier_shop_class_bind cb
+        left join ${database.prefix.goods}hou_goods_cat gc on gc.cat_id = cb.product_class_id
+        where cb.supplier_shop_id = #{param.shopId}
+        and cb.product_class_id not in (SELECT supplier_cat_id FROM ${database.prefix.supplier}hou_supplier_shop_class_bind_tmp WHERE supplier_shop_id = #{param.shopId})
+        <if test="param.catName != null and param.catName != ''  ">
+            and gc.cat_name like concat('%',#{param.catName},'%')
+        </if>
+    </select>
+    <select id="selectIntegralCats" resultType="com.houjiang.commons.vo.goods.ManageShopCatMenuVO">
+        select gc.cat_id,
+        gc.cat_name,
+        gc.cat_displayorder,
+        gc.cat_show_status,
+        gc.cat_parent_id,
+        gc.cat_level,
+        gc.is_integral_goods
+        FROM ${database.prefix.goods}hou_goods_cat gc
+        where is_integral_goods = 1
+        order by gc.cat_displayorder asc
+    </select>
+    <select id="selectIntegralCatsCount" resultType="java.lang.Integer">
+        select count(1)
+        FROM ${database.prefix.goods}hou_goods_cat gc
+        where gc.cat_parent_id = 0
+        and is_integral_goods = 1
+        order by gc.cat_displayorder asc
+    </select>
+    <update id="updateIntegralGoodsCat">
+        update ${database.prefix.goods}hou_goods_cat
+        <set>
+            <if test="param.catName != null">
+                cat_name = #{param.catName},
+            </if>
+            <if test="param.catParentId != null">
+                cat_parent_id = #{param.catParentId},
+            </if>
+            <if test="param.catPic != null">
+                cat_pic = #{param.catPic},
+            </if>
+            <if test="param.catDisplayorder != null">
+                cat_displayorder = #{param.catDisplayorder},
+            </if>
+            <if test="param.catLevel != null">
+                cat_level = #{param.catLevel},
+            </if>
+            <if test="param.catShowStatus != null">
+                cat_show_status = #{param.catShowStatus},
+            </if>
+        </set>
+        where is_integral_goods = 1 and cat_id = #{param.catId}
+    </update>
+    <insert id="addIntegralCatsBatch">
+        insert into ${database.prefix.goods}hou_goods_cat
+        (cat_name,
+        cat_parent_id,
+        cat_displayorder,
+        cat_level,
+        cat_show_status,
+        is_integral_goods) values
+        <foreach collection="goodsCats" item="goodsCat" index="index"
+                 separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="goodsCat.catName != null">
+                    #{goodsCat.catName},
+                </if>
+                <if test="goodsCat.catParentId != null">
+                    #{goodsCat.catParentId},
+                </if>
+                <if test="goodsCat.catDisplayorder != null">
+                    #{goodsCat.catDisplayorder},
+                </if>
+                <if test="goodsCat.catLevel != null">
+                    #{goodsCat.catLevel},
+                </if>
+                <if test="goodsCat.catShowStatus != null">
+                    #{goodsCat.catShowStatus},
+                </if>
+                1,
+            </trim>
+        </foreach>
+    </insert>
+    <select id="selectParentCat" resultType="com.houjiang.commons.vo.goods.PlatFormGoodsCatsVO">
+        select
+        gc.cat_id,
+        gc.cat_name,
+        gc.cat_pic,
+        gc.type_id,
+        gc.cat_commission,
+        gc.cat_is_virtual,
+        gc.cat_displayorder,
+        gc.cat_show_status,
+        gc.cat_parent_id,
+        gt.type_name,
+        gc.cat_level
+        FROM
+        ${database.prefix.goods}hou_goods_cat gc
+        LEFT JOIN
+        ${database.prefix.goods}hou_goods_type gt ON gc.type_id = gt.type_id
+        <where>
+            gc.cat_id=#{parentId}
+        </where>
+    </select>
+    <select id="getCatGroupId" resultType="java.lang.Integer">
+        SELECT
+            COALESCE(c3.group_id, c2.group_id, c1.group_id) AS group_id
+        FROM
+            ${database.prefix.goods}hou_goods_cat AS c3
+                LEFT JOIN
+            ${database.prefix.goods}hou_goods_cat AS c2 ON c3.cat_parent_id = c2.cat_id
+                LEFT JOIN
+            ${database.prefix.goods}hou_goods_cat AS c1 ON c2.cat_parent_id = c1.cat_id
+        WHERE
+            c3.cat_id = #{catId}
+    </select>
+    <select id="selectNavSaleCategories" resultType="com.houjiang.commons.vo.goods.GoodsCatResultVO">
+        select cat_id, cat_name, cat_parent_id, cat_pic, cat_level
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_id = #{catId}
+        order by cat_displayorder
+    </select>
+    <select id="selectLevelOneCategory" resultType="com.houjiang.commons.vo.goods.SecordNameListVO">
+        select cat_id, cat_name, cat_displayorder
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_level = 1
+        <if test="integralGoods != null">
+            and is_integral_goods = #{integralGoods}
+        </if>
+        order by cat_displayorder
+    </select>
+    <select id="selectLineSaleCategoriesByThreeCat" resultType="com.houjiang.commons.vo.goods.SecordNameListVO">
+        select cat_id, cat_name, cat_displayorder
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_parent_id = #{catId}
+        order by cat_displayorder
+    </select>
+    <select id="selectLineSaleCategoriesByCatId" resultType="com.houjiang.commons.vo.goods.GoodsCatResultVO">
+        select cat_id, cat_name, cat_displayorder, cat_parent_id, cat_pic, cat_level
+        from ${database.prefix.goods}hou_goods_cat where cat_parent_id = #{catId}
+        order by cat_displayorder
+    </select>
+    <select id="getAllCatName" resultType="java.lang.String">
+        SELECT CONCAT(c1.cat_name, '/', c2.cat_name, '/', c3.cat_name) AS category_path
+        FROM ${database.prefix.goods}hou_goods_cat c3
+                 JOIN ${database.prefix.goods}hou_goods_cat c2 ON c3.cat_parent_id = c2.cat_id
+                 JOIN ${database.prefix.goods}hou_goods_cat c1 ON c2.cat_parent_id = c1.cat_id
+        WHERE c3.cat_id = #{catId}
+    </select>
+    <select id="selectCatList" resultType="com.houjiang.goods.vo.GoodscCatVO">
+        SELECT
+            T2.cat_id,
+            T2.cat_name,
+            T2.cat_parent_id,
+            T2.cat_pic,
+            T2.type_id,
+            T1.lvl as catLevel
+        FROM
+            (
+                SELECT
+                    @r AS menuId,
+                    ( SELECT @r := cat_parent_id FROM ${database.prefix.goods}hou_goods_cat WHERE cat_id = menuId ) AS parentId,
+                    @l := @l + 1 AS lvl
+                FROM
+                        ( SELECT @r := #{catId}, @l := 0 ) vars,
+                        ${database.prefix.goods}hou_goods_cat h
+                WHERE
+                    @r != 0
+                ORDER BY
+                    lvl DESC
+            ) T1
+                JOIN ${database.prefix.goods}hou_goods_cat T2 ON T2.cat_id = T1.menuId
+        ORDER BY
+            T1.lvl DESC
+    </select>
+    <select id="queryAllCatByAdmin" resultType="com.houjiang.commons.vo.goods.ManageShopCatMenuVO">
+        select cat_id,
+               cat_name,
+               cat_parent_id,
+               type_id,
+               cat_commission
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+          and is_integral_goods = 0
+    </select>
+    <select id="querySupplierLevelCatByShopId" resultType="com.houjiang.goods.vo.ManageCatVO">
+        SELECT DISTINCT
+        <if test="param.catLevel == 1">
+            c1.cat_id,c1.cat_name,c1.cat_parent_id
+        </if>
+        <if test="param.catLevel == 2">
+            c2.cat_id,c2.cat_name,c2.cat_parent_id
+        </if>
+        <if test="param.catLevel == 3">
+            c3.cat_id,c3.cat_name,c3.cat_parent_id
+        </if>
+        FROM ${database.prefix.goods}hou_goods_cat AS c1
+        JOIN ${database.prefix.goods}hou_goods_cat AS c2 ON c1.cat_id = c2.cat_parent_id
+        JOIN ${database.prefix.goods}hou_goods_cat AS c3 ON c2.cat_id = c3.cat_parent_id
+        WHERE c3.cat_id in (
+        select product_class_id
+        from ${database.prefix.supplier}hou_supplier_shop_class_bind
+        where supplier_shop_id = #{param.shopId}
+        )
+        <if test="param.catLevel == 2">
+            and c2.cat_parent_id = #{param.catParentId}
+        </if>
+        <if test="param.catLevel == 3">
+            and c3.cat_parent_id = #{param.catParentId}
+        </if>
+    </select>
+    <select id="queryLevelCatBySelfShop" resultType="com.houjiang.goods.vo.ManageCatVO">
+        SELECT DISTINCT
+        <if test="param.catLevel == 1">
+            c1.cat_id,c1.cat_name,c1.cat_parent_id
+        </if>
+        <if test="param.catLevel == 2">
+            c2.cat_id,c2.cat_name,c2.cat_parent_id
+        </if>
+        <if test="param.catLevel == 3">
+            c3.cat_id,c3.cat_name,c3.cat_parent_id
+        </if>
+        FROM ${database.prefix.goods}hou_goods_cat AS c1
+        JOIN ${database.prefix.goods}hou_goods_cat AS c2 ON c1.cat_id = c2.cat_parent_id
+        JOIN ${database.prefix.goods}hou_goods_cat AS c3 ON c2.cat_id = c3.cat_parent_id
+        WHERE c1.is_integral_goods = 0
+        <if test="param.catLevel == 2">
+            and c2.cat_parent_id = #{param.catParentId}
+        </if>
+        <if test="param.catLevel == 3">
+            and c3.cat_parent_id = #{param.catParentId}
+        </if>
+    </select>
+    <select id="selectAll" resultType="com.houjiang.commons.vo.goods.ManageShopCatMenuVO">
+        select cat_id,
+               cat_name,
+               cat_parent_id,
+               type_id,
+               cat_commission
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+          and is_integral_goods = 0
+    </select>
+    <select id="getAllSonLevelCat" resultType="java.lang.Integer">
+        (SELECT t3.cat_id
+         FROM merchant_goods_cat AS t3
+                  JOIN merchant_goods_cat AS t2 ON t3.cat_parent_id = t2.cat_id
+                  JOIN merchant_goods_cat AS t1 ON t2.cat_parent_id = t1.cat_id
+         WHERE t1.cat_id = #{catId} )
+        UNION ALL
+        (SELECT t3.cat_id
+         FROM merchant_goods_cat AS t3
+                  JOIN merchant_goods_cat AS t2 ON t3.cat_parent_id = t2.cat_id
+         WHERE t2.cat_id = #{catId})
+        UNION ALL
+        (SELECT cat_id
+         FROM merchant_goods_cat
+         WHERE cat_id = #{catId} AND cat_level = 3)
+    </select>
+    <select id="selectByCatId2" resultType="com.houjiang.commons.vo.goods.ManageShopCatMenuVO">
+        SELECT
+            cat_id,
+            cat_name,
+            cat_parent_id,
+            cat_pic,
+            type_id,
+            cat_commission,
+            cat_level
+        FROM
+            ${database.prefix.goods}hou_goods_cat
+        WHERE
+            cat_show_status = 1
+          AND cat_id = #{catId,jdbcType=INTEGER}
+    </select>
+    <select id="selectCommissionRate" resultType="com.houjiang.commons.vo.goods.CommissionRateBeanVO">
+        select cat_commission,
+               baby_commission
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_id = #{catId,jdbcType=INTEGER}
+    </select>
+    <select id="selectAllCat3" resultType="com.houjiang.commons.vo.shop.ShopGoodsCatVO">
+        select
+            cat_id, cat_name, cat_parent_id,type_id,cat_commission
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+    </select>
+    <select id="selectGoodsCatByPrimaryKey" resultType="com.houjiang.commons.vo.goods.GdbMerchantGoodsCatVO">
+        select
+            cat_id,
+            cat_name,
+            cat_parent_id,
+            cat_pic,
+            type_id,
+            cat_commission,
+            cat_is_virtual,
+            cat_displayorder,
+            cat_level,
+            cat_show_status,
+            baby_commission
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_id = #{catId,jdbcType=INTEGER}
+    </select>
+    <select id="selectByCatNameString" resultType="java.lang.String">
+        select cat_name from ${database.prefix.goods}hou_goods_cat where cat_id=#{catId}
+    </select>
+    <select id="selectAllCatFeign" resultType="com.houjiang.commons.vo.goodscat.WebCatMenuVO">
+        select
+            cat_id,
+            cat_name,
+            cat_parent_id,
+            cat_pic,
+            type_id,
+            cat_commission,
+            cat_is_virtual,
+            cat_displayorder,
+            cat_level,
+            cat_show_status,
+            baby_commission
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+    </select>
+    <select id="selectByCatParentIdFeign" resultType="com.houjiang.commons.vo.goods.SecordNameListVO">
+        select
+        cat_id,cat_name,cat_parent_id
+        from ${database.prefix.goods}hou_goods_cat
+        where cat_show_status = 1
+        <if test="catParentId != null">
+            and cat_parent_id = #{catParentId,jdbcType=INTEGER}
+        </if>
+        order by cat_displayorder asc
+    </select>
+
+</mapper>

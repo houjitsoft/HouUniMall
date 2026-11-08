@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.SpinwinActivityMapper">
+    <update id="updateLuckyDraw">
+        update ${database.prefix.activity}hou_addon_activity_spinwin_lucky_draw_times set surplus_draw_times = 0
+        ,num_sweepstakes_today = 0
+        where hou_activity_id in
+        <foreach collection="activityIdList" index="index"
+                 item="activityId" open="(" separator="," close=")">
+            #{activityId}
+        </foreach>
+    </update>
+    <update id="updateActivityStatus">
+        update ${database.prefix.activity}hou_addon_activity_spinwin set hou_activity_is_enable = 2
+        where hou_activity_id in
+        <foreach collection="activityIdList" index="index"
+                 item="activityId" open="(" separator="," close=")">
+            #{activityId}
+        </foreach>
+    </update>
+    <update id="updateDailyLottery">
+    UPDATE ${database.prefix.activity}hou_addon_activity_spinwin_lucky_draw_times
+    SET number_of_daily_lottery = #{numberOfDailyLottery},num_sweepstakes_today=0 where hou_activity_id =  #{activityId}
+    </update>
+
+    <select id="selectExpireActivity" resultType="java.lang.Integer">
+        SELECT hou_activity_id FROM ${database.prefix.activity}hou_addon_activity_spinwin where now()> hou_activity_end_time and hou_activity_is_enable=1
+    </select>
+    <select id="selectEffectiveActivity" resultType="com.houjiang.commons.vo.activity.EffectiveActivityVO">
+        SELECT
+        hou_activity_id,
+        winning_times_per_person AS number_of_daily_lottery
+        FROM
+        ${database.prefix.activity}hou_addon_activity_spinwin
+        WHERE
+        now()&lt; hou_activity_end_time
+               AND hou_activity_is_enable = 1
+        ORDER BY
+        update_date DESC
+    </select>
+</mapper>

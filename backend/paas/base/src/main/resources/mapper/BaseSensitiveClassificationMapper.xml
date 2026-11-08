@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseSensitiveClassificationMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseSensitiveClassificationEntity" id="BaseSensitiveClassificationMap">
+        <result property="classificationId" column="classification_id" jdbcType="INTEGER"/>
+        <result property="classificationName" column="classification_name" jdbcType="VARCHAR"/>
+        <result property="classificationAddTime" column="classification_add_time" jdbcType="TIMESTAMP"/>
+        <result property="classificationState" column="classification_state" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="querySensitiveClassification"
+            resultType="com.houjiang.base.entity.BaseSensitiveClassificationEntity">
+        select classification_id,classification_name,classification_add_time,classification_state
+        from hou_base_sensitive_classification
+        where 1 = 1
+        <if test="param.classificationName != null">
+            and classification_name like concat('%', #{param.classificationName} ,'%')
+        </if>
+        order by classification_add_time desc
+    </select>
+
+
+</mapper>

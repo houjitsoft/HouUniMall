@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayRiskBlacklistMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayRiskBlacklistEntity">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="listType" column="list_type" jdbcType="TINYINT"/>
+        <result property="targetType" column="target_type" jdbcType="TINYINT"/>
+        <result property="targetValue" column="target_value" jdbcType="VARCHAR"/>
+        <result property="bizScope" column="biz_scope" jdbcType="TINYINT"/>
+        <result property="reason" column="reason" jdbcType="VARCHAR"/>
+        <result property="riskLevel" column="risk_level" jdbcType="TINYINT"/>
+        <result property="effectiveTime" column="effective_time" jdbcType="TIMESTAMP"/>
+        <result property="expireTime" column="expire_time" jdbcType="TIMESTAMP"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="operatorId" column="operator_id" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+</mapper>

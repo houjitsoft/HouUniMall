@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.OrderConsignerMapper">
+
+    <select id="queryVirtualOrderTime" resultType="java.lang.String">
+	SELECT
+	    order_id
+    FROM
+    	 ${database.prefix.order}hou_order_base
+    WHERE
+	now() > period_of_validity
+	AND virtual_goods = 0
+	AND is_cancel = 1
+	AND order_refund_status = 0
+	AND order_refund_status = 0
+	AND order_status NOT IN (
+	1,
+	7)
+	</select>
+	<select id="selectUserMoneyByOrderId" resultType="java.util.Map">
+        select buyer_user_id        as buyerUserId,
+               order_payment_amount as orderPaymentAmount
+        from ${database.prefix.order}hou_order_base
+        where order_id = #{orderId}
+    </select>
+    <select id="selectByPrimaryKey" resultType="java.lang.Integer">
+        select count(1) from ${database.prefix.order}hou_order_commission where order_id = #{orderId}
+    </select>
+
+
+    <update id="upVirtualOrder">
+        update ${database.prefix.order}hou_order_base
+        set order_finished_time    = now(),
+            order_status           = 12,
+            is_cancel              = 2,
+            order_last_return_time = now()
+        where order_id = #{order}
+    </update>
+    <update id="updateOrderAfterSaleTime">
+        update${database.prefix.order}hou_order_base set order_last_return_time = #{returnTime} where order_id = #{orderId}
+    </update>
+</mapper>

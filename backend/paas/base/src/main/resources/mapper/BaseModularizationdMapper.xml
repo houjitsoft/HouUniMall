@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseModularizationdMapper">
+
+    <resultMap type="com.houjiang.base.entity.BaseModularizationdEntity" id="BaseModularizationdMap">
+        <result property="pageId" column="page_id" jdbcType="INTEGER"/>
+        <result property="pageName" column="page_name" jdbcType="VARCHAR"/>
+        <result property="pageData" column="page_data" jdbcType="VARCHAR"/>
+        <result property="pageType" column="page_type" jdbcType="INTEGER"/>
+        <result property="pageStart" column="page_start" jdbcType="INTEGER"/>
+        <result property="pageDefault" column="page_default" jdbcType="INTEGER"/>
+        <result property="pageCoverUrl" column="page_cover_url" jdbcType="VARCHAR"/>
+        <result property="pageIsIndex" column="page_is_index" jdbcType="INTEGER"/>
+        <result property="pageTemplateCode" column="page_template_code" jdbcType="VARCHAR"/>
+        <result property="pagePlatform" column="page_platform" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="goodsallidjson" column="goodsAllIdJson" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="addModularizationd">
+         insert into ${database.prefix.userms}hou_base_modularizationd(page_name,page_data,page_type,create_time,page_is_index,goodsAllIdJson,
+         page_start,page_platform) values(#{param.pageName},#{param.pageData},#{param.pageType},now(),#{param.pageIsIndex},
+         #{param.goodsAllIdJson},#{param.pageStart},
+         <choose>
+             <when test="param.pagePlatform != null and param.pagePlatform != ''">#{param.pagePlatform}</when>
+             <otherwise>'mobile'</otherwise>
+         </choose>)
+    </insert>
+    <insert id="addBottomNavigation">
+        INSERT into ${database.prefix.userms}hou_base_modularizationd
+        (
+           page_data,
+           page_type,
+           create_time,
+           page_is_index,
+           page_start )
+        VALUES
+            (
+             #{param.pageData},
+             #{param.pageType},
+             now(),
+             #{param.pageIsIndex},
+             #{param.pageStart})
+    </insert>
+    <insert id="add">
+        INSERT into ${database.prefix.userms}hou_base_modularizationd ( page_id, shop_id, page_name, page_data, page_type, create_time, page_is_index, goodsAllIdJson, page_start )
+        VALUES
+            (#{param.pageId},#{param.shopId},#{param.pageName},#{param.pageData},#{param.pageType},now(),#{param.pageIsIndex},#{param.goodsAllIdJson},#{param.pageStart})
+    </insert>
+    <update id="updateModularizationd">
+         UPDATE ${database.prefix.userms}hou_base_modularizationd set page_name =#{param.pageName} , page_data =#{param.pageData} ,
+         page_type =#{param.pageType} ,create_time =now(),page_is_index = #{param.pageIsIndex},
+         goodsAllIdJson =#{param.goodsAllIdJson}
+         <if test="param.pagePlatform != null and param.pagePlatform != ''">
+             , page_platform = #{param.pagePlatform}
+         </if>
+         where page_id = #{param.pageId}
+    </update>
+    <update id="updateStartAll">
+        UPDATE ${database.prefix.userms}hou_base_modularizationd  set page_start = 0 where page_is_index = 1
+    </update>
+    <update id="UpdateStart">
+        UPDATE ${database.prefix.userms}hou_base_modularizationd set page_start = #{param.pageStart} where page_id = #{param.pageId}
+    </update>
+    <update id="updateBottomNavigation">
+        UPDATE ${database.prefix.userms}hou_base_modularizationd
+        SET
+            page_data =#{param.pageData} ,
+            page_type =#{param.pageType} ,
+            create_time =now()
+        where page_id = #{param.pageId}
+    </update>
+    <delete id="modularizationdDelete">
+        delete from ${database.prefix.userms}hou_base_modularizationd where page_id = #{param.pageId}
+    </delete>
+    <select id="queryModularizationdAll" resultType="com.houjiang.base.dto.ModularizationdDTO">
+        select page_id,page_name,page_data,page_type,page_start,page_default,create_time,page_is_index,page_template_code,page_platform
+        from ${database.prefix.userms}hou_base_modularizationd where page_default = 0
+        <if test="param.pageIsIndex != null">
+            and page_is_index = #{param.pageIsIndex}
+        </if>
+        <if test="null != param.pageName">
+            and page_name  LIKE CONCAT('%',#{param.pageName},'%')
+        </if>
+        <if test="null != param.pageId">
+            and page_id  = #{param.pageId}
+        </if>
+        <if test="null != param.pageIsIndex">
+            and page_is_index  = #{param.pageIsIndex}
+        </if>
+        <!-- 按端过滤：mobile=移动端(H5/小程序) pc=PC端；不传则不限端，保持旧调用方行为不变 -->
+        <if test="param.pagePlatform != null and param.pagePlatform != ''">
+            and page_platform = #{param.pagePlatform}
+        </if>
+        ORDER BY create_time desc
+    </select>
+    <select id="queryModularizationdById" resultType="com.houjiang.base.dto.ModularizationdDTO">
+        select page_id,page_name,page_data,page_type,page_start,page_default,create_time,page_is_index,goodsAllIdJson,page_template_code,page_platform
+        from ${database.prefix.userms}hou_base_modularizationd
+        <where>
+            <if test="null != param.pageId">
+                and page_id  = #{param.pageId}
+            </if>
+        </where>
+    </select>
+    <select id="queryCommonIsXian" resultType="java.lang.Integer">
+        SELECT gc.common_is_xian
+		FROM  ${database.prefix.goods}hou_goods_common gc
+		LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON gc.shop_id = sb.supplier_shop_id
+		WHERE gc.common_state = 1
+		  AND gc.common_verify = 1
+		  AND NOW( ) > gc.common_sell_time
+		  AND sb.shop_status = 3
+		  AND gc.goods_id = #{goodsId}
+		  LIMIT 1
+    </select>
+    <select id="queryModularizationdDefault" resultType="com.houjiang.base.dto.ModularizationdDTO">
+        select page_id,page_name,page_data,page_type,page_start,page_default,page_cover_url,create_time
+        from ${database.prefix.userms}hou_base_modularizationd where page_default = 1 and page_id = #{param.pageId}
+    </select>
+
+
+</mapper>

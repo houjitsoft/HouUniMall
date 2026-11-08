@@ -1,0 +1,20 @@
+{
+  "plugin": {
+    "activity": { "name": "Actividades de marketing" },
+    "aicode": { "name": "Desarrollo de IA" },
+    "cms": { "name": "Gestión de contenidos" },
+    "crm": { "name": "CRM" },
+    "erp": { "name": "ERP" },
+    "finance": { "name": "Centro financiero" },
+    "geo": { "name": "GEO" },
+    "im": { "name": "IM" },
+    "logging": { "name": "Gestión de registros" },
+    "mes": { "name": "Fabricación MES" },
+    "oa": { "name": "Oficina OA" },
+    "orderfood": { "name": "Gestión de restaurantes" },
+    "pm": { "name": "Gestión de proyectos" },
+    "supplier": { "name": "Gestión de proveedores" },
+    "webpos": { "name": "WebPOS" },
+    "demo-coupon": { "name": "Demo de cupones" }
+  }
+}

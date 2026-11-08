@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserAdminRightsGroupMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserAdminRightsGroupEntity">
+            <id property="rightsGroupId" column="rights_group_id" jdbcType="SMALLINT"/>
+            <result property="rightsGroupName" column="rights_group_name" jdbcType="VARCHAR"/>
+            <result property="rightsGroupAddTime" column="rights_group_add_time" jdbcType="DATE"/>
+            <result property="rightsLimitsAll" column="rights_limits_all" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        rights_group_id,rights_group_name,
+        rights_group_add_time,rights_limits_all
+    </sql>
+    <insert id="addGroupInfo">
+        insert into ${database.prefix.userms}hou_user_admin_rights_group
+        (rights_group_name,
+        rights_group_add_time,
+        rights_limits_all)
+        VALUES
+        (#{rightsGroupName},
+        now(),
+        #{rightsLimitsAll})
+    </insert>
+    <update id="updateGroupInfo">
+    update ${database.prefix.userms}hou_user_admin_rights_group
+    set
+    rights_group_name =#{rightsGroupName} ,
+    rights_limits_all=#{rightsLimitsAll}
+    where rights_group_id = #{rightsGroupId}
+    </update>
+</mapper>

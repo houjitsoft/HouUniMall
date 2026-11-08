@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsImagesMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsImagesEntity" id="GoodsImagesMap">
+        <result property="imagesId" column="images_id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="imagesImage" column="images_image" jdbcType="VARCHAR"/>
+        <result property="imagesDisplayorder" column="images_displayorder" jdbcType="INTEGER"/>
+        <result property="imagesIsDefault" column="images_is_default" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <resultMap id="BaseResultMap"
+               type="com.houjiang.commons.vo.goods.GdbMerchantGoodsImagesVO">
+        <id column="images_id" property="imagesId" jdbcType="INTEGER" />
+        <result column="common_id" property="commonId"
+                jdbcType="INTEGER" />
+        <result column="shop_id" property="shopId" jdbcType="INTEGER" />
+        <result column="images_image" property="imagesImage"
+                jdbcType="VARCHAR" />
+        <result column="images_displayorder"
+                property="imagesDisplayorder" jdbcType="TINYINT" />
+        <result column="images_is_default" property="imagesIsDefault"
+                jdbcType="TINYINT" />
+    </resultMap>
+    <sql id="Image_Column_List">
+		images_image,images_displayorder, images_is_default
+	</sql>
+    <select id="selectByCommonId" resultType="com.houjiang.goods.vo.GdsImageDetailResultVO">
+        select
+        <include refid="Image_Column_List" />
+        from ${database.prefix.goods}hou_goods_images
+        where goods_id =
+        #{goodsId,jdbcType=INTEGER}
+    </select>
+    <select id="selectByCommonIdImg" resultType="com.houjiang.commons.vo.goods.GdbMerchantGoodsImagesVO">
+        select
+		images_id, common_id, shop_id, images_image,
+		images_displayorder,
+		images_is_default
+		from
+		${database.prefix.goods}hou_goods_images
+		where  goods_id = #{goodsId}
+    </select>
+    <delete id="deleteByCommonid" parameterType="java.lang.Integer">
+        delete from
+       ${database.prefix.goods}hou_goods_images
+        where common_id in (
+        <foreach collection="commonIds" separator="," item="commonId">
+            #{commonId}
+        </foreach>
+        )
+    </delete>
+    <insert id="insertSelective"
+            parameterType="com.houjiang.commons.vo.goods.GdbMerchantGoodsImagesVO">
+        insert into ${database.prefix.goods}hou_goods_images
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="imagesId != null">
+                images_id,
+            </if>
+            <if test="commonId != null">
+                common_id,
+            </if>
+            <if test="goodsId != null">
+                goods_id,
+            </if>
+            <if test="shopId != null">
+                shop_id,
+            </if>
+            <if test="imagesImage != null">
+                images_image,
+            </if>
+            <if test="imagesDisplayorder != null">
+                images_displayorder,
+            </if>
+            <if test="imagesIsDefault != null">
+                images_is_default,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="imagesId != null">
+                #{imagesId,jdbcType=INTEGER},
+            </if>
+            <if test="commonId != null">
+                #{commonId,jdbcType=INTEGER},
+            </if>
+            <if test="goodsId != null">
+                #{goodsId,jdbcType=INTEGER},
+            </if>
+            <if test="shopId != null">
+                #{shopId,jdbcType=INTEGER},
+            </if>
+            <if test="imagesImage != null">
+                #{imagesImage,jdbcType=VARCHAR},
+            </if>
+            <if test="imagesDisplayorder != null">
+                #{imagesDisplayorder,jdbcType=TINYINT},
+            </if>
+            <if test="imagesIsDefault != null">
+                #{imagesIsDefault,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+    <delete id="deleteByGoodsImageIds"
+            parameterType="java.lang.Integer">
+        delete from
+        ${database.prefix.goods}hou_goods_images
+        where common_id =
+        #{commonId,jdbcType=INTEGER}
+        <if test="removeGoodsImageIds != null and removeGoodsImageIds">
+            and images_id not in
+            <foreach collection="removeGoodsImageIds" item="imagesId"
+                     open="(" close=")" separator=",">
+                #{imagesId}
+            </foreach>
+        </if>
+    </delete>
+    <delete id="deleteByCommonId">
+        delete from
+            ${database.prefix.goods}hou_goods_images
+        where common_id = #{commonId}
+    </delete>
+    <insert id="insertBatch"
+            parameterType="com.houjiang.commons.vo.goods.GdbMerchantGoodsImagesVO">
+        insert into ${database.prefix.goods}hou_goods_images
+        (common_id,
+        shop_id,
+        goods_id,
+        images_image,
+        images_displayorder,
+        images_is_default) values
+        <foreach collection="goodsImages" item="goodsImage"
+                 index="index" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+
+                <if test="goodsImage.commonId != null">
+                    #{goodsImage.commonId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.shopId != null">
+                    #{goodsImage.shopId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.shopId != null">
+                    #{goodsImage.goodsId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.imagesImage != null">
+                    #{goodsImage.imagesImage,jdbcType=VARCHAR},
+                </if>
+                <if test="goodsImage.imagesDisplayorder != null">
+                    #{goodsImage.imagesDisplayorder,jdbcType=TINYINT},
+                </if>
+                <if test="goodsImage.imagesIsDefault != null">
+                    #{goodsImage.imagesIsDefault,jdbcType=TINYINT},
+                </if>
+            </trim>
+        </foreach>
+    </insert>
+    <insert id="insertBatch2">
+        insert into ${database.prefix.goods}hou_goods_images
+        (common_id,
+        shop_id,
+        goods_id,
+        images_image,
+        images_displayorder,
+        images_is_default) values
+        <foreach collection="goodsImages" item="goodsImage"
+                 index="index" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+
+                <if test="goodsImage.commonId != null">
+                    #{goodsImage.commonId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.shopId != null">
+                    #{goodsImage.shopId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.goodsId != null">
+                    #{goodsImage.goodsId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.imagesImage != null">
+                    #{goodsImage.imagesImage,jdbcType=VARCHAR},
+                </if>
+                <if test="goodsImage.imagesDisplayorder != null">
+                    #{goodsImage.imagesDisplayorder,jdbcType=TINYINT},
+                </if>
+                <if test="goodsImage.imagesIsDefault != null">
+                    #{goodsImage.imagesIsDefault,jdbcType=TINYINT},
+                </if>
+            </trim>
+        </foreach>
+    </insert>
+    <insert id="addGoodsImages">
+        insert into ${database.prefix.goods}hou_goods_images
+        (common_id,
+        shop_id,
+        goods_id,
+        images_image,
+        images_displayorder,
+        images_is_default)
+        values(
+            #{goodsBaseEntity.commonId,jdbcType=INTEGER},
+            #{goodsBaseEntity.shopId,jdbcType=INTEGER},
+            #{goodsBaseEntity.goodsId,jdbcType=INTEGER},
+            #{goodsImage.imagesImage,jdbcType=VARCHAR},
+            #{index,jdbcType=TINYINT},
+            #{index,jdbcType=TINYINT}
+              )
+    </insert>
+    <update id="updateBatch"
+            parameterType="com.houjiang.commons.vo.goods.GdbMerchantGoodsImagesVO">
+        <foreach collection="goodsImages" separator=";"
+                 item="goodsImage">
+            update ${database.prefix.goods}hou_goods_images
+            <set>
+                <if test="goodsImage.commonId != null">
+                    common_id = #{goodsImage.commonId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.shopId != null">
+                    shop_id = #{goodsImage.shopId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.goodsId != null">
+                    goods_id = #{goodsImage.goodsId,jdbcType=INTEGER},
+                </if>
+                <if test="goodsImage.imagesImage != null">
+                    images_image =
+                    #{goodsImage.imagesImage,jdbcType=VARCHAR},
+                </if>
+                <if test="goodsImage.imagesDisplayorder != null">
+                    images_displayorder =
+                    #{goodsImage.imagesDisplayorder,jdbcType=TINYINT},
+                </if>
+                <if test="goodsImage.imagesIsDefault != null">
+                    images_is_default =
+                    #{goodsImage.imagesIsDefault,jdbcType=TINYINT},
+                </if>
+            </set>
+            where images_id = #{goodsImage.imagesId,jdbcType=INTEGER}
+        </foreach>
+    </update>
+    <update id="updateDealerGoodsImage">
+        update ${database.prefix.goods}hou_goods_images
+        set images_image = #{param.imagesImage}
+        where images_id = #{param.imagesId}
+    </update>
+    <select id="selectByCommonId3" resultMap="BaseResultMap"
+            parameterType="java.lang.Integer">
+        select
+            images_id, common_id, shop_id, images_image,
+            images_displayorder,
+            images_is_default
+        from
+            ${database.prefix.goods}hou_goods_images
+        where common_id =
+              #{commonId,jdbcType=INTEGER} and shop_id =#{shopId} and goods_id = #{goodsId}
+    </select>
+    <select id="selectByCommonId2" resultType="com.houjiang.commons.vo.goods.GdbMerchantGoodsImagesVO">
+        select
+        images_id, common_id, shop_id, images_image, goods_id
+		images_displayorder,
+		images_is_default
+        from ${database.prefix.goods}hou_goods_images
+        where common_id =
+        #{commonId,jdbcType=INTEGER}
+    </select>
+    <select id="querySupplierGoodsImage" resultType="java.lang.String">
+        select images_image
+        from ${database.prefix.supplier}hou_supplier_goods_images
+        where supplier_goods_id = #{goodsId}
+    </select>
+    <select id="queryDealerGoodsImage" resultType="com.houjiang.goods.entity.GoodsImagesEntity">
+        select images_image, images_id
+        from ${database.prefix.goods}hou_goods_images
+        where goods_id = #{goodsId}
+    </select>
+
+
+</mapper>
+

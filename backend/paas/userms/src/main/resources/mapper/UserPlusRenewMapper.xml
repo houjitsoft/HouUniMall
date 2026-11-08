@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserPlusRenewMapper">
+
+    <resultMap type="com.houjiang.userms.entity.UserPlusRenewEntity" id="UserPlusRenewMap">
+        <result property="renewId" column="renew_id" jdbcType="INTEGER"/>
+        <result property="thaliType" column="thali_type" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="renewStarttime" column="renew_starttime" jdbcType="TIMESTAMP"/>
+        <result property="renewEndtime" column="renew_endtime" jdbcType="TIMESTAMP"/>
+        <result property="creatTime" column="creat_time" jdbcType="TIMESTAMP"/>
+        <result property="plusEquity" column="plus_equity" jdbcType="VARCHAR"/>
+        <result property="renewStatus" column="renew_status" jdbcType="INTEGER"/>
+        <result property="plusOrderid" column="plus_orderid" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        renew_id,thali_type,user_id,
+        renew_starttime,renew_endtime,creat_time,
+        plus_equity,renew_status,plus_orderid
+    </sql>
+    <insert id="insertplusrenew">
+        insert into ${database.prefix.userms}hou_user_plus_renew (thali_type,user_id,renew_starttime,renew_endtime,creat_time,plus_equity,renew_status,plus_orderid)
+        values (#{param.thaliType},#{param.userId},#{param.renewStarttime},#{param.renewEndtime},now(),#{param.plusEquity},#{param.renewStatus},#{param.plusOrderid})
+    </insert>
+    <update id="updaterenew">
+        update ${database.prefix.userms}hou_user_plus_renew set renew_status = 1 where renew_id = #{renewId}
+    </update>
+    <select id="selectRenewNew" resultType="com.houjiang.userms.vo.PlusRenewEntityVO">
+        select renew_id,thali_type,user_id,renew_starttime,renew_endtime
+        from ${database.prefix.userms}hou_user_plus_renew where user_id = #{userId} and renew_status = 0
+        order by renew_endtime desc limit 1
+    </select>
+    <select id="selectthaliIdnext" resultType="java.lang.Integer">
+        select thali_type from ${database.prefix.userms}hou_user_plus_renew where user_id = #{userId} and renew_status = 0 order by renew_starttime asc limit 1
+    </select>
+    <select id="selectthaliIdnexttime" resultType="java.util.Map">
+        select thali_type,renew_endtime from ${database.prefix.userms}hou_user_plus_renew where user_id = #{userId} and renew_status = 0 order by renew_endtime desc limit 1
+    </select>
+</mapper>

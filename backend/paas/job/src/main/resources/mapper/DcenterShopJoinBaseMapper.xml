@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterShopJoinBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterShopJoinBaseEntity">
+            <id property="joinId" column="join_id" jdbcType="VARCHAR"/>
+            <result property="shopProvince" column="shop_province" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        join_id,shop_province,user_id,audit_status
+    </sql>
+    <select id="getDecenterShopJoinBaseVOList" resultType="com.houjiang.job.vo.DcenterShopJoinBaseVO">
+        select
+        <include refid="Base_Column_List"/>
+        from ${database.prefix.supplier}hou_supplier_shop_join_base limit #{pageNum},#{pageSize}
+
+    </select>
+</mapper>

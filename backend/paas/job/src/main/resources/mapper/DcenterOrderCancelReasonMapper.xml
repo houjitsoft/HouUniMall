@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterOrderCancelReasonMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterOrderCancelReasonEntity">
+            <id property="cancelReasonId" column="cancel_reason_id" jdbcType="INTEGER"/>
+            <result property="cancelReasonContent" column="cancel_reason_content" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        cancel_reason_id,cancel_reason_content
+    </sql>
+    <select id="getDecenterOrderCancelReasonVOList"
+            resultType="com.houjiang.job.vo.DcenterOrderCancelReasonVO">
+        select
+            cancel_reason_id,cancel_reason_content
+        from
+            ${database.prefix.order}hou_order_cancel_reason
+            limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

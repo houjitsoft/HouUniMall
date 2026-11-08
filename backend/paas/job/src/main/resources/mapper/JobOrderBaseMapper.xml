@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.JobOrderBaseMapper">
+    <update id="updateOrderEvaluated">
+        update ${database.prefix.order}hou_order_base  set  order_buyer_evaluation_status =1 where order_id =#{orderId}
+    </update>
+    <select id="queryorderFinishedTime" resultType="java.lang.String">
+        select date_format(COALESCE(order_finished_time, order_receiver_date), '%Y-%m-%d %H:%i:%s')
+        from ${database.prefix.order}hou_order_base
+        where order_id = #{orderId}
+    </select>
+
+</mapper>

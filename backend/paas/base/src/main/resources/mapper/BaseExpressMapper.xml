@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseExpressMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseExpressEntity">
+            <id property="expressId" column="express_id" jdbcType="INTEGER"/>
+            <result property="expressName" column="express_name" jdbcType="VARCHAR"/>
+            <result property="expressPinyin" column="express_pinyin" jdbcType="VARCHAR"/>
+            <result property="expressStatus" column="express_status" jdbcType="BOOLEAN"/>
+    </resultMap>
+    <resultMap id="ExpessResultMap"
+               type="com.houjiang.base.vo.ManageExpressQueryVO">
+        <id column="express_id" property="expressId" jdbcType="INTEGER" />
+        <result column="express_name" property="expressName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        express_id,express_name,express_pinyin,
+        express_status
+    </sql>
+    <sql id="Express_Column_List">
+        express_id, express_name
+    </sql>
+    <insert id="addExpress">
+        insert into ${database.prefix.userms}hou_base_express (
+		express_name,
+		express_pinyin,
+		express_status
+		)
+		values (
+		#{param.expressName,jdbcType=VARCHAR},
+		#{param.expressPinyin,jdbcType=VARCHAR},
+		#{param.expressStatus,jdbcType=BIT}
+		)
+    </insert>
+    <update id="updateExpress">
+        UPDATE ${database.prefix.userms}hou_base_express
+        <set>
+            <if test="param.expressName != null">
+                express_name = #{param.expressName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.expressPinyin != null">
+                express_pinyin = #{param.expressPinyin,jdbcType=VARCHAR},
+            </if>
+            <if test="param.expressStatus != null">
+                express_status = #{param.expressStatus},
+            </if>
+        </set>
+        where express_id = #{param.expressId,jdbcType=INTEGER}
+    </update>
+
+    <!-- 查询所有快递公司 -->
+    <select id="queryNoTokenTwo" resultMap="ExpessResultMap"
+            parameterType="java.lang.Integer">
+        select
+        <include refid="Express_Column_List" />
+        from ${database.prefix.userms}hou_base_express
+        where express_status = 1
+    </select>
+
+    <select id="newQuerykdniaoexpress" parameterType="java.lang.Integer" resultType="com.houjiang.commons.vo.base.KdniaoExpressVO">
+        SELECT
+            express_name,
+            express_pinyin
+        FROM
+            ${database.prefix.userms}hou_base_express
+        WHERE
+            express_id =#{id,jdbcType=INTEGER}
+    </select>
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterShopBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterShopBaseEntity">
+            <id property="shopId" column="shop_id" jdbcType="INTEGER"/>
+            <result property="shopName" column="shop_name" jdbcType="VARCHAR"/>
+            <result property="shopCreateTime" column="shop_create_time" jdbcType="TIMESTAMP"/>
+            <result property="shopLogo" column="shop_logo" jdbcType="VARCHAR"/>
+            <result property="shopStatus" column="shop_status" jdbcType="INTEGER"/>
+            <result property="shopType" column="shop_type" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        shop_id,shop_name,shop_create_time,
+        shop_logo,shop_status,shop_type,user_id
+    </sql>
+    <select id="getDecenterShopBaseVOList" resultType="com.houjiang.job.vo.DcenterShopBaseVO">
+        select
+            supplier_shop_id,shop_name,shop_create_time,shop_logo,shop_type,shop_status,user_id
+        from ${database.prefix.supplier}hou_shop_base limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

@@ -1,0 +1,37 @@
+server:
+  port: 8316
+
+# aiagent 只做单库读写，不参与跨服务全局事务。
+# Seata 2.x 客户端启动即要求 service.vgroupMapping.<group>，而线上 Seata server 仍是 1.8.1，
+# 一旦启用会直接启动失败（2026-10-27 实测）。这里显式关闭，等平台统一升 Seata 2.5 再评估。
+seata:
+  enabled: false
+spring:
+  cloud:
+    alibaba:
+      seata:
+        enabled: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}${MYSQL_PARAMS}
+    username: ${MYSQL_USER}
+    password: ${APP_DATASOURCE_PASSWORD}
+  main:
+    allow-bean-definition-overriding: true
+  ai:
+    openai:
+      # 关闭 Spring AI 自动装配：模型实例由 SpringAiModelClient 按「数据库配置 → 环境变量」手动构建，
+      # 这样在网关密钥尚未录入时服务也能正常启动，只是调用时返回未配置提示。
+      chat:
+        enabled: false
+
+# AI 网关出口。库中 hou_ai_config 的 ai_gateway_base_url / ai_gateway_profile_key 优先级更高，
+# 支持后台热改、改完立即生效；这里只作为兜底。
+ai:
+  gateway:
+    base-url: ${AI_GATEWAY_BASE_URL:}
+    profile-key: ${AI_GATEWAY_PROFILE_KEY:}
+    default-model: ${AI_GATEWAY_DEFAULT_MODEL:mall-chat}
+
+domainName: https://meoc.xinji365.cn/
+fontUrlPath: /home/wwwroot/fontPath

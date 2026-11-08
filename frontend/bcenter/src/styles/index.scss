@@ -1,0 +1,7 @@
+/* 样式加载顺序：令牌 → 变量 → 暗色 → tailwind → 组件皮肤 → 公共类 */
+@import 'tokens.css';
+@import 'var.css';
+@import 'dark.css';
+@import 'tailwind.css';
+@import 'element.scss';
+@import 'public.scss';

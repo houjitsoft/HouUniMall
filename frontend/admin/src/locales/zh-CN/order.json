@@ -1,0 +1,6 @@
+{
+  "orderNo": "订单号",
+  "customer": "客户",
+  "amount": "金额",
+  "status": "状态"
+}

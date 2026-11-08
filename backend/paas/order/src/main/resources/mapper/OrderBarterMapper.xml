@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderBarterMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderBarterEntity" id="OrderBarterMap">
+        <result property="orderBarterId" column="order_barter_id" jdbcType="INTEGER"/>
+        <result property="barterShippingCode" column="barter_shipping_code" jdbcType="VARCHAR"/>
+        <result property="barterPostCode" column="barter_post_code" jdbcType="VARCHAR"/>
+        <result property="barterMobile" column="barter_mobile" jdbcType="VARCHAR"/>
+        <result property="orderReturnId" column="order_return_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="returnCode" column="return_code" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="barterStatus" column="barter_status" jdbcType="INTEGER"/>
+        <result property="deliveryTime" column="delivery_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="selectBarterOrderList" resultType="com.houjiang.order.vo.ReturnOrderVO">
+        SELECT
+        oob.order_receiver_contact,
+        oob.order_shipping_code,
+        oor.return_cash,
+        oob.shop_id,
+        oob.shop_name,
+        oor.order_id,
+        oor.return_code,
+        oor.return_type,
+        oor.return_add_time,
+        oor.return_state,
+        oor.return_message,
+        oor.return_reason,
+        oor.return_shipping_code,
+        oor.order_goods_num,
+        oob.drop_shipping,
+        rp.intervention_state,
+        oob.order_payment_amount,
+        oor.expiration_time,
+        oob.order_source,
+        oob.deliver_shop_id,
+        oor.return_method_status,
+        oob.deliver_shop_name
+        FROM
+        ${database.prefix.order}hou_order_return oor
+        LEFT join ${database.prefix.order}hou_order_base oob ON oob.order_id = oor.order_id
+        LEFT join ${database.prefix.order}hou_order_return_platform rp ON rp.order_id = oor.order_id
+        where oor.return_method_status = 4
+        <if test="param.returnStatus != null and param.returnStatus != ''">
+            and DATE_ADD(now(), INTERVAL 6 HOUR) >= oor.expiration_time and oor.return_state = 1
+        </if>
+        <if test="param.returnState != null and param.returnState != ''">
+            and oor.return_state = #{param.returnState}
+        </if>
+        <if test="param.orderId != null and param.orderId != ''">
+            and oor.order_id like concat('%', #{param.orderId}, '%')
+        </if>
+        <if test="param.returnCode != null and param.returnCode != ''">
+            and oor.return_code like concat('%', #{param.returnCode}, '%')
+        </if>
+        <if test="param.platformIntervention != null and param.platformIntervention != ''">
+            and rp.intervention_state = #{param.platformIntervention}
+        </if>
+        <if test="param.returnAddTime != null and param.returnAddTime != '' and
+            param.returnFinishTime != null and param.returnFinishTime != ''">
+            and oor.return_add_time between #{param.returnAddTime} and #{param.returnFinishTime}
+        </if>
+        <if test="param.shopType != null and param.shopType != '' and param.shopType == 2">
+            and ((oob.shop_id = #{param.shopId} AND oob.original_order IS NULL) or( oob.deliver_shop_id =
+            #{param.shopId} AND oob.original_order IS NOT NULL))
+        </if>
+        <if test="param.shopType != null and param.shopType != '' and param.shopType != 2">
+            and ((oob.shop_id = #{param.shopId} AND oob.original_order IS NULL) or( oob.deliver_shop_id =
+            #{param.shopId} AND oob.original_order IS NOT NULL))
+            and oor.return_type = 3
+        </if>
+        <if test="param.deliverShopName != null and param.deliverShopName != ''">
+            and oob.deliver_shop_name like concat('%', #{param.deliverShopName}, '%')
+        </if>
+        <if test="param.dropShipping != null and param.dropShipping != ''">
+            and oob.drop_shipping = #{param.dropShipping}
+        </if>
+        ORDER BY oor.return_add_time desc
+    </select>
+    <select id="queryBarterOrderDetails" resultType="com.houjiang.order.vo.SellerOrderDetailVO">
+        SELECT oor.return_add_time,
+               oor.return_message,
+               oor.return_type,
+               oor.return_method_status,
+               oor.shop_name,
+               oor.return_shop_message,
+               oor.return_shop_handle,
+               oor.order_goods_num,
+               oor.order_id,
+               oor.return_code,
+               oor.return_voucher,
+               oor.buyer_user_account,
+               oor.return_reason,
+               oor.return_cash,
+               oor.return_state,
+               oor.return_finish_time,
+               oor.return_addr_name,
+               oob.buyer_user_name,
+               oob.order_receiver_name,
+               oob.order_receiver_address,
+               oob.order_receiver_contact,
+               oob.payment_number,
+               oob.payment_name,
+               oob.order_create_time,
+               oob.payment_time,
+               oob.order_payment_amount,
+               oob.payment_name,
+               oob.order_shipping_fee,
+               oob.order_type,
+               oor.return_shipping_code,
+               oor.return_post_code,
+               oor.return_mobile,
+               oob.drop_shipping,
+               IF(oob.drop_shipping = 1, IF(oob.deliver_shop_id = oob.shop_id, 1, 0), 1) operate,
+               oob.drop_shipping,
+               sob.order_refund_price   AS                                               supper_refund_price,
+               sob.order_return_price   AS                                               supper_return_price,
+               sob.goods_payment_amount AS                                               supper_payment_amount,
+               rp.intervention_state,
+               oor.expiration_time,
+               oob.order_source,
+               oob.payment_code
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oor.order_id = oob.order_id
+                 LEFT join ${database.prefix.order}hou_order_supplier_base sob ON sob.order_id = oob.order_id
+                 LEFT join ${database.prefix.order}hou_order_return_platform rp on oor.order_id = rp.order_id
+        WHERE oor.return_code = #{returnCode}
+    </select>
+    <select id="getBarterStateByReturnCode" resultType="java.lang.Integer">
+        select return_state
+        FROM ${database.prefix.order}hou_order_return
+        where return_code = #{returnCode}
+        limit 1
+    </select>
+    <select id="selectBarterOrderListToPlatform" resultType="com.houjiang.order.vo.ReturnOrderDetailVO">
+        SELECT
+        oor.return_state,
+        oor.order_goods_num,
+        oor.return_code,
+        oor.return_cash,
+        oor.return_commision_fee,
+        oor.return_reason,
+        oor.return_add_time,
+        oor.return_shop_message,
+        oor.return_shop_time,
+        oor.order_id,
+        oor.buyer_user_account,
+        gmsb.shop_name,
+        oob.payment_name,
+        oob.payment_number,
+        oob.payment_time,
+        oob.order_payment_amount,
+        oor.order_operator_time,
+        oor.return_payment_voucher
+        FROM
+        ${database.prefix.order}hou_order_base oob,
+        ${database.prefix.order}hou_order_return oor
+        left join ${database.prefix.supplier}hou_shop_base gmsb on oor.shop_id = gmsb.supplier_shop_id
+        WHERE oob.order_id = oor.order_id and oor.return_method_status = 4
+        <if test="null != param.returnState">
+            and oor.return_state = #{param.returnState}
+        </if>
+        <if test="null != param.returnState and param.returnState == 17">
+            and oob.original_order is null
+        </if>
+        <if test="null != param.returnCode and param.returnCode != ''">
+            and oor.return_code like concat('%',#{param.returnCode},'%')
+        </if>
+        <if test="null != param.shopName and param.shopName != ''">
+            and oor.shop_name like concat('%',#{param.shopName},'%')
+        </if>
+        <if test="null != param.buyerUserAccount and param.buyerUserAccount != ''">
+            and oor.buyer_user_account like concat('%',#{param.buyerUserAccount},'%')
+        </if>
+        <if test="null != param.orderId and param.orderId != ''">
+            and oor.order_id like concat('%',#{param.orderId},'%')
+        </if>
+        <if test="null != param.returnStartTime and param.returnStartTime != ''">
+            and oor.return_add_time >= #{param.returnStartTime}
+        </if>
+        <if test="null != param.returnFinishTime and param.returnFinishTime != ''">
+            and oor.return_add_time &lt;= #{param.returnFinishTime}
+        </if>
+        order by oor.return_add_time desc
+    </select>
+    <select id="selectBarterOrderDetail" resultType="com.houjiang.order.vo.ReturnOrderDetailVO">
+        select oor.return_shop_handle,
+               oor.return_state,
+               oor.return_code,
+               oor.return_cash,
+               oor.return_commision_fee,
+               oor.return_reason,
+               oor.return_add_time,
+               oor.return_shop_message,
+               oor.return_shop_time,
+               oor.order_id,
+               oor.buyer_user_account,
+               oor.shop_name,
+               oob.payment_name,
+               oob.payment_number,
+               oob.order_payment_amount,
+               oob.payment_code,
+               oor.return_payment_voucher,
+               oor.return_method_status
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob on oor.order_id = oob.order_id
+        where oor.return_code = #{returnCode}
+    </select>
+    <select id="selectBarterShippingInfoList" resultType="com.houjiang.order.vo.BarterShippingInfoVO">
+        select obart.return_code,obart.barter_shipping_code,obart.barter_post_code,obart.barter_mobile,
+               obart.order_return_id,obart.order_id,obart.return_code,obart.create_time,obart.barter_status,
+               obart.delivery_time, obart.order_barter_id,obart.barter_post_name
+        FROM ${database.prefix.order}hou_order_barter obart
+        where obart.return_code = #{returnCode}
+    </select>
+    <select id="selectBarterDropShippingList" resultType="com.houjiang.order.vo.ReturnOrderVO">
+        SELECT
+        oob.deliver_shop_name,
+        oob.order_receiver_contact,
+        oob.order_shipping_code,
+        oor.return_cash,
+        oob.shop_id,
+        oob.shop_name,
+        oor.order_id,
+        oor.return_code,
+        oor.return_type,
+        oor.return_add_time,
+        oor.return_state,
+        oor.return_message,
+        oor.return_reason,
+        oor.return_shipping_code,
+        oor.order_goods_num,
+        oob.drop_shipping,
+        oob.order_payment_amount,
+        oor.expiration_time,
+        oob.order_source,
+        oob.deliver_shop_id,
+        oor.return_method_status,
+        oob.deliver_shop_name,
+        oor.is_send_back,
+        oor.send_back_notes
+        FROM
+        ${database.prefix.order}hou_order_return oor
+        LEFT join ${database.prefix.order}hou_order_base oob ON oob.order_id = oor.order_id
+        where oor.return_method_status = 4 and oob.shop_id != oob.deliver_shop_id
+          AND oob.original_order IS NOT NULL and oob.drop_shipping = 1
+        <if test="null != param.shopId">
+            and oob.shop_id = #{param.shopId}
+        </if>
+        <if test="null != param.returnState and param.returnState != ''">
+            and oor.return_state = #{param.returnState}
+        </if>
+        <if test="null != param.returnCode and param.returnCode != ''">
+            and oor.return_code like concat('%',#{param.returnCode},'%')
+        </if>
+        <if test="null != param.deliverShopName and param.deliverShopName != ''">
+            and oor.deliver_shop_name like concat('%',#{param.deliverShopName},'%')
+        </if>
+        <if test="param.orderId != null and param.orderId != ''">
+            and oor.order_id like concat('%', #{param.orderId}, '%')
+        </if>
+        <if test="param.returnAddTime != null and param.returnAddTime != '' and
+            param.returnFinishTime != null and param.returnFinishTime != ''">
+            and oor.return_add_time between #{param.returnAddTime} and #{param.returnFinishTime}
+        </if>
+        <if test="param.isSendBack != null and param.isSendBack != 0">
+            and oor.is_send_back = #{param.isSendBack}
+        </if>
+    </select>
+    <select id="handleBarterOrderApplyToJob" resultType="com.houjiang.order.dto.handleBarterOrderDTO">
+        SELECT oor.order_id,
+               oor.shop_id,
+               oor.return_cash,
+               oor.return_code,
+               oor.return_state,
+               oor.return_add_time,
+               oob.buyer_user_name,
+               oob.order_status
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob ON oob.order_id = oor.order_id
+        WHERE oor.return_state = 1
+          AND oor.return_type = 3
+          AND oob.order_status = 6 AND oob.original_order IS NULL
+          AND HOUR(TIMEDIFF(now(), oor.return_add_time)) > 48
+    </select>
+    <select id="handleBarterOrderToJob" resultType="com.houjiang.order.dto.handleBarterOrderDTO">
+        select oor.order_id,
+               oor.return_cash,
+               oor.return_code,
+               oor.return_state,
+               oor.return_add_time,
+               oob.buyer_user_name,
+               oob.order_status
+        FROM ${database.prefix.order}hou_order_return oor
+                 LEFT join ${database.prefix.order}hou_order_base oob on oob.order_id = oor.order_id
+        where oor.return_state = 6
+          and oor.return_type = 3
+          and oob.order_status = 29 AND oob.original_order IS NULL
+          and HOUR( TIMEDIFF(now()  , oor.return_add_time)) &gt; 23
+    </select>
+    <select id="afterSalesOutOrderToJob" resultType="java.lang.String">
+        select oor.order_id
+        FROM ${database.prefix.order}hou_order_return oor
+        where oor.return_state = 19
+          and oor.return_type = 3
+        and DATE_SUB(NOW(), INTERVAL 7 DAY) > oor.return_finish_time;
+    </select>
+    <select id="buyTimeOutReturnGoodsToJob" resultType="java.lang.String">
+        select oor.order_id
+        FROM ${database.prefix.order}hou_order_return oor
+        where oor.return_state in (2,3,10)
+          and oor.return_method_status = 4
+          and now() > oor.expiration_time
+    </select>
+    <select id="platformApproveToJob" resultType="com.houjiang.order.dto.handleBarterOrderDTO">
+        SELECT rp.order_id,
+               rp.return_code,
+               rp.return_state,
+               oor.order_seller_address,
+               oor.order_seller_name,
+               oor.order_seller_contact,
+               os.storage_id
+        FROM ${database.prefix.order}hou_order_return_platform rp
+                 LEFT join ${database.prefix.order}hou_order_base oor ON rp.order_id = oor.order_id
+                 LEFT join ${database.prefix.order}hou_order_shipment os ON rp.order_id = os.order_id
+        WHERE rp.intervention_state = 0
+          AND rp.return_method_type = 3
+          AND now() > rp.expriation_time
+    </select>
+
+</mapper>

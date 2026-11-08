@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayDivisionReceiverMapper">
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayDivisionReceiverEntity">
+        <id column="id" property="id"/>
+        <result column="mch_no" property="mchNo"/>
+        <result column="receiver_no" property="receiverNo"/>
+        <result column="receiver_type" property="receiverType"/>
+        <result column="receiver_name" property="receiverName"/>
+        <result column="account_type" property="accountType"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="account_bank" property="accountBank"/>
+        <result column="id_card" property="idCard"/>
+        <result column="phone" property="phone"/>
+        <result column="share_ratio" property="shareRatio"/>
+        <result column="priority" property="priority"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="create_user_id" property="createUserId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+</mapper>

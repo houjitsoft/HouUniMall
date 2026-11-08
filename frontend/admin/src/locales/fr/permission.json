@@ -1,0 +1,14 @@
+{
+  "user": {
+    "read": "Lecture utilisateur",
+    "write": "Écriture utilisateur"
+  },
+  "product": {
+    "read": "Lecture produit",
+    "write": "Écriture produit"
+  },
+  "order": {
+    "read": "Lecture commande",
+    "write": "Écriture commande"
+  }
+}

@@ -1,0 +1,25 @@
+seata:
+  enabled: false
+  enable-auto-data-source-proxy: false
+  tx-service-group: my_test_tx_group
+  registry:
+    type: nacos
+    nacos:
+      application: seata-server
+      server-addr: ${NACOS_SERVER_ADDR}
+      group: SEATA_GROUP
+      namespace: houeoc
+      username: nacos
+      password: ${SEATA_REGISTRY_NACOS_PASSWORD}
+  service:
+    vgroupMapping:
+      my_test_tx_group: default
+    disable-global-transaction: true
+    enable-degrade: false
+    grouplist:
+      default: ${SEATA_SERVER_ADDR}
+  client:
+    rm:
+      report-success-enable: false
+    undo:
+      log-serialization: protostuff

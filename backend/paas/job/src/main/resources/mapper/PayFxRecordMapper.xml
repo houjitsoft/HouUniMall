@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.PayFxRecordMapper">
+
+
+    <insert id="insertBatch">
+        insert into ${database.prefix.payment}hou_pay_fx_record
+        ( record_id,
+        user_id,
+        user_name,
+        record_amount,
+        before_record_amount,
+        after_record_amount,
+        record_status,
+        trade_type_id,
+        record_type,
+        plus_or_minus,
+        record_name,
+        record_status_name,
+        record_date,
+        create_time,
+        update_time)
+        VALUES
+        <foreach collection="records" item="item" index="index" separator=",">
+            (
+            #{item.recordId,jdbcType=VARCHAR},
+            #{item.userId,jdbcType=INTEGER},
+            #{item.userName,jdbcType=VARCHAR},
+            #{item.recordAmount,jdbcType=DECIMAL},
+            #{item.beforeRecordAmount,jdbcType=DECIMAL},
+            #{item.afterRecordAmount,jdbcType=DECIMAL},
+            #{item.recordStatus,jdbcType=BIT},
+            #{item.tradeTypeId,jdbcType=TINYINT},
+            #{item.recordType,jdbcType=TINYINT},
+            #{item.plusOrMinus,jdbcType=INTEGER},
+            #{item.recordName,jdbcType=VARCHAR},
+            #{item.recordStatusName,jdbcType=VARCHAR},
+            #{item.recordDate,jdbcType=DATE},
+            #{item.createTime,jdbcType=TIMESTAMP},
+            #{item.updateTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+</mapper>

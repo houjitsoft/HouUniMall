@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+        namespace="com.houjiang.base.mapper.BusinessSwitchMapper">
+    <update id="updateValue">
+        UPDATE ${database.prefix.userms}hou_base_system_web_config
+        <set>
+            config_value = #{configValue}
+        </set>
+        where config_key = #{configKey}
+    </update>
+    <select id="query" resultType="java.lang.Integer">
+        select config_value
+        from ${database.prefix.userms}hou_base_system_web_config
+        where config_key = #{configKey}
+    </select>
+    <select id="queryValue" resultType="java.lang.String">
+        select config_value
+        from ${database.prefix.userms}hou_base_system_web_config
+        where config_key = #{configKey}
+    </select>
+
+
+</mapper>

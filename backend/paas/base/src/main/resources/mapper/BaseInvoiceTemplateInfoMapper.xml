@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseInvoiceTemplateInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseInvoiceTemplateInfoEntity">
+            <id property="invoiceTmpId" column="invoice_tmp_id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="invoiceType" column="invoice_type" jdbcType="INTEGER"/>
+            <result property="invoiceHeadType" column="invoice_head_type" jdbcType="INTEGER"/>
+            <result property="invoiceHead" column="invoice_head" jdbcType="VARCHAR"/>
+            <result property="companyTaxId" column="company_tax_id" jdbcType="VARCHAR"/>
+            <result property="registerAddress" column="register_address" jdbcType="VARCHAR"/>
+            <result property="registerNumber" column="register_number" jdbcType="VARCHAR"/>
+            <result property="openingBank" column="opening_bank" jdbcType="VARCHAR"/>
+            <result property="bankAccount" column="bank_account" jdbcType="VARCHAR"/>
+            <result property="isDefault" column="is_default" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="lastUpdateTime" column="last_update_time" jdbcType="TIMESTAMP"/>
+            <result property="invoiceContent" column="invoice_content" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        invoice_tmp_id,user_id,invoice_type,
+        invoice_head_type,invoice_head,company_tax_id,
+        register_address,register_number,opening_bank,
+        bank_account,is_default,create_time,
+        last_update_time,invoice_content
+    </sql>
+</mapper>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsStockMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.goods.entity.GoodsStockEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+            <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+            <result property="goodsStock" column="goods_stock" jdbcType="INTEGER"/>
+            <result property="goodsAlarm" column="goods_alarm" jdbcType="INTEGER"/>
+            <result property="createUser" column="create_user" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateUser" column="update_user" jdbcType="VARCHAR"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,goods_id,common_id,
+        goods_stock,goods_alarm,create_user,
+        create_time,update_user,update_time
+    </sql>
+    <insert id="addGoodsStock">
+        insert into ${database.prefix.goods}hou_goods_stock( goods_id,common_id,goods_stock)
+        values(#{param.goodsId},#{param.commonId},#{goodsStock})
+    </insert>
+    <select id="queryGoodsStockPage" resultType="com.houjiang.goods.vo.MerchantGoodsStockVO">
+        select
+        mgs.goods_id,
+        mgs.common_id,
+        mgb.goods_name,
+        mgs.goods_stock,
+        mgs.goods_alarm,
+        mgb.goods_image,
+        mgb.goods_spec,
+        mgs.create_time,
+        mgs.update_time
+        from ${database.prefix.goods}hou_goods_stock mgs
+        left join ${database.prefix.goods}hou_goods_base mgb on mgs.goods_id = mgb.goods_id
+        left join ${database.prefix.goods}hou_goods_common mgc on mgc.common_id = mgb.common_id
+        left join storage_goods_base stgb on mgs.goods_id = stgb.goods_id
+        left join storage_info si on stgb.storage_id = si.storage_id
+        where mgb.shop_id = #{param.shopId} and mgb.is_delete = 0
+            and mgc.common_state != 3 and mgc.is_delete = 0
+        <if test="param.goodsName != null and param.goodsName != ''">
+            and mgb.goods_name = #{param.goodsName}
+        </if>
+        <if test="param.storageName != null and param.storageName != ''">
+            and si.storage_name like concat('%',#{param.storageName},'%')
+        </if>
+        <if test="param.startTime != null and param.startTime != '' and
+                    param.endTime != null and param.endTime != ''">
+            and mgs.update_time between #{param.startTime} and #{param.endTime}
+        </if>
+        <if test="param.isEarlyWarning != null and param.isEarlyWarning == 1">
+            and mgs.goods_stock <![CDATA[<=]]> mgs.goods_alarm
+        </if>
+        <if test="param.goodsIdList != null and param.goodsIdList.size() > 0">
+            <foreach collection="param.goodsIdList" item="item" open="and mgs.goods_id in (" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        group by mgs.goods_id
+    </select>
+    <select id="queryGoodsStock" resultType="com.houjiang.goods.vo.MerchantGoodsStockVO">
+        select
+        mgs.goods_id,
+        mgb.goods_name,
+        mgs.goods_stock,
+        mgs.goods_alarm,
+        mgb.goods_image,
+        mgb.goods_spec,
+        mgs.create_time,
+        mgs.update_time
+        from ${database.prefix.goods}hou_goods_stock mgs
+        left join ${database.prefix.goods}hou_goods_base mgb on mgs.goods_id = mgb.goods_id
+        where mgb.shop_id = #{param.shopId} and mgs.goods_id = #{param.goodsId}
+    </select>
+    <select id="syncStock" resultType="java.util.Map">
+        SELECT
+            mgb.goods_id as goodsId,
+            mgb.goods_alarm as goodsAlarm,
+            mgb.goods_stock as goodsStock,
+            mgb.common_id as commonId
+        FROM ${database.prefix.goods}hou_goods_base mgb
+        GROUP BY mgb.goods_id
+    </select>
+    <select id="selectGoodsStock" resultType="java.lang.Integer">
+        select ${database.prefix.goods}hou_goods_stock from ${database.prefix.goods}hou_goods_stock where goods_id = #{goodsId}
+    </select>
+</mapper>

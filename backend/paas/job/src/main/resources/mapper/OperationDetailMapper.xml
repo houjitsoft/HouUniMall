@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.OperationDetailMapper">
+
+    <delete id="delete" >
+        delete from ${database.prefix.userms}hou_user_log_action
+        where create_time &lt;= date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%Y-%m-%d')
+    </delete>
+
+</mapper>

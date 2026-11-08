@@ -1,0 +1,55 @@
+spring:
+  # SCA 2025 移除了 legacy bootstrap 的 nacosPropertySourceLocator，Nacos 配置走 SB3 config data import（老基线镜像不读该属性，行为不变）。
+  # 列表顺序即优先级：extension 在前（低），主 dataId 最后（高），与 legacy「共享<扩展<服务名」对齐。
+  config:
+    import: optional:nacos:mutual.yaml,optional:nacos:mybatis.yaml,optional:nacos:redis.yaml,optional:nacos:rocketmq.yaml,optional:nacos:dispose.yaml,optional:nacos:seata.yaml,optional:nacos:es.yaml,optional:nacos:logging.yaml
+  application:
+    name: logging
+  cloud:
+    config:
+      enabled: false
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:houeoc}
+        username: ${NACOS_USER:nacos}
+        password: ${NACOS_PASSWORD:}
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:houeoc}
+        username: ${NACOS_USER:nacos}
+        password: ${NACOS_PASSWORD:}
+        file-extension: yaml
+        extension-configs:
+          - data-id: mutual.yaml
+            refresh: true
+          - data-id: mybatis.yaml
+            refresh: true
+          - data-id: redis.yaml
+            refresh: true
+          - data-id: rocketmq.yaml
+            refresh: true
+          # 公共运行配置：域名（domainName）、证书路径、支付/短信等全局项都在这里。
+          # 2026-09-26 首次以独立容器部署 logging（unimall-logging）时，缺它会在启动时
+          # 直接「Could not resolve placeholder 'domainName'」退出（commons 的
+          # QrCodeUtil / Constants / WXPayConfig 用 @Value("${domainName}") 取值，
+          # 日志服务虽然不做支付，但包扫描会把这些 Bean 拉进来）。口径与其余服务一致。
+          - data-id: dispose.yaml
+            refresh: true
+          - data-id: seata.yaml
+            refresh: true
+          # 统一 ES 连接层：houcloud.log.elk 的 uris/username/password 引用
+          # es.yaml 中的 houcloud.es.*，避免地址与凭据在本服务重复维护。
+          - data-id: es.yaml
+            refresh: true
+  main:
+    allow-circular-references: true
+
+houcloud:
+  product:
+    code: logging
+    package: com.houjiang.logging
+  plugin:
+    host-service: logging
+    boot-enabled: false
+    plugins-dir: ${PLUGIN_DIR:plugins/logging}

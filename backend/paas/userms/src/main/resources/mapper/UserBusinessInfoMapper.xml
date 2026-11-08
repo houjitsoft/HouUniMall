@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserBusinessInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserBusinessInfoEntity">
+            <result property="id" column="id" jdbcType="INTEGER"/>
+            <result property="taxId" column="tax_id" jdbcType="VARCHAR"/>
+            <result property="companyName" column="company_name" jdbcType="VARCHAR"/>
+            <result property="businessLicense" column="business_license" jdbcType="VARCHAR"/>
+            <result property="bankCardNo" column="bank_card_no" jdbcType="VARCHAR"/>
+            <result property="registerBank" column="register_bank" jdbcType="VARCHAR"/>
+            <result property="contactName" column="contact_name" jdbcType="VARCHAR"/>
+            <result property="contactNumber" column="contact_number" jdbcType="VARCHAR"/>
+            <result property="companyProvinceId" column="company_province_id" jdbcType="VARCHAR"/>
+            <result property="companyCityId" column="company_city_id" jdbcType="VARCHAR"/>
+            <result property="companyDistrictId" column="company_district_id" jdbcType="VARCHAR"/>
+            <result property="companyDetailAddress" column="company_detail_address" jdbcType="VARCHAR"/>
+            <result property="mailAddress" column="mail_address" jdbcType="VARCHAR"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="lastUpdateTime" column="last_update_time" jdbcType="TIMESTAMP"/>
+            <result property="isApproved" column="is_approved" jdbcType="INTEGER"/>
+            <result property="auditComment" column="audit_comment" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        tax_id,company_name,business_license,
+        bank_card_no,register_bank,contact_name,
+        contact_number,company_province_id,company_city_id,
+        company_district_id,company_detail_address,mail_address,
+        user_id,create_time,last_update_time,
+        is_approved,audit_comment
+    </sql>
+    <insert id="insertBusinessUser">
+        insert into ${database.prefix.userms}hou_user_business_info (tax_id,company_name,business_license,contact_number,user_id)
+        values(#{taxId},#{companyName},#{businessLicense},#{contactNumber},#{userId})
+    </insert>
+    <select id="isBusiness" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.userms}hou_user_business_info
+        where user_id = #{userId}
+          and is_approved = 1
+    </select>
+    <select id="queryInfo" resultType="com.houjiang.userms.vo.BusinessUserInfoVO">
+        select tax_id,
+               company_name,
+               business_license,
+               bank_card_no,
+               register_bank,
+               contact_name,
+               contact_number,
+               company_province_id,
+               company_city_id,
+               company_district_id,
+               company_detail_address,
+               mail_address,
+               user_id,
+               is_approved
+        from ${database.prefix.userms}hou_user_business_info
+        where user_id = #{userId}
+    </select>
+    <select id="queryList" resultType="com.houjiang.userms.vo.BusinessUserListVO">
+        select uui.user_id
+        , uui.user_name
+        , uui.create_time
+        , uubi.company_name
+        , uubi.tax_id
+        , uubi.business_license
+        from ${database.prefix.userms}hou_user_info uui
+        left join ${database.prefix.userms}hou_user_business_info uubi on uui.user_id = uubi.user_id
+        where uui.is_business =1 and uubi.is_approved = 1
+        <if test="userName!= null and userName!= ''">
+            and uui.user_name = #{userName}
+        </if>
+        <if test="companyName!= null and companyName!= ''">
+            and uubi.company_name like concat('%' ,#{companyName} ,'%')
+        </if>
+        order by uui.create_time desc
+    </select>
+    <select id="queryDetail" resultType="com.houjiang.commons.vo.user.BusinessUserInfoDetailVO">
+               select
+               tax_id,
+               company_name,
+               business_license,
+               bank_card_no,
+               register_bank,
+               contact_name,
+               contact_number,
+               company_province_id,
+               company_city_id,
+               company_district_id,
+               company_detail_address,
+               mail_address,
+               user_id,
+               is_approved
+        from ${database.prefix.userms}hou_user_business_info
+        where user_id = #{userId}
+    </select>
+    <select id="selectBusinessUser" resultType="java.lang.Integer">
+        select count(1) from  ${database.prefix.userms}hou_user_business_info where company_name = #{param.companyName}
+    </select>
+    <select id="queryInfoFeign" resultType="com.houjiang.commons.dto.userms.BusinessUserInfoDTO">
+        select
+        tax_id,
+        company_name,
+        business_license,
+        bank_card_no,
+        register_bank,
+        contact_name,
+        contact_number,
+        company_province_id,
+        company_city_id,
+        company_district_id,
+        company_detail_address,
+        mail_address,
+        user_id,
+        business_license,
+        is_approved
+        from ${database.prefix.userms}hou_user_business_info
+        <where>
+            <if test="param.userId != null">
+                AND user_id = #{param.userId}
+            </if>
+            <if test="param.businessId != null">
+                AND business_id = #{param.businessId}
+            </if>
+        </where>
+    </select>
+</mapper>

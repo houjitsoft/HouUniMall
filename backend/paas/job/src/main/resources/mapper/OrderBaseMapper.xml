@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.houjiang.job.mapper.OrderbaseMapper">
+    <select id="queryOrderNoPay" resultType="com.houjiang.job.vo.UpdateALiWxOrderVO">
+        select order_id, payment_number from ${database.prefix.order}hou_order_base where order_status = 1
+    </select>
+    <select id="queryPlusOrderNoPay" resultType="com.houjiang.job.vo.UpdateALiWxOrderVO">
+        select  plus_orderid from ${database.prefix.userms}hou_user_plus_order where is_pay = 0
+    </select>
+</mapper>

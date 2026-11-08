@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterSeckillBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterSeckillBaseEntity">
+            <id property="seckillId" column="seckill_id" jdbcType="INTEGER"/>
+            <result property="seckillName" column="seckill_name" jdbcType="VARCHAR"/>
+            <result property="seckillStartTime" column="seckill_start_time" jdbcType="TIMESTAMP"/>
+            <result property="seckillEndTime" column="seckill_end_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        seckill_id,seckill_name,seckill_start_time,
+        seckill_end_time
+    </sql>
+    <select id="getDecenterSeckillBaseVOList" resultType="com.houjiang.job.vo.DcenterSeckillBaseVO">
+        select
+        <include refid="Base_Column_List"/>
+            from ${database.prefix.activity}hou_addon_activity_seckill_base limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

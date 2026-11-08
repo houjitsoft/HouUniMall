@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.job.mapper.DcenterLogActionMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.job.entity.DcenterLogActionEntity">
+            <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+            <result property="logTime" column="log_time" jdbcType="TIMESTAMP"/>
+            <result property="logIp" column="log_ip" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,user_name,log_time,
+        log_ip
+    </sql>
+    <select id="getDecenterLogActionVOList" resultType="com.houjiang.job.vo.DcenterLogActionVO">
+        select user_id,user_name,log_time,log_ip from ${database.prefix.userms}hou_user_log_action limit #{pageNum},#{pageSize}
+    </select>
+</mapper>

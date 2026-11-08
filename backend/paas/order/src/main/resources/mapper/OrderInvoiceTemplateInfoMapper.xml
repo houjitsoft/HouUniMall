@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderInvoiceTemplateInfoMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderInvoiceTemplateInfoEntity" id="OrderInvoiceTemplateInfoMap">
+        <result property="invoiceTmpId" column="invoice_tmp_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="invoiceType" column="invoice_type" jdbcType="INTEGER"/>
+        <result property="invoiceHeadType" column="invoice_head_type" jdbcType="INTEGER"/>
+        <result property="invoiceHead" column="invoice_head" jdbcType="VARCHAR"/>
+        <result property="companyTaxId" column="company_tax_id" jdbcType="VARCHAR"/>
+        <result property="registerAddress" column="register_address" jdbcType="VARCHAR"/>
+        <result property="registerNumber" column="register_number" jdbcType="VARCHAR"/>
+        <result property="openingBank" column="opening_bank" jdbcType="VARCHAR"/>
+        <result property="bankAccount" column="bank_account" jdbcType="VARCHAR"/>
+        <result property="isDefault" column="is_default" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="lastUpdateTime" column="last_update_time" jdbcType="TIMESTAMP"/>
+        <result property="invoiceContent" column="invoice_content" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertInvoiceTmp">
+        insert INTO ${database.prefix.order}hou_order_invoice_template_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                user_id,
+                invoice_type,
+                invoice_head_type,
+                invoice_head,
+            <if test="param.companyTaxId != null">
+                company_tax_id,
+            </if>
+            <if test="param.registerAddress != null">
+                register_address,
+            </if>
+            <if test="param.registerNumber != null">
+                register_number,
+            </if>
+            <if test="param.openingBank != null">
+                opening_bank,
+            </if>
+            <if test="param.bankAccount != null">
+                bank_account,
+            </if>
+            <if test="param.isDefault != null">
+                is_default,
+            </if>
+            <if test="param.invoiceContent != null">
+                invoice_content,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{param.userId},
+            #{param.invoiceType},
+            #{param.invoiceHeadType},
+            #{param.invoiceHead},
+        <if test="param.companyTaxId != null">
+            #{param.companyTaxId},
+        </if>
+        <if test="param.registerAddress != null">
+            #{param.registerAddress},
+        </if>
+        <if test="param.registerNumber != null">
+            #{param.registerNumber},
+        </if>
+        <if test="param.openingBank != null">
+            #{param.openingBank},
+        </if>
+        <if test="param.bankAccount != null">
+            #{param.bankAccount},
+        </if>
+        <if test="param.isDefault != null">
+            #{param.isDefault},
+        </if>
+        <if test="param.invoiceContent != null">
+            #{param.invoiceContent},
+        </if>
+        </trim>
+    </insert>
+    <insert id="insertInvoiceTmpFeign">
+        insert INTO ${database.prefix.order}hou_order_invoice_template_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            user_id,
+            invoice_type,
+            invoice_head_type,
+            invoice_head,
+            <if test="param.companyTaxId != null">
+                company_tax_id,
+            </if>
+            <if test="param.registerAddress != null">
+                register_address,
+            </if>
+            <if test="param.registerNumber != null">
+                register_number,
+            </if>
+            <if test="param.openingBank != null">
+                opening_bank,
+            </if>
+            <if test="param.bankAccount != null">
+                bank_account,
+            </if>
+            <if test="param.isDefault != null">
+                is_default,
+            </if>
+            <if test="param.invoiceContent != null">
+                invoice_content,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{param.userId},
+            #{param.invoiceType},
+            #{param.invoiceHeadType},
+            #{param.invoiceHead},
+            <if test="param.companyTaxId != null">
+                #{param.companyTaxId},
+            </if>
+            <if test="param.registerAddress != null">
+                #{param.registerAddress},
+            </if>
+            <if test="param.registerNumber != null">
+                #{param.registerNumber},
+            </if>
+            <if test="param.openingBank != null">
+                #{param.openingBank},
+            </if>
+            <if test="param.bankAccount != null">
+                #{param.bankAccount},
+            </if>
+            <if test="param.isDefault != null">
+                #{param.isDefault},
+            </if>
+            <if test="param.invoiceContent != null">
+                #{param.invoiceContent},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateDefault">
+        update ${database.prefix.order}hou_order_invoice_template_info
+            set is_default = 0
+        where user_id = #{param.userId}
+    </update>
+    <update id="updateInvoiceTmp">
+        update ${database.prefix.order}hou_order_invoice_template_info
+        <set>
+            invoice_type = #{param.invoiceType},
+            invoice_head_type = #{param.invoiceHeadType},
+            invoice_head = #{param.invoiceHead},
+            <if test="param.companyTaxId != null">
+                company_tax_id = #{param.companyTaxId},
+            </if>
+            <if test="param.registerAddress != null">
+                register_address = #{param.registerAddress},
+            </if>
+            <if test="param.registerNumber != null">
+                register_number = #{param.registerNumber},
+            </if>
+            <if test="param.openingBank != null">
+                opening_bank = #{param.openingBank},
+            </if>
+            <if test="param.bankAccount != null">
+                bank_account =#{param.bankAccount},
+            </if>
+            <if test="param.isDefault != null">
+                is_default = #{param.isDefault},
+            </if>
+            <if test="param.invoiceContent != null">
+                invoice_content = #{param.invoiceContent},
+            </if>
+        </set>
+        where invoice_tmp_id = #{param.invoiceTmpId}
+    </update>
+    <update id="updateInvoiceTmpFeign">
+        update ${database.prefix.order}hou_order_invoice_template_info
+        <set>
+            <if test="param.invoiceType != null">
+                invoice_type = #{param.invoiceType},
+            </if>
+            <if test="param.invoiceHeadType != null">
+                invoice_head_type = #{param.invoiceHeadType},
+            </if>
+            <if test="param.invoiceHead != null">
+                invoice_head = #{param.invoiceHead},
+            </if>
+            <if test="param.companyTaxId != null">
+                company_tax_id = #{param.companyTaxId},
+            </if>
+            <if test="param.registerAddress != null">
+                register_address = #{param.registerAddress},
+            </if>
+            <if test="param.registerNumber != null">
+                register_number = #{param.registerNumber},
+            </if>
+            <if test="param.openingBank != null">
+                opening_bank = #{param.openingBank},
+            </if>
+            <if test="param.bankAccount != null">
+                bank_account =#{param.bankAccount},
+            </if>
+            <if test="param.isDefault != null">
+                is_default = #{param.isDefault},
+            </if>
+            <if test="param.invoiceContent != null">
+                invoice_content = #{param.invoiceContent},
+            </if>
+        </set>
+        where invoice_tmp_id = #{param.invoiceTmpId}
+    </update>
+    <select id="queryInvoiceInfoList" resultType="com.houjiang.order.entity.OrderInvoiceTemplateInfoEntity">
+        select invoice_tmp_id,
+        invoice_type,
+        invoice_head_type,
+        invoice_head,
+        company_tax_id,
+        invoice_content,
+        register_address,
+        register_number,
+        opening_bank,
+        bank_account,
+        is_default
+        FROM ${database.prefix.order}hou_order_invoice_template_info
+        where user_id = #{param.userId}
+        <if test="param.invoiceType != null">
+            and invoice_type = #{param.invoiceType}
+        </if>
+        order by create_time desc
+    </select>
+    <select id="queryInvoiceInfoListCount" resultType="java.lang.Integer">
+        select count(*)
+        FROM ${database.prefix.order}hou_order_invoice_template_info
+        where user_id = #{param.userId}
+        <if test="param.invoiceType != null">
+            and invoice_type = #{param.invoiceType}
+        </if>
+    </select>
+
+
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderPaymentVocherMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.order.entity.OrderPaymentVocherEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="orderPaymentVoucherImgs" column="order_payment_voucher_imgs" jdbcType="VARCHAR"/>
+            <result property="reviewStatus" column="review_status" jdbcType="TINYINT"/>
+            <result property="reviewMessage" column="review_message" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="reviewTime" column="review_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,order_id,order_payment_voucher_imgs,
+        review_status,review_message,create_time,
+        review_time
+    </sql>
+    <insert id="insertPaymentVocher">
+  INSERT INTO ${database.prefix.order}hou_order_payment_vocher ( order_id, order_payment_voucher_imgs, review_status, create_time )
+        VALUES
+	(#{param.orderId},#{param.jsonImgs},1,now())
+    </insert>
+    <update id="updatePaymentVocher">
+  update ${database.prefix.order}hou_order_payment_vocher
+        SET order_payment_voucher_imgs = #{param.jsonImgs}, review_status =1 ,review_message = ' ' ,create_time = now()
+        WHERE
+	    order_id = #{param.orderId}
+    </update>
+    <select id="queryPaymentVocher" resultType="com.houjiang.order.vo.OdbPaymentVocherVO">
+        select opv.id as id ,opv.order_id as orderId ,opv.order_payment_voucher_imgs as orderPaymentVoucherImgs,opv.review_status as reviewStatus,
+        opv.review_message as reviewMessage,opv.create_time as createTime,opv.review_time as reviewTime
+        FROM ${database.prefix.order}hou_order_payment_vocher opv where opv.order_id = #{orderId}
+    </select>
+</mapper>

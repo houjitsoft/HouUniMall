@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserUploadAlbumMapper">
+
+    <sql id="Image_Column_List">
+        album_id, album_desc
+    </sql>
+
+    <select id="selectByShopIdAndType" resultType="com.houjiang.userms.vo.ManageQueryGroupVO">
+        select
+        <include refid="Image_Column_List" />
+        from ${database.prefix.userms}hou_user_upload_album
+        where shop_id = #{param.shopId,jdbcType=INTEGER} and album_type = #{param.albumType} order by album_displayorder,album_id desc
+
+    </select>
+    <insert id="insertSelective" parameterType="com.houjiang.userms.dto.GdbMerchantUploadAlbumDTO">
+        insert into ${database.prefix.userms}hou_user_upload_album
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="albumId != null">
+                album_id,
+            </if>
+            <if test="albumName != null">
+                album_name,
+            </if>
+            <if test="albumCover != null">
+                album_cover,
+            </if>
+            <if test="albumDesc != null">
+                album_desc,
+            </if>
+            <if test="albumNum != null">
+                album_num,
+            </if>
+            <if test="albumIsDefault != null">
+                album_is_default,
+            </if>
+            <if test="albumDisplayorder != null">
+                album_displayorder,
+            </if>
+            <if test="albumType != null">
+                album_type,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="shopId != null">
+                shop_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="albumId != null">
+                #{albumId,jdbcType=BIGINT},
+            </if>
+            <if test="albumName != null">
+                #{albumName,jdbcType=VARCHAR},
+            </if>
+            <if test="albumCover != null">
+                #{albumCover,jdbcType=VARCHAR},
+            </if>
+            <if test="albumDesc != null">
+                #{albumDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="albumNum != null">
+                #{albumNum,jdbcType=INTEGER},
+            </if>
+            <if test="albumIsDefault != null">
+                #{albumIsDefault,jdbcType=TINYINT},
+            </if>
+            <if test="albumDisplayorder != null">
+                #{albumDisplayorder,jdbcType=SMALLINT},
+            </if>
+            <if test="albumType != null">
+                #{albumType,jdbcType=CHAR},
+            </if>
+            <if test="userId != null">
+                #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="shopId != null">
+                #{shopId,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.houjiang.userms.dto.GdbMerchantUploadAlbumDTO">
+        update ${database.prefix.userms}hou_user_upload_album
+        <set>
+            <if test="albumName != null">
+                album_name = #{albumName,jdbcType=VARCHAR},
+            </if>
+            <if test="albumCover != null">
+                album_cover = #{albumCover,jdbcType=VARCHAR},
+            </if>
+            <if test="albumDesc != null">
+                album_desc = #{albumDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="albumNum != null">
+                album_num = #{albumNum,jdbcType=INTEGER},
+            </if>
+            <if test="albumIsDefault != null">
+                album_is_default = #{albumIsDefault,jdbcType=TINYINT},
+            </if>
+            <if test="albumDisplayorder != null">
+                album_displayorder = #{albumDisplayorder,jdbcType=SMALLINT},
+            </if>
+            <if test="albumType != null">
+                album_type = #{albumType,jdbcType=CHAR},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="shopId != null">
+                shop_id = #{shopId,jdbcType=INTEGER},
+            </if>
+        </set>
+        where album_id = #{albumId,jdbcType=BIGINT}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from ${database.prefix.userms}hou_user_upload_album
+        where album_id = #{albumId,jdbcType=BIGINT}
+    </delete>
+
+</mapper>

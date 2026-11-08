@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseShareUrlMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseShareUrlEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="shareDesc" column="share_desc" jdbcType="VARCHAR"/>
+            <result property="shareUrl" column="share_url" jdbcType="VARCHAR"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,share_desc,share_url,
+        type,update_time
+    </sql>
+</mapper>

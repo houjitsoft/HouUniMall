@@ -1,0 +1,33 @@
+# Docker 构建上下文裁剪（只影响镜像构建，不影响仓库内容）
+# builder 镜像是 COPY . /src，这里不裁会把大目录和敏感文件一并传进构建上下文。
+
+# 版本库与本地工具目录
+.git
+.DS_Store
+
+# 🔴 密钥不入镜像：.env 含全部口令（MYSQL/REDIS/NACOS/签名私钥路径），
+#    artifact-commerce 私密 env 也一样。构建只需要 .env.docker.example。
+.env
+.env.*
+!.env.docker.example
+
+# 运行期数据（install.sh 首次部署后生成：插件 / 制品 / 签名密钥）
+data/
+
+# 前端依赖与构建产物（构建期在镜像里跑，本地中间产物不进上下文）
+**/node_modules
+**/dist
+**/.vite
+
+# Maven 中间产物
+**/target
+
+# 归档与备份
+*.zip
+*.tar
+*.tar.gz
+*.bak
+
+# 日志
+**/logs
+backend/logs

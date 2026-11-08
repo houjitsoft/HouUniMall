@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivitySpinwinGiftMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.activity.entity.ActivitySpinwinGiftEntity">
+            <id property="giftId" column="gift_id" jdbcType="INTEGER"/>
+            <result property="giftName" column="gift_name" jdbcType="VARCHAR"/>
+            <result property="redpacketTId" column="redpacket_t_id" jdbcType="INTEGER"/>
+            <result property="giftIsRedpacket" column="gift_is_redpacket" jdbcType="INTEGER"/>
+            <result property="giftIsEnable" column="gift_is_enable" jdbcType="INTEGER"/>
+            <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
+            <result property="updateDate" column="update_date" jdbcType="TIMESTAMP"/>
+            <result property="giftImage" column="gift_image" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        gift_id,gift_name,redpacket_t_id,
+        gift_is_redpacket,gift_is_enable,update_by,
+        update_date,gift_image
+    </sql>
+    <insert id="insertSpinwinGift">
+        insert into activity_spinwin_gift
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="param.giftId != null and param.giftId != ''">
+                gift_id,
+            </if>
+            <if test="param.giftName != null  and param.giftName != ''">
+                gift_name,
+            </if>
+            <if test="param.redpacketTId != null  and param.redpacketTId != ''">
+                redpacket_t_id,
+            </if>
+            <if test="param.giftIsRedpacket != null  and param.giftIsRedpacket != ''">
+                gift_is_redpacket,
+            </if>
+            <if test="param.giftIsEnable != null  and param.giftIsEnable != ''">
+                gift_is_enable,
+            </if>
+            <if test="param.updateBy != null">
+                update_by,
+            </if>
+            <if test="param.updateDate != null">
+                update_date,
+            </if>
+            <if test="param.giftImage != null">
+                gift_image,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="param.giftId != null  and param.giftId != ''">
+                #{param.giftId,jdbcType=INTEGER},
+            </if>
+            <if test="param.giftName != null  and param.giftName != ''">
+                #{param.giftName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.redpacketTId != null  and param.redpacketTId != ''">
+                #{param.redpacketTId,jdbcType=INTEGER},
+            </if>
+            <if test="param.giftIsRedpacket != null  and param.giftIsRedpacket != ''">
+                #{param.giftIsRedpacket,jdbcType=INTEGER},
+            </if>
+            <if test="param.giftIsEnable != null  and param.giftIsEnable != ''">
+                #{param.giftIsEnable,jdbcType=INTEGER},
+            </if>
+            <if test="param.updateBy != null">
+                #{param.updateBy,jdbcType=VARCHAR},
+            </if>
+            <if test="param.updateDate != null">
+                #{param.updateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.giftImage != null">
+                #{param.giftImage,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateSpinwinGift">
+        update activity_spinwin_gift
+        <set>
+            <if test="param.giftName != null">
+                gift_name = #{param.giftName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.redpacketTId != null">
+                redpacket_t_id = #{param.redpacketTId,jdbcType=INTEGER},
+            </if>
+            <if test="param.giftIsRedpacket != null">
+                gift_is_redpacket =
+                #{param.giftIsRedpacket,jdbcType=INTEGER},
+            </if>
+            <if test="param.giftIsEnable != null">
+                gift_is_enable = #{param.giftIsEnable,jdbcType=INTEGER},
+            </if>
+            <if test="param.updateBy != null">
+                update_by = #{param.updateBy,jdbcType=VARCHAR},
+            </if>
+            <if test="param.updateDate != null">
+                update_date = #{param.updateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.giftImage != null">
+                gift_image = #{param.giftImage,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where gift_id = #{param.giftId,jdbcType=INTEGER}
+    </update>
+    <select id="selectGiftActivityCount" resultType="java.lang.Integer">
+        select
+		count(1)
+		from activity_spinwin_prize  ap
+		    left JOIN activity_spinwin sa on ap.activity_id = sa.activity_id
+		where
+		ap.gift_id =  #{param.giftId,jdbcType=INTEGER}
+		and sa.activity_is_enable != 3
+    </select>
+    <select id="selectSpinwinGiftList" resultType="com.houjiang.activity.vo.SpinwinGiftListVO">
+        SELECT
+        ag.gift_id,
+        ag.gift_name,
+        ag.redpacket_t_id,
+        ag.gift_is_redpacket,
+        ag.gift_is_enable,
+        ag.update_by,
+        ag.update_date,
+        rt.redpacket_t_title,
+        gift_image,
+        ( rt.redpacket_t_total - redpacket_t_giveout ) AS redpacketTTotal
+        FROM
+        activity_spinwin_gift ag
+        LEFT JOIN ${database.prefix.activity}hou_addon_activity_redpacket_template rt ON ag.redpacket_t_id = rt.redpacket_t_id
+        where 1=1
+        <if test="param.giftName != null and param.giftName != ''">
+            and gift_name LIKE CONCAT('%',#{param.giftName },'%')
+        </if>
+        <if test="param.giftIsEnable != null and param.giftIsEnable != ''">
+            and gift_is_enable = #{param.giftName }
+        </if>
+        order by ag.update_date desc
+    </select>
+    <select id="selectSpinWinGift" resultType="com.houjiang.activity.vo.SpinwinGiftListVO">
+        SELECT
+            prize_id,
+            prize_grade,
+            prize_name,
+            gift_image,
+            ap.is_win
+        FROM
+            activity_spinwin_prize ap
+                LEFT JOIN activity_spinwin_gift ag ON ag.gift_id = ap.gift_id
+        WHERE
+            ap.activity_id = #{param.activityId}
+    </select>
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayCashierOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayCashierOrderEntity">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="cashierNo" column="cashier_no" jdbcType="VARCHAR"/>
+        <result property="mchOrderNo" column="mch_order_no" jdbcType="VARCHAR"/>
+        <result property="requestNo" column="request_no" jdbcType="VARCHAR"/>
+        <result property="mallOrderNo" column="mall_order_no" jdbcType="VARCHAR"/>
+        <result property="payOrderId" column="pay_order_id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="mchNo" column="mch_no" jdbcType="VARCHAR"/>
+        <result property="appId" column="app_id" jdbcType="VARCHAR"/>
+        <result property="terminal" column="terminal" jdbcType="VARCHAR"/>
+        <result property="payMethod" column="pay_method" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="DECIMAL"/>
+        <result property="currency" column="currency" jdbcType="VARCHAR"/>
+        <result property="subject" column="subject" jdbcType="VARCHAR"/>
+        <result property="body" column="body" jdbcType="VARCHAR"/>
+        <result property="clientIp" column="client_ip" jdbcType="VARCHAR"/>
+        <result property="notifyUrl" column="notify_url" jdbcType="VARCHAR"/>
+        <result property="returnUrl" column="return_url" jdbcType="VARCHAR"/>
+        <result property="extParam" column="ext_param" jdbcType="LONGVARCHAR"/>
+        <result property="payData" column="pay_data" jdbcType="LONGVARCHAR"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="errCode" column="err_code" jdbcType="VARCHAR"/>
+        <result property="errMsg" column="err_msg" jdbcType="VARCHAR"/>
+        <result property="expireTime" column="expire_time" jdbcType="TIMESTAMP"/>
+        <result property="successTime" column="success_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, cashier_no, mch_order_no, request_no, mall_order_no, pay_order_id, user_id, mch_no, app_id, terminal,
+        pay_method, amount, currency, subject, body, client_ip, notify_url, return_url,
+        ext_param, pay_data, status, err_code, err_msg, expire_time, success_time,
+        create_time, update_time
+    </sql>
+
+    <select id="selectByCashierNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ${database.prefix.payment}hou_pay_cashier_order
+        WHERE cashier_no = #{cashierNo}
+        LIMIT 1
+    </select>
+
+    <select id="selectByPayOrderId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ${database.prefix.payment}hou_pay_cashier_order
+        WHERE pay_order_id = #{payOrderId}
+        LIMIT 1
+    </select>
+
+    <select id="selectByRequestNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ${database.prefix.payment}hou_pay_cashier_order
+        WHERE request_no = #{requestNo}
+        LIMIT 1
+    </select>
+
+    <update id="claimForPay">
+        UPDATE ${database.prefix.payment}hou_pay_cashier_order
+        SET status = #{toStatus}, update_time = NOW()
+        WHERE cashier_no = #{cashierNo} AND status = #{fromStatus}
+    </update>
+
+    <update id="markBalanceSuccess">
+        UPDATE ${database.prefix.payment}hou_pay_cashier_order
+        SET status = #{toStatus}, pay_order_id = #{payOrderId},
+            success_time = #{successTime}, update_time = NOW()
+        WHERE cashier_no = #{cashierNo} AND status = #{fromStatus}
+    </update>
+
+    <update id="markPaymentSuccess">
+        UPDATE ${database.prefix.payment}hou_pay_cashier_order
+        SET status = #{toStatus}, pay_order_id = #{payOrderId},
+            success_time = #{successTime}, update_time = NOW()
+        WHERE cashier_no = #{cashierNo} AND status = #{fromStatus}
+    </update>
+
+</mapper>

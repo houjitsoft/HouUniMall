@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="UniMall">
+  <defs>
+    <linearGradient id="unimall-gradient" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#667eea"/>
+      <stop offset="1" stop-color="#764ba2"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#unimall-gradient)"/>
+  <rect x="16" y="17" width="32" height="23" rx="3" fill="none" stroke="#fff" stroke-width="4"/>
+  <path d="M25 48h14M32 40v8" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="4"/>
+</svg>

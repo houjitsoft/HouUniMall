@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.payment.mapper.PayConsumeDepositMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.payment.entity.PayConsumeDepositEntity">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="depositTradeNo" column="deposit_trade_no" jdbcType="VARCHAR"/>
+            <result property="depositBuyerId" column="deposit_buyer_id" jdbcType="VARCHAR"/>
+            <result property="depositTotalFee" column="deposit_total_fee" jdbcType="DECIMAL"/>
+            <result property="depositPayChannel" column="deposit_pay_channel" jdbcType="INTEGER"/>
+            <result property="depositGmtCreate" column="deposit_gmt_create" jdbcType="TIMESTAMP"/>
+            <result property="depositGmtPayment" column="deposit_gmt_payment" jdbcType="TIMESTAMP"/>
+            <result property="depositGmtClose" column="deposit_gmt_close" jdbcType="TIMESTAMP"/>
+            <result property="depositTradeStatus" column="deposit_trade_status" jdbcType="BOOLEAN"/>
+            <result property="depositReturnTradeNo" column="deposit_return_trade_no" jdbcType="VARCHAR"/>
+            <result property="depositIsRechargePackage" column="deposit_is_recharge_package" jdbcType="BOOLEAN"/>
+            <result property="depositType" column="deposit_type" jdbcType="INTEGER"/>
+            <result property="depositOperator" column="deposit_operator" jdbcType="VARCHAR"/>
+            <result property="orderOperator" column="order_operator" jdbcType="VARCHAR"/>
+            <result property="ts" column="ts" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,deposit_trade_no,deposit_buyer_id,
+        deposit_total_fee,deposit_pay_channel,deposit_gmt_create,
+        deposit_gmt_payment,deposit_gmt_close,deposit_trade_status,
+        deposit_return_trade_no,deposit_is_recharge_package,deposit_type,
+        deposit_operator,order_operator,ts
+    </sql>
+    <insert id="insertByConsumeDeposit2">
+    INSERT INTO ${database.prefix.payment}hou_pay_consume_deposit ( deposit_trade_no, deposit_buyer_id, deposit_total_fee, deposit_pay_channel, deposit_gmt_create, deposit_gmt_payment, deposit_gmt_close, deposit_trade_status, deposit_return_trade_no, deposit_is_recharge_package, deposit_type )
+        VALUES
+	    (#{depositTradeNo},#{userId},#{fee},#{payChannel},#{depositGmtCreate},#{cardFetchTime},#{gmtClose},#{depositTradeStatus},#{depositReturnTradeNo},#{rechargePackage},#{depositType})
+    </insert>
+    <insert id="insertConsumeDepositport">
+    insert into ${database.prefix.payment}hou_pay_consume_deposit
+     (deposit_trade_no,
+     deposit_buyer_id,
+     deposit_total_fee,
+     deposit_pay_channel,
+     deposit_gmt_create,
+     deposit_gmt_payment,
+     deposit_gmt_close,
+     deposit_trade_status,
+     deposit_return_trade_no,
+     deposit_is_recharge_package,
+     deposit_operator,
+     order_operator,
+     deposit_type)
+     values
+     (#{depositTradeNo},
+     #{userId},
+     #{depositTotalFee},
+     #{depositPayChannel},
+     NOW(),
+     NOW(),
+     NOW(),
+     #{depositTradeStatus},
+     #{depositTradeNo},
+     #{depositIsRechargePackage},
+     #{operator},
+     #{orderOperator},
+     #{depositType})
+    </insert>
+</mapper>

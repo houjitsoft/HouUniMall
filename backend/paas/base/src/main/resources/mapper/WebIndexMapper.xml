@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.WebIndexMapper">
+    <sql id="GoodsId_Column_List2">
+		gb.goods_id, gb.common_id,gb.goods_name,gc.plus_goods,
+		gb.goods_image,gb.shop_id,gb.goods_price,gb.goods_market_price,sb.shop_self_support
+	</sql>
+
+    <select id="selectByGoodIds" resultType="com.houjiang.base.vo.GoodsIdsQueryListVO">
+        select
+        gb.goods_id, gb.common_id,gb.goods_name,gc.plus_goods,
+        gb.goods_image,gb.shop_id,gb.goods_price,gb.goods_market_price,sb.shop_self_support
+        from ${database.prefix.goods}hou_goods_base gb
+        left join ${database.prefix.goods}hou_goods_common gc on gb.common_id = gc.common_id
+        left join ${database.prefix.supplier}hou_shop_base sb on gb.shop_id = sb.supplier_shop_id
+        where goods_is_shelves =1 and gb.goods_id in
+        <foreach collection="goodIds" item="goodId" open="(" close=")"
+                 separator=",">
+            #{goodId}
+        </foreach>
+    </select>
+    <select id="pcConfigGoods" resultType="com.houjiang.base.vo.index.PcConfigGoodsVO">
+        SELECT
+        common_id,goods_id,common_name,common_image,common_price,common_market_price,common_collect,
+        common_salenum,sb.shop_self_support,gc.plus_goods
+        FROM
+        ${database.prefix.goods}hou_goods_common gc
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = gc.shop_id
+        WHERE
+        common_state = 1
+        AND (gc.goods_type = 1 or gc.goods_type is null)
+        AND common_verify = 1
+        AND common_is_screen = 1
+        AND sb.shop_status = 3
+        AND (gc.integral_goods != 0 OR gc.integral_goods IS NULL)
+        <if test = "id != null " >
+            AND gc.common_id = #{id}
+        </if>
+    </select>
+    <select id="selectGoodsByGoodIds" resultType="com.houjiang.base.vo.GoodsIdsQueryVO">
+        select
+        gb.goods_id, gb.common_id,goods_name, goods_price,
+        goods_market_price,sb.shop_self_support,gc.plus_goods,
+        goods_image,gb.shop_id,gb.shop_name,goods_salenum,common_is_xian,
+--         cm.corner_url,
+        gb.goods_max_sale
+        from ${database.prefix.goods}hou_goods_base gb
+        left join ${database.prefix.goods}hou_goods_common gc on gc.common_id = gb.common_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = gc.shop_id
+        where common_state =1 and common_verify = 1  and  gb.goods_id in
+        <foreach collection="goodIds" item="goodId" open="(" close=")"
+                 separator=",">
+            #{goodId}
+        </foreach>
+    </select>
+    <select id="selectRecGoods" resultType="com.houjiang.base.vo.GoodsIdsQueryVO">
+        SELECT
+        gc.common_id,
+        gc.goods_id,
+        gc.common_name,
+        gc.common_price,
+        gc.common_market_price,
+        gc.common_image,
+        gc.common_salenum,
+        gc.common_promotion_tips,
+        gc.common_evaluate,
+        gc.common_collect,
+        gc.shop_id,
+        gc.shop_name,
+        gc.common_is_xian,
+        sb.shop_self_support
+        FROM
+        ${database.prefix.goods}hou_goods_common gc
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON gc.shop_id = sb.supplier_shop_id
+        WHERE
+        sb.shop_status = 3
+        AND common_state = 1
+        AND common_verify = 1
+        AND goods_type = 1
+        AND integral_goods != 0
+        <if
+                test="param.catId != null and param.catId != '' and param.catId != 0">
+            and cat_id = #{param.catId,jdbcType=INTEGER}
+        </if>
+        <if test="param.catIds != null and param.catIds.size() > 0">
+            and cat_id in
+            <foreach collection="param.catIds" item="catId" separator=","
+                     open="(" close=")">
+                #{catId}
+            </foreach>
+        </if>
+        ORDER BY
+        common_collect,common_evaluate,common_salenum
+        desc limit 4
+    </select>
+    <select id="selectByGoodIds2" resultType="com.houjiang.base.vo.GoodsIdsQueryListVO">
+        select
+        <include refid="GoodsId_Column_List2" />
+        from ${database.prefix.goods}hou_goods_base gb
+        left join ${database.prefix.goods}hou_goods_common gc on gb.common_id = gc.common_id
+        left join ${database.prefix.supplier}hou_shop_base sb on gb.shop_id = sb.supplier_shop_id
+        where goods_is_shelves =1 and gb.goods_id in
+        <foreach collection="goodIds" item="goodId" open="(" close=")"
+                 separator=",">
+            #{goodId}
+        </foreach>
+    </select>
+    <select id="selectDelayByGoodIds" resultType="com.houjiang.commons.vo.goods.GoodsIdsVO">
+        SELECT
+        gb.goods_id,
+        gb.common_id,
+        goods_name,
+        goods_price,
+        goods_market_price,
+        sb.shop_self_support,
+        gc.plus_goods,
+        goods_image,
+        gb.shop_id,
+        gb.shop_name,
+        goods_salenum,
+        common_is_xian,
+        gb.goods_max_sale
+        FROM
+        ${database.prefix.goods}hou_goods_base gb
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gb.common_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = gc.shop_id
+        WHERE
+        common_state = 1
+        AND common_verify = 1
+        AND gb.goods_id IN
+        <foreach collection="goodIds" item="goodId" open="(" close=")"
+                 separator=",">
+            #{goodId}
+        </foreach>
+    </select>
+    <select id="queryBrandList" resultType="com.houjiang.commons.vo.goods.GdsListQueryResultVO">
+        SELECT
+        gc.common_id AS commonId,
+        gb.goods_id AS goodsId,
+        gc.common_name AS commonName,
+        gc.cat_name as catName,
+        gc.common_stock as commonStock,
+        gc.common_price AS commonPrice,
+        gc.common_market_price AS commonMarketPrice,
+        gc.common_image AS commonImage,
+        gc.common_salenum AS commonSalenum,
+        gc.common_promotion_tips AS commonPromotionTips,
+        gc.common_collect AS commonCollect,
+        gc.shop_id AS shopId,
+        gc.shop_name AS shopName,
+        gc.virtual_goods as virtualGoods,
+        gc.period_of_validity as periodOfValidity,
+        gc.past_due as pastDue,dr.id as putawayId
+        FROM
+        ${database.prefix.goods}hou_goods_common gc
+        LEFT JOIN ${database.prefix.goods}hou_goods_base gb ON gc.common_id = gb.common_id
+        LEFT JOIN ${database.prefix.userms}hou_base_dealer_putaway_record dr on gc.common_id = dr.supply_common_id
+        WHERE
+        gc.common_state = 1
+        AND gc.common_verify = 1
+        AND gc.common_price != 0
+        AND gc.shop_status = 3 and gc.goods_type = 2
+        AND gb.goods_is_shelves = 1
+        <if test="param.shopId != null">
+            and dr.dealer_shop_id = #{param.shopId}
+        </if>
+        <if test="param.commonName != null and param.commonName != ''">
+            and gc.common_name LIKE CONCAT('%',#{param.commonName },'%')
+        </if>
+        <if test="param.shopName != null and param.shopName != ''">
+            and gc.shop_name LIKE CONCAT('%',#{param.shopName },'%')
+        </if>
+        <if test="param.catId != null and param.catId != '' and param.catId != 0">
+            and gc.cat_id = #{param.catId,jdbcType=INTEGER}
+        </if>
+        <if test="param.catIds != null and param.catIds.size() > 0">
+            and gc.cat_id in
+            <foreach collection="param.catIds" item="catId" separator=","
+                     open="(" close=")">
+                #{catId}
+            </foreach>
+        </if>
+        <if test="param.minPrice != null and param.maxPrice != null">
+            and gc.common_price between
+            #{param.minPrice,jdbcType=DECIMAL}
+            and
+            #{param.maxPrice,jdbcType=DECIMAL}
+        </if>
+        GROUP BY
+        gc.common_id
+        <!-- 更新时间排序 -->
+        <if test="param.orderType != '' and param.orderType != null and param.orderType ==4">
+            ORDER BY
+            common_add_time
+            desc
+        </if>
+        <!-- 综合排序 -->
+        <if test="param.orderType != '' and param.orderType != null and param.orderType ==3">
+            ORDER BY
+            common_salenum DESC,
+            common_price ASC,
+            common_add_time DESC
+        </if>
+        <!-- 评论 -->
+        <if test="param.orderType != '' and param.orderType != null and param.orderType ==5">
+            <if test="param.commentOrder != '' and param.commentOrder != null and param.commentOrder ==1">
+                ORDER BY common_evaluate DESC
+            </if>
+            <if
+                    test="param.commentOrder != '' and param.commentOrder != null and param.commentOrder ==2">
+                ORDER BY common_evaluate DESC
+            </if>
+        </if>
+        <!-- 价格排序 -->
+        <if
+                test="param.orderType != '' and param.orderType != null and param.orderType ==1">
+            <if
+                    test="param.priceOrder != '' and param.priceOrder != null and param.priceOrder ==1">
+                ORDER BY
+                common_price desc
+            </if>
+            <if
+                    test="param.priceOrder != '' and param.priceOrder != null and param.priceOrder ==2">
+                ORDER BY
+                common_price ASC
+            </if>
+        </if>
+        <!-- 销量排序 -->
+        <if
+                test="param.orderType != '' and param.orderType != null and param.orderType ==2">
+            <if
+                    test="param.saleNum != '' and param.saleNum != null and param.saleNum ==1">
+                ORDER BY
+                common_salenum desc
+            </if>
+            <if
+                    test="param.saleNum != '' and param.saleNum != null and param.saleNum ==2">
+                ORDER BY
+                common_salenum asc
+            </if>
+        </if>
+    </select>
+    <select id="selectShopListFilter" resultType="com.houjiang.base.vo.WebShopListQueryResultVO">
+        SELECT DISTINCT
+        ( b.supplier_shop_id ),
+        b.shop_name,
+        b.shop_collect,
+        b.shop_slide,
+        b.wap_shop_logo,
+        b.shop_logo,
+        b.district_id,
+        b.shop_self_support
+        FROM
+        ${database.prefix.supplier}hou_shop_base b,
+        ${database.prefix.goods}hou_goods_common a
+        WHERE
+        a.shop_id = b.supplier_shop_id
+        AND b.shop_status = 3
+        AND a.common_state = 1
+        AND a.common_verify = 1
+        AND b.shop_type != 3
+        <if test="param.shopType != null">
+            and b.shop_type = #{param.shopType}
+        </if>
+        <if test="param.shopName != null and param.shopName != ''">
+            and b.shop_name LIKE CONCAT('%',#{param.shopName },'%')
+        </if>
+        <if
+                test="param.shopSelfSupport != null and param.shopSelfSupport  != ''">
+            and b.shop_self_support =
+            #{param.shopSelfSupport,jdbcType=VARCHAR}
+        </if>
+        <if
+                test="param.districtList != null and param.districtList.size()>0">
+            and b.district_id in (
+            <foreach collection="param.districtList" separator=","
+                     item="districtId">
+                #{districtId}
+            </foreach>
+            )
+        </if>
+        <if
+                test="param.orderType != '' and param.orderType != null and param.orderType ==1">
+            ORDER BY
+            b.shop_collect,b.shop_grade_id
+            desc
+        </if>
+        <if
+                test="param.orderType != '' and param.orderType != null and param.orderType ==2">
+            ORDER BY
+            b.shop_collect
+            desc
+        </if>
+    </select>
+</mapper>
+

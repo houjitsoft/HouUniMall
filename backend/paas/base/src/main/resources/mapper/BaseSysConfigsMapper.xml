@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseSysConfigsMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseSysConfigsEntity">
+            <id property="configKey" column="config_key" jdbcType="VARCHAR"/>
+            <result property="configValue" column="config_value" jdbcType="VARCHAR"/>
+            <result property="configType" column="config_type" jdbcType="VARCHAR"/>
+            <result property="configComment" column="config_comment" jdbcType="VARCHAR"/>
+            <result property="configSort" column="config_sort" jdbcType="INTEGER"/>
+            <result property="configEnable" column="config_enable" jdbcType="BOOLEAN"/>
+            <result property="updateDate" column="update_date" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="insertByPrimaryConfigKey">
+        replace into ${database.prefix.userms}hou_base_sys_configs(config_key, config_value,config_type,config_comment,op_value)
+            values (#{param.configKey},#{param.configValue},#{param.configType},#{param.configComment},"")
+    </insert>
+    <insert id="insertConfigKey">
+        insert into ${database.prefix.userms}hou_base_sys_configs (config_key, config_type, config_sort, op_type,
+        config_enable, terminal_type,
+        create_by, update_by,
+        config_comment, op_value) values
+        <foreach collection="list" item="iter" separator=",">
+            (#{iter},'',5,'',1,2,1,1,1,1)
+        </foreach>
+    </insert>
+    <update id="updateSetting">
+        <foreach collection="param" separator=";" item="config">
+        UPDATE ${database.prefix.userms}hou_base_sys_configs
+        <set>
+            <if test="config.configType != null">
+                config_type = #{config.configType,jdbcType=VARCHAR},
+            </if>
+            <if test="config.configSort != null">
+                config_sort = #{config.configSort,jdbcType=INTEGER},
+            </if>
+            <if test="config.opType != null">
+                op_type = #{config.opType,jdbcType=VARCHAR},
+            </if>
+            <if test="config.configEnable != null">
+                config_enable = #{config.configEnable,jdbcType=BIT},
+            </if>
+            <if test="config.terminalType != null">
+                terminal_type = #{config.terminalType,jdbcType=INTEGER},
+            </if>
+            <if test="config.createBy != null">
+                create_by = #{config.createBy,jdbcType=VARCHAR},
+            </if>
+            <if test="config.createDate != null">
+                create_date = #{config.createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="config.updateBy != null">
+                update_by = #{config.updateBy,jdbcType=VARCHAR},
+            </if>
+            <if test="config.updateDate != null">
+                update_date = #{config.updateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="config.configValue != null">
+                config_value = #{config.configValue,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="config.configComment != null">
+                config_comment = #{config.configComment,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="config.opValue != null">
+                op_value = #{config.opValue,jdbcType=LONGVARCHAR},
+            </if>
+        </set>
+        where config_key = #{config.configKey,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="selectConfigValue" resultType="java.lang.String">
+        select
+		config_value
+		from ${database.prefix.userms}hou_base_sys_configs
+		where
+		config_enable = 1 and
+		config_key = #{configKey,jdbcType=VARCHAR}
+    </select>
+    <select id="selectByParam" resultType="com.houjiang.base.vo.index.WebSystemConfigQueryVO">
+        select
+        op_type,config_value, op_value
+        from ${database.prefix.userms}hou_base_sys_configs
+        where terminal_type =1 and config_enable
+        = 1
+        <if test="param.configType != null">
+            and config_type = #{param.configType,jdbcType=VARCHAR}
+        </if>
+        <if test="param.configKey != null">
+            and config_key = #{param.configKey,jdbcType=VARCHAR}
+        </if>
+        order by config_sort asc
+    </select>
+    <select id="selectByConfigType" resultType="com.houjiang.commons.vo.base.WabSystemConfigHallVO">
+        select
+		config_key, op_type,config_value,
+		op_value,config_comment
+		from ${database.prefix.userms}hou_base_sys_configs
+		where config_enable = 1 and config_type = #{configType,jdbcType=VARCHAR}
+    </select>
+    <select id="selectByConfigTypesearch" resultType="com.houjiang.commons.vo.base.WabSystemConfigHallVO">
+        select
+		config_key, op_type,config_value,
+		op_value,config_comment
+		from ${database.prefix.userms}hou_base_sys_configs
+		where config_enable = 1 and config_type
+		=
+		#{configType,jdbcType=VARCHAR} and config_key = 'search_words'
+    </select>
+    <select id="getImageConfigUrl" resultType="java.lang.String"
+            parameterType="java.lang.String">
+        select
+            config_value
+        from ${database.prefix.userms}hou_base_sys_configs
+        where
+            config_enable = 1 and
+            config_key = #{configKey,jdbcType=VARCHAR}
+    </select>
+    <select id="queryIntegralIndex" resultType="com.houjiang.base.entity.BaseSysConfigsEntity">
+        select config_key, op_type, config_value, op_value,config_comment from ${database.prefix.userms}hou_base_sys_configs where config_type = #{configType} order by config_sort asc
+    </select>
+    <select id="selectPhoneAndMail"
+            resultType="com.houjiang.base.vo.SystemConfigHallSlideVO">
+        select config_key,config_value from ${database.prefix.userms}hou_base_sys_configs where config_key='setting_phone' or config_key='setting_email'
+    </select>
+    <select id="selectBaseWebConfig" resultType="java.lang.String">
+        select config_value from ${database.prefix.userms}hou_base_sys_configs where config_key = #{param}
+    </select>
+    <select id="selectByConfigTypeFeign" resultType="com.houjiang.commons.vo.base.BaseSysConfigsVO">
+        SELECT config_key,
+               config_value
+        from ${database.prefix.userms}hou_base_sys_configs
+        WHERE config_key = #{configKey}
+    </select>
+    <select id="queryConfigKey" resultType="java.lang.String">
+        select config_key from ${database.prefix.userms}hou_base_sys_configs where config_key
+        in (
+        <foreach collection="param" separator="," item="iter">
+            #{iter}
+        </foreach>)
+    </select>
+    <select id="querySystemConfigHall" resultType="com.houjiang.commons.vo.base.WabSystemConfigHallVO">
+        select
+            config_key, op_type,config_value,
+            op_value,config_comment
+        from ${database.prefix.userms}hou_base_sys_configs
+        where config_enable = 1 and config_type = #{configType,jdbcType=VARCHAR}
+    </select>
+
+
+</mapper>

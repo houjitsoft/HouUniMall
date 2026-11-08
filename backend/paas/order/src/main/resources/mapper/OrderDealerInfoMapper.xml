@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderDealerInfoMapper">
+
+    <resultMap type="com.houjiang.order.entity.OrderDealerInfoEntity" id="OrderDealerInfoMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="goodsId" column="goods_id" jdbcType="INTEGER"/>
+        <result property="supplierGoodsId" column="supplier_goods_id" jdbcType="INTEGER"/>
+        <result property="taxInclusiveAmount" column="tax_inclusive_amount" jdbcType="NUMERIC"/>
+        <result property="dealerDiscount" column="dealer_discount" jdbcType="NUMERIC"/>
+    </resultMap>
+    <select id="queryOrderGoodsDealerDiscount" resultType="com.houjiang.order.entity.OrderDealerInfoEntity">
+        select dealer_discount,total_tax_inclusive_amount,dealer_discount_amout,tax_inclusive_amount FROM ${database.prefix.order}hou_order_dealer_info where order_id = #{orderId} and supplier_goods_id = #{supplierGoodsId}
+    </select>
+    <select id="queryOrderGoodsDealerDiscountBySubOrderNo"
+            resultType="com.houjiang.order.entity.OrderDealerInfoEntity">
+        select dealer_discount,total_tax_inclusive_amount,dealer_discount_amout,tax_inclusive_amount
+        FROM ${database.prefix.order}hou_order_dealer_info where order_id = #{orderId} and supplier_goods_id = #{supplierGoodsId}
+    </select>
+
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsArticleUserFollowMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsArticleUserFollowEntity" id="GoodsArticleUserFollowMap">
+        <result property="followId" column="follow_id" jdbcType="INTEGER"/>
+        <result property="followUserId" column="follow_user_id" jdbcType="INTEGER"/>
+        <result property="followedUserId" column="followed_user_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="lastUpdatedTime" column="last_updated_time" jdbcType="TIMESTAMP"/>
+        <result property="isRead" column="is_read" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertFollow">
+        insert into ${database.prefix.goods}hou_goods_article_user_follow (follow_user_id,
+														followed_user_id)
+		values (#{param.followUserId,jdbcType=INTEGER},
+				#{param.followedUserId,jdbcType=INTEGER})
+    </insert>
+    <update id="updateFollowNum">
+        update ${database.prefix.userms}hou_user_info
+        <set>
+            <if test="param.followFlag == 1">
+                follow_num = follow_num + 1,
+            </if>
+            <if test="param.followFlag != 1">
+                follow_num = follow_num - 1,
+            </if>
+        </set>
+        where user_id=#{param.followUserId,jdbcType=INTEGER}
+    </update>
+    <delete id="deleteFollow">
+        delete
+		from ${database.prefix.goods}hou_goods_article_user_follow
+		where follow_user_id = #{param.followUserId,jdbcType=INTEGER}
+		  and followed_user_id = #{param.followedUserId,jdbcType=INTEGER}
+    </delete>
+    <select id="getFollowerFlag" resultType="java.lang.Integer">
+        select count(*)
+		from ${database.prefix.goods}hou_goods_article_user_follow
+		where followed_user_id = #{articleUserId}
+		and follow_user_id = #{userId}
+    </select>
+    <select id="getFollowNum" resultType="java.lang.Integer">
+        select count(1)
+		from ${database.prefix.goods}hou_goods_article_user_follow
+		where follow_user_id = #{param.userId}
+    </select>
+    <select id="getFollowedNum" resultType="java.lang.Integer">
+        select count(1)
+		from ${database.prefix.goods}hou_goods_article_user_follow
+		where followed_user_id = #{param.userId}
+    </select>
+    <select id="getFollowUserIds" resultType="com.houjiang.goods.vo.CommunityUserInfoVO">
+        select distinct followed_user_id as userId
+        from ${database.prefix.goods}hou_goods_article_user_follow a
+        left join ${database.prefix.userms}hou_user_info b on a.followed_user_id=b.user_id
+        where follow_user_id = #{param.userId,jdbcType=INTEGER}
+        <if test="param.userName != null and param.userName != ''">
+            and b.user_name like CONCAT('%',#{param.userName},'%')
+        </if>
+    </select>
+    <select id="getFollowedUserIds" resultType="com.houjiang.goods.vo.CommunityUserInfoVO">
+        select distinct follow_user_id as userId
+        from ${database.prefix.goods}hou_goods_article_user_follow
+        where followed_user_id = #{param.userId,jdbcType=INTEGER}
+    </select>
+    <select id="queryExistForFollow" resultType="java.lang.Integer">
+        select count(*)
+		from ${database.prefix.goods}hou_goods_article_user_follow
+		where follow_user_id = #{param.followUserId,jdbcType=INTEGER}
+		  and followed_user_id = #{param.followedUserId,jdbcType=INTEGER}
+    </select>
+    <select id="getFollowUserIds2" resultType="java.lang.String">
+        select distinct followed_user_id
+        from ${database.prefix.goods}hou_goods_article_user_follow a
+        left join ${database.prefix.userms}hou_user_info b on a.followed_user_id=b.user_id
+        where follow_user_id = #{param.userId,jdbcType=INTEGER}
+        <if test="param.userName != null and param.userName != ''">
+            and b.user_name like CONCAT('%',#{param.userName},'%')
+        </if>
+    </select>
+
+
+</mapper>

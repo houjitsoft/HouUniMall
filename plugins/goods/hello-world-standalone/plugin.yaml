@@ -1,0 +1,13 @@
+code: hello-world-standalone
+name: Hello World Standalone 插件
+version: 1.0.0
+author: UniMall
+description: 通用 standalone Hello World，演示由 goods 宿主服务承载的独立插件路由
+category: 通用
+owner: thirdparty
+runtime: standalone
+hostService: goods
+minFrameworkVersion: 1.0.0
+license: FREE
+permissions:
+  - hello-world-standalone:hello

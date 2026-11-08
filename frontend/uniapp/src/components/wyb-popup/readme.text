@@ -1,0 +1,37 @@
+Props
+
+参数名	类型	默认值	用途	可选值
+type	String	bottom	弹出框的位置	bottom | top | left | right | center
+mode	String	size-auto	弹出框调整大小的模式	size-auto：当type = bottom | top时，超出height值时，根据内容自动调整；当type = left | right时，超出width值时，根据内容自动调整；另外，当type = center时，size-auto不适用
+size-fixed：弹出框的大小是固定的height值或width值，当type = center时，大小就是width和height
+height	String, Number	400	弹出框的高度（当type = bottom | top | center时生效，单位：rpx）	正整数
+width	String, Number	500	弹出框的高度（当type = left | right | center时生效，单位：rpx）	正整数
+radius	String, Number	0	弹出框边角的弧度数（单位：px）	正整数
+zIndex	String, Number	10076	弹出框的z-index（同css的z-index）	正整数
+maskClickClose	Boolean	true	点击遮罩是否能够关闭弹出框	true | false
+maskAlpha	Number	0.5	遮罩的透明度	0~1
+duration	Number	400	弹出框的动画时间（单位：ms）	正整数
+showCloseIcon	Boolean	false	是否显示弹出框的关闭按钮	true | false
+centerAnim	String	zoom-lessen	当type = center时，弹出框的动画类型	zoom-lessen：从大到小的缩放
+slide-up：上升
+slide-down：下降
+fade：渐显渐隐
+closeIconPos	String	top-right	关闭按钮的位置	top-right：右上角
+top-left：左上角
+bottom-right：右下角
+bottom-left：左下角
+closeIcon	String	-	自定义关闭图标的路径，为空则使用默认图标	-
+closeIconSize	String, Number	20	自定义关闭图标的大小（单位：rpx）	-
+vertOffset	String, Number	22	关闭按钮的垂直偏移量	-
+horiOffset	String, Number	22	关闭按钮的水平偏移量	-
+bgColor	String	'#fff'	弹出框的背景颜色	16进制色值，rgb()，或rgba()
+zoomLessenMulti	Number	1.15	当centerAnim = zoom-lessen时，弹出框的基础放大倍数	正数
+slideMulti	Number	0.2	当centerAnim = slide-*时，弹出框的位移倍数（对于自身宽高的倍数）	正数
+scrollY	Boolean	false	弹出框的内容是否可以垂直滚动	true | false
+scrollX	Boolean	false	弹出框的内容是否可以水平滚动	true | false
+negativeTop	Number	0	弹出框向上偏移的距离	-
+Event
+
+事件名	用途	返回值
+@show	弹出框弹出后触发	event={pageScroll: false, overflow: 'hidden'}
+@hide	弹出框收回后触发	event={pageScroll: true, overflow: 'scroll'}

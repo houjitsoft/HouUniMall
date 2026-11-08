@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderYiyatongMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.order.entity.OrderYiyatongEntity">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="orderSn" column="order_sn" jdbcType="VARCHAR"/>
+            <result property="batchOrderSn" column="batch_order_sn" jdbcType="VARCHAR"/>
+            <result property="orderStatus" column="order_status" jdbcType="INTEGER"/>
+            <result property="skuIds" column="sku_ids" jdbcType="VARCHAR"/>
+            <result property="payAmount" column="pay_amount" jdbcType="VARCHAR"/>
+            <result property="totalAmount" column="total_amount" jdbcType="VARCHAR"/>
+            <result property="orderStatusName" column="order_status_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,order_id,order_sn,
+        batch_order_sn,order_status,sku_ids,
+        pay_amount,total_amount,order_status_name
+    </sql>
+</mapper>

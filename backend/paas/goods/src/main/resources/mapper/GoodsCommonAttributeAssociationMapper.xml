@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsCommonAttributeAssociationMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsCommonAttributeAssociationEntity" id="GoodsCommonAttributeAssociationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="commonId" column="common_id" jdbcType="INTEGER"/>
+        <result property="attributeId" column="attribute_id" jdbcType="INTEGER"/>
+        <result property="attributeContentId" column="attribute_content_id" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="selectCommonIds" resultType="com.houjiang.commons.vo.goods.GdbAttributeAssionParamVO">
+        select attribute_id,attribute_content_id from ${database.prefix.goods}hou_goods_common_attribute_association where common_id=#{commonId,jdbcType=INTEGER}
+    </select>
+    <select id="queryGoodsAttributeContent" resultType="java.lang.String">
+        select gac.id
+        from ${database.prefix.goods}hou_goods_common_attribute_association caa
+        LEFT JOIN goods_attribute_content gac on caa.attribute_content_id = gac.id
+        where caa.common_id = #{commonId}
+    </select>
+    <select id="esSelectAttributes" resultType="java.util.Map">
+        select ga.id,ga.commodity_attribute as commodityAttribute
+        from ${database.prefix.goods}hou_goods_attribute ga LEFT JOIN goods_common_attribute_association
+        aa on ga.id = aa.attribute_id
+        where   common_id is not null
+        <if test="catIds != null and catIds.size() > 0">
+            and cat_id in
+            <foreach collection="catIds" item="catId" separator=","
+                     open="(" close=")">
+                #{catId}
+            </foreach>
+        </if>
+        GROUP BY ga.id ORDER BY count(ga.id) desc limit 5
+    </select>
+    <select id="esSelectAttContents" resultType="java.util.Map">
+        select ac.id,ac.attribute_content as attributeContent
+		from goods_attribute_content ac LEFT JOIN goods_common_attribute_association aa on ac.id = aa.attribute_content_id
+		where ac.attribute_content_id = #{id,jdbcType=INTEGER}
+		and  common_id is not null GROUP BY aa.common_id ORDER BY count(aa.common_id) desc
+    </select>
+    <insert id="insertAss"
+            parameterType="com.houjiang.commons.dto.goods.ManageGdsCommonPublishDTO">
+        insert into ${database.prefix.goods}hou_goods_common_attribute_association (common_id, attribute_id,attribute_content_id)
+        values (#{commonId,jdbcType=INTEGER}, #{attribuId,jdbcType=INTEGER},#{buteId,jdbcType=INTEGER})
+    </insert>
+    <delete id="deleteAsscon" parameterType="java.lang.Integer">
+        delete from ${database.prefix.goods}hou_goods_common_attribute_association
+        where common_id = #{commonId,jdbcType=INTEGER}
+    </delete>
+    <insert id="insertAssContent"
+            parameterType="com.houjiang.commons.dto.goods.ManageGdsCommonUpdateDTO">
+        insert into ${database.prefix.goods}hou_goods_common_attribute_association (common_id, attribute_id,attribute_content_id)
+        values (#{commonId,jdbcType=INTEGER}, #{attribuId,jdbcType=INTEGER},#{buteId,jdbcType=INTEGER})
+    </insert>
+
+
+
+</mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsBrandCatMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsBrandCatEntity" id="GoodsBrandCatMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="catId" column="cat_id" jdbcType="INTEGER"/>
+        <result property="brandId" column="brand_id" jdbcType="INTEGER"/>
+        <result property="brandName" column="brand_name" jdbcType="VARCHAR"/>
+        <result property="brandPic" column="brand_pic" jdbcType="VARCHAR"/>
+        <result property="brandHf" column="brand_hf" jdbcType="VARCHAR"/>
+        <result property="catName" column="cat_name" jdbcType="VARCHAR"/>
+    </resultMap>
+    <update id="updateBatchBrandCat">
+        update
+        goods_brand_cat
+        <set>
+            <if test="param.brandName !=null">
+                brand_name =#{param.brandName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.brandPic!=null">
+                brand_pic=#{param.brandPic,jdbcType=VARCHAR},
+            </if>
+            <if test="param.brandHf!=null">
+                brand_hf=#{param.brandHf,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where brand_id=#{param.brandId,jdbcType=INTEGER}
+    </update>
+    <select id="selectBrandCatList" resultType="com.houjiang.goods.vo.GoodsBrandCatParamVO">
+        select
+        brand_id,brand_name,brand_pic,brand_hf
+        from goods_brand
+        where 1 = 1
+        <if test="param.brandName != null">
+            and brand_name LIKE CONCAT('%',#{param.brandName},'%')
+        </if>
+        <if test="param.brandId != null">
+            and brand_id =#{param.brandId,jdbcType=INTEGER}
+        </if>
+    </select>
+
+
+</mapper>

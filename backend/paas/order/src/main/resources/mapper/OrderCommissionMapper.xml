@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.order.mapper.OrderCommissionMapper">
+
+    <insert id="insertBatch">
+        insert INTO ${database.prefix.order}hou_order_commission
+        (order_id,
+        goods_id,
+        goods_name,
+        goods_price,
+        goods_num,
+        goods_image,
+        cat_id,
+        shop_id,
+        share_user_id,
+        share_user_name,
+        share_user_mobile,
+        tg_one_user_id,
+        tg_one_user_name,
+        tg_one_user_mobile,
+        tg_two_user_id,
+        tg_two_user_name,
+        tg_two_user_mobile,
+        buy_user_id,
+        buy_user_name,
+        buy_user_mobile,
+        buy_user_avatar,
+        buy_user_time,
+        order_status,
+        order_price,
+        one_tg_rate,
+        two_tg_rate,
+        fx_rate,
+        one_tg_commission,
+        two_tg_commission,
+        fx_commission,
+        create_time,
+        commission_type,
+        bind_type,fx_tg,bind_user_id,vk_shop_id)
+        VALUES
+        <foreach collection="record" item="item" index="index" separator=",">
+            (
+            #{item.orderId,jdbcType=VARCHAR},
+            #{item.goodsId,jdbcType=INTEGER},
+            #{item.goodsName,jdbcType=VARCHAR},
+            #{item.goodsPrice,jdbcType=DECIMAL},
+            #{item.goodsNum,jdbcType=INTEGER},
+            #{item.goodsImage,jdbcType=VARCHAR},
+            #{item.catId,jdbcType=INTEGER},
+            #{item.shopId,jdbcType=INTEGER},
+            #{item.shareUserId},
+            #{item.shareUserName,jdbcType=VARCHAR},
+            #{item.shareUserMobile,jdbcType=VARCHAR},
+            #{item.tgOneUserId},
+            #{item.tgOneUserName},
+            #{item.tgOneUserMobile},
+            #{item.tgTwoUserId},
+            #{item.tgTwoUserName},
+            #{item.tgTwoUserMobile},
+            #{item.buyUserId},
+            #{item.buyUserName,jdbcType=VARCHAR},
+            #{item.buyUserMobile,jdbcType=VARCHAR},
+            #{item.buyUserAvatar,jdbcType=VARCHAR},
+            #{item.buyUserTime,jdbcType=TIMESTAMP},
+            #{item.orderStatus,jdbcType=BIT},
+            #{item.orderPrice,jdbcType=DECIMAL},
+            #{item.oneTgRate,jdbcType=VARCHAR},
+            #{item.twoTgRate,jdbcType=VARCHAR},
+            #{item.fxRate,jdbcType=VARCHAR},
+            #{item.oneTgCommission,jdbcType=DECIMAL},
+            #{item.twoTgCommission,jdbcType=DECIMAL},
+            #{item.fxCommission,jdbcType=DECIMAL},
+            #{item.createTime,jdbcType=TIMESTAMP},
+            #{item.commissionType,jdbcType=BIT},
+            #{item.bindType,jdbcType=BIT},
+            #{item.fxTg,jdbcType=BIT},
+            #{item.bindUserId,jdbcType=INTEGER},
+            #{item.vkShopId}
+            )
+        </foreach>
+    </insert>
+    <select id="selectByPrimaryKey" resultType="com.houjiang.commons.vo.order.OrderCommissionVO">
+        select
+            order_id,
+            goods_id,
+            goods_name,
+            goods_price,
+            goods_num,
+            goods_image,
+            cat_id,
+            shop_id,
+            share_user_id,
+            share_user_name,
+            share_user_mobile,buy_user_id,
+            buy_user_name,
+            buy_user_mobile,
+            buy_user_avatar,
+            buy_user_time,
+            order_status,
+            order_price,
+            return_price,
+            one_tg_rate,
+            two_tg_rate,
+            fx_rate,
+            one_tg_commission,
+            two_tg_commission,
+            fx_commission,
+            return_one_tg_commission,
+            return_two_tg_commission,
+            return_fx_commission,
+            create_time,
+            pay_time,
+            return_time,
+            commission_type,
+            bind_type,
+            settle_record_id,
+            settle_state,
+            settle_time,
+            fx_tg
+        FROM ${database.prefix.order}hou_order_commission
+        where order_id = #{orderId,jdbcType=VARCHAR} and goods_id = #{returnGoods}
+    </select>
+    <update id="updateByPrimaryKeySelective" parameterType="com.houjiang.commons.vo.order.OrderCommissionVO">
+        update ${database.prefix.order}hou_order_commission
+        <set>
+            <if test="param.goodsId != null">
+                goods_id = #{param.goodsId,jdbcType=INTEGER},
+            </if>
+            <if test="param.goodsName != null">
+                goods_name = #{param.goodsName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.goodsPrice != null">
+                goods_price = #{param.goodsPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="param.goodsNum != null">
+                goods_num = #{param.goodsNum,jdbcType=INTEGER},
+            </if>
+            <if test="param.goodsImage != null">
+                goods_image = #{param.goodsImage,jdbcType=VARCHAR},
+            </if>
+            <if test="param.shopId != null">
+                shop_id = #{param.shopId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shareUserId != null">
+                share_user_id = #{param.shareUserId,jdbcType=INTEGER},
+            </if>
+            <if test="param.shareUserName != null">
+                share_user_name = #{param.shareUserName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.shareUserMobile != null">
+                share_user_mobile = #{param.shareUserMobile,jdbcType=VARCHAR},
+            </if>
+            <if test="param.buyUserId != null">
+                buy_user_id = #{param.buyUserId,jdbcType=INTEGER},
+            </if>
+            <if test="param.buyUserName != null">
+                buy_user_name = #{param.buyUserName,jdbcType=VARCHAR},
+            </if>
+            <if test="param.buyUserMobile != null">
+                buy_user_mobile = #{param.buyUserMobile,jdbcType=VARCHAR},
+            </if>
+            <if test="param.orderStatus != null">
+                order_status = #{param.orderStatus,jdbcType=BIT},
+            </if>
+            <if test="param.orderPrice != null">
+                order_price = #{param.orderPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="param.returnPrice != null">
+                return_price = #{param.returnPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="param.oneTgRate != null">
+                one_tg_rate = #{param.oneTgRate,jdbcType=VARCHAR},
+            </if>
+            <if test="param.twoTgRate != null">
+                two_tg_rate = #{param.twoTgRate,jdbcType=VARCHAR},
+            </if>
+            <if test="param.fxRate != null">
+                fx_rate = #{param.fxRate,jdbcType=VARCHAR},
+            </if>
+            <if test="param.oneTgCommission != null">
+                one_tg_commission = #{param.oneTgCommission},
+            </if>
+            <if test="param.twoTgCommission != null">
+                two_tg_commission = #{param.twoTgCommission,jdbcType=DECIMAL},
+            </if>
+            <if test="param.fxCommission != null">
+                fx_commission = #{param.fxCommission,jdbcType=DECIMAL},
+            </if>
+            <if test="param.returnOneTgCommission != null">
+                return_one_tg_commission = #{param.returnOneTgCommission},
+            </if>
+            <if test="param.returnTwoTgCommission != null">
+                return_two_tg_commission = #{param.returnTwoTgCommission},
+            </if>
+            <if test="param.returnFxCommission != null">
+                return_fx_commission = #{param.returnFxCommission,jdbcType=DECIMAL},
+            </if>
+            <if test="param.createTime != null">
+                create_time = #{param.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.payTime != null">
+                pay_time = #{param.payTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.returnTime != null">
+                return_time = #{param.returnTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="param.commissionType != null">
+                commission_type = #{param.commissionType,jdbcType=BIT},
+            </if>
+            <if test="param.settleState != null">
+                settle_state = #{param.settleState,jdbcType=BIT},
+            </if>
+            <if test="param.settleTime != null">
+                settle_time = #{param.settleTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where order_id = #{param.orderId} and goods_id = #{param.goodsId}
+    </update>
+    <update id="updateOrderCommissionState">
+        update ${database.prefix.order}hou_order_commission
+        set order_status = 6
+        where order_id = #{orderId}
+    </update>
+
+    <select id="selectplusdis" resultType="java.util.Map">
+        select sum(goods_plus_discount) as goods_plus_discount,DATE_FORMAT(order_goods_time, '%Y-%m-%d %H:%i:%s') as
+        order_goods_time
+        FROM ${database.prefix.order}hou_order_goods where order_id = #{orderId}
+        <if test="list != null">
+            and goods_id in
+            <foreach collection="list" close=")" open="(" item="id" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="queryUserFxOrderList" resultType="com.houjiang.order.vo.UserFxOrderListVO">
+        SELECT
+        a.order_id AS orderId,
+        b.order_create_time AS orderCreateTime,
+        b.order_status AS orderStatus,
+        b.pay_code AS payCode,
+        a.order_status AS orderCommissionStatus,
+        sum(IF(a.tg_one_user_id = #{param.userId}, a.one_tg_commission - a.return_one_tg_commission, 0)) AS oneTgCommission,
+        sum(IF(a.tg_two_user_id = #{param.userId}, a.two_tg_commission - a.return_two_tg_commission, 0)) AS twoTgCommission,
+        sum(IF(a.share_user_id = #{param.userId}, a.fx_commission - a.return_fx_commission, 0)) AS shareCommission,
+        a.buy_user_id AS userId,
+        a.buy_user_name AS userName,
+        a.buy_user_avatar AS userAvatar
+        FROM ${database.prefix.order}hou_order_commission a
+        LEFT join ${database.prefix.order}hou_order_base b ON a.order_id = b.order_id
+        <where>
+            <if test="param.userId != null and param.userId !=''">
+                (a.share_user_id = #{param.userId} or a.tg_one_user_id = #{param.userId} or a.tg_two_user_id =
+                #{param.userId})
+            </if>
+            <if test="param.shopId != null and param.shopId !=''">
+                and a.shop_id = #{param.shopId}
+            </if>
+            <if test="param.orderId != null and param.orderId !=''">
+                and a.order_id like CONCAT('%',#{param.orderId},'%')
+            </if>
+            <if test="param.orderStatus != null and param.orderStatus !=''">
+                and b.order_status = #{param.orderStatus}
+            </if>
+            <if test="param.orderStartTime != null and param.orderStartTime !=''">
+                and b.order_create_time >= #{param.orderStartTime}
+            </if>
+            <if test="param.orderEndTime != null and param.orderEndTime !=''">
+                and b.order_create_time &lt;= #{param.orderEndTime}
+            </if>
+            <if test="param.goodsName != null and param.goodsName !=''">
+                and a.goods_name like CONCAT('%',#{param.goodsName},'%')
+            </if>
+            <if test="param.userName != null and param.userName != ''">
+                and a.buy_user_name like CONCAT('%',#{param.userName},'%')
+            </if>
+        </where>
+        group by a.order_id
+    </select>
+    <select id="queryUserShareGoods" resultType="com.houjiang.order.vo.UserFxOrderGoodsVO">
+        select a.goods_id                   AS goodsId,
+               a.goods_name                 AS goodsName,
+               a.goods_image                AS goodsImage,
+               c.goods_spec                 AS goodsSpec,
+               c.common_id                  AS commonId,
+               a.goods_price                AS goodsPrice,
+               b.order_goods_num            AS orderGoodsNum,
+               b.order_goods_payment_amount - b.shipping_fee AS orderGoodsAmount,
+               b.order_goods_returnnum      AS orderRefundNum,
+               b.goods_return_status        as goodsReturnStatus,
+               b.goods_refund_status        as goodsRefundStatus,
+               b.total_goods_shipping_fee   as shippingFee,
+               a.return_price               as returnPrice
+        FROM ${database.prefix.order}hou_order_commission a
+                 LEFT join ${database.prefix.order}hou_order_goods b ON a.order_id = b.order_id and a.goods_id = b.goods_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_base c ON a.goods_id = c.goods_id
+        where a.order_id = #{orderId}
+    </select>
+    <select id="queryUserFxOrderGoodsList" resultType="com.houjiang.order.vo.UserFxOrderGoodsVO">
+        select
+        oc.goods_id AS goodsId,
+        gc.common_name AS commonName,
+        gb.goods_image AS goodsImage,
+        gb.goods_spec AS goodsSpec,
+        gc.cat_name AS catName,
+        gb.common_id AS commonId,
+        gc.common_state AS commonState,
+        gc.common_stock AS commonStock,
+        gc.common_image AS commonImage,
+        sfgi.one_tg_rate AS oneTgRate,
+        sfgi.two_tg_rate as twoTgRate,
+        sfgi.fx_rate as fxRate,
+        sb.shop_name as shopName
+        FROM ${database.prefix.order}hou_order_commission oc
+        LEFT JOIN ${database.prefix.goods}hou_goods_base gb ON gb.goods_id = oc.goods_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gb.common_id
+        LEFT JOIN ${database.prefix.business}hou_shop_fx_goods_info sfgi ON sfgi.common_id = gb.common_id
+        LEFT JOIN ${database.prefix.supplier}hou_shop_base sb ON sb.supplier_shop_id = gb.shop_id
+        where oc.share_user_id = #{param.userId}
+        <if test="param.goodsName != null and param.goodsName !=''">
+            and gb.goods_name like CONCAT('%',#{param.goodsName},'%')
+        </if>
+        <if test="param.commonName != null and param.commonName !=''">
+            and gc.common_name like CONCAT('%',#{param.commonName},'%')
+        </if>
+        <if test="param.commonId != null and param.commonId !=''">
+            and gc.common_id like CONCAT('%',#{param.commonId},'%')
+        </if>
+        <if test="param.shopName != null and param.shopName !=''">
+            and sb.shop_name like CONCAT('%',#{param.shopName},'%')
+        </if>
+        group by gc.common_id
+    </select>
+    <select id="selectVkTodayShareGoods" resultType="com.houjiang.order.vo.UserFxOrderGoodsVO">
+        select
+        count(distinct oc.order_id) as orderCount,
+        sum(IF(oc.share_user_id = #{param.userId}, oc.fx_commission, 0) +
+            IF(oc.tg_one_user_id = #{param.userId}, oc.one_tg_commission, 0) +
+            IF(oc.tg_two_user_id = #{param.userId}, oc.two_tg_commission, 0)) as estimatedCommission,
+        oc.goods_id AS goodsId,
+        gc.common_name AS commonName,
+        gc.common_price AS commonPrice,
+        gb.goods_price AS goodsPrice,
+        gb.goods_image AS goodsImage,
+        gb.goods_spec AS goodsSpec,
+        gc.cat_name AS catName,
+        gb.common_id AS commonId,
+        gc.common_state AS commonState,
+        oc.create_time as createTime
+        FROM ${database.prefix.order}hou_order_commission oc
+        LEFT JOIN ${database.prefix.goods}hou_goods_base gb ON gb.goods_id = oc.goods_id
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = gb.common_id
+        LEFT join ${database.prefix.order}hou_order_goods og ON og.order_id = oc.order_id and og.goods_id = oc.goods_id
+        where oc.share_user_id = #{param.userId}
+        <if test="param.goodsName != null and param.goodsName !=''">
+            and gb.goods_name like CONCAT('%',#{param.goodsName},'%')
+        </if>
+        and DATE(STR_TO_DATE(oc.create_time, '%Y-%m-%d')) = DATE(STR_TO_DATE(now(), '%Y-%m-%d'))
+        group by oc.goods_id
+        <if test="param.collation != null and param.collation == 1">
+            order by createTime desc
+        </if>
+        <if test="param.collation != null and param.collation == 2">
+            order by orderCount desc
+        </if>
+    </select>
+    <select id="queryVkTotalTgOrderList" resultType="com.houjiang.order.vo.UserFxOrderListVO">
+        SELECT
+        a.order_id AS orderId,
+        b.order_create_time AS orderCreateTime,
+        b.order_status AS orderStatus,
+        b.pay_code AS payCode,
+        a.order_status AS orderCommissionStatus,
+        sum(IF(a.tg_one_user_id = #{param.userId}, a.one_tg_commission - a.return_one_tg_commission, 0)) AS oneTgCommission,
+        sum(IF(a.tg_two_user_id = #{param.userId},a.two_tg_commission - a.return_two_tg_commission, 0)) AS twoTgCommission,
+        sum(IF(a.share_user_id = #{param.userId},a.fx_commission - a.return_fx_commission, 0)) AS shareCommission,
+        a.buy_user_id AS userId,
+        a.buy_user_name AS userName,
+        a.buy_user_avatar AS userAvatar
+        FROM ${database.prefix.order}hou_order_commission a
+        LEFT join ${database.prefix.order}hou_order_base b ON a.order_id = b.order_id
+        where (a.share_user_id = #{param.userId} or a.tg_one_user_id = #{param.userId} or a.tg_two_user_id = #{param.userId})
+        <if test="param.orderId != null and param.orderId !=''">
+            and a.order_id like CONCAT('%',#{param.orderId},'%')
+        </if>
+        <if test="param.buyUserId != null and param.buyUserId !=''">
+            and a.buy_user_id = #{param.buyUserId}
+        </if>
+        <if test="param.orderStatus != null and param.orderStatus !=''">
+            and a.order_status = #{param.orderStatus}
+        </if>
+        group by a.order_id
+        order by a.create_time desc
+    </select>
+    <select id="selectVkSettlementOrder" resultType="com.houjiang.order.vo.UserFxOrderListVO">
+        SELECT
+        a.order_id AS orderId,
+        b.order_create_time AS orderCreateTime,
+        b.order_status AS orderStatus,
+        b.pay_code AS payCode,
+        a.order_status AS orderCommissionStatus,
+        sum(IF(a.tg_one_user_id = #{param.userId}, a.one_tg_commission - a.return_one_tg_commission, 0)) AS oneTgCommission,
+        sum(IF(a.tg_two_user_id = #{param.userId}, a.two_tg_commission - a.return_two_tg_commission, 0)) AS twoTgCommission,
+        sum(IF(a.share_user_id = #{param.userId}, a.fx_commission - a.return_fx_commission, 0)) AS shareCommission,
+        a.buy_user_id AS userId,
+        a.buy_user_name AS userName,
+        a.buy_user_avatar AS userAvatar
+        FROM ${database.prefix.order}hou_order_commission a
+        LEFT join ${database.prefix.order}hou_order_base b ON a.order_id = b.order_id
+        where a.fx_settlement_status = 1 and a.order_status = 3
+            <if test="param.orderId != null and param.orderId !=''">
+                and a.order_id like CONCAT('%',#{param.orderId},'%')
+            </if>
+            <if test="param.orderType != null and param.orderType == 1">
+                and (a.tg_one_user_id = #{param.userId} or a.share_user_id = #{param.userId})
+            </if>
+            <if test="param.orderType != null and param.orderType == 2">
+                and a.tg_two_user_id = #{param.userId}
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 1">
+                and DATE(STR_TO_DATE(a.create_time, '%Y-%m-%d')) = DATE(STR_TO_DATE(now(), '%Y-%m-%d'))
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 2">
+                and a.create_time >= DATE_SUB(DATE(NOW()), INTERVAL 7 DAY)
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 3">
+                and a.create_time >= DATE_SUB(DATE(NOW()), INTERVAL 1 MONTH)
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 4">
+                and a.create_time >= DATE_SUB(DATE(NOW()), INTERVAL 3 MONTH)
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 5">
+                and a.create_time >= DATE_SUB(DATE(NOW()), INTERVAL 1 YEAR)
+            </if>
+        group by a.order_id
+        order by a.create_time desc
+    </select>
+    <select id="selectVkEstimated" resultType="com.houjiang.order.vo.UserFxOrderListVO">
+        SELECT
+        a.order_id AS orderId,
+        b.order_create_time AS orderCreateTime,
+        b.order_status AS orderStatus,
+        b.pay_code AS payCode,
+        a.order_status AS orderCommissionStatus,
+        sum(IF(a.tg_one_user_id = #{param.userId}, a.one_tg_commission - a.return_one_tg_commission, 0)) AS oneTgCommission,
+        sum(IF(a.tg_two_user_id = #{param.userId}, a.two_tg_commission - a.return_two_tg_commission, 0)) AS twoTgCommission,
+        sum(IF(a.share_user_id = #{param.userId}, a.fx_commission - a.return_fx_commission, 0)) AS shareCommission,
+        a.buy_user_id AS userId,
+        a.buy_user_name AS userName,
+        a.buy_user_avatar AS userAvatar
+        FROM ${database.prefix.order}hou_order_commission a
+        LEFT join ${database.prefix.order}hou_order_base b ON a.order_id = b.order_id
+        where a.fx_settlement_status = 0 and a.order_status in (1,2,4,6)
+            <if test="param.orderId != null and param.orderId !=''">
+                and a.order_id like CONCAT('%',#{param.orderId},'%')
+            </if>
+            <if test="param.orderType == null">
+                and (a.share_user_id = #{param.userId} or a.tg_one_user_id = #{param.userId} or a.tg_two_user_id = #{param.userId})
+            </if>
+            <if test="param.orderType != null and param.orderType == 1">
+                and (a.share_user_id = #{param.userId} or a.tg_one_user_id = #{param.userId})
+            </if>
+            <if test="param.orderType != null and param.orderType == 2">
+                and (a.tg_two_user_id = #{param.userId})
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 1">
+                and DATE(STR_TO_DATE(a.create_time, '%Y-%m-%d')) = DATE(STR_TO_DATE(now(), '%Y-%m-%d'))
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 2">
+                and a.create_time >= DATE_SUB(DATE(NOW()), INTERVAL 7 DAY)
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 3">
+                and a.create_time >= DATE_SUB(DATE(NOW()), INTERVAL 1 MONTH)
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 4">
+                and a.create_time >= DATE_SUB(DATE(NOW()), INTERVAL 3 MONTH)
+            </if>
+            <if test="param.orderTime != null and param.orderTime == 5">
+                and a.create_time >= DATE_SUB(DATE(NOW()), INTERVAL 1 YEAR)
+            </if>
+        group by a.order_id
+        order by a.create_time desc
+    </select>
+    <select id="queryUserFxOrderListByShop" resultType="com.houjiang.order.vo.UserFxOrderListVO">
+        SELECT
+        a.order_id AS orderId,
+        b.order_create_time AS orderCreateTime,
+        b.order_status AS orderStatus,
+        b.pay_code AS payCode,
+        a.order_status AS orderCommissionStatus,
+        sum(a.one_tg_commission - a.return_one_tg_commission) AS oneTgCommission,
+        sum(a.two_tg_commission - a.return_two_tg_commission) AS twoTgCommission,
+        sum(a.fx_commission - a.return_fx_commission) AS shareCommission,
+        a.buy_user_id AS userId,
+        a.buy_user_name AS userName,
+        a.buy_user_avatar AS userAvatar
+        FROM ${database.prefix.order}hou_order_commission a
+        LEFT join ${database.prefix.order}hou_order_base b ON a.order_id = b.order_id
+        <where>
+            <if test="param.userId != null and param.userId !=''">
+                (a.share_user_id = #{param.userId} or a.tg_one_user_id = #{param.userId} or a.tg_two_user_id =
+                #{param.userId})
+            </if>
+            <if test="param.shopId != null and param.shopId !=''">
+                and a.shop_id = #{param.shopId}
+            </if>
+            <if test="param.orderId != null and param.orderId !=''">
+                and a.order_id like CONCAT('%',#{param.orderId},'%')
+            </if>
+            <if test="param.orderStatus != null and param.orderStatus == 1">
+                and b.order_status = #{param.orderStatus}
+            </if>
+            <if test="param.orderStatus != null and param.orderStatus == 2">
+                and a.order_status = 1
+            </if>
+            <if test="param.orderStatus != null and param.orderStatus != '' and param.orderStatus != 1 and param.orderStatus != 2">
+                and a.order_status = #{param.orderStatus}
+            </if>
+            <if test="param.orderStartTime != null and param.orderStartTime !=''">
+                and b.order_create_time >= #{param.orderStartTime}
+            </if>
+            <if test="param.orderEndTime != null and param.orderEndTime !=''">
+                and b.order_create_time &lt;= #{param.orderEndTime}
+            </if>
+            <if test="param.goodsName != null and param.goodsName !=''">
+                and a.goods_name like CONCAT('%',#{param.goodsName},'%')
+            </if>
+            <if test="param.userName != null and param.userName != ''">
+                and a.buy_user_name like CONCAT('%',#{param.userName},'%')
+            </if>
+        </where>
+        group by a.order_id ORDER BY b.order_create_time DESC
+    </select>
+    <select id="selectOrderCommission" resultType="com.houjiang.commons.vo.order.OrderCommissionVO">
+        select order_id,
+               goods_id,
+               goods_name,
+               goods_price,
+               goods_num,
+               goods_image,
+               cat_id,
+               shop_id,
+               share_user_id,
+               share_user_name,
+               share_user_mobile,
+               buy_user_id,
+               buy_user_name,
+               buy_user_mobile,
+               buy_user_avatar,
+               buy_user_time,
+               order_status,
+               order_price,
+               return_price,
+               DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') as createTime,
+               DATE_FORMAT(pay_time, '%Y-%m-%d %H:%i:%s')    as payTime,
+               DATE_FORMAT(return_time, '%Y-%m-%d %H:%i:%s') as returnTime,
+               commission_type,
+               bind_type,
+               settle_record_id,
+               settle_state,
+               DATE_FORMAT(settle_time, '%Y-%m-%d %H:%i:%s') as settleTime
+        FROM ${database.prefix.order}hou_order_commission
+        where order_id = #{orderId} limit 1
+    </select>
+</mapper>

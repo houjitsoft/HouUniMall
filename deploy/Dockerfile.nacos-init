@@ -1,0 +1,16 @@
+# =====================================================================
+# Nacos 配置初始化任务镜像：渲染 variables.env -> apply_templates.py -> import_to_nacos.sh
+# 仓库的 deploy/scripts/nacos-templates 目录在运行期挂载到 /work，配置改完无需重建镜像。
+# =====================================================================
+FROM python:3.11-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY deploy/nacos-init/entrypoint.sh /entrypoint.sh
+COPY deploy/nacos-init/render_variables.py /render_variables.py
+RUN chmod +x /entrypoint.sh /render_variables.py
+
+WORKDIR /work
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.UserSellerBaseMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.userms.entity.UserSellerBaseEntity">
+        <id property="sellerId" column="seller_id" jdbcType="INTEGER"/>
+        <result property="sellerName" column="seller_name" jdbcType="VARCHAR"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="rightsGroupId" column="rights_group_id" jdbcType="INTEGER"/>
+        <result property="sellerIsAdmin" column="seller_is_admin" jdbcType="TINYINT"/>
+        <result property="sellerLoginTime" column="seller_login_time" jdbcType="TIMESTAMP"/>
+        <result property="sellerGroupId" column="seller_group_id" jdbcType="INTEGER"/>
+        <result property="shopType" column="shop_type" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        seller_id
+        ,seller_name,shop_id,
+        user_id,rights_group_id,seller_is_admin,
+        seller_login_time,seller_group_id,shop_type
+    </sql>
+    <insert id="insertSellerbase">
+        insert into ${database.prefix.userms}hou_user_seller_base
+        (seller_name, shop_id, user_id, rights_group_id, seller_is_admin, seller_login_time, seller_group_id, shop_type)
+        values (#{param.sellerName}, #{param.shopId}, #{param.userId}, #{param.rightsGroupId},
+                #{param.sellerIsAdmin}, #{param.sellerLoginTime}, #{param.sellerGroupId}, #{param.shopType})
+    </insert>
+
+    <select id="getSellerAccount" resultType="com.houjiang.userms.dto.UserSellerBaseDTO">
+        SELECT uusb.seller_id, uusb.seller_name, uusg.group_id, uusg.group_name, uusb.user_id
+        from ${database.prefix.userms}hou_user_seller_base uusb
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg on uusg.group_id = uusb.seller_group_id
+        WHERE uusb.shop_id = #{param.shopId}
+          and uusb.seller_is_admin = 0
+    </select>
+    <select id="getSellerBase" resultType="com.houjiang.commons.vo.user.UserSellerBaseVO">
+        SELECT uusb.seller_id, uusb.seller_name, uusg.group_id, uusg.group_name, uusb.user_id
+        from ${database.prefix.userms}hou_user_seller_base uusb
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg on uusg.group_id = uusb.seller_group_id
+        WHERE uusb.shop_id = #{shopId}
+          and uusb.seller_is_admin = 0
+    </select>
+    <select id="selectShopGateCount" resultType="java.lang.Integer">
+        select count(1)
+        from ${database.prefix.business}hou_shop_gate
+        where login_name = #{userMobile}
+    </select>
+    <select id="getSubAccount" resultType="com.houjiang.commons.vo.user.UserSellerBaseVO">
+        SELECT uusb.seller_id, uusb.seller_name, uusg.group_id, uusg.group_name, uusb.user_id
+        from ${database.prefix.userms}hou_user_seller_base uusb
+                 LEFT JOIN ${database.prefix.userms}hou_user_seller_group uusg on uusg.group_id = uusb.seller_group_id
+        WHERE uusb.shop_id = #{shopId}
+          and uusb.seller_is_admin = 0
+    </select>
+    <select id="getShopAdmin" resultType="java.lang.String">
+        SELECT user_id
+        from ${database.prefix.userms}hou_user_seller_base
+        WHERE shop_id = #{shopId}
+          and seller_is_admin = 1
+    </select>
+    <select id="getUserIDByShopId" resultType="java.lang.String">
+        select user_id as userId from ${database.prefix.userms}hou_user_seller_base where  shop_id = #{shopId} and seller_is_admin = 1
+    </select>
+</mapper>

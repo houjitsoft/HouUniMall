@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.base.mapper.BaseKd100ConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.base.entity.BaseKd100ConfigEntity">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="customer" column="customer" jdbcType="VARCHAR"/>
+        <result property="key" column="key" jdbcType="VARCHAR"/>
+        <result property="apiUrl" column="api_url" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,customer,`key`,api_url
+    </sql>
+
+    <update id="updateConfig">
+        UPDATE hou_base_kd100_config
+        SET customer = #{param.customer},
+            `key` = #{param.key},
+            api_url = #{param.apiUrl}
+        WHERE id = 1
+    </update>
+
+</mapper>

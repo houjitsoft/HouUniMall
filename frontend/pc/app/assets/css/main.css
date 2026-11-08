@@ -1,0 +1,275 @@
+/* 全局样式文件 - 确保在服务器端和客户端都能正确加载 */
+* {
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+:root {
+    /* Brand and semantic colors: backend webColor may override the primary family. */
+    --color: #ea5455;
+    --color-primary: #ea5455;
+    --color-primary-hover: #c94849;
+    --color-primary-soft: rgba(234, 84, 85, 0.08);
+    --color-secondary: #17324d;
+    --color-success: #42b983;
+    --color-warning: #ff9800;
+    --color-error: #f56c6c;
+    --color-info: #909399;
+    --color-price: #ea5455;
+    --color-background: #f4f5f7;
+    --color-text: #202a33;
+    --rgba6: rgba(234, 84, 85, 0.6);
+    --rgba4: rgba(234, 84, 85, 0.4);
+    --rgba2: rgba(234, 84, 85, 0.2);
+
+    --text-primary: #202a33;
+    --text-regular: #5d6872;
+    --text-secondary: #8f8f8f;
+    --text-placeholder: #cccccc;
+    --text-disabled: #b8bec5;
+    --text-inverse: #ffffff;
+
+    --bg-page: #f4f5f7;
+    --bg-card: #ffffff;
+    --bg-subtle: #f8f9fa;
+    --bg-disabled: #f2f3f5;
+    --bg-topbar: #2b2b2b;
+    --bg-footer: #17324d;
+    --nav-bg-color: var(--color);
+    --nav-text-color: #ffffff;
+
+    --border-color: #e6e6e6;
+    --border-light: #eeeeee;
+    --border-strong: #d5d9de;
+    --border-radius: 4px;
+    --border-radius-lg: 6px;
+    --radius-control: 4px;
+    --radius-button: 6px;
+    --radius-card: 8px;
+    --radius-dialog: 8px;
+    --radius-round: 999px;
+
+    --container-width: 1280px;
+    --page-gutter: 20px;
+    --page-gutter-mobile: 16px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-4-5: 20px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 40px;
+    --space-8: 48px;
+    --space-9: 64px;
+
+    --font-size-xs: 12px;
+    --font-size-sm: 13px;
+    --font-size-base: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 20px;
+    --font-size-2xl: 24px;
+    --font-size-3xl: 28px;
+    --font-size-display: 32px;
+
+    --line-height-xs: 18px;
+    --line-height-sm: 20px;
+    --line-height-base: 22px;
+    --line-height-md: 24px;
+    --line-height-lg: 26px;
+    --line-height-xl: 28px;
+    --line-height-2xl: 32px;
+    --line-height-3xl: 36px;
+    --line-height-display: 40px;
+
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    --control-height-sm: 32px;
+    --control-height-md: 40px;
+    --control-height-lg: 48px;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-popover: 0 8px 24px rgba(32, 42, 51, 0.12);
+
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+    /* Nuxt UI semantic variables follow the storefront tokens and backend theme. */
+    --ui-primary: var(--color);
+    --ui-secondary: var(--color-secondary);
+    --ui-success: var(--color-success);
+    --ui-info: var(--color-info);
+    --ui-warning: var(--color-warning);
+    --ui-error: var(--color-error);
+    --ui-text-highlighted: var(--text-primary);
+    --ui-text: var(--text-regular);
+    --ui-text-muted: var(--text-secondary);
+    --ui-text-dimmed: var(--text-placeholder);
+    --ui-text-inverted: var(--text-inverse);
+    --ui-bg: var(--bg-card);
+    --ui-bg-muted: var(--bg-page);
+    --ui-bg-elevated: var(--bg-subtle);
+    --ui-bg-accented: var(--bg-disabled);
+    --ui-bg-inverted: var(--bg-footer);
+    --ui-border: var(--border-color);
+    --ui-border-muted: var(--border-light);
+    --ui-border-accented: var(--border-strong);
+    --ui-border-inverted: var(--text-inverse);
+    --ui-radius: var(--radius-control);
+    --ui-container: var(--container-width);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: Inter, "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    letter-spacing: 0;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+::selection {
+    background: var(--color);
+    color: #fff;
+}
+
+/* 确保 Nuxt UI 样式优先加载 */
+@import "@nuxt/ui";
+@import "tailwindcss";
+@import "./nuxt_ui.scss";
+@import "./modal.scss";
+
+/* 添加基础样式以确保页面布局一致性 */
+#__nuxt {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#__layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* 防止 Flash of Unstyled Content (FOUC) */
+@media screen {
+    [v-cloak] {
+        display: none !important;
+    }
+}
+
+.price-number {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Shared storefront typography and layout utilities. */
+.ui-content {
+    width: min(calc(100% - (var(--page-gutter) * 2)), var(--container-width));
+    margin-inline: auto;
+}
+
+.ui-page-title {
+    color: var(--text-primary);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-2xl);
+}
+
+.ui-section-title {
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-lg);
+}
+
+.ui-card-title {
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-md);
+}
+
+.ui-body-text {
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+}
+
+.ui-secondary-text {
+    color: var(--text-regular);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+}
+
+.ui-caption {
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-xs);
+}
+
+.ui-price {
+    color: var(--color-price);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-xl);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+    .ui-content {
+        width: calc(100% - (var(--page-gutter-mobile) * 2));
+    }
+
+    .ui-page-title {
+        font-size: var(--font-size-xl);
+        line-height: var(--line-height-xl);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 全局浏览器滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

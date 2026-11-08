@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.activity.mapper.ActivityPiecingTogetherConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.houjiang.activity.entity.ActivityPiecingTogetherConfigEntity">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="configName" column="config_name" jdbcType="VARCHAR"/>
+        <result property="configType" column="config_type" jdbcType="VARCHAR"/>
+        <result property="configTitleOne" column="config_title_one" jdbcType="VARCHAR"/>
+        <result property="configTitleTwo" column="config_title_two" jdbcType="VARCHAR"/>
+        <result property="configData" column="config_data" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id
+        ,config_name,config_type,
+        config_title_one,config_title_two,config_data
+    </sql>
+    <insert id="h5ConfigModelAdd">
+        INSERT INTO ${database.prefix.activity}hou_addon_activity_piecing_together_config
+        (config_name,
+         config_type,
+         config_title_one,
+         config_title_two,
+         config_data)
+        VALUES (#{param.configName},
+                #{param.configType},
+                #{param.configTitleOne},
+                #{param.configTitleTwo},
+                #{param.configData});
+    </insert>
+    <update id="updateH5Config">
+        update ${database.prefix.activity}hou_addon_activity_piecing_together_config
+        set config_name      = #{param.configName},
+            config_title_one = #{param.configTitleOne},
+            config_title_two = #{param.configTitleTwo},
+            config_data      = #{param.configData}
+        where id = #{param.id}
+    </update>
+    <select id="queryH5Config" resultType="com.houjiang.activity.vo.PinTuanConfigVO">
+        select pc.id, pc.config_name, pc.config_title_one, pc.config_title_two, pc.config_data
+        from ${database.prefix.activity}hou_addon_activity_piecing_together_config pc
+    </select>
+    <select id="queryPinTunGoods" resultType="com.houjiang.activity.vo.GoodsPinTuanResultVO">
+        SELECT gp.name         as name,
+               gp.person_num   as personNum,
+               gp.common_id    as commonId,
+               gd.price_ori    as priceOri,
+               gd.price        as price,
+               gc.common_image as commonImage,
+               gc.common_name  as commonName,
+               gd.goods_id     as goodsId,
+               gp.start_time   as startTime,
+               gp.end_time     as endTime,
+               status,
+               gc.goods_type   as goodsType,
+               gc.shop_id      as shopId
+        FROM ${database.prefix.activity}hou_addon_activity_piecing_together gp
+                 LEFT JOIN ${database.prefix.activity}hou_addon_activity_piecing_together_detail gd ON gp.pintuan_id = gd.pintuan_id
+                 LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gp.common_id = gc.common_id
+        WHERE 1 = 1
+          and gp.common_id = #{commonId}
+          and gc.common_state = 1
+          and gc.is_delete = 0
+        group by gp.common_id
+    </select>
+    <select id="queryPinTuanGoodsAll" resultType="com.houjiang.activity.vo.GoodsPinTuanResultVO">
+        SELECT
+        gp.name as name,gp.person_num as personNum,gp.common_id as commonId,gd.price_ori as priceOri,
+        gd.price as price,gc.common_image as commonImage,gc.common_name as commonName,gd.goods_id as goodsId,
+        gp.start_time as startTime,gp.end_time as endTime
+        FROM ${database.prefix.activity}hou_addon_activity_piecing_together gp
+            LEFT JOIN (SELECT min( d.price ) AS price, d.price_ori, d.goods_id, d.common_id, d.pintuan_id
+                       FROM ${database.prefix.activity}hou_addon_activity_piecing_together_detail d LEFT JOIN ${database.prefix.activity}hou_addon_activity_piecing_together t
+                           on d.pintuan_id = t.pintuan_id WHERE t.`status` = 1 GROUP BY d.common_id ) as gd
+                ON gp.pintuan_id = gd.pintuan_id
+            LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gp.common_id = gc.common_id
+        WHERE 1=1 and gp.status = 1 and end_time > now() and gc.common_state = 1 and gc.is_delete = 0
+        <if test="param.shopId != null and param.shopId != ''">
+            and gp.shop_id = #{param.shopId}
+        </if>
+        <if test="param.shopId == null or param.shopId == ''">
+            and gc.goods_type &lt;&gt; 3
+        </if>
+        group by gd.common_id
+    </select>
+</mapper>

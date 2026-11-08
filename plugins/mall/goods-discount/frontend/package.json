@@ -1,0 +1,10 @@
+{
+  "name": "@houjiang/goods-discount-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "商品折扣（限时折扣）插件前端产物",
+  "scripts": {
+    "build": "vite build"
+  }
+}

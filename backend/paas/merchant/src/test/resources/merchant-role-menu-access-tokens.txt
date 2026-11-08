@@ -1,0 +1,16 @@
+# Merchant role-menu access tokens used by controllers covered by MerchantPermissionCoverageTest.
+# Keep this hermetic snapshot aligned with core seeds and lifecycle-managed plugin menus.
+mall.Goods/lists
+mall.Goods/add:edit
+mall.GoodsCategory/lists
+mall.goods/discount_set
+mall.goods/discount_detail
+gather.gather/detial
+application.distribution/goods
+mall.ms/lists
+mall.pt/goods
+mall.coupon/detail
+decorate.page/detail
+mall.announcement/lists:detail
+config/get_service:set_service
+advertising/applications:list:save:submit:withdraw

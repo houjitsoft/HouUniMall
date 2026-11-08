@@ -1,0 +1,6 @@
+spring:
+  cloud:
+     sentinel:
+      transport:
+        dashboard: ${SEATA_SERVER_ADDR}
+        port: 8719

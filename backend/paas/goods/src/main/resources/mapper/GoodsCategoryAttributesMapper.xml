@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.goods.mapper.GoodsCategoryAttributesMapper">
+
+    <resultMap type="com.houjiang.goods.entity.GoodsCategoryAttributesEntity" id="GoodsCategoryAttributesMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="attributeName" column="attribute_name" jdbcType="VARCHAR"/>
+        <result property="attributeValueName" column="attribute_value_name" jdbcType="VARCHAR"/>
+        <result property="isSearch" column="is_search" jdbcType="INTEGER"/>
+        <result property="isRequired" column="is_required" jdbcType="INTEGER"/>
+        <result property="displayOrder" column="display_order" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="selectGoodsAttributeGroupList" resultType="java.util.Map">
+        select distinct attribute_name as attributeName, display_order as displayOrder
+        from ${database.prefix.goods}hou_goods_category_attributes
+        where common_id in
+        <foreach collection="param.commonIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="param.attrNameList != null and param.attrNameList.size() > 0">
+            and attribute_name not in
+            <foreach collection="param.attrNameList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        and is_search = 1
+        order by display_order
+    </select>
+    <select id="selectGoodsAttributeList" resultType="com.houjiang.commons.vo.goods.GoodsCategoryAttributesVO">
+        select id, common_id, attribute_name, attribute_value_name, is_search, is_required, display_order
+        from ${database.prefix.goods}hou_goods_category_attributes
+        where attribute_name = #{attrName} and is_search = 1
+        group by attribute_value_name
+        order by display_order
+    </select>
+    <select id="selectCommonIdListByAttrs" resultType="java.lang.Integer">
+        select common_id from ${database.prefix.goods}hou_goods_category_attributes
+        <where>
+            <if test="attrList != null and attrList.size() != 0">
+                <foreach collection="attrList" item="map" separator=") or " close=")">
+                    (attribute_name = #{map.key}
+                    <if test="map.valueList != null and map.valueList.size() != 0">
+                        and attribute_value_name in
+                        <foreach collection="map.valueList" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                </foreach>
+            </if>
+        </where>
+        GROUP BY common_id
+        HAVING COUNT(DISTINCT attribute_name) = #{size}
+    </select>
+
+</mapper>
