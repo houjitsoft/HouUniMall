@@ -29,7 +29,11 @@ ROOT="$(pwd)"
 
 # ---- 最小可用集：没有这 5 个服务，登录和插件全链路都走不通 ----
 INFRA_SERVICES="mysql redis nacos rocketmq-namesrv rocketmq-broker nacos-init"
-APP_SERVICES="permission auth userms goods order payment base mall bff-web admin-web"
+APP_SERVICES="permission auth userms goods order payment base mall logging bff-web admin-web"
+# logging 必须在清单里：docker-compose.yml 定义了该服务、Nacos 有 logging.yaml、
+# 且 logging 插件是默认安装的 11 个之一。漏掉它时 BFF 的 LogServiceFeign
+# 每次轮询 /plugin/logging/alert/unread-count 都拿到 503「Load balancer does not
+# contain an instance for the service logging」，后台告警角标永远取不到数。
 
 WITH_ADMIN=0
 ACTION="up"

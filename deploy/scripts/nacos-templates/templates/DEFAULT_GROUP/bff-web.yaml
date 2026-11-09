@@ -135,11 +135,7 @@ houcloud:
     site-name: ${HOUCLOUD_PLATFORM_SITE_NAME}
     token: ${HOUCLOUD_PLATFORM_TOKEN}
 
-# bff-web → 同机部署直连？不。宿主机网络时代的直连写法在 Docker bridge 下是错的：
-# 容器内的 127.0.0.1 指向容器自己，mall / logging / oa / erp 全部 Connection refused，
-# 后台表现为仪表盘、商品列表、告警未读数大面积 500。
-# 统一交给 mutual.yaml 的 feign.*.url: ""（空值 = 走 Nacos 服务发现）。
-# 只有确实需要直连的部署形态，才在 .env 里用 FEIGN_*_URL 覆盖。
-feign:
-  pm:
-    url: http://${BFF_FEIGN_PM_ADDR}
+# bff-web 不做任何 feign 直连配置。宿主机网络时代的 127.0.0.1 写法在 Docker bridge
+# 下指向容器自身（实测 mall 8220 被拒 50 次、logging 8099 被拒 27 次）；
+# 而 pm 的地址变量在开源包装机里为空，写出来就是非法的 http://。
+# 各 feign 客户端统一由 mutual.yaml 的 feign.*.url: "" 走 Nacos 服务发现。
