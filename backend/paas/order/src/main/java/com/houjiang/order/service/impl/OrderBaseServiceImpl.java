@@ -3631,9 +3631,19 @@ public class OrderBaseServiceImpl extends ServiceImpl<OrderBaseMapper, OrderBase
         //获取快递鸟的配置
         ResponseResult expressResp = baseServiceClient.queryConfigFeign();
         BaseKdniaoConfigDTO expressQueryByKdNiao = JSON.parseObject(JSON.toJSONString(expressResp.getData()), BaseKdniaoConfigDTO.class);
-        map.put("AppKey", expressQueryByKdNiao.getAppKey());
-        map.put("EBussinessID", expressQueryByKdNiao.getEBussinessID());
-        map.put("instructCode", expressQueryByKdNiao.getInstructCode());
+        // 全新安装没有 base 的快递鸟配置行，queryConfigFeign 的 data 为 null，
+        // JSON.parseObject(null) 返回 null，直接解引用会 NPE 并让整个订单列表 20010
+        // （PC 端「我的订单」一进来就白屏）。这里降级为空串：列表照常出，
+        // 只是物流轨迹在没配快递鸟时不可用，属于「未配置」而不是「系统故障」。
+        if (expressQueryByKdNiao == null) {
+            map.put("AppKey", "");
+            map.put("EBussinessID", "");
+            map.put("instructCode", "");
+        } else {
+            map.put("AppKey", expressQueryByKdNiao.getAppKey());
+            map.put("EBussinessID", expressQueryByKdNiao.getEBussinessID());
+            map.put("instructCode", expressQueryByKdNiao.getInstructCode());
+        }
         //获取收件人手机号的后4位
         String orderReceiverContact = (String) result.get("orderReceiverContact");
         String customerName = orderReceiverContact.substring(orderReceiverContact.length() - 4);
@@ -6202,6 +6212,11 @@ public class OrderBaseServiceImpl extends ServiceImpl<OrderBaseMapper, OrderBase
         ResponseResult expressResp = baseServiceClient.queryConfigFeign();
         // 将查询到的配置数据转换为快递鸟配置DTO对象
         BaseKdniaoConfigDTO expressQueryByKdNiao = JSON.parseObject(JSON.toJSONString(expressResp.getData()), BaseKdniaoConfigDTO.class);
+        // 未配置快递鸟时 data 为 null（全新安装的默认状态），此处不再解引用，
+        // 保持 KdniaoTrackQueryAPI 的默认值，让「查不到轨迹」走业务提示而不是 NPE。
+        if (expressQueryByKdNiao == null) {
+            return;
+        }
         // 设置快递鸟查询API的配置参数
         KdniaoTrackQueryAPI.AppKey = expressQueryByKdNiao.getAppKey();
         KdniaoTrackQueryAPI.EBusinessID = expressQueryByKdNiao.getEBussinessID();

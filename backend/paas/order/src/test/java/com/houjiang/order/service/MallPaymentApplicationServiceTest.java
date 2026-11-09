@@ -7,6 +7,7 @@ import com.houjiang.commons.util.ResponseResult;
 import com.houjiang.commons.exception.DefinedException;
 import com.houjiang.order.entity.OrderBaseEntity;
 import com.houjiang.order.mapper.OrderBaseMapper;
+import com.houjiang.order.feign.ActivityServiceClient;
 import com.houjiang.order.feign.PayMentServiceClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,12 +34,19 @@ class MallPaymentApplicationServiceTest {
     private OrderInventoryLifecycleService inventoryLifecycleService;
     @Mock
     private PayMentServiceClient paymentClient;
+    /**
+     * 2026-11-09 补：生产构造器已增加 ActivityServiceClient（支付成功后回写活动报名/拼团），
+     * 这里少一个 mock 会让整个 order 模块的 test-compile 直接失败，
+     * 表现为 `mvn package -DskipTests` 都过不去（-DskipTests 仍会编译测试）。
+     */
+    @Mock
+    private ActivityServiceClient activityServiceClient;
 
     private MallPaymentApplicationService service;
 
     @BeforeEach
     void setUp() {
-        service = new MallPaymentApplicationService(orderMapper, inventoryLifecycleService, paymentClient);
+        service = new MallPaymentApplicationService(orderMapper, inventoryLifecycleService, paymentClient, activityServiceClient);
     }
 
     @Test

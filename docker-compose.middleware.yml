@@ -28,6 +28,10 @@ services:
       - --default-time-zone=+08:00
       - --max_connections=500
       - --innodb_buffer_pool_size=512M
+      # 关闭 ONLY_FULL_GROUP_BY：与生产库 meoc 的 sql_mode 对齐。
+      # 订单/售后/统计查询普遍是「按主表主键 group by + 左连维表取列」，
+      # 开着该模式会直接报 ERROR 1055，订单列表整片 500。详见 docker-compose.yml 同名注释。
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-meoc}

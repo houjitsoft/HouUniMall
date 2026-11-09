@@ -67,15 +67,14 @@ public interface AddonPluginMapper extends BaseMapper<AddonPlugin> {
                                    @Param("pluginCode") String pluginCode);
 
     /**
-     * 查询已被显式移出目录（软删）的插件编码，供启动对账器识别「不得由静态目录复活」的目录行。
+     * 跨服务读取软删保护，兼容正确的 hostService 归属。
      *
-     * <p>显式绕过 @TableLogic：软删行不会出现在 MyBatis-Plus 的常规查询里，
-     * 但对账器必须知道它们的存在才能避免把已移除插件重新写回目录。
+     * <p><b>不要再用「按 service_code 过滤」的同名重载</b>：MyBatis 的 statement id 是
+     * {@code 接口.方法名}，不含参数签名，两个同名重载会互相覆盖——启动时固定刷一条
+     * {@code mapper[...AddonPluginMapper.selectSoftDeletedCodes] is ignored, because it exists}，
+     * 而且真正生效的 SQL 取决于注册顺序，实际是「按 service_code 的那条」被静默丢掉。
+     * 对账器要的是跨服务全集（插件换个宿主后旧行仍是软删），所以只保留本方法。
      */
-    @Select("SELECT plugin_code FROM hou_addon_plugin WHERE service_code = #{serviceCode} AND deleted = 1")
-    List<String> selectSoftDeletedCodes(@Param("serviceCode") String serviceCode);
-
-    /** 跨服务读取软删保护，兼容正确的 hostService 归属。 */
     @Select("SELECT DISTINCT plugin_code FROM hou_addon_plugin WHERE deleted = 1")
     List<String> selectSoftDeletedCodes();
 }

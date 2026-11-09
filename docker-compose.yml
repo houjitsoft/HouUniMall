@@ -135,6 +135,17 @@ services:
       - --default-time-zone=+08:00
       - --max_connections=500
       - --innodb_buffer_pool_size=512M
+      # 🔴 2026-11-09：必须关掉 ONLY_FULL_GROUP_BY（MySQL 8 默认带）。
+      # 订单/售后/统计等大批查询是「按主表主键 group by + 左连维表取列」的写法，
+      # 例如 OrderBaseMapper.queryOrderList：group by oob.order_id，select 里第 30 列
+      # 是左连表 oog.drop_shipping。主表列因函数依赖主键能过，维表列不行，MySQL 8 直接报
+      # ERROR 1055「Expression #30 of SELECT list is not in GROUP BY clause…」，
+      # 表现为买家端「我的订单」、后台订单列表等接口整片 500，日志里只有
+      # BadSqlGrammarException，排查成本极高。
+      # 生产库 meoc 的 sql_mode 早已是 STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION（不含该模式），
+      # 开源包必须与之对齐，否则同一份代码在客户机上是坏的、在平台上是好的。
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+
       # 首次初始化要跑 704 张建表 + 索引 + 种子数据，是整包安装最慢的一步
       # （RH2288 慢盘实测 40 分钟以上，占「全新装机」总时长的一半还多）。
       # 原因是 MySQL 8 默认开 binlog，每条 DDL 都要写 binlog 并 fsync，再加上
@@ -670,7 +681,12 @@ services:
         JAR_NAME: logging
     image: unimall/logging:${IMAGE_TAG:-latest}
     healthcheck:
-      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8314' || exit 1"]
+      # 端口是 8099，不是 8314。8314 是历史遗留值（Nacos logging.yaml 与
+      # architecture/services.json 里 logging 的 port 均为 8099，容器内实测
+      # http://127.0.0.1:8099/actuator/health 返回 200、8314 拒绝连接）。
+      # 探错端口的后果不只是「显示 unhealthy」：任何 depends_on 里写
+      # logging: condition: service_healthy 的编排都会永久卡住，装机直接挂死。
+      test: ["CMD-SHELL", "bash -c ':</dev/tcp/127.0.0.1/8099' || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 10
