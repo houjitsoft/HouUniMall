@@ -4,7 +4,7 @@
       <div class="section-block">
         <h3 class="section-title">网站品牌风格</h3>
         <p class="section-desc">先选择网站风格，再进入首页编辑；页面显式背景和组件配置优先。奢侈品简单风格为原创设计，非源站像素复刻。</p>
-        <el-radio-group v-model="brandStyle" @change="selectBrandStyle">
+        <el-radio-group v-model="brandStyle">
           <el-radio-button label="">沿用当前风格</el-radio-button>
           <el-radio-button label="tea">奢侈品简单风格 · 暖象牙 / 墨绿 / 茶褐金</el-radio-button>
         </el-radio-group>
@@ -232,34 +232,85 @@
           <div class="section-head">
             <div>
               <h3 class="section-title">顶部菜单</h3>
-              <p class="section-desc">控制 PC 顶栏导航名称、英文名、路径与显示开关</p>
+              <p class="section-desc">控制 PC 顶栏导航名称、英文名、路径、图标与显示开关；可拖动或用上下按钮排序</p>
             </div>
-            <el-button type="primary" plain :icon="Plus" @click="addPcNav">添加菜单</el-button>
+            <div class="section-actions">
+              <el-button type="primary" plain :icon="Plus" @click="addPcNav">添加菜单</el-button>
+              <el-button plain @click="resetPcNav">恢复默认</el-button>
+            </div>
           </div>
 
-          <div class="editor-list">
-            <div
-              v-for="(item, index) in theme.pc_nav"
-              :key="index"
-              class="editor-row nav-row"
-            >
-              <div class="row-index">{{ index + 1 }}</div>
-              <div class="row-fields">
-                <el-input v-model="item.name" placeholder="中文名称" />
-                <el-input v-model="item.name_en" placeholder="English" />
-                <el-input v-model="item.path" placeholder="/path" />
+          <draggable
+            v-if="theme.pc_nav?.length"
+            v-model="theme.pc_nav"
+            :item-key="(item) => item._navId || item.path"
+            class="editor-list"
+            handle=".nav-drag-handle"
+            :animation="180"
+            ghost-class="floor-row--ghost"
+            @end="onPcNavDragEnd"
+          >
+            <template #item="{ element: item, index }">
+              <div class="editor-row nav-row">
+                <button
+                  type="button"
+                  class="floor-drag-handle nav-drag-handle"
+                  :title="`拖动调整第 ${index + 1} 项顺序，也可用上下方向键移动`"
+                  :aria-label="`第 ${index + 1} 项排序手柄`"
+                  @click.stop
+                  @keydown.up.prevent="movePcNav(index, -1)"
+                  @keydown.down.prevent="movePcNav(index, 1)"
+                >
+                  <el-icon><Rank /></el-icon>
+                  <span>拖动排序</span>
+                </button>
+                <button
+                  type="button"
+                  class="floor-move-button"
+                  :disabled="index === 0"
+                  :title="`上移第 ${index + 1} 项`"
+                  :aria-label="`上移第 ${index + 1} 项`"
+                  @click.stop="movePcNav(index, -1)"
+                >
+                  <el-icon><ArrowUp /></el-icon>
+                </button>
+                <button
+                  type="button"
+                  class="floor-move-button"
+                  :disabled="index === theme.pc_nav.length - 1"
+                  :title="`下移第 ${index + 1} 项`"
+                  :aria-label="`下移第 ${index + 1} 项`"
+                  @click.stop="movePcNav(index, 1)"
+                >
+                  <el-icon><ArrowDown /></el-icon>
+                </button>
+                <div class="row-index">{{ index + 1 }}</div>
+                <div class="row-fields">
+                  <el-input v-model="item.name" placeholder="中文名称" />
+                  <el-input v-model="item.name_en" placeholder="English" />
+                  <el-input v-model="item.path" placeholder="/path" />
+                  <el-input v-model="item.image" placeholder="图标 URL（可选）" />
+                </div>
+                <div class="row-actions">
+                  <el-switch
+                    v-model="item.target"
+                    :active-value="1"
+                    :inactive-value="0"
+                    active-text="新窗"
+                    inactive-text="本窗"
+                    inline-prompt
+                  />
+                  <el-switch v-model="item.visible" active-text="显示" inactive-text="隐藏" inline-prompt />
+                  <el-button link type="danger" @click="removePcNav(index)">删除</el-button>
+                </div>
               </div>
-              <div class="row-actions">
-                <el-switch v-model="item.visible" active-text="显示" inactive-text="隐藏" inline-prompt />
-                <el-button link type="danger" @click="removePcNav(index)">删除</el-button>
-              </div>
-            </div>
-            <el-empty
-              v-if="!theme.pc_nav?.length"
-              description="还没有顶部菜单，点击右上角添加"
-              :image-size="64"
-            />
-          </div>
+            </template>
+          </draggable>
+          <el-empty
+            v-else
+            description="还没有顶部菜单，点击右上角添加；全部隐藏时前台顶栏不显示导航"
+            :image-size="64"
+          />
         </section>
 
         <!-- 首页精选 -->
@@ -488,19 +539,29 @@ const currentIndex = computed(() => {
   return theme.list.findIndex((item) => item.className === theme.current)
 })
 
+/**
+ * 「网站品牌风格」两端共用同一控件：
+ * - PC 写 mall_style.pc_template_code（前台 frontend/pc 据此切换 tea 版式）
+ * - 移动端写 mall_style.current + 追加 teaTheme（H5 据此整站换肤）
+ * 统一由 v-model 的 setter 处理，不再依赖 @change 事件兜底。
+ */
 const brandStyle = computed({
   get: () => isPc.value ? theme.pc_template_code || '' : theme.current === 'tea_theme' ? 'tea' : '',
-  set: (value) => { if (isPc.value) theme.pc_template_code = value }
-})
-const selectBrandStyle = (value) => {
-  if (isPc.value) return
-  if (value === 'tea') {
-    if (!theme.list.some(item => item.className === 'tea_theme')) theme.list.push(JSON.parse(JSON.stringify(teaTheme)))
-    theme.current = 'tea_theme'
-  } else if (theme.current === 'tea_theme') {
-    theme.current = theme.list.find(item => item.className !== 'tea_theme')?.className || 'red_theme'
+  set: (value) => {
+    if (isPc.value) {
+      theme.pc_template_code = value
+      return
+    }
+    if (value === 'tea') {
+      if (!theme.list.some(item => item.className === 'tea_theme')) {
+        theme.list.push(JSON.parse(JSON.stringify(teaTheme)))
+      }
+      theme.current = 'tea_theme'
+    } else if (theme.current === 'tea_theme') {
+      theme.current = theme.list.find(item => item.className !== 'tea_theme')?.className || 'red_theme'
+    }
   }
-}
+})
 
 const currentTheme = computed(() => theme.list[currentIndex.value] || {})
 const previewColor = computed(
@@ -538,9 +599,41 @@ const handleColorChange = (index, field, value) => {
   theme.list[index][field] = value
 }
 
+/** PC 顶栏菜单默认项：与后端 MallStyleDefaults.defaultPcNav 同构 */
+const DEFAULT_PC_NAV = [
+  { name: '首页', name_en: 'Home', path: '/', image: '', target: 0, visible: true },
+  { name: '商家店铺', name_en: 'Stores', path: '/store/list', image: '', target: 0, visible: true },
+  { name: '特色馆', name_en: 'Featured', path: '/feature', image: '', target: 0, visible: true },
+  { name: '积分商城', name_en: 'Points', path: '/points', image: '', target: 0, visible: true },
+  { name: '限时秒杀', name_en: 'Flash Sale', path: '/activity/seckill', image: '', target: 0, visible: true },
+  { name: '限时折扣', name_en: 'Deals', path: '/activity/discount', image: '', target: 0, visible: true },
+]
+
+let pcNavDragSeed = 0
+const createPcNavDragId = () => `pc-nav-${Date.now().toString(36)}-${++pcNavDragSeed}`
+
+/**
+ * 顶部菜单归一化：与 pc_floors 同口径，后端返回任意结构/旧结构都能安全渲染。
+ * image / target 对应前台 Header.vue 的 navImage / navNewOpen。
+ */
+const normalizePcNav = (list) => {
+  if (!Array.isArray(list)) return []
+  return list
+    .filter((item) => item && typeof item === 'object')
+    .map((item) => ({
+      _navId: item._navId || createPcNavDragId(),
+      name: String(item.name ?? item.navTitle ?? '').trim(),
+      name_en: String(item.name_en ?? '').trim(),
+      path: String(item.path ?? item.navUrl ?? '/').trim() || '/',
+      image: String(item.image ?? item.navImage ?? '').trim(),
+      target: Number(item.target ?? item.navNewOpen ?? 0) === 1 ? 1 : 0,
+      visible: item.visible !== false && item.visible !== 0 && item.visible !== '0',
+    }))
+}
+
 const addPcNav = () => {
   if (!Array.isArray(theme.pc_nav)) theme.pc_nav = []
-  theme.pc_nav.push({ name: '新菜单', name_en: 'New', path: '/', visible: true })
+  theme.pc_nav.push(normalizePcNav([{ name: '新菜单', name_en: 'New', path: '/', visible: true }])[0])
 }
 
 const removePcNav = (index) => {
@@ -554,6 +647,51 @@ const removePcNav = (index) => {
       theme.pc_nav.splice(index, 1)
     })
     .catch(() => {})
+}
+
+const movePcNav = (index, offset) => {
+  if (!Array.isArray(theme.pc_nav)) return
+  const targetIndex = index + offset
+  if (targetIndex < 0 || targetIndex >= theme.pc_nav.length) return
+  const [nav] = theme.pc_nav.splice(index, 1)
+  theme.pc_nav.splice(targetIndex, 0, nav)
+  ElMessage.success(`已移到第 ${targetIndex + 1} 项，点击底部「保存配置」后生效`)
+}
+
+const onPcNavDragEnd = ({ oldIndex, newIndex } = {}) => {
+  if (!Number.isInteger(oldIndex) || !Number.isInteger(newIndex) || oldIndex === newIndex) return
+  ElMessage.success(`已移到第 ${newIndex + 1} 项，点击底部「保存配置」后生效`)
+}
+
+const resetPcNav = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '将恢复为 6 条默认顶部菜单，当前自定义菜单会丢失。继续吗？',
+      '恢复默认菜单',
+      { type: 'warning', confirmButtonText: '恢复默认' }
+    )
+  } catch {
+    return
+  }
+  theme.pc_nav = normalizePcNav(DEFAULT_PC_NAV)
+  ElMessage.success('已恢复默认顶部菜单，点击底部「保存配置」后生效')
+}
+
+/** 保存前校验：避免前台渲染空名称、坏路径或重复导航；允许全部隐藏/清空 */
+const validatePcNav = () => {
+  if (!Array.isArray(theme.pc_nav) || !theme.pc_nav.length) return ''
+  const seen = new Set()
+  for (let i = 0; i < theme.pc_nav.length; i += 1) {
+    const item = theme.pc_nav[i]
+    const label = `第 ${i + 1} 项`
+    if (!String(item.name || '').trim()) return `${label} 菜单名称不能为空`
+    const path = String(item.path || '').trim()
+    if (!path) return `${label} 路径不能为空`
+    if (!/^\/|^https?:\/\//i.test(path)) return `${label} 路径需以 / 或 http(s):// 开头`
+    if (seen.has(path)) return `${label} 路径与前面重复：${path}`
+    seen.add(path)
+  }
+  return ''
 }
 
 const level1Categories = ref([])
@@ -728,16 +866,24 @@ const resetPcFloors = async () => {
     await loadLevel1Categories()
   }
   theme.pc_floors = buildDefaultPcFloors()
-  ElMessage.success(
-    `已恢复默认楼层（促销 3 + 一级分类 ${level1Categories.value.length}，均启用）`
-  )
+  if (!level1Categories.value.length) {
+    ElMessage.warning('一级分类加载失败，已恢复为 3 层促销楼层；分类楼层可稍后点「添加分类楼层」补回')
+  } else {
+    ElMessage.success(
+      `已恢复默认楼层（促销 3 + 一级分类 ${level1Categories.value.length}，均启用）`
+    )
+  }
 }
 
 /**
  * 获取商城主题配置
  */
+/** 读取失败时禁止保存，避免把页面默认值写回、覆盖线上真实配置 */
+let themeLoadFailed = false
+
 const getThemeConfig = async () => {
   loading.value = true
+  themeLoadFailed = false
   try {
     const res = await getMallStyle()
     if (res && res.data) {
@@ -756,12 +902,21 @@ const getThemeConfig = async () => {
           bannerImage: item?.bannerImage || '',
           bannerLink: item?.bannerLink || '',
         }))
+      } else {
+        theme.pc_floors = []
       }
+    } else {
+      themeLoadFailed = true
+      ElMessage.warning('服务端暂无主题配置，已载入页面默认值；为避免覆盖线上数据，暂不允许保存')
     }
   } catch (error) {
+    themeLoadFailed = true
     console.error('获取主题失败', error)
-    ElMessage.error('获取主题失败')
+    ElMessage.error('获取主题失败，当前为页面默认值；为避免覆盖线上数据，暂不允许保存')
   } finally {
+    // 无论后端是否返回 pc_nav，都统一归一化，保证拖拽 key 与字段结构一致
+    theme.pc_nav = normalizePcNav(theme.pc_nav)
+    if (!Array.isArray(theme.pc_floors)) theme.pc_floors = []
     loading.value = false
   }
 }
@@ -769,15 +924,35 @@ const getThemeConfig = async () => {
 /**
  * 保存商城主题配置
  */
+/** 两端字段集合：保存时只覆盖当前端字段，避免 PC 保存把移动端主题色整包写回 */
+const PC_STYLE_KEYS = [
+  'pc_template_code', 'pc_layout', 'pc_container', 'pc_radius', 'pc_currency',
+  'pc_show_rank', 'pc_show_recommend', 'pc_nav', 'pc_floors',
+]
+const MOBILE_STYLE_KEYS = ['current', 'list']
+
 const handleSave = async () => {
   if (saving.value) return
+  if (themeLoadFailed) {
+    ElMessage.error('主题配置读取失败，为避免覆盖线上数据已阻止保存，请刷新页面重试')
+    return
+  }
+  if (isPc.value) {
+    const navError = validatePcNav()
+    if (navError) {
+      ElMessage.warning(`顶部菜单：${navError}`)
+      return
+    }
+  }
   saving.value = true
   try {
     if (!level1Categories.value.length) {
       await loadLevel1Categories()
     }
-    if (!Array.isArray(theme.pc_floors) || !theme.pc_floors.length) {
-      theme.pc_floors = buildDefaultPcFloors()
+    // 空楼层是合法的「关闭全部楼层」配置，不再强制恢复默认
+    if (!Array.isArray(theme.pc_floors)) theme.pc_floors = []
+    if (isPc.value && theme.pc_floors.length === 0) {
+      ElMessage.info('当前 PC 楼层为空，保存后前台不展示楼层；如需恢复可点「恢复默认」')
     }
     theme.pc_floors = theme.pc_floors.map((item) => ({
       ...item,
@@ -788,7 +963,21 @@ const handleSave = async () => {
     }))
     const serializedTheme = JSON.parse(JSON.stringify(theme))
     serializedTheme.pc_floors = serializedTheme.pc_floors.map(({ _dragId, ...item }) => item)
-    const payload = { data: serializedTheme }
+    serializedTheme.pc_nav = normalizePcNav(serializedTheme.pc_nav).map(({ _navId, ...item }) => item)
+
+    // 跨端合并：先取服务端最新配置，再用本端字段覆盖，避免用页面加载时的旧快照覆盖另一端
+    let merged = serializedTheme
+    try {
+      const latest = await getMallStyle()
+      const serverData = latest?.data || {}
+      merged = { ...serializedTheme, ...serverData }
+      const scopeKeys = isPc.value ? PC_STYLE_KEYS : MOBILE_STYLE_KEYS
+      scopeKeys.forEach((key) => { merged[key] = serializedTheme[key] })
+    } catch (error) {
+      console.warn('保存前读取最新主题失败，按当前页面配置提交', error)
+    }
+
+    const payload = { data: merged }
     const res = await setMallStyle(payload)
     if (res && (res.code === 1 || res.code === 200)) {
       ElMessage.success('保存成功，请刷新商城首页查看')

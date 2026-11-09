@@ -38,7 +38,7 @@ import {
   resolveSecondaryMenuGroup,
   sanitizeOaSecondaryMenus
 } from '@/utils/menuNavigate'
-import { isMenuGroup, resolveGroupedModuleMenu, resolveFirstLevelMenuByDescendant } from '@/utils/firstLevelMenuNav'
+import { isMenuGroup, resolveGroupedModuleMenu, resolveFirstLevelMenuByDescendant, collectSecondaryMenuRoots } from '@/utils/firstLevelMenuNav'
 import { findMenuById, pathWithinMenu } from '@/utils/menuDisplay'
 // 定义组件属性
 const props = defineProps({
@@ -90,8 +90,10 @@ const updateSecondaryMenus = (currentPath) => {
     currentPath = route.path
   }
 
-  // 获取当前一级菜单
-  const firstLevelMenus = appStore.dynamicMenus.filter(menu => menu.pid === 0 && menu.type === 'M' && menu.is_show === 1)
+  // 获取当前一级菜单候选：与左侧一级栏同源（见 collectSecondaryMenuRoots）。
+  // 商品/交易/营销/用户/店铺/数据中台等顶级菜单在库里是 type='C'，
+  // 只按 type='M' 过滤会让这些模块的二级栏整体缺失。
+  const firstLevelMenus = collectSecondaryMenuRoots(appStore.dynamicMenus)
 
   const normalizedCurrentPath = currentPath && currentPath !== '/' && currentPath.endsWith('/')
     ? currentPath.slice(0, -1)

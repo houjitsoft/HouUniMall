@@ -240,8 +240,18 @@ export async function beforeEachGuard(to, from, next) {
           PLUGIN_ROUTE_WAIT_MS
         )
       } else if (pluginCode && !pluginStore.loadedCodes.includes(pluginCode)) {
-        // 后台注册还没轮到它（用户首屏放行后马上点了这个插件的菜单），补等一下
-        await withTimeout(pluginStore.waitForBackgroundPlugins(), PLUGIN_ROUTE_WAIT_MS)
+        // 后台注册还没轮到它（用户首屏放行后马上点了这个插件的菜单），补等一下。
+        // 只 waitForBackgroundPlugins() 会干等 44 个插件串行下载完，目标插件常常排在
+        // 30 名之后，60 秒占位页必然超时。这里改为「先把目标插件提到队首并行注册」：
+        // registerPlugin 内部有 registeringPluginCodes / loadedCodes 去重，后台队列轮到时会自动跳过。
+        const target = (pluginStore.installed || []).find(
+          (item) => item?.code === pluginCode && item.enabled && item.frontendUrl
+        )
+        if (target) {
+          await withTimeout(pluginStore.registerPlugin(target), PLUGIN_ROUTE_WAIT_MS)
+        } else {
+          await withTimeout(pluginStore.waitForBackgroundPlugins(), PLUGIN_ROUTE_WAIT_MS)
+        }
       }
       if (to.name === 'NotFound' && pluginStore.loadedCodes.length > 0) {
         // 只补跳一次（3s 窗口内同一路径不重复补跳），否则目标插件不可达时会死循环，

@@ -123,16 +123,15 @@ onMounted(() => {
     // 只看 loadedOnce 会白等到当前插件 4MB 产物下载完（20-30 秒）。
     () => [pluginStore.loadedOnce, pluginStore.loadedCodes.length, (pluginStore.installed || []).length],
     () => {
-      if (timedOut.value) return
-      // 不再预先过滤 code：清单就绪 / 插件注册完成这两种变化都可能是「该判 404 了」的信号，
-      // 具体是「该跳」还是「该判」交给 jumpIfReady 内部区分。
+      // 超时后也要继续响应插件注册完成：原来 timedOut 直接 return，导致后台队列
+      // 晚到的插件注册成功后页面永久停在「正在加载应用」，必须手动刷新。
       jumpIfReady()
     }
   )
   timer = setTimeout(() => {
-    stop()
     timedOut.value = true
     loading.value = false
+    jumpIfReady()
   }, PLUGIN_PENDING_TIMEOUT_MS)
   onBeforeUnmount(() => stop())
 })

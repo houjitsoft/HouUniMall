@@ -2,7 +2,7 @@
 export const DISPLAY_POS = { LEFT: 'left', PLUGIN: 'plugin', HIDDEN: 'hidden' }
 export const UNCATEGORIZED_CATE_ID = 0
 export const ALL_CATE_ID = -1
-export const FIXED_CORE_MENU_IDS = [19, 1, 1009, 15, 4, 18]
+export const FIXED_CORE_MENU_IDS = [19, 1, 1009, 4, 18]
 export const isMenuGroupRoot = menu => menu?.params === 'host:menu-group'
 
 const isVisibleNode = node => !!node && node.type !== 'A' &&

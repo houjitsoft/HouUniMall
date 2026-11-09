@@ -57,13 +57,48 @@ import request from '@/utils/request'
 // v64：拼团(order-pintuan) 管理端补「拼团管理」二级菜单（平台库 hou_permission_menu id=103688，
 //      pid=103672，paths=/plugin/order-pintuan/index）。前端 1.0.1 包已内置该路由，此前平台库缺
 //      子菜单行导致进入插件后左侧无二级导航；补行后老缓存不会自动带出，必须 bump 强制重拉。
-export const MENU_CACHE_KEY = 'houcloud_user_menus_v66'
+// v67：银联企业订单分账(ums-corp-order) 新增「分账角色」子菜单（perms=ums-corp-order:roles），
+//      20261103-ums-corp-split-role-menus.sql；必须 bump 否则插件内左侧无该入口。
+// v68：商品折扣(goods-discount) 分类并入家族口径 cate_id=4「营销 / 运营」（addon+菜单+市场三处），
+//      154-goods-discount-cate-fix.sql；面板分组源在缓存菜单树，须 bump 才脱离旧孤组。
+// v69：商品折扣(goods-discount) 单菜单拆为 4 个平台子菜单（折扣活动/折扣商品/预热与限购/活动数据统计），
+//      plugin.yaml 登记 + 20261105-goods-discount-menus.sql 补行；已装实例旧缓存不带新子菜单，必须 bump 强制重拉。
+// v71：物业管理(property) 插件在平台站正式安装启用，新增插件位一级菜单(id=103717, display_pos=plugin, paths=/plugin/property)
+//      及子菜单(id=103718)；写入 hou_permission_menu + 角色授权 + 安装态 + 版本行（20261108-property-admin-entry.sql）。
+//      已装实例旧缓存不带该插件位入口，顶栏「插件应用」面板因此不显示物业管理，必须 bump 强制重拉。
+// v72：物业管理按设计稿改为后台左侧主导航 14 项（数据大屏/小区管理/收费标准/抄表管理/账单收费/财务管理/
+//      公告报修管理/轮播图管理/投票管理/员工管理/基础设置/催缴短信/租房管理/业委会选举），
+//      hou_permission_menu 替换原 103717/103718 为 14 个 display_pos='left' 行(id=103719~103732, sort 310~440)，
+//      并改 entry_path=index-20261108b.mjs 规避 plugin-assets 不可变缓存（20261108-property-left-nav.sql）。
+//      已装实例旧缓存只有插件位入口、不含左栏 14 项，必须 bump 强制重拉。
+// v73：物业管理补充 8 个带 ▸ 顶级菜单下的 20 个二级菜单（房屋管理/小区楼栋管理/家属管理/车位管理/
+//      收费项目/收费标准/抄表管理/小程序抄表用户/订单管理/收费列表/欠费列表/公告管理/报修管理/投诉管理/
+//      投票列表/投票用户/租房管理/租房记录/业委会选举/参选人），id=103733~103752，entry_path=index-20261108c.mjs
+//      （20261108-property-submenus.sql）。旧缓存只有 14 顶级项、不含二级，必须 bump 强制重拉。
+// v74：物业管理(property) 边界纠正 —— 由「商城左侧主导航 14 项」改回「右上角插件应用单入口」。
+//      20261109-property-plugin-app-scope.sql：删除 34 条 pid=0/display_pos='left' 的物业菜单，
+//      重建为 1 条 pid=0/display_pos='plugin' 应用根(id=103753, cate_id=2) + 14 L2 + 20 L3 挂根下；
+//      同时修正 8 个与插件路由对不上的 L2 路径（charging-standard→charge 等）。
+//      旧缓存仍带左栏 14 项，必须 bump 强制重拉，否则已登录用户侧栏继续显示幽灵物业菜单。
+// v75：国补插件新增「工作台」二级菜单（/plugin/national-subsidy/workbench，sort=8 排最上），
+//      20261109-national-subsidy-workbench-menu.sql 写入菜单行 + 角色授权；已登录用户缓存的
+//      菜单树不含该入口，必须 bump 强制重拉，否则侧栏看不到工作台。
+// v76：直播带货(mall-live) 后台菜单重构 —— 「直播活动」更名「直播场次」、「直播审核」更名
+//      「直播商品」，并新增「话术脚本 / 互动玩法 / 直播数据」三个子菜单
+//      （20261109-mall-live-menu-enhance.sql 写入菜单行 + 角色授权）。
+// v77：国补插件新增二级菜单「核销与结算」并把工作台让到最高位
+//      （20261109-national-subsidy-settlement-menu.sql 写入菜单行 + 角色授权）。
+//      已登录用户缓存的菜单树不含该入口，必须 bump 强制重拉。
+// v78：GEO 新增「短视频脚本库」并把「短视频生成」改指 /plugin/geo/content/short-video-studio
+//      （20261109-geo-short-video-script.sql 写主框架与 hou_geo_menu 两套菜单）。
+//      老缓存里「短视频生成」仍指向脚本库地址，必须 bump 强制重拉。
+export const MENU_CACHE_KEY = 'houcloud_user_menus_v78'
 /** 跨标签页失效时间戳（localStorage） */
 export const STAMP_KEY = 'houcloud_user_menus_inv'
 /** 旧版 sessionStorage key，迁移后清理 */
 const LEGACY_SESSION_KEY = 'houcloud_user_menus_v11'
 /** 历史版本 localStorage key，启动时清理，避免长期残留 */
-const LEGACY_LOCAL_KEYS = ['houcloud_user_menus_v58', 'houcloud_user_menus_v53', 'houcloud_user_menus_v52', 'houcloud_user_menus_v51', 'houcloud_user_menus_v50', 'houcloud_user_menus_v47', 'houcloud_user_menus_v46', 'houcloud_user_menus_v45', 'houcloud_user_menus_v44', 'houcloud_user_menus_v43', 'houcloud_user_menus_v39', 'houcloud_user_menus_v38', 'houcloud_user_menus_v37', 'houcloud_user_menus_v36', 'houcloud_user_menus_v35', 'houcloud_user_menus_v34', 'houcloud_user_menus_v33', 'houcloud_user_menus_v32', 'houcloud_user_menus_v31', 'houcloud_user_menus_v30', 'houcloud_user_menus_v29', 'houcloud_user_menus_v28', 'houcloud_user_menus_v27', 'houcloud_user_menus_v26', 'houcloud_user_menus_v25', 'houcloud_user_menus_v24', 'houcloud_user_menus_v23', 'houcloud_user_menus_v22', 'houcloud_user_menus_v21', 'houcloud_user_menus_v20', 'houcloud_user_menus_v19', 'houcloud_user_menus_v18', 'houcloud_user_menus_v17', 'houcloud_user_menus_v16', 'houcloud_user_menus_v15', 'houcloud_user_menus_v14', 'houcloud_user_menus_v13', 'houcloud_user_menus_v12']
+const LEGACY_LOCAL_KEYS = ['houcloud_user_menus_v77', 'houcloud_user_menus_v76', 'houcloud_user_menus_v75', 'houcloud_user_menus_v58', 'houcloud_user_menus_v53', 'houcloud_user_menus_v52', 'houcloud_user_menus_v51', 'houcloud_user_menus_v50', 'houcloud_user_menus_v47', 'houcloud_user_menus_v46', 'houcloud_user_menus_v45', 'houcloud_user_menus_v44', 'houcloud_user_menus_v43', 'houcloud_user_menus_v39', 'houcloud_user_menus_v38', 'houcloud_user_menus_v37', 'houcloud_user_menus_v36', 'houcloud_user_menus_v35', 'houcloud_user_menus_v34', 'houcloud_user_menus_v33', 'houcloud_user_menus_v32', 'houcloud_user_menus_v31', 'houcloud_user_menus_v30', 'houcloud_user_menus_v29', 'houcloud_user_menus_v28', 'houcloud_user_menus_v27', 'houcloud_user_menus_v26', 'houcloud_user_menus_v25', 'houcloud_user_menus_v24', 'houcloud_user_menus_v23', 'houcloud_user_menus_v22', 'houcloud_user_menus_v21', 'houcloud_user_menus_v20', 'houcloud_user_menus_v19', 'houcloud_user_menus_v18', 'houcloud_user_menus_v17', 'houcloud_user_menus_v16', 'houcloud_user_menus_v15', 'houcloud_user_menus_v14', 'houcloud_user_menus_v13', 'houcloud_user_menus_v12']
 
 /**
  * 生成当前 token 的指纹，用于避免串用户缓存

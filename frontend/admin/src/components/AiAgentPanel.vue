@@ -161,7 +161,7 @@ const run = async () => {
       url: '/web/ai/chat',
       method: 'post',
       // 长输出场景后端要 60s 以上，这里给足等待时间，避免前端先断
-      timeout: 180000,
+      timeout: 330000,
       data: {
         content: promptText,
         // 每次独立会话，避免上一次的分析上下文影响本次判断

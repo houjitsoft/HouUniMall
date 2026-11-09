@@ -14,7 +14,7 @@
 import { ElMessage } from 'element-plus'
 import { normalizeLegacyPluginPath } from '@/config/pluginRouteConfig.js'
 import { isOaWorkbenchMenu } from '@/utils/menuNavigate.js'
-import { visibleChildren } from './menuDisplay.js'
+import { visibleChildren, collectNavItems } from './menuDisplay.js'
 
 /** GEO 插件卡片应进工作台首页 /plugin/geo（GEODashboard），勿落到子树首叶子。 */
 const isGeoPluginHome = (menu) => {
@@ -132,6 +132,28 @@ export const pickFirstLevelMenus = (menuList) => {
     menu.is_show === 1
   )
   return menus.filter(menu => !isMenuGroup(menu) || visibleGroupChildren(menu).length > 0)
+}
+
+/**
+ * 二级侧栏的「当前一级菜单」候选集：左侧一级栏同源项 + 历史 type='M' 项。
+ *
+ * 背景：商品管理 / 交易管理 / 营销活动 / 用户管理 / 店铺管理 / 数据中台等顶级菜单
+ * 在库里是 `type='C'`（自身即落地页、又带子菜单）。历史上二级侧栏只取 `type='M'`，
+ * 导致进入这些模块后右侧二级栏整体不渲染（例如「用户行为」页看不到用户管理的二级菜单）。
+ *
+ * 这里与一级栏共用 `collectNavItems`（不按 type 过滤），同时保留原 `type='M'` 集合
+ * （含 `display_pos=hidden` 的历史父级），只做合并、不删原项，避免既有匹配退化。
+ *
+ * @param {Array} menus 已归一化的完整菜单树
+ * @returns {Array}
+ */
+export function collectSecondaryMenuRoots(menus = []) {
+  const list = Array.isArray(menus) ? menus : []
+  const legacy = list.filter(
+    (menu) => menu && Number(menu.pid) === 0 && menu.type === 'M' && Number(menu.is_show) === 1
+  )
+  const seen = new Set(legacy.map((menu) => String(menu.id)))
+  return legacy.concat(collectNavItems(list).filter((menu) => !seen.has(String(menu.id))))
 }
 
 /**

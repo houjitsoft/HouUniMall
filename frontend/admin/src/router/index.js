@@ -123,6 +123,12 @@ const routes = [
         component: Dashboard,
         meta: { title: '仪表盘' }
       },
+      // 左下角「个人中心」入口：不属于任何菜单分组，需跳过菜单权限校验
+      {
+        path: '/profile',
+        component: () => import('@/views/user/Profile.vue'),
+        meta: { title: '个人中心', skipMenuCheck: true }
+      },
       // 银联企业订单分账：宿主静态路由兜底（优先于 PluginPending 通配）
       umsCorpOrderRoutes,
       // 插件深链「待注册」占位：插件路由是运行时 router.addRoute 注册的，

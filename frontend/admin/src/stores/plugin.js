@@ -555,6 +555,9 @@ export const usePluginStore = defineStore('plugin', {
                   const imported = await loader()
                   return imported?.default ?? imported
                 },
+                // 待办等 dashboard 面板是远端 chunk，产物 404/423 时必须有兜底组件，
+                // 否则 loader 抛错会被 HeaderDailyTodo 的 onErrorCaptured 吞成「面板加载失败」。
+                errorComponent: PluginRouteFallback,
                 timeout: 15000
               })
             })

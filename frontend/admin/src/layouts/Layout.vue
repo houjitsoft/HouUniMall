@@ -568,16 +568,17 @@ const handleClearCache = async (type) => {
 }
 
 // 用户下拉菜单处理
+// 之前 profile / settings 分支只有 console.log，点击没有任何响应（标品测试问题）。
+// 个人中心是独立页面，设置落到系统设置的基础配置页；退出登录由 UserInfo 自身的确认流程处理。
 const handleCommand = (command) => {
   switch (command) {
     case 'profile':
-      console.log('跳转到个人中心')
+      router.push('/profile').catch(() => {})
       break
     case 'settings':
-      console.log('跳转到设置页面')
+      router.push('/setting/system/basic').catch(() => {})
       break
     case 'logout':
-      console.log('退出登录')
       break
   }
 }

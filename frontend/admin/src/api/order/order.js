@@ -134,9 +134,11 @@ export const orderService = {
   // 订单统计数据
   // @param {Object} params 查询参数
   // @param {Object} config 可选，透传 axios 配置（如 skipAuthRedirect/skipErrorMessage）
+  // 统计类聚合接口偶发返回鉴权类错误码，不能因此清 token 跳登录（标品测试：订单统计跳转登录页）
+  // 调用方仍可通过 config.skipAuthRedirect = false 显式恢复默认行为。
   getOrderStatistics: async (params, config = {}) => {
     try {
-      const response = await request.post('/web/order/statistics', params, config)
+      const response = await request.post('/web/order/statistics', params, { skipAuthRedirect: true, ...config })
       return response
     } catch (error) {
       if (!config.skipErrorMessage) {

@@ -40,7 +40,10 @@ export function useAdminLanguageMenu() {
       storedLocale: getLocale(),
       browserLocales: browserLocales()
     })
-    if (reconcileLocale && resolved && resolved !== getLocale()) {
+    // 用户手动切换的语言不应被后台语言配置拉回中文：只有当前语言根本不在
+    // 可见语言清单里（配置变更/首次加载）才按配置回拉。
+    const visible = visibleAdminLanguages(normalized).map((lang) => lang.value)
+    if (reconcileLocale && resolved && resolved !== getLocale() && !visible.includes(getLocale())) {
       setLocale(resolved)
     }
     applyReadingDirection(normalized, resolved || getLocale())

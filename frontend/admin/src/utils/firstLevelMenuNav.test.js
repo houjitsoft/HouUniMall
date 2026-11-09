@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { navigateFromMenuNode } from './firstLevelMenuNav'
+import { navigateFromMenuNode, collectSecondaryMenuRoots, resolveFirstLevelMenuByDescendant } from './firstLevelMenuNav'
 
 vi.mock('element-plus', () => ({ ElMessage: { error: vi.fn(), warning: vi.fn() } }))
 
@@ -222,4 +222,51 @@ it('skips obsolete mall child routes while preserving server authorization', () 
     { paths: '/mall/customer/statistics', type: 'C' }
   ] }, { router })
   expect(router.push).toHaveBeenCalledWith('/mall/customer/statistics')
+})
+
+describe('二级侧栏的一级菜单候选集', () => {
+  const tree = [
+    // 库里真实存在：顶级菜单为 type='C' 但自身带子菜单（用户管理）
+    {
+      id: 1005, pid: 0, type: 'C', name: '用户管理', paths: '/mall/customer',
+      display_pos: 'left', is_show: 1,
+      children: [
+        { id: 319, pid: 1005, type: 'C', name: '用户行为', paths: '/users/member/behavior', is_show: 1 },
+        { id: 320, pid: 1005, type: 'C', name: '用户统计', paths: '/users/member/statistics', is_show: 1 }
+      ]
+    },
+    // 历史目录型一级菜单
+    { id: 19, pid: 0, type: 'M', name: '仪表盘', paths: '/dashboard', display_pos: 'left', is_show: 1 },
+    // 隐藏的目录型一级菜单（历史父级，需保留）
+    { id: 1, pid: 0, type: 'M', name: '商城管理', paths: '/mall', display_pos: 'hidden', is_show: 1 }
+  ]
+
+  it('把 type=C 的一级业务菜单纳入候选，否则其二级栏不会渲染', () => {
+    const ids = collectSecondaryMenuRoots(tree).map((menu) => menu.id)
+    expect(ids).toContain(1005)
+  })
+
+  it('保留原有 type=M 与隐藏父级，只做合并不删项', () => {
+    const ids = collectSecondaryMenuRoots(tree).map((menu) => menu.id)
+    expect(ids).toContain(19)
+    expect(ids).toContain(1)
+  })
+
+  it('同一菜单不会重复出现', () => {
+    const ids = collectSecondaryMenuRoots(tree).map((menu) => menu.id)
+    expect(ids.filter((id) => id === 19)).toHaveLength(1)
+    expect(ids.filter((id) => id === 1005)).toHaveLength(1)
+  })
+
+  it('从 /users/member/behavior 能反查到「用户管理」一级菜单，二级栏才渲染得出来', () => {
+    const roots = collectSecondaryMenuRoots(tree)
+    const root = resolveFirstLevelMenuByDescendant(roots, '/users/member/behavior')
+    expect(root?.id).toBe(1005)
+    expect(root.children.filter((m) => Number(m.is_show) === 1)).toHaveLength(2)
+  })
+
+  it('空树与 null 入参不报错', () => {
+    expect(collectSecondaryMenuRoots()).toEqual([])
+    expect(collectSecondaryMenuRoots([])).toEqual([])
+  })
 })

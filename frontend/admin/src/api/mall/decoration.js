@@ -174,7 +174,8 @@ export function getBottomNavDetail() {
 
 /**
  * 保存平台底部导航配置
- * @param {Object} data - { pageId, pageData: '<json 字符串>' }
+ * @param {Object} data - { pageId, pagedata: '<json 字符串>' }
+ * ⚠️ 后端 ModularizationdDTO 的 @JsonProperty 是 pagedata（全小写）；传 pageData 会被忽略并把线上底栏写成 NULL。
  * @returns {Promise}
  */
 export function saveBottomNav(data) {
