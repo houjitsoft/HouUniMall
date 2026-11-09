@@ -3,7 +3,7 @@ import {
     joinBusiness as businessrequest,
     joinUserms as usermsrequest,
     joinGoods as goodsrequest,
-    joinThird as thirdrequest,
+    joinThird as thirdpartyrequest,
     joinSupplier as mallSupplier
 } from '@/utils/joinChannels'
 import JSEncrypt from '@/utils/jsencrypt'

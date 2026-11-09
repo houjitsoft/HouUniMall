@@ -1489,69 +1489,69 @@ function deleteTimetwo() {
       )
 }
 
-//验证码
-function handleGetCode() {
-      if (!canClick.value) return
-      canClick.value = false
-      formshopName.userMobile = addMobile.userMobile =
-        ruleForm.contactPhone
-      addMobile.interDialingCode = ruleForm.internationalDialingCode
-      if (addMobile.userMobile != '') {
-          phonecheck(formshopName).then((res0) => {
-              if (res0.data == 1 && originType.value == 1) {
-                  ElMessageBox.confirm(
-                      '当前手机号 / 邮箱已经注册成功, 是否去登录?',
-                      '温馨提示',
-                      {
-                          confirmButtonText: '去登录',
-                          cancelButtonText: '重新填写',
-                          type: 'warning',
-                      }
-                  ).then(() => {
-                      safeOpenUrl(baseUrl + '/bcenter/#/login', { source: 'web' })
-                  }).catch(() => {
-                      canClick.value = true
-                  })
-              } else if (res0.data == 1 || (res0.data == 0 && originType.value == 1)) {
-                  sendPhoneCode(addMobile).then((res) => {
-                      if (res.code == 1) {
-                          content.value = totalTime.value + 's后重新发送'
-                          let clock = window.setInterval(() => {
-                              totalTime.value--
-                              content.value = totalTime.value + 's后重新发送'
-                              if (totalTime.value < 0) {
-                                  window.clearInterval(clock)
-                                  content.value = '重新发送验证码'
-                                  totalTime.value = 60
-                                  canClick.value = true
-                              }
-                          }, 1000)
-                      } else {
-                          ElNotification({
-                              title: '提示',
-                              message: res.message,
-                              type: 'info',
-                          })
-                          canClick.value = true
-                      }
-                  })
-              } else {
-                  ElMessage.error(
-                      '请填写平台已注册手机号 / 邮箱，认证时平台将通过该渠道联系您。'
-                  )
-                  canClick.value = true
-                  return false
-              }
-          })
-      } else {
-        ElNotification({
-          title: '提示',
-          message: '请输入手机号码',
-          type: 'info',
-        })
-        canClick.value = true
+// 验证码：请求失败必须恢复按钮，只有发送成功后才进入倒计时。
+async function handleGetCode() {
+  if (!canClick.value) return
+  const account = String(ruleForm.contactPhone || '').trim()
+  if (!account) {
+    ElMessage.warning('请输入手机号或邮箱')
+    return
+  }
+  ruleForm.contactPhone = account
+  formshopName.userMobile = addMobile.userMobile = account
+  addMobile.interDialingCode = ruleForm.internationalDialingCode
+  canClick.value = false
+  let sent = false
+  try {
+    const res0 = await phonecheck(formshopName)
+    if (res0.data == 1 && originType.value == 1) {
+      try {
+        await ElMessageBox.confirm(
+          '当前手机号 / 邮箱已经注册成功, 是否去登录?',
+          '温馨提示',
+          { confirmButtonText: '去登录', cancelButtonText: '重新填写', type: 'warning' }
+        )
+        safeOpenUrl(baseUrl + '/bcenter/#/login', { source: 'web' })
+      } catch (_) {
+        // 取消登录提示后允许重新填写并发送。
       }
+      return
+    }
+    if (!(res0.data == 1 || (res0.data == 0 && originType.value == 1))) {
+      ElMessage.error('请填写平台已注册手机号 / 邮箱，认证时平台将通过该渠道联系您。')
+      return
+    }
+    const res = await sendPhoneCode(addMobile)
+    if (res.code != 1) {
+      ElMessage.error(res.message || '验证码发送失败，请重试')
+      return
+    }
+    sent = true
+    totalTime.value = 60
+    content.value = totalTime.value + 's后重新发送'
+    codeClock = window.setInterval(() => {
+      totalTime.value--
+      if (totalTime.value <= 0) {
+        window.clearInterval(codeClock)
+        codeClock = null
+        content.value = '重新发送验证码'
+        totalTime.value = 60
+        canClick.value = true
+      } else {
+        content.value = totalTime.value + 's后重新发送'
+      }
+    }, 1000)
+  } catch (_) {
+    // 请求通道已经展示业务/网络错误；这里只恢复交互，避免未处理的 Promise 拒绝。
+  } finally {
+    if (!sent) canClick.value = true
+  }
 }
+
+let codeClock = null
+onBeforeUnmount(() => {
+  if (codeClock !== null) window.clearInterval(codeClock)
+})
 
 //店铺所在地址
 function handleChanges(val) {
