@@ -10,7 +10,7 @@
                     <li v-for="item in section.articletitle2" :key="item.articleId">
                         <NuxtLink
                             :to="item.articleUrl || '/article'"
-                            :external="String(item.articleUrl || '').startsWith('/ucenter/#/')"
+                            :external="String(item.articleUrl || '').startsWith('/ucenter/#/') || String(item.articleUrl || '').startsWith('/bcenter/#/')"
                             @click="handleArticleClick(section.articleGroupId, item.articleId)">
                             {{ $t(item.articleTitle)  }}
                         </NuxtLink>
@@ -81,7 +81,7 @@ const DEFAULT_HELP_INFO = [
         articleGroupId: 'default-merchant',
         articleGroupTitle: '商家服务',
         articletitle2: [
-            { articleId: 'merchant-entry', articleTitle: '商家入驻', articleUrl: '/article' },
+            { articleId: 'merchant-entry', articleTitle: '商家入驻', articleUrl: '/bcenter/#/join' },
             { articleId: 'platform-rules', articleTitle: '平台规则', articleUrl: '/article' },
             { articleId: 'rule-standards', articleTitle: '规则标准', articleUrl: '/article' }
         ]

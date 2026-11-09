@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.MemberPortraitMapper">
+
+    <!--
+      会员画像基础聚合。
+      数据来源（全部真实库表，未做任何补数）：
+        hou_user_info            会员基础 + 登录次数 + 最后登录 + 注册终端
+        hou_order_base           有效订单数 / 累计金额 / 最近下单 / 下单天数
+        hou_goods_user_footprint 商品浏览足迹（当前生产库为 0 行，接口会标记未采集）
+        hou_base_tag_class       运营手工贴的标签（tag_id 逗号串）
+        hou_user_tag_info        标签名称
+        hou_order_goods          购买商品 / 店铺偏好
+    -->
+    <select id="selectPortraitList" resultType="com.houjiang.userms.vo.MemberPortraitVO">
+        SELECT
+            u.user_id                                                 AS userId,
+            u.user_nickname                                           AS nickname,
+            u.user_mobile                                             AS mobile,
+            DATE_FORMAT(u.create_time, '%Y-%m-%d %H:%i:%s')           AS registerTime,
+            u.register_terminal                                       AS registerTerminal,
+            u.grade_id                                                AS gradeId,
+            u.is_admin                                                AS isAdmin,
+            u.user_count_login                                        AS loginCount,
+            DATE_FORMAT(u.user_lastlogin_time, '%Y-%m-%d %H:%i:%s')    AS lastLoginTime,
+            u.user_lastlogin_ip                                       AS lastLoginIp,
+            IFNULL(o.order_count, 0)                                  AS orderCount,
+            IFNULL(o.order_amount, 0)                                 AS orderAmount,
+            DATE_FORMAT(o.last_order_time, '%Y-%m-%d %H:%i:%s')       AS lastOrderTime,
+            IFNULL(o.order_days, 0)                                   AS orderDays,
+            IFNULL(o.order_total_count, 0)                            AS orderTotalCount,
+            IFNULL(o.order_total_amount, 0)                           AS orderTotalAmount,
+            IFNULL(o.pending_pay_count, 0)                            AS pendingPayCount,
+            IFNULL(o.pending_pay_amount, 0)                           AS pendingPayAmount,
+            IFNULL(b.browse_count, 0)                                 AS browseCount,
+            DATE_FORMAT(b.last_browse_time, '%Y-%m-%d %H:%i:%s')      AS lastBrowseTime,
+            t.tag_names                                               AS tagNamesStr,
+            g.fav_goods_name                                          AS favGoodsName,
+            IFNULL(g.bought_kinds, 0)                                 AS boughtGoodsKinds,
+            sh.fav_shop_name                                          AS favShopName
+        FROM ${database.prefix.userms}hou_user_info u
+        LEFT JOIN (
+            <!-- 有效订单＝排除待付款(1)/取消(7)；同时保留全部订单与待付款口径，便于区分「未付款」与「真消费」 -->
+            SELECT buyer_user_id,
+                   SUM(CASE WHEN order_status NOT IN (1, 7) THEN 1 ELSE 0 END) AS order_count,
+                   SUM(CASE WHEN order_status NOT IN (1, 7) THEN order_payment_amount ELSE 0 END) AS order_amount,
+                   MAX(CASE WHEN order_status NOT IN (1, 7) THEN order_create_time END) AS last_order_time,
+                   COUNT(DISTINCT CASE WHEN order_status NOT IN (1, 7) THEN order_date END) AS order_days,
+                   COUNT(*) AS order_total_count,
+                   SUM(order_payment_amount) AS order_total_amount,
+                   SUM(CASE WHEN order_status = 1 THEN 1 ELSE 0 END) AS pending_pay_count,
+                   SUM(CASE WHEN order_status = 1 THEN order_payment_amount ELSE 0 END) AS pending_pay_amount
+            FROM ${database.prefix.order}hou_order_base
+            GROUP BY buyer_user_id
+        ) o ON CONVERT(o.buyer_user_id USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(CAST(u.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        LEFT JOIN (
+            SELECT user_id,
+                   COUNT(*)               AS browse_count,
+                   MAX(footprint_time)    AS last_browse_time
+            FROM ${database.prefix.goods}hou_goods_user_footprint
+            WHERE user_id IS NOT NULL AND user_id &lt;&gt; ''
+            GROUP BY user_id
+        ) b ON CONVERT(b.user_id USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(CAST(u.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        LEFT JOIN (
+            SELECT tc.member_id,
+                   GROUP_CONCAT(DISTINCT ti.tag_name) AS tag_names
+            FROM ${database.prefix.base}hou_base_tag_class tc
+            INNER JOIN ${database.prefix.userms}hou_user_tag_info ti
+                    ON FIND_IN_SET(ti.tag_id, tc.tag_id) &gt; 0
+            WHERE tc.tag_id IS NOT NULL AND tc.tag_id &lt;&gt; ''
+              AND ti.tag_isactive = 1
+            GROUP BY tc.member_id
+        ) t ON CONVERT(t.member_id USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(CAST(u.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        LEFT JOIN (
+            SELECT x.buyer_user_id,
+                   SUBSTRING_INDEX(GROUP_CONCAT(x.goods_name ORDER BY x.cnt DESC, x.goods_name), ',', 1) AS fav_goods_name,
+                   COUNT(*) AS bought_kinds
+            FROM (
+                SELECT og.buyer_user_id, og.goods_name, COUNT(*) AS cnt
+                FROM ${database.prefix.order}hou_order_goods og
+                GROUP BY og.buyer_user_id, og.goods_name
+            ) x
+            GROUP BY x.buyer_user_id
+        ) g ON CONVERT(g.buyer_user_id USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(CAST(u.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        LEFT JOIN (
+            SELECT y.buyer_user_id,
+                   SUBSTRING_INDEX(GROUP_CONCAT(y.shop_name ORDER BY y.cnt DESC, y.shop_name), ',', 1) AS fav_shop_name
+            FROM (
+                SELECT og.buyer_user_id, og.shop_name, COUNT(*) AS cnt
+                FROM ${database.prefix.order}hou_order_goods og
+                GROUP BY og.buyer_user_id, og.shop_name
+            ) y
+            GROUP BY y.buyer_user_id
+        ) sh ON CONVERT(sh.buyer_user_id USING utf8mb4) COLLATE utf8mb4_general_ci = CONVERT(CAST(u.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        WHERE u.is_delete = 0
+        <if test="keyword != null and keyword != ''">
+            AND (
+                u.user_nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR u.user_mobile LIKE CONCAT('%', #{keyword}, '%')
+                OR CAST(u.user_id AS CHAR) = #{keyword}
+            )
+        </if>
+        <if test="minOrders != null">
+            AND IFNULL(o.order_count, 0) &gt;= #{minOrders}
+        </if>
+        ORDER BY u.user_id
+        LIMIT 5000
+    </select>
+
+    <!-- 浏览足迹明细：按会员 + 商品名聚合，Service 取每人 TOP10 -->
+    <select id="selectBrowseGoods" resultType="java.util.Map">
+        SELECT
+            f.user_id      AS userId,
+            gc.common_name AS goodsName,
+            COUNT(*)       AS cnt
+        FROM ${database.prefix.goods}hou_goods_user_footprint f
+        LEFT JOIN ${database.prefix.goods}hou_goods_common gc ON gc.common_id = f.common_id
+        WHERE f.user_id IS NOT NULL AND f.user_id &lt;&gt; ''
+        GROUP BY f.user_id, gc.common_name
+        ORDER BY f.user_id, cnt DESC
+    </select>
+
+    <select id="countFootprintRows" resultType="int">
+        SELECT COUNT(*) FROM ${database.prefix.goods}hou_goods_user_footprint
+    </select>
+
+    <!--
+      近 N 天真实下单趋势：按「下单日期」聚合，三条口径同时输出，不丢弃任何一种真实订单。
+        created        当日提交的订单数（含待付款/取消），反映真实的加购-下单动作
+        paid           当日提交且有效的订单数（order_status NOT IN (1,7)）
+        amount         当日有效订单支付金额
+        pending_amount 当日提交但仍待付款的金额（催付目标）
+      「只画有效订单」会让库里全部为待付款时呈现一条 0 线，等于把真实行为藏起来，故一并输出。
+    -->
+    <select id="selectDailyTrend" resultType="java.util.Map">
+        SELECT DATE_FORMAT(order_create_time, '%Y-%m-%d') AS d,
+               COUNT(*)                                   AS created,
+               SUM(CASE WHEN order_status NOT IN (1, 7) THEN 1 ELSE 0 END) AS paid,
+               IFNULL(SUM(CASE WHEN order_status = 1 THEN 1 ELSE 0 END), 0) AS pending_count,
+               IFNULL(SUM(CASE WHEN order_status = 7 THEN 1 ELSE 0 END), 0) AS cancelled_count,
+               IFNULL(SUM(CASE WHEN order_status NOT IN (1, 7) THEN order_payment_amount ELSE 0 END), 0) AS amount,
+               IFNULL(SUM(CASE WHEN order_status = 1 THEN order_payment_amount ELSE 0 END), 0) AS pending_amount
+        FROM ${database.prefix.order}hou_order_base
+        WHERE order_create_time &gt;= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        GROUP BY DATE_FORMAT(order_create_time, '%Y-%m-%d')
+        ORDER BY d
+    </select>
+
+    <select id="countValidTagRows" resultType="int">
+        SELECT COUNT(*) FROM ${database.prefix.base}hou_base_tag_class
+        WHERE tag_id IS NOT NULL AND tag_id &lt;&gt; ''
+    </select>
+
+    <select id="countValidOrders" resultType="int">
+        SELECT COUNT(*) FROM ${database.prefix.order}hou_order_base
+        WHERE order_status NOT IN (1, 7)
+    </select>
+
+    <select id="countAllOrders" resultType="int">
+        SELECT COUNT(*) FROM ${database.prefix.order}hou_order_base
+    </select>
+
+    <!-- ==================== 等级 / 单客 360 明细 ==================== -->
+
+    <select id="selectGradeList" resultType="java.util.Map">
+        SELECT id AS gradeId, grade_name AS gradeName, grade_discount AS gradeDiscount
+        FROM ${database.prefix.base}hou_base_membership_grade
+        ORDER BY grade_rule
+    </select>
+
+    <!--
+      单客行为时间线：登录事件（logging 域）+ 下单事件（order 域）真实合并，按时间倒序。
+      登录日志只取成功记录（login_status = 1），失败登录不计入活跃行为。
+    -->
+    <select id="selectTimeline" resultType="java.util.Map">
+        SELECT x.event_time AS eventTime, x.event_type AS eventType, x.title AS title, x.detail AS detail
+        FROM (
+            SELECT DATE_FORMAT(l.create_time, '%Y-%m-%d %H:%i:%s') AS event_time,
+                   'login' AS event_type,
+                   '登录' AS title,
+                   CONCAT(IFNULL(NULLIF(l.login_type, ''), '账号登录'),
+                          IF(l.device IS NULL OR l.device = '', '', CONCAT(' · ', l.device)),
+                          IF(l.ip IS NULL OR l.ip = '', '', CONCAT(' · ', l.ip))) AS detail
+            FROM hou_log_login l
+            WHERE CONVERT(l.user_id USING utf8mb4) COLLATE utf8mb4_general_ci
+                  = CONVERT(CAST(#{userId} AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+              AND l.login_status = 1
+            UNION ALL
+            SELECT DATE_FORMAT(o.order_create_time, '%Y-%m-%d %H:%i:%s') AS event_time,
+                   'order' AS event_type,
+                   CONCAT('下单 #', o.order_id,
+                          CASE o.order_status
+                               WHEN 1 THEN '（待付款）'
+                               WHEN 3 THEN '（待发货）'
+                               WHEN 4 THEN '（已发货）'
+                               WHEN 6 THEN '（已确认收货）'
+                               WHEN 7 THEN '（已取消）'
+                               ELSE '' END) AS title,
+                   CONCAT('应付 ¥', FORMAT(o.order_payment_amount, 2)) AS detail
+            FROM ${database.prefix.order}hou_order_base o
+            WHERE CONVERT(o.buyer_user_id USING utf8mb4) COLLATE utf8mb4_general_ci
+                  = CONVERT(CAST(#{userId} AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        ) x
+        ORDER BY x.event_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectPrefGoods" resultType="java.util.Map">
+        SELECT og.goods_name AS goodsName, COUNT(*) AS cnt, SUM(og.order_goods_payment_amount) AS amount
+        FROM ${database.prefix.order}hou_order_goods og
+        WHERE CONVERT(og.buyer_user_id USING utf8mb4) COLLATE utf8mb4_general_ci
+              = CONVERT(CAST(#{userId} AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        GROUP BY og.goods_name
+        ORDER BY cnt DESC, amount DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectPrefShop" resultType="java.util.Map">
+        SELECT og.shop_name AS shopName, COUNT(*) AS cnt, SUM(og.order_goods_payment_amount) AS amount
+        FROM ${database.prefix.order}hou_order_goods og
+        WHERE CONVERT(og.buyer_user_id USING utf8mb4) COLLATE utf8mb4_general_ci
+              = CONVERT(CAST(#{userId} AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+          AND og.shop_name IS NOT NULL AND og.shop_name &lt;&gt; ''
+        GROUP BY og.shop_name
+        ORDER BY cnt DESC, amount DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 价格带：按商品行实付金额分档，分档边界写死在 SQL 里以保证口径稳定 -->
+    <select id="selectPriceBands" resultType="java.util.Map">
+        SELECT x.band AS band, COUNT(*) AS cnt, IFNULL(SUM(x.pay), 0) AS amount
+        FROM (
+            SELECT CASE
+                     WHEN og.order_goods_payment_amount &lt; 50 THEN '0-50'
+                     WHEN og.order_goods_payment_amount &lt; 100 THEN '50-100'
+                     WHEN og.order_goods_payment_amount &lt; 300 THEN '100-300'
+                     WHEN og.order_goods_payment_amount &lt; 1000 THEN '300-1000'
+                     ELSE '1000+'
+                   END AS band,
+                   og.order_goods_payment_amount AS pay,
+                   CASE
+                     WHEN og.order_goods_payment_amount &lt; 50 THEN 1
+                     WHEN og.order_goods_payment_amount &lt; 100 THEN 2
+                     WHEN og.order_goods_payment_amount &lt; 300 THEN 3
+                     WHEN og.order_goods_payment_amount &lt; 1000 THEN 4
+                     ELSE 5
+                   END AS sort_no
+            FROM ${database.prefix.order}hou_order_goods og
+            WHERE CONVERT(og.buyer_user_id USING utf8mb4) COLLATE utf8mb4_general_ci
+                  = CONVERT(CAST(#{userId} AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        ) x
+        GROUP BY x.band, x.sort_no
+        ORDER BY x.sort_no
+    </select>
+
+    <select id="countClassAvailable" resultType="int">
+        SELECT COUNT(*) FROM ${database.prefix.order}hou_order_goods WHERE goods_class_id IS NOT NULL
+    </select>
+
+    <!-- ==================== 标签体系 ==================== -->
+
+    <!--
+      标签字典 + 每个标签的真实覆盖人数。
+      打标关系存在 hou_base_tag_class.tag_id（逗号串），因此用 FIND_IN_SET 统计，与画像列表口径一致。
+    -->
+    <select id="selectTagDict" resultType="java.util.Map">
+        SELECT ti.tag_id AS tagId,
+               ti.tag_name AS tagName,
+               ti.tag_weight AS tagWeight,
+               COALESCE(ti.tag_color, '#409EFF') AS tagColor,
+               ti.tag_describe AS tagDescribe,
+               ti.tag_isactive AS tagIsactive,
+               DATE_FORMAT(ti.tag_add_data, '%Y-%m-%d %H:%i:%s') AS createTime,
+               (SELECT COUNT(DISTINCT tc.member_id) FROM ${database.prefix.base}hou_base_tag_class tc
+                 WHERE tc.tag_id IS NOT NULL AND FIND_IN_SET(ti.tag_id, tc.tag_id) &gt; 0) AS memberCount
+        FROM ${database.prefix.userms}hou_user_tag_info ti
+        WHERE ti.tag_isactive = 1
+        ORDER BY ti.tag_weight DESC, ti.tag_id ASC
+    </select>
+
+    <insert id="insertTag" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="tagId">
+        INSERT INTO ${database.prefix.userms}hou_user_tag_info
+            (tag_name, tag_weight, tag_describe, tag_color, tag_isactive)
+        VALUES
+            (#{tagName}, #{tagWeight}, #{tagDescribe}, COALESCE(#{tagColor}, '#409EFF'), 1)
+    </insert>
+
+    <!-- 全量打标关系，一次取回后在内存里按会员归并 -->
+    <select id="selectAllUserTagRows" resultType="java.util.Map">
+        SELECT CAST(tc.member_id AS UNSIGNED) AS userId,
+               GROUP_CONCAT(DISTINCT ti.tag_id ORDER BY ti.tag_id) AS tagIdStr
+        FROM ${database.prefix.base}hou_base_tag_class tc
+        INNER JOIN ${database.prefix.userms}hou_user_tag_info ti
+                ON FIND_IN_SET(ti.tag_id, tc.tag_id) &gt; 0 AND ti.tag_isactive = 1
+        WHERE tc.tag_id IS NOT NULL AND tc.tag_id &lt;&gt; ''
+        GROUP BY tc.member_id
+    </select>
+
+    <update id="updateTagInfo" parameterType="java.util.Map">
+        UPDATE ${database.prefix.userms}hou_user_tag_info
+        <set>
+            <if test="tagName != null">tag_name = #{tagName},</if>
+            <if test="tagWeight != null">tag_weight = #{tagWeight},</if>
+            <if test="tagDescribe != null">tag_describe = #{tagDescribe},</if>
+            <if test="tagColor != null">tag_color = #{tagColor},</if>
+            tag_upd_data = NOW()
+        </set>
+        WHERE tag_id = #{tagId}
+    </update>
+
+    <update id="updateTagActive">
+        UPDATE ${database.prefix.userms}hou_user_tag_info
+        SET tag_isactive = #{tagIsactive}
+        WHERE tag_id = #{tagId}
+    </update>
+
+    <update id="deleteTag">
+        UPDATE ${database.prefix.userms}hou_user_tag_info
+        SET tag_isactive = 0, tag_upd_data = NOW()
+        WHERE tag_id = #{tagId}
+    </update>
+
+    <select id="selectUserTagIdStr" resultType="java.lang.String">
+        SELECT tag_id FROM ${database.prefix.base}hou_base_tag_class
+        WHERE CONVERT(member_id USING utf8mb4) COLLATE utf8mb4_general_ci
+              = CONVERT(CAST(#{userId} AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        LIMIT 1
+    </select>
+
+    <insert id="insertUserTagRow">
+        INSERT INTO ${database.prefix.base}hou_base_tag_class (member_id, tag_id, member_class_id)
+        SELECT #{userId}, NULL, 1 FROM DUAL
+        WHERE NOT EXISTS (
+            SELECT 1 FROM ${database.prefix.base}hou_base_tag_class
+            WHERE CONVERT(member_id USING utf8mb4) COLLATE utf8mb4_general_ci
+                  = CONVERT(CAST(#{userId} AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+        )
+    </insert>
+
+    <update id="updateUserTagIdStr">
+        UPDATE ${database.prefix.base}hou_base_tag_class
+        SET tag_id = #{tagIdStr}
+        WHERE CONVERT(member_id USING utf8mb4) COLLATE utf8mb4_general_ci
+              = CONVERT(CAST(#{userId} AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci
+    </update>
+
+    <select id="selectUserIdsByTag" resultType="java.lang.Long">
+        SELECT DISTINCT CAST(tc.member_id AS UNSIGNED) FROM ${database.prefix.base}hou_base_tag_class tc
+        WHERE tc.tag_id IS NOT NULL AND FIND_IN_SET(#{tagId}, tc.tag_id) &gt; 0
+    </select>
+
+    <!-- ==================== 人群包 ==================== -->
+
+    <insert id="insertCrowd" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ${database.prefix.userms}hou_user_portrait_crowd
+            (crowd_name, remark, rule_json, rule_text, member_count, member_ids, create_by)
+        VALUES
+            (#{crowdName}, #{remark}, #{ruleJson}, #{ruleText}, #{memberCount}, #{memberIds}, #{createBy})
+    </insert>
+
+    <select id="selectCrowdList" resultType="java.util.Map">
+        SELECT id AS id, crowd_name AS crowdName, remark AS remark, rule_json AS ruleJson,
+               rule_text AS ruleText, member_count AS memberCount,
+               DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') AS createTime
+        FROM ${database.prefix.userms}hou_user_portrait_crowd
+        WHERE is_deleted = 0
+        ORDER BY id DESC
+        LIMIT 200
+    </select>
+
+    <update id="deleteCrowd">
+        UPDATE ${database.prefix.userms}hou_user_portrait_crowd SET is_deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

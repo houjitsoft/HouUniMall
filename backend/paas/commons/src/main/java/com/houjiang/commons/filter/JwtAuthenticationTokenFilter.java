@@ -560,23 +560,87 @@ public class JwtAuthenticationTokenFilter<T> extends OncePerRequestFilter {
      */
     private Collection<? extends GrantedAuthority> resolveAuthorities(
             T loginUser, com.houjiang.commons.dto.userms.UserInfoDTO userInfoDTO) {
+        java.util.LinkedHashMap<String, GrantedAuthority> merged = new java.util.LinkedHashMap<>();
         if (loginUser instanceof UserDetails userDetails) {
             Collection<? extends GrantedAuthority> fromUser = userDetails.getAuthorities();
             if (fromUser != null && !fromUser.isEmpty()) {
-                return fromUser;
+                appendAuthorities(merged, fromUser, null);
             }
         }
-        if (userInfoDTO == null || userInfoDTO.getPermissions() == null || userInfoDTO.getPermissions().isEmpty()) {
+        if (merged.isEmpty() && userInfoDTO != null && userInfoDTO.getPermissions() != null) {
+            appendAuthorities(merged, null, userInfoDTO.getPermissions());
+        }
+        // 权限叠加：插件安装 / 角色改授权之后，登录时固化的会话快照不会自己长出新的权限点，
+        // 老会话会一直 403（插件接口提示「无权访问插件接口」）。这里再读一次权限服务维护的
+        // 最新快照 user:permissions:<userId>（60 分钟 TTL，菜单变更时由插件菜单同步清空），
+        // 与会话快照取并集：身份仍以会话为准，权限以权限服务的最新记录为准。
+        for (String permission : fetchLatestPermissions(userInfoDTO)) {
+            merged.putIfAbsent(permission, new SimpleGrantedAuthority(permission));
+        }
+        return List.copyOf(merged.values());
+    }
+
+    /** 把 UserDetails 的权限或会话 permissions 合并进目标集合，按权限名去重。 */
+    private static void appendAuthorities(java.util.LinkedHashMap<String, GrantedAuthority> target,
+                                          Collection<? extends GrantedAuthority> authorities,
+                                          List<String> permissions) {
+        if (authorities != null) {
+            for (GrantedAuthority authority : authorities) {
+                if (authority != null && StringUtils.hasText(authority.getAuthority())) {
+                    String name = authority.getAuthority().trim();
+                    target.putIfAbsent(name, authority);
+                }
+            }
+        }
+        if (permissions != null) {
+            for (String permission : permissions) {
+                if (StringUtils.hasText(permission)) {
+                    String name = permission.trim();
+                    target.putIfAbsent(name, new SimpleGrantedAuthority(name));
+                }
+            }
+        }
+    }
+
+    /**
+     * 读取权限服务维护的最新权限快照 {@code user:permissions:<userId>}。
+     *
+     * <p>权限缓存缺失（TTL 到期未重建）、格式不符或 Redis 不可用时一律降级返回空集合：
+     * 登录态本身已经校验通过，不能因为权限缓存读不到就把用户挡在门外。
+     */
+    private List<String> fetchLatestPermissions(com.houjiang.commons.dto.userms.UserInfoDTO userInfoDTO) {
+        if (redisCache == null || userInfoDTO == null || userInfoDTO.getUser() == null
+                || !StringUtils.hasText(userInfoDTO.getUser().getUserId())) {
             return List.of();
         }
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        for (String permission : userInfoDTO.getPermissions()) {
-            if (!StringUtils.hasText(permission)) {
-                continue;
+        String cacheKey = "user:permissions:" + userInfoDTO.getUser().getUserId().trim();
+        try {
+            Object cached = redisCache.getCacheObject(cacheKey);
+            if (cached == null) {
+                return List.of();
             }
-            authorities.add(new SimpleGrantedAuthority(permission.trim()));
+            // 权限服务写入的是 Jackson 序列化的 JSON 数组，经 Redis 序列化后可能再被字符串包一层。
+            Object parsed = cached;
+            for (int depth = 0; depth < 3 && parsed instanceof String text; depth++) {
+                if (!StringUtils.hasText(text)) {
+                    return List.of();
+                }
+                parsed = JSON.parse(text);
+            }
+            if (!(parsed instanceof List<?> list) || list.isEmpty()) {
+                return List.of();
+            }
+            List<String> permissions = new ArrayList<>(list.size());
+            for (Object item : list) {
+                if (item != null && StringUtils.hasText(String.valueOf(item))) {
+                    permissions.add(String.valueOf(item).trim());
+                }
+            }
+            return permissions;
+        } catch (RuntimeException e) {
+            log.debug("JWT过滤器 - 读取最新权限快照失败，沿用会话权限: {}", e.getMessage());
+            return List.of();
         }
-        return authorities;
     }
 
     /**

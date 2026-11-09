@@ -267,7 +267,8 @@
                         <nav class="nav-menu">
                             <template v-for="(nav, index) in platformNav" :key="index">
                                 <NuxtLink :to="nav.navUrl || '/'" :target="nav.navNewOpen === 1 ? '_blank' : undefined"
-                                    :rel="nav.navNewOpen === 1 ? 'noopener noreferrer' : undefined" class="nav-link">
+                                    :rel="nav.navNewOpen === 1 ? 'noopener noreferrer' : undefined"
+                                    :title="nav.nameEn || nav.navTitle" class="nav-link">
                                     <img v-if="nav.navImage" :src="nav.navImage" :alt="nav.navTitle" class="nav-link-icon" />
                                     <span>{{ $t(nav.navTitle) }}</span>
                                 </NuxtLink>
@@ -321,7 +322,7 @@ const plusHeaderBadgeImg = computed(() =>
 const selectedCategory = ref('1')
 const searchQuery = ref('')
 const hotWords = ref<string[]>([])
-const platformNav = ref<{ navTitle: string; navUrl: string; navNewOpen?: number; navImage?: string }[]>([])
+const platformNav = ref<{ navTitle: string; navUrl: string; nameEn?: string; navNewOpen?: number; navImage?: string }[]>([])
 const logoUrl = ref<string>('')
 const logo_copywriting_ico_pc_hello = computed(() => useMallStore().getConfigValueByKey('logo_copywriting_ico_pc_hello') || 'Hi~欢迎来到UniMall商城')
 const categories = computed(() => [
@@ -772,11 +773,13 @@ const handleSupplierCenterClick = () => {
     }
 }
 
-// 点击商家中心：已是商家进 BCENTER_URL，否则进入驻台
+// 点击商家中心：未登录进入商家中心自有登录页；已登录则按商家身份分流
 const handleBusinessCenterClick = () => {
-    // 入口对应 public/mall/bcenter；状态接口异常时也必须允许跳转。
-    BCENTER_URL('/home')
-    return
+    if (!isLogin.value) {
+        // 未登录：直接进入商家中心（bcenter）登录页，登录成功后落地商家中心
+        BCENTER_URL('/home', { allowGuest: true })
+        return
+    }
     if (shopJoinData.value?.message) {
         Toast.error(shopJoinData.value.message)
         return
@@ -788,7 +791,8 @@ const handleBusinessCenterClick = () => {
     if (isMerchantUser(shopJoinData.value)) {
         BCENTER_URL('/home')
     } else {
-        TCENTER_URL('/')
+        // 已是会员但非商家：进入商家入驻（注册）页
+        BCENTER_URL('/join')
     }
 }
 
@@ -888,14 +892,9 @@ const handleCartClick = async () => {
 }
 
 const handleAiAssistantClick = async () => {
-    // 获取认证实例
-    const { isLogin: checkLogin } = useAuth()
-    // 判断是否登录，如果未登录会自动跳转到登录页，并设置重定向路径
-    if (checkLogin('/ai/assistant')) {
-        // 已登录，跳转到Ai助手页
-        await navigateTo('/ai/assistant')
-    }
-    // 如果未登录，useAuth().isLogin() 会自动跳转到登录页，无需额外处理
+    // 🔴 前台 AI 导购对匿名访客开放，直接进页面，不再强制登录
+    // （后端 /web/ai/agent/public/* 已放开，且页面本身无登录鉴权）
+    await navigateTo('/ai/assistant')
 }
 
 const handleUserClick = async () => {

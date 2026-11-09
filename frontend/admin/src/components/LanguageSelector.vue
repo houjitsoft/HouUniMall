@@ -22,7 +22,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
-import { setLocale, getLocale } from '@/i18n-element'
+import { setLocale, getLocale } from '@/locales'
 import { useAdminLanguageMenu } from '@/composables/useAdminLanguageMenu'
 import { ADMIN_LANGUAGES } from '@/locales/adminLanguageCatalog'
 

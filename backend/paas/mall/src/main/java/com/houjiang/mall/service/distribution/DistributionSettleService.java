@@ -145,18 +145,10 @@ public class DistributionSettleService {
                 continue;
             }
             BigDecimal commission = nz(record.getCommissionAmount());
-            record.setStatus(RECORD_STATUS_SETTLED);
-            record.setSettleTime(now);
-            record.setUpdateTime(now);
-            if (!commissionRecordService.updateById(record)) {
+            // 与后台手工结算共用 CommissionRecordService.settle，确保「状态 + 资金台账」只有一个口径
+            if (!commissionRecordService.settle(record.getId())) {
                 continue;
             }
-            // 待结算 → 可提现
-            distributorService.lambdaUpdate()
-                    .eq(Distributor::getId, record.getDistributorId())
-                    .setSql("pending_commission = pending_commission - " + commission.toPlainString()
-                            + ", available_commission = available_commission + " + commission.toPlainString())
-                    .update();
             settled++;
             amount = amount.add(commission);
         }
@@ -167,7 +159,7 @@ public class DistributionSettleService {
     }
 
     /**
-     * 结算概览：待结算 / 已结算 / 可提现 金额
+     * 结算概览：待结算佣金 / 已结算佣金 / 待结算笔数 / 分销员可提现余额
      */
     public Map<String, Object> stats(Long shopId) {
         Map<String, Object> stat = new HashMap<>();
@@ -187,9 +179,18 @@ public class DistributionSettleService {
         }
         BigDecimal settledAmount = sum(commissionRecordService.list(settledWrapper));
 
+        // 可提现余额取自分销员台账：已结算佣金会随提现/驳回变化，不能用已结算金额代替
+        LambdaQueryWrapper<Distributor> distributorWrapper = new LambdaQueryWrapper<>();
+        distributorWrapper.eq(shopId != null, Distributor::getShopId, shopId);
+        BigDecimal availableAmount = BigDecimal.ZERO;
+        for (Distributor distributor : distributorService.list(distributorWrapper)) {
+            availableAmount = availableAmount.add(nz(distributor.getAvailableCommission()));
+        }
+
         stat.put("pendingAmount", pendingAmount);
         stat.put("settledAmount", settledAmount);
         stat.put("pendingCount", commissionRecordService.count(pendingWrapper));
+        stat.put("availableAmount", availableAmount.setScale(2, RoundingMode.HALF_UP));
         return stat;
     }
 
@@ -408,22 +409,26 @@ public class DistributionSettleService {
         private BigDecimal amount = BigDecimal.ZERO;
     }
 
-    /** 为单个分销订单生成一/二级佣金（幂等：已生成过一级则整单跳过） */
+    /**
+     * 为单个分销订单生成一/二级佣金（按层级分别幂等）。
+     *
+     * 旧实现只要一级已存在就整单跳过：若一级生成成功、二级因异常或上级临时禁用而失败，
+     * 重跑时二级佣金将永久丢失。现在两级分别判重，缺哪一级补哪一级；订单佣金回填改为
+     * 汇总该订单全部有效记录，避免「只补二级」时把一级金额覆盖掉。
+     */
     private GenerateStat generateOne(DistributionOrder distributionOrder) {
         GenerateStat stat = new GenerateStat();
         if (distributionOrder.getDistributorId() == null || distributionOrder.getOrderId() == null) {
             return stat;
         }
-        if (hasRecord(distributionOrder.getOrderId(), 1)) {
-            stat.skipped++;
-            return stat;
-        }
+        Long orderId = distributionOrder.getOrderId();
+        boolean hasLevel1 = hasRecord(orderId, 1);
+
         DistributionSetting setting = distributionSettingService.getSetting(distributionOrder.getShopId());
         if (setting.getEnabled() == null || setting.getEnabled() != 1) {
             stat.skipped++;
             return stat;
         }
-
         Distributor distributor = distributorService.getById(distributionOrder.getDistributorId());
         if (distributor == null || distributor.getStatus() == null || distributor.getStatus() != 1) {
             stat.skipped++;
@@ -435,34 +440,47 @@ public class DistributionSettleService {
             return stat;
         }
 
+        int maxLevel = setting.getMaxLevel() == null ? 1 : setting.getMaxLevel();
+        boolean eligibleLevel2 = maxLevel >= 2
+                && distributor.getParentId() != null && distributor.getParentId() > 0;
+        boolean needLevel2 = eligibleLevel2 && !hasRecord(orderId, 2);
+        if (hasLevel1 && !needLevel2) {
+            stat.skipped++;
+            return stat;
+        }
+
         List<GoodsLine> lines = parseGoodsLines(distributionOrder.getGoodsSnapshot(), orderAmount);
         String goodsNameSummary = summarizeGoodsNames(lines);
 
         // 一级：按行汇总（分销商品覆盖 > 规则 > 等级）
-        LineAgg level1 = aggregateLevel(distributionOrder.getShopId(), distributor.getLevelId(), 1, lines);
-        commissionRecordService.createRecord(buildRecord(distributionOrder, distributor.getId(),
-                level1.amount, level1.rate, 1, null, goodsNameSummary));
-        addPending(distributor.getId(), level1.amount, true);
-        stat.generated++;
-        stat.amount = stat.amount.add(level1.amount);
+        if (!hasLevel1) {
+            LineAgg level1 = aggregateLevel(distributionOrder.getShopId(), distributor.getLevelId(), 1, lines);
+            commissionRecordService.createRecord(buildRecord(distributionOrder, distributor.getId(),
+                    level1.amount, level1.rate, 1, null, goodsNameSummary));
+            addPending(distributor.getId(), level1.amount, true);
+            stat.generated++;
+            stat.amount = stat.amount.add(level1.amount);
+        }
 
-        // 二级佣金（合规上限两级）
-        int maxLevel = setting.getMaxLevel() == null ? 1 : setting.getMaxLevel();
-        if (maxLevel >= 2 && distributor.getParentId() != null && distributor.getParentId() > 0) {
-            if (!hasRecord(distributionOrder.getOrderId(), 2)) {
-                Distributor parent = distributorService.getById(distributor.getParentId());
-                if (parent != null && parent.getStatus() != null && parent.getStatus() == 1) {
-                    LineAgg level2 = aggregateLevel(distributionOrder.getShopId(), parent.getLevelId(), 2, lines);
-                    commissionRecordService.createRecord(buildRecord(distributionOrder, parent.getId(),
-                            level2.amount, level2.rate, 2, distributor.getId(), goodsNameSummary));
-                    addPending(parent.getId(), level2.amount, false);
-                    stat.generated++;
-                    stat.amount = stat.amount.add(level2.amount);
-                }
+        // 二级佣金（合规上限两级），独立于一级判重
+        if (needLevel2) {
+            Distributor parent = distributorService.getById(distributor.getParentId());
+            if (parent != null && parent.getStatus() != null && parent.getStatus() == 1) {
+                LineAgg level2 = aggregateLevel(distributionOrder.getShopId(), parent.getLevelId(), 2, lines);
+                commissionRecordService.createRecord(buildRecord(distributionOrder, parent.getId(),
+                        level2.amount, level2.rate, 2, distributor.getId(), goodsNameSummary));
+                addPending(parent.getId(), level2.amount, false);
+                stat.generated++;
+                stat.amount = stat.amount.add(level2.amount);
             }
         }
 
-        distributionOrder.setCommissionAmount(stat.amount.setScale(2, RoundingMode.HALF_UP));
+        if (stat.generated == 0) {
+            stat.skipped++;
+            return stat;
+        }
+        // 回填订单佣金：汇总全部有效记录，兼容「仅补生成某一级」的重跑场景
+        distributionOrder.setCommissionAmount(sumRemainingCommission(orderId));
         distributionOrder.setUpdateTime(LocalDateTime.now());
         distributionOrderService.updateById(distributionOrder);
         return stat;

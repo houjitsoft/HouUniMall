@@ -1,6 +1,10 @@
 server:
   port: 8099
 
+# logging 与 mall 同理：只有 bootstrap.yml、不 import mutual.yaml，JWT 密钥须在此声明。
+jwt:
+  secret: ${AUTH_JWT_SECRET}
+
 spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource

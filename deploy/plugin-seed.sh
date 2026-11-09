@@ -31,3 +31,34 @@ cp -a "$SRC/." "$DEST/"
 count=$(find "$DEST" -type f -name '*.jar' | wc -l | tr -d ' ')
 echo "[plugin-seed] 插件卷内共 ${count} 个 jar："
 find "$DEST" -type f -name '*.jar' | sort | sed 's|^|  |'
+
+# ---------------------------------------------------------------- 前端产物
+# 插件页面不是编译进管理端的，而是运行时 `import('/plugin-assets/<code>/<version>/index.mjs')`。
+# base 的 PluginCenterService.frontendArtifactOnDisk 在同一目录判定「这个插件到底有没有前端」：
+# 目录里没有 index.mjs 就不下发 frontendUrl，前端 PluginPending 立刻判「无前端入口」并渲染
+# 「页面不存在」—— 用户从插件中心点任何插件都是 404，看着像路由坏了，其实只是产物没铺。
+# 所以前端产物必须和 jar 一起落到 {pluginsRoot}/{code}/{version}/frontend/。
+SRC_TREE="${PLUGIN_SOURCE_DIR:-/src-tree}"
+if [ -d "$SRC_TREE/plugins" ]; then
+  seeded=0
+  skipped=""
+  for pdir in "$SRC_TREE"/plugins/*/*; do
+    [ -f "$pdir/plugin.yaml" ] || continue
+    code=$(awk '/^code:/{print $2; exit}' "$pdir/plugin.yaml" 2>/dev/null)
+    ver=$(awk '/^version:/{print $2; exit}' "$pdir/plugin.yaml" 2>/dev/null)
+    [ -n "$code" ] && [ -n "$ver" ] || continue
+    if [ ! -f "$pdir/frontend/index.mjs" ]; then
+      skipped="$skipped $code"
+      continue
+    fi
+    mkdir -p "$DEST/$code/$ver/frontend"
+    cp -a "$pdir/frontend/." "$DEST/$code/$ver/frontend/"
+    seeded=$((seeded + 1))
+  done
+  echo "[plugin-seed] 前端产物投放 ${seeded} 个插件"
+  if [ -n "$skipped" ]; then
+    echo "[plugin-seed] 以下插件源码树无 frontend/index.mjs，页面点开会是「页面不存在」：${skipped}"
+  fi
+else
+  echo "[plugin-seed] 未挂载源码树（$SRC_TREE），跳过前端产物投放"
+fi

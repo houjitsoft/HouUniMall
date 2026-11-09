@@ -858,22 +858,30 @@ public class BaseSysConfigsServiceImpl extends ServiceImpl<BaseSysConfigsMapper,
     public ResponseResult businessPasswordConfig() {
         // 初始化返回映射
         Map<String, String> returnMap = new HashMap<>();
-        // 分别查询密码长度和格式的系统配置项
+        // 分别查询密码长度和格式的系统配置项（配置缺失时回落到默认值，避免 NPE 冒泡成 20010）
         BaseSystemWebConfigEntity merchantSysConfigsEntity;
         merchantSysConfigsEntity = baseSystemWebConfigMapper.selectOne(new QueryWrapper<BaseSystemWebConfigEntity>().eq("config_key", "password_length"));
-        String passwordLength = merchantSysConfigsEntity.getConfigValue();
+        String passwordLength = (merchantSysConfigsEntity == null
+                || merchantSysConfigsEntity.getConfigValue() == null
+                || merchantSysConfigsEntity.getConfigValue().trim().isEmpty())
+                ? "8" : merchantSysConfigsEntity.getConfigValue().trim();
         merchantSysConfigsEntity = baseSystemWebConfigMapper.selectOne(new QueryWrapper<BaseSystemWebConfigEntity>().eq("config_key", "password_format"));
-        String passwordFormat = merchantSysConfigsEntity.getConfigValue();
-        // 构建密码规则描述
-        String desc = "密码长度大于或等于" + passwordLength + "位";
+        String passwordFormat = (merchantSysConfigsEntity == null
+                || merchantSysConfigsEntity.getConfigValue() == null
+                || merchantSysConfigsEntity.getConfigValue().trim().isEmpty())
+                ? "3" : merchantSysConfigsEntity.getConfigValue().trim();
+        // 构建密码规则描述：文案必须与实际校验口径一致，且不再使用「纯数字！」这类误导性表述
+        String desc;
         if ("1".equals(passwordFormat)) {
-            desc = desc + "纯数字！";
+            desc = "密码长度不少于" + passwordLength + "位，且仅限数字";
         } else if ("2".equals(passwordFormat)) {
-            desc = desc + "纯英文！";
+            desc = "密码长度不少于" + passwordLength + "位，且仅限字母";
         } else if ("3".equals(passwordFormat)) {
-            desc = desc + "数字和英文的组合！";
+            desc = "密码长度不少于" + passwordLength + "位，需同时包含字母和数字";
         } else if ("4".equals(passwordFormat)) {
-            desc = desc + "数字、英文和符号的组合！";
+            desc = "密码长度不少于" + passwordLength + "位，需包含字母、数字和符号";
+        } else {
+            desc = "密码长度不少于" + passwordLength + "位";
         }
         // 将密码规则信息添加到返回映射
         returnMap.put("passwordFormat", passwordFormat);

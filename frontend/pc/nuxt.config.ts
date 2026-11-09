@@ -81,6 +81,8 @@ export default defineNuxtConfig({
                 '/activity/discount',
                 '/information',
                 '/article/list',
+                // 历史会员中心入口：必须产出实体 HTML，否则 /member/ 命中目录但无 index，nginx 直接 403
+                '/member',
                 // 演示商品兜底（构建钩子还会按接口追加）
                 ...Array.from({ length: 16 }, (_, i) => `/product/${i + 1}`)
             ]

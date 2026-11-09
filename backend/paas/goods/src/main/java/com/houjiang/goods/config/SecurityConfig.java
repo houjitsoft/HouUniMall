@@ -110,6 +110,11 @@ public class SecurityConfig {
             "/es/searchGoodsData",
             // C 端商品列表的分类/品牌/属性筛选项（分类条与侧滑筛选面板）
             "/goods/cat/query/filter",
+            // 入驻申请页「主营类目」类目树：申请阶段用户还没有 shopId，会话是 joinOnly，
+            // 拿不到商家登录态会被拦成 30802。这里返回的是平台全量类目树（queryAllCat
+            // 只用 Redis 缓存 + selectAllCat2，不用 shopId、不读店铺私有数据），
+            // 与上面已放行的 /goods/cat/query/filter 同源同敏感级，故一并放行只读查询。
+            "/goods/cat/cat/query",
             // base（插件市场）派发安装用的内部端点：不走用户 JWT，端点内部用
             // X-Internal-Job-Token 自行鉴权（未配置令牌时 fail-closed）
             "/internal/plugin/**"

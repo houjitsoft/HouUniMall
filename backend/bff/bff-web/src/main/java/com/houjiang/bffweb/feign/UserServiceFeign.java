@@ -288,4 +288,82 @@ public interface UserServiceFeign {
      */
     @PostMapping("/agreement/consent/admin/export")
     ResponseResult agreementConsentExport(@RequestBody Map<String, Object> params);
+
+    /**
+     * 会员画像分页（真实数据聚合：会员/订单/登录/足迹/手工标签）
+     *
+     * @param params keyword / layer / minOrders / page / size
+     * @return 分页结果 + 汇总 + 数据完整度
+     */
+    @PostMapping("/portrait/page")
+    ResponseResult memberPortraitPage(@RequestBody Map<String, Object> params);
+
+    /**
+     * 单个会员画像详情
+     *
+     * @param params userId
+     * @return 画像详情
+     */
+    @PostMapping("/portrait/detail")
+    ResponseResult memberPortraitDetail(@RequestBody Map<String, Object> params);
+
+    /**
+     * RFM 八分群矩阵
+     */
+    @PostMapping("/portrait/rfm")
+    ResponseResult memberPortraitRfm(@RequestBody Map<String, Object> params);
+
+    /**
+     * 智能分群圈人预览
+     */
+    @PostMapping("/portrait/segment/preview")
+    ResponseResult memberPortraitSegmentPreview(@RequestBody Map<String, Object> params);
+
+    /**
+     * 保存人群包
+     */
+    @PostMapping("/portrait/crowd/save")
+    ResponseResult memberPortraitCrowdSave(@RequestBody Map<String, Object> params);
+
+    /**
+     * 人群包列表
+     */
+    @PostMapping("/portrait/crowd/list")
+    ResponseResult memberPortraitCrowdList(@RequestBody Map<String, Object> params);
+
+    /**
+     * 删除人群包
+     */
+    @PostMapping("/portrait/crowd/delete")
+    ResponseResult memberPortraitCrowdDelete(@RequestBody Map<String, Object> params);
+
+    /**
+     * 标签字典
+     */
+    @PostMapping("/portrait/tag/list")
+    ResponseResult memberPortraitTagList(@RequestBody Map<String, Object> params);
+
+    /**
+     * 新建 / 更新标签
+     */
+    @PostMapping("/portrait/tag/save")
+    ResponseResult memberPortraitTagSave(@RequestBody Map<String, Object> params);
+
+    /**
+     * 删除标签
+     */
+    @PostMapping("/portrait/tag/delete")
+    ResponseResult memberPortraitTagDelete(@RequestBody Map<String, Object> params);
+
+    /**
+     * 批量打标
+     */
+    @PostMapping("/portrait/tag/attach")
+    ResponseResult memberPortraitTagAttach(@RequestBody Map<String, Object> params);
+
+    /**
+     * 批量取消打标
+     */
+    @PostMapping("/portrait/tag/detach")
+    ResponseResult memberPortraitTagDetach(@RequestBody Map<String, Object> params);
 }

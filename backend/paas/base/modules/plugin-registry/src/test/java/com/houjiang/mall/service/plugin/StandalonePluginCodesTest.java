@@ -22,7 +22,8 @@ class StandalonePluginCodesTest {
     @Test
     void commercialStandaloneServicesRemainStandalone() {
         for (String code : new String[]{"crm", "cms", "erp", "finance", "geo", "im",
-                "logging", "mes", "oa", "orderfood", "pm", "rider", "supplier", "webpos"}) {
+                "logging", "mes", "oa", "orderfood", "pm", "rider", "supplier", "webpos",
+                "property"}) {
             assertTrue(StandalonePluginCodes.isStandalone(code), code + " 应保持独立服务形态");
         }
     }

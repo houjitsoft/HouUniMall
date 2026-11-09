@@ -75,6 +75,9 @@ public class MallStyleAdminService {
         if (json == null) {
             return;
         }
+        if (json.get("pc_template_code") == null) {
+            json.put("pc_template_code", "");
+        }
         if (!StringUtils.hasText(json.getString("pc_layout"))) {
             json.put("pc_layout", "hybrid");
         }
@@ -146,6 +149,8 @@ public class MallStyleAdminService {
         item.put("name", name);
         item.put("name_en", nameEn);
         item.put("path", path);
+        item.put("image", "");
+        item.put("target", 0);
         item.put("visible", true);
         return item;
     }

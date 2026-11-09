@@ -50,6 +50,10 @@ export const i18n = createI18n({
 
 applyDocumentLocale(initialLocale)
 
+export function getLocale() {
+  return i18n.global.locale.value
+}
+
 export function setLocale(value) {
   const locale = normalizeLocale(value)
   if (!locale) return false

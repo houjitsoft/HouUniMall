@@ -51,8 +51,15 @@
 33-mall-distribution-setting.sql
 34-mall-distribution-settlement.sql
 35-mall-distribution-schema-align.sql
+# 分销订单事件挂钩 + 结算准确性三列：全新安装缺 goods_snapshot / refunded_amount /
+# original_commission_amount 三列与 commission_amount 默认值，结算代码直接 Unknown column。
+# 原先只在真库手工执行过，从未进 init 链，故全新安装必踩。幂等，已有库可安全重跑。
+160-mall-distribution-settle-accuracy.sql
 # 限时秒杀「开抢前预约」表（order-seckill 插件 C5；job 服务开抢提醒依赖它，须早于插件运行）
 153-seckill-subscribe.sql
+# 会员画像人群包及会员标签颜色（核心 userms，须早于画像接口使用）
+161-member-portrait-crowd.sql
+162-member-tag-color.sql
 
 [data]
 # 基础菜单树 / 角色 / 角色-菜单 / 初始超级管理员 admin

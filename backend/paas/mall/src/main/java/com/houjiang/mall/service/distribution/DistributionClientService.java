@@ -3,17 +3,23 @@ package com.houjiang.mall.service.distribution;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.houjiang.commons.util.QrCodeUtil;
 import com.houjiang.mall.entity.distribution.*;
 import com.houjiang.mall.mapper.distribution.DistributionOrderMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +60,13 @@ public class DistributionClientService {
         this.distributorLevelService = distributorLevelService;
         this.distributionOrderMapper = distributionOrderMapper;
     }
+
+    /**
+     * 站点域名兜底。各端调用 /material 时带自己当前的 origin（PC / H5 / ucenter 域名可能不同），
+     * 只有没带时才用 Nacos dispose.yaml 的 domainName，避免二维码指向错误站点。
+     */
+    @Value("${domainName:}")
+    private String configuredDomain;
 
     /** 分销员状态：0 待审核 1 正常 2 已拒绝/禁用 */
     public static final int DISTRIBUTOR_STATUS_NORMAL = 1;
@@ -427,6 +440,96 @@ public class DistributionClientService {
         res.put("distributorId", distributor.getId());
         res.put("distributorNo", distributor.getDistributorNo());
         return res;
+    }
+
+    /**
+     * 推广物料：统一产出「客户推广链接 / 邀请分销员链接 / 两张二维码」。
+     *
+     * <p>此前 PC、uniapp(1 代 VK)、ucenter 各自拼 URL：PC 只给 inviteCode 且指向 H5 申请页、
+     * 1 代 VK 走 /vkShopBase/create/*、ucenter 前端本地拼码，归因参数口径互不相同。
+     * 这里固定为：
+     *   客户推广 = {origin}/h5/#/pages/index/index?shareUserId={userId}   （与 App.vue / 首页 onLoad 归因一致）
+     *   邀请分销员 = {origin}/ucenter/#/distribution?apply=1&inviteCode={distributorNo}
+     * 三端都取本接口的返回值，二维码由 commons 的 zxing 工具统一生成。
+     *
+     * @param userId  token 解析出的当前登录用户，不接受入参覆盖
+     * @param params  可选 origin：调用方当前站点域名（不带路径），未传时用 domainName 兜底
+     */
+    public Map<String, Object> material(Long userId, Map<String, Object> params) {
+        Map<String, Object> res = new HashMap<>();
+        Distributor distributor = findDistributor(userId);
+        boolean normal = distributor != null && distributor.getStatus() != null
+                && distributor.getStatus() == DISTRIBUTOR_STATUS_NORMAL;
+        DistributionSetting setting = distributionSettingService.getSetting(
+                distributor == null ? null : distributor.getShopId());
+        res.put("isDistributor", normal);
+        res.put("enabled", setting.getEnabled() != null && setting.getEnabled() == 1);
+        res.put("distributorNo", normal ? blankToEmpty(distributor.getDistributorNo()) : "");
+        res.put("shareUserId", userId == null ? "" : String.valueOf(userId));
+
+        String origin = resolveSiteOrigin(params == null ? null : params.get("origin"));
+        res.put("siteOrigin", origin);
+        if (!normal || origin.isEmpty()) {
+            // 非分销员 / 域名不可用时返回空值，由各端本地兜底，不生成误导性的码
+            res.put("promotePath", "");
+            res.put("invitePath", "");
+            res.put("promoteLink", "");
+            res.put("inviteLink", "");
+            res.put("promoteQrCode", "");
+            res.put("inviteQrCode", "");
+            return res;
+        }
+
+        String promotePath = "/h5/#/pages/index/index?shareUserId=" + urlEncode(String.valueOf(userId));
+        String invitePath = "/ucenter/#/distribution?apply=1&inviteCode="
+                + urlEncode(blankToEmpty(distributor.getDistributorNo()));
+        String promoteLink = origin + promotePath;
+        String inviteLink = origin + invitePath;
+        res.put("promotePath", promotePath);
+        res.put("invitePath", invitePath);
+        res.put("promoteLink", promoteLink);
+        res.put("inviteLink", inviteLink);
+        res.put("promoteQrCode", qrDataUrl(promoteLink));
+        res.put("inviteQrCode", qrDataUrl(inviteLink));
+        return res;
+    }
+
+    /** 站点域名：优先用调用方当前 origin，其次用配置；只接受 http(s) 且去掉尾斜杠 */
+    private String resolveSiteOrigin(Object raw) {
+        String candidate = raw == null ? null : raw.toString().trim();
+        if (!StringUtils.hasText(candidate)) {
+            candidate = configuredDomain;
+        }
+        if (!StringUtils.hasText(candidate)) {
+            return "";
+        }
+        candidate = candidate.trim();
+        while (candidate.endsWith("/")) {
+            candidate = candidate.substring(0, candidate.length() - 1);
+        }
+        if ((!candidate.startsWith("http://") && !candidate.startsWith("https://"))
+                || candidate.contains(" ") || candidate.length() > 200) {
+            return "";
+        }
+        return candidate;
+    }
+
+    /** 生成二维码 data URL；失败只返回空串，前端可回退到本地生成，不影响链接复制 */
+    private String qrDataUrl(String content) {
+        try {
+            byte[] png = QrCodeUtil.createQRCode(240, 240, content);
+            if (png == null || png.length == 0) {
+                return "";
+            }
+            return QrCodeUtil.BASE_PREFIX + Base64.getEncoder().encodeToString(png);
+        } catch (Exception e) {
+            log.warn("分销推广二维码生成失败: err={}", e.getMessage());
+            return "";
+        }
+    }
+
+    private static String urlEncode(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
     }
 
     public Distributor findDistributor(Long userId) {

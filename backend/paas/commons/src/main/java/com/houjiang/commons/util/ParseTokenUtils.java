@@ -68,17 +68,31 @@ public class ParseTokenUtils {
         }
         
         String userInfoStr = (String) redisCache.getCacheObject(redisKey);
-        if(StringUtils.isEmpty(userInfoStr)){
+        return parseSessionUser(userInfoStr);
+    }
+
+    /**
+     * 解析会话缓存里的用户信息，兼容两种历史写法（2026-11-09 修复商家入驻报「系统错误」）：
+     * 一是 auth（平台 / 会员端）写入的 UserInfoDTO，形如 {@code {"user":{...},"permissions":[...]}}；
+     * 二是 merchant（商家端）直接写入的裸 UserInfoVO，形如 {@code {"userId":"...","userName":"..."}}。
+     * 只用 DTO 解析时裸 VO 会得到 user=null，调用方随即 NPE（商家入驻协议接口即踩此坑）。
+     */
+    private static UserInfoVO parseSessionUser(String userInfoStr) {
+        if (StringUtils.isEmpty(userInfoStr)) {
             return null;
         }
-        
-        UserInfoDTO dto = JSON.parseObject(userInfoStr, UserInfoDTO.class);
-        if (dto != null) {
-            return dto.getUser();
-        } else {
+        try {
+            UserInfoDTO dto = JSON.parseObject(userInfoStr, UserInfoDTO.class);
+            if (dto != null && dto.getUser() != null) {
+                return dto.getUser();
+            }
+            return JSON.parseObject(userInfoStr, UserInfoVO.class);
+        } catch (Exception e) {
+            log.warn("会话缓存解析失败: {}", e.getMessage());
             return null;
         }
     }
+
     /**
      * 判断 token 会话是否平台超管（2026-10-30 平台约定：hou_user_info.is_admin=1 的账号
      * 有意不绑 RBAC 角色，登录态 permissions 为字面 ["*"]）。管理端查询（如订单全平台
@@ -132,16 +146,7 @@ public class ParseTokenUtils {
         }
         
         String userInfoStr = (String) redisCache.getCacheObject(redisKey);
-        if(StringUtils.isEmpty(userInfoStr)){
-            return null;
-        }
-        
-        UserInfoDTO dto = JSON.parseObject(userInfoStr, UserInfoDTO.class);
-        if (dto != null) {
-            return dto.getUser();
-        } else {
-            return null;
-        }
+        return parseSessionUser(userInfoStr);
     }
 
     /**
@@ -245,12 +250,7 @@ public class ParseTokenUtils {
             throw new DefinedException(GlobalExceptionEnum.NO_FORBIDDEN.getErrorCode(), BizCodeEnume.TOKEN_IS_INVALID.getMsg());
         }
         
-        UserInfoDTO dto = JSON.parseObject(userInfoStr, UserInfoDTO.class);
-        if (dto != null) {
-            return dto.getUser();
-        } else {
-            return null;
-        }
+        return parseSessionUser(userInfoStr);
     }
 
     public static ResponseResult getShopUser(String token) {
@@ -286,10 +286,10 @@ public class ParseTokenUtils {
             return ResponseResult.fail(BizCodeEnume.TOKEN_IS_INVALID);
         }
         
-        //从redis得到token转换userInfo
-        UserInfoDTO dto = JSON.parseObject(userInfoStr, UserInfoDTO.class);
-        if (dto != null) {
-            return ResponseResult.success(dto.getUser());
+        //从redis得到token转换userInfo（兼容 DTO / 裸 VO 两种写法）
+        UserInfoVO sessionUser = parseSessionUser(userInfoStr);
+        if (sessionUser != null) {
+            return ResponseResult.success(sessionUser);
         } else {
             return ResponseResult.fail(BizCodeEnume.TOKEN_IS_OFFSITE_LOGIN);
         }

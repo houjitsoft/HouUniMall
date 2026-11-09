@@ -1226,7 +1226,18 @@ public class MallGoodsController {
      */
     @PostMapping("/domestic-replace/list")
     public ResponseResult getDomesticReplaceList(@RequestBody Map<String, Object> param) {
-        return goodsServiceFeign.queryGoodsList(param);
+        return goodsServiceFeign.queryGoodsList(normalizeGoodsListParam(param));
+    }
+
+    /**
+     * 国产替代列表：前端传 page + size，goods 侧 DTO 只认 page + limit。
+     * 缺少 limit 会在 GoodsCommonServiceImpl 做 (page-1)*limit 时拆箱 NPE，最终兜底成 20010。
+     */
+    private Map<String, Object> normalizeGoodsListParam(Map<String, Object> param) {
+        Map<String, Object> query = param == null ? new HashMap<>() : new HashMap<>(param);
+        copyAlias(query, "size", "limit");
+        query.putIfAbsent("page", 1);
+        return query;
     }
 
     /**
@@ -1238,7 +1249,7 @@ public class MallGoodsController {
      */
     @PostMapping("/domestic-replace/replacement-list")
     public ResponseResult getReplacementList(@RequestBody Map<String, Object> param) {
-        return goodsServiceFeign.queryGoodsList(param);
+        return goodsServiceFeign.queryGoodsList(normalizeGoodsListParam(param));
     }
 
     // =============== 平台运营补齐：SKU/SPU/批量/导出/上传 ===============

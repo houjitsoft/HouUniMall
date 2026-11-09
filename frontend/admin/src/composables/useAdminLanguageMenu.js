@@ -1,6 +1,6 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { adminLanguageApi } from '@/api/setting/adminLanguage'
-import { getLocale, setLocale } from '@/i18n-element'
+import { getLocale, setLocale } from '@/locales'
 import {
   ADMIN_LANGUAGE_CONFIG_EVENT,
   ADMIN_LANGUAGE_CONFIG_STORAGE_KEY,

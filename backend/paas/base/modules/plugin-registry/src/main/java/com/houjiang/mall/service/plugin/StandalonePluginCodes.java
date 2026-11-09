@@ -26,6 +26,8 @@ public final class StandalonePluginCodes {
     public static final Set<String> CODES = Set.of(
             "crm", "cms", "erp", "finance", "geo", "im", "logging", "mes",
             "oa", "orderfood", "pm", "rider", "supplier", "webpos",
+            // 物业管理：2026-11-08 补进「完整行业应用」，按独立容器交付，不能走 PF4J 内嵌链路。
+            "property",
             // AI 网关：FreeLLMAPI 独立容器（unimall-aigateway），不加载进任何宿主进程。
             "aigateway"
     );

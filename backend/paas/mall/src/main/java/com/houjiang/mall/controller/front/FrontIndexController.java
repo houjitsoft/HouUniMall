@@ -487,6 +487,7 @@ public class FrontIndexController {
             if (all != null) {
                 String current = String.valueOf(all.getOrDefault("current", "gold_theme"));
                 mallStyle.put("current", current);
+                copyIfPresent(all, mallStyle, "pc_template_code");
                 copyIfPresent(all, mallStyle, "pc_layout");
                 copyIfPresent(all, mallStyle, "pc_container");
                 copyIfPresent(all, mallStyle, "pc_radius");

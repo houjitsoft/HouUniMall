@@ -77,12 +77,21 @@ public class CommissionRecordController {
      */
     @PostMapping("/batchSettle")
     public ResponseResult<Boolean> batchSettle(@RequestBody Map<String, Object> params) {
-        @SuppressWarnings("unchecked")
-        java.util.List<Long> ids = (java.util.List<Long>) params.get("ids");
-        for (Long id : ids) {
-            commissionRecordService.settle(id);
+        Object raw = params.get("ids");
+        if (!(raw instanceof java.util.List)) {
+            return ResponseResult.success(false);
         }
-        return ResponseResult.success(true);
+        // Jackson 把 JSON 数字数组还原成 List<Integer>，强转 List<Long> 会抛 ClassCastException；
+        // 这里按 Number.longValue() 逐个转换，兼容整数、长整型与字符串三种传参。
+        java.util.List<Long> ids = new java.util.ArrayList<>();
+        for (Object value : (java.util.List<?>) raw) {
+            if (value instanceof Number) {
+                ids.add(((Number) value).longValue());
+            } else if (value != null) {
+                ids.add(Long.parseLong(value.toString()));
+            }
+        }
+        return ResponseResult.success(commissionRecordService.batchSettle(ids));
     }
 
     /**

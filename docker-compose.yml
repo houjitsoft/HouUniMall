@@ -350,6 +350,13 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME:-unimall}-plugin-seed
     volumes:
       - ${PLUGINS_DIR:-./data/plugins}:/dest
+      # 只读挂源码树：插件前端产物（plugins/<域>/<插件>/frontend/index.mjs）不在镜像里，
+      # 必须与 jar 一起落到 {pluginsRoot}/<code>/<version>/frontend/，
+      # 否则 base 判「无前端入口」不下发 frontendUrl，插件页面一律「页面不存在」。
+      - ./plugins:/src-tree/plugins:ro
+      # 投放脚本本身也以源码树为准：镜像内那份是构建时 COPY 的旧版，
+      # 不覆盖的话改了脚本还得重建 builder 镜像才生效。
+      - ./deploy/plugin-seed.sh:/src/deploy/plugin-seed.sh:ro
     command: ["sh", "/src/deploy/plugin-seed.sh"]
     depends_on:
       builder:

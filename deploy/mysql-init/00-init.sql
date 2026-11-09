@@ -40,6 +40,9 @@ source /opt/houcloud-sql/39-aiagent-display-pages.sql;
 source /opt/houcloud-sql/33-mall-distribution-setting.sql;
 source /opt/houcloud-sql/34-mall-distribution-settlement.sql;
 source /opt/houcloud-sql/35-mall-distribution-schema-align.sql;
+source /opt/houcloud-sql/160-mall-distribution-settle-accuracy.sql;
+source /opt/houcloud-sql/161-member-portrait-crowd.sql;
+source /opt/houcloud-sql/162-member-tag-color.sql;
 
 -- ---------- data 阶段（初始数据：菜单 / 角色 / 管理员） ----------
 source /opt/houcloud-sql/99-seed.sql;

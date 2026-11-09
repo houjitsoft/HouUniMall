@@ -735,12 +735,32 @@ public class SendSmsServiceImpl implements SendSmsService {
         
         if(CheckPhoneUtil.isValidEmail(userMobile)){
             //邮件模板处理
-            Boolean start = MailUtil.sendMail(userMobile, CommonType.messageTemplate.CODE_Q.getCode(), Arrays.asList(result));
+            Boolean start;
+            try {
+                start = MailUtil.sendMail(userMobile, CommonType.messageTemplate.CODE_Q.getCode(), Arrays.asList(result),
+                        messageTemplate == null ? null : messageTemplate.getTemplateName());
+            } catch (Exception mailException) {
+                String reason = MailUtil.getLastError();
+                if (reason == null || reason.isEmpty()) {
+                    reason = mailException.getClass().getSimpleName()
+                            + (mailException.getMessage() == null ? "" : " - " + mailException.getMessage());
+                }
+                log.error("邮件验证码发送失败 userMobile={}, reason={}", userMobile, reason);
+                asyncSaveMessageRecord(messageTemplate, channel, userMobile, "验证码",
+                        "您的验证码是：" + result, false, reason);
+                return ResponseResult.fail(BizCodeEnume.SMS_EXCEPTION.getCode(),
+                        "邮件验证码发送失败：" + reason);
+            }
             if(!start){
-                failReason = "邮件发送失败";
+                failReason = MailUtil.getLastError();
+                if (failReason == null || failReason.isEmpty()) {
+                    failReason = "邮件发送失败";
+                }
                 // 保存发送记录（失败，异步）
                 asyncSaveMessageRecord(messageTemplate, channel, userMobile, "验证码", "您的验证码是：" + result, false, failReason);
-                return ResponseResult.fail(BizCodeEnume.MOBILE_EMAIL_IS_ERROR.getCode(), BizCodeEnume.MOBILE_EMAIL_IS_ERROR.getMsg());
+                // 真实原因是邮件通道不可用，不能再报 21006「填写格式不正确」误导用户
+                return ResponseResult.fail(BizCodeEnume.SMS_EXCEPTION.getCode(),
+                        "邮件验证码发送失败：" + failReason);
             }
             sendSuccess = true;
         }else{

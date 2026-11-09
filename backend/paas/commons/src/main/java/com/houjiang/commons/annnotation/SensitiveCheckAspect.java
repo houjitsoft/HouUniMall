@@ -81,7 +81,9 @@ public class SensitiveCheckAspect {
 
 //        //根据敏感词规则对不同场景下接口请求参数检查是否包含敏感词
         ResponseResult methodPathSensitive = getMethodPathSensitive(methodUrl, map, field,list,token);
-        if (methodPathSensitive.getCode() == BizCodeEnume.EXIST_SENSITIVE.getCode()) {
+        // 敏感词总开关开、子开关关时 getMethodPathSensitive 可能返回 null，
+        // 原实现直接 getCode() 触发 NPE，使「地址新增」等唯一挂 @SensitiveCheck 的接口失败。
+        if (methodPathSensitive != null && methodPathSensitive.getCode() == BizCodeEnume.EXIST_SENSITIVE.getCode()) {
             return methodPathSensitive.setMessage("文本中所含敏感词有："+ methodPathSensitive.getData());
         }
 

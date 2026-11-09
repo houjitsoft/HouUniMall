@@ -9,9 +9,11 @@ import com.houjiang.commons.util.UUIDUtils;
 import com.houjiang.commons.vo.user.UserInfoVO;
 import com.houjiang.thirdparty.feign.BaseServiceClient;
 import com.houjiang.thirdparty.utils.Base64Utils;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.errors.MinioException;
+import io.minio.http.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Amos
@@ -261,15 +264,44 @@ public class MinioOssClientServiceImpl {
         return fileExtension;
     }
 
+    /**
+     * 生成「前端直传」用的上传地址。
+     *
+     * <p>2026-11-09 修复：原实现把 bucket 的公开访问地址同时当成上传地址返回，等于让浏览器
+     * 匿名 PUT 对象存储，MinIO 一律返回 {@code 403 AccessDenied}，商家入驻的身份证/协议上传
+     * 必然失败（且从报错看不出原因）。这里改为真正调用 MinIO 的 GetPresignedObjectUrl（method=PUT）
+     * 生成带签名的临时上传地址，有效期 2 小时；{@code fileUrl} 仍返回对象的公开访问地址供页面展示。
+     *
+     * @param fileName 原始文件名（只用其扩展名，对象名由服务端生成，避免覆盖与路径穿越）
+     * @return uploadUrl 预签名 PUT 地址、fileUrl 公开访问地址
+     */
     public Map getPresignedUrl(String fileName) {
         init(false);
         Map<String, String> map = new HashMap<>();
         String fileExtension = fileName.substring(fileName.lastIndexOf("."));
         String objectName = FOLDER + java.util.UUID.randomUUID() + fileExtension;
         String fileUrl = getUrl(BUCKET_NAME, objectName);
-        map.put("uploadUrl", fileUrl);
+        map.put("uploadUrl", presignedPutUrl(objectName, fileUrl));
         map.put("fileUrl", fileUrl);
         return map;
+    }
+
+    /**
+     * 生成 MinIO 预签名 PUT 地址；SDK 异常时回退为公开地址（与旧行为一致，至少不返回空串）。
+     */
+    private String presignedPutUrl(String objectName, String fallbackUrl) {
+        try {
+            return getMinioClient().getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                    .method(Method.PUT)
+                    .bucket(BUCKET_NAME)
+                    .object(objectName)
+                    .expiry(2, TimeUnit.HOURS)
+                    .build());
+        } catch (Exception e) {
+            LOGGER.warn("生成 MinIO 预签名上传地址失败，回退公开地址: {}", e.getMessage());
+            return fallbackUrl;
+        }
     }
 
     public Map<String, String> getPresignedUrlToShopImageSpace(String fileName, UserInfoVO ui) {

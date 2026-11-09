@@ -64,6 +64,7 @@ const PATH_ROWS = [
   ['/geo/content/ai-studio', 'AI 创作工作室', 'AI Creation Studio', 'AI 制作スタジオ', 'Estudio de creación con IA'],
   ['/geo/content/video-studio', '数字人生成', 'Digital Human Generation', 'デジタルヒューマン生成', 'Generación de humanos digitales'],
   ['/geo/content/short-videos', '短视频生成', 'Short Video Generation', 'ショート動画生成', 'Generación de vídeos cortos'],
+  ['/geo/content/short-video-scripts', '短视频脚本库', 'Short Video Script Library', 'ショート動画台本ライブラリ', 'Biblioteca de guiones de vídeos cortos'],
   ['/geo/content/video-jobs', '视频任务中心', 'Video Job Center', '動画タスクセンター', 'Centro de tareas de vídeo'],
   ['/geo/content/creation-tasks', '创作任务', 'Creation Tasks', '制作タスク', 'Tareas de creación'],
   ['/geo/content/submission-articles', '投稿稿件', 'Submitted Articles', '投稿記事', 'Artículos enviados'],

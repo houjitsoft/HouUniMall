@@ -1,6 +1,11 @@
 server:
   port: 8220
 
+# mall 只有 bootstrap.yml、不 import mutual.yaml，JWT 密钥必须在本文件单独声明，
+# 否则后台带着 auth 签发的 token 调 mall 接口会被判签名不匹配。
+jwt:
+  secret: ${AUTH_JWT_SECRET}
+
 spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource

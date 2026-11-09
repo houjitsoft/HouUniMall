@@ -7,8 +7,10 @@
             <span class="tip-text">{{ $t('温馨提示：多店铺下单不可使用账期支付，请留意付款方式，如需使用账期支付请分开下单') }}</span>
         </div>
 
-        <!-- 地址选择组件：virtualGoods==0 时隐藏 -->
-        <AddressSelect v-if="!isVirtualGoodsOrder" :valet-order-id="valetOrderIdFromUrl"
+        <!-- 地址选择组件：始终显示。上游 virtualGoods 缺省值为 0，会被
+             isVirtualGoodsOrder 误判成虚拟单而隐藏整个地址区，导致实物订单
+             无法维护收货地址、提交时收货人信息全为空触发后端 42014。 -->
+        <AddressSelect :valet-order-id="valetOrderIdFromUrl"
             @addressChange="handleAddressChange" />
 
         <!-- 支付方式模块：virtualGoods==0 时隐藏 -->
@@ -58,6 +60,21 @@
                 <span class="discount-value">-{{ formatPriceWithSymbol(subsidyDiscountAmount) }}</span>
                 <span class="subsidy-rate" v-if="subsidyRateText">{{ subsidyRateText }}</span>
             </div>
+            <!-- 满赠（插件 order-gift）：命中才显示，可选赠品；赠品不进订单明细，后台按记录随单发 -->
+            <div v-if="giftInfo && giftInfo.matched && giftInfo.gifts.length" class="discount-line gift-line">
+                <span class="discount-label">{{ $t('满赠') }}：</span>
+                <span class="discount-value">{{ $t('满') }}{{ formatPriceWithSymbol(giftInfo.thresholdAmount || 0) }}{{ $t('已达成') }}</span>
+            </div>
+            <div v-if="giftInfo && giftInfo.matched && giftInfo.gifts.length" class="gift-list">
+                <div class="gift-item" v-for="g in giftInfo.gifts" :key="g.itemId" @click="giftSelectedItemId = g.itemId">
+                    <span class="gift-name">{{ $t('赠') }}{{ g.title }} ×{{ g.giftQty }}</span>
+                    <span class="gift-stock" v-if="g.remaining >= 0">{{ $t('余') }}{{ g.remaining }}</span>
+                    <span class="gift-pick" :class="{ 'is-active': giftSelectedItemId === g.itemId }">
+                        {{ giftSelectedItemId === g.itemId ? $t('已选') : $t('选择') }}
+                    </span>
+                </div>
+                <div class="gift-tip">{{ $t('赠品随单发出，可在「我的订单」核对') }}</div>
+            </div>
             <div class="payment-amount">
                 <span class="amount-label">{{ $t('支付金额') }}：</span>
                 <span class="amount-value">{{ formatPriceWithSymbol(displayPaymentTotal) }}</span>
@@ -81,7 +98,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { onMounted, reactive, computed, ref } from 'vue'
+import { onMounted, reactive, computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useGoodsStore } from '~/stores/modules/goods'
 import type { ShopList, GoodsList } from '~/stores/modules/goods'
@@ -101,6 +118,7 @@ import {
 } from '~/utils/subsidy'
 import { queryIsDelivery } from '~/services/business.service'
 import { createOrders } from '~/services/order.service'
+import { evaluateGift, claimGift, markBargainOrdered, type GiftResult } from '~/services/storefront-plugin.service'
 import { queryPersonalDiscount } from '~/services/userms.service'
 import { useIsKeySwitch } from '~/composables/useIsKeySwitch'
 import type { CalculatePriceParams, CreateOrdersParams, ShopDTO } from '~/types/business'
@@ -544,6 +562,53 @@ const handleBackCart = () => {
 }
 
 // 提交订单
+// 满赠（插件 order-gift）：算价完成后查可赠清单；只在客户端跑，不上 prerender
+const giftInfo = ref<GiftResult | null>(null)
+const giftSelectedItemId = ref<number>(0)
+
+const loadGift = async () => {
+    const amount = Number(displayPaymentTotal.value || 0)
+    if (!(amount > 0)) {
+        giftInfo.value = null
+        return
+    }
+    const goodsIds: string[] = []
+    for (const shop of state.shopList || []) {
+        for (const g of shop.goodsList || []) {
+            if (g.goodsId) goodsIds.push(String(g.goodsId))
+        }
+    }
+    const data = await evaluateGift(amount, goodsIds)
+    giftInfo.value = data && data.matched ? data : null
+    const gifts = giftInfo.value?.gifts || []
+    if (gifts.length && !gifts.some((g) => g.itemId === giftSelectedItemId.value)) {
+        giftSelectedItemId.value = gifts[0].itemId
+    }
+}
+
+// 下单成功后登记赠出（幂等，失败静默）
+const claimSelectedGift = (orderNo: string) => {
+    const info = giftInfo.value
+    if (!info || !info.matched || !giftSelectedItemId.value || !orderNo) return
+    const gift = (info.gifts || []).find((g) => g.itemId === giftSelectedItemId.value)
+    if (!gift) return
+    void claimGift({
+        orderNo: String(orderNo),
+        ruleId: info.ruleId as number,
+        itemId: gift.itemId,
+        qty: gift.giftQty || 1
+    })
+}
+
+// 算价变化（改地址/改优惠券/改红包）后重新查可赠清单，避免门槛判断滞后
+watch(
+    () => displayPaymentTotal.value,
+    (amount) => {
+        if (Number(amount || 0) > 0) void loadGift()
+    },
+    { immediate: true }
+)
+
 const handleSubmitOrder = async () => {
     // 防止重复点击
     if (isSubmitting.value) {
@@ -555,8 +620,11 @@ const handleSubmitOrder = async () => {
         return
     }
 
-    const virtualOrder = isVirtualGoodsOrder.value
-    if (!virtualOrder && !state.selectedAddress) {
+    // 地址区始终可见；只要用户选了地址就按实物单提交，避免上游 virtualGoods
+    // 默认值把普通实物单误判成虚拟单、把收货人信息全传空触发后端 42014。
+    const hasAddress = !!state.selectedAddress
+    const virtualOrder = isVirtualGoodsOrder.value && !hasAddress
+    if (!hasAddress && !isVirtualGoodsOrder.value) {
         Toast.warning('请选择收货地址')
         return
     }
@@ -632,6 +700,13 @@ const handleSubmitOrder = async () => {
         if (response.code === 1) {
             Toast.success('订单创建成功')
             const payId = response.data.paymentNumber
+            claimSelectedGift(payId)
+            // 砍价单置为已成交：同一张砍价单不能反复享受成交价
+            for (const shop of state.shopList || []) {
+                for (const g of shop.goodsList || []) {
+                    if (g.goodsId) void markBargainOrdered(payId, g.goodsId)
+                }
+            }
             const virtualGoodsQuery = virtualOrder ? '&virtualGoods=0' : ''
             if (state.selectedPaymentIndex === 0) {
                 navigateTo(`/payment/online?payId=${payId}${virtualGoodsQuery}`)
@@ -913,5 +988,49 @@ defineExpose({ state })
             }
         }
     }
+}
+
+.gift-line .discount-value {
+    color: #ff5000;
+}
+
+.gift-list {
+    margin: 4px 0 8px;
+}
+
+.gift-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    margin-bottom: 6px;
+    background: #fff7f0;
+    border: 1px solid #ffd8bf;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.gift-name {
+    color: #8a6a55;
+}
+
+.gift-stock {
+    color: #bbb;
+}
+
+.gift-pick {
+    margin-left: auto;
+    color: #bbb;
+}
+
+.gift-pick.is-active {
+    color: #ff5000;
+    font-weight: 600;
+}
+
+.gift-tip {
+    font-size: 12px;
+    color: #bbb;
 }
 </style>

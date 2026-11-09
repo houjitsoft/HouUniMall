@@ -135,16 +135,11 @@ houcloud:
     site-name: ${HOUCLOUD_PLATFORM_SITE_NAME}
     token: ${HOUCLOUD_PLATFORM_TOKEN}
 
-# bff-web → 同机部署直连，避免 Nacos 命名空间不一致 / 插件临时关闭注册导致 503
+# bff-web → 同机部署直连？不。宿主机网络时代的直连写法在 Docker bridge 下是错的：
+# 容器内的 127.0.0.1 指向容器自己，mall / logging / oa / erp 全部 Connection refused，
+# 后台表现为仪表盘、商品列表、告警未读数大面积 500。
+# 统一交给 mutual.yaml 的 feign.*.url: ""（空值 = 走 Nacos 服务发现）。
+# 只有确实需要直连的部署形态，才在 .env 里用 FEIGN_*_URL 覆盖。
 feign:
-  logging:
-    url: http://127.0.0.1:8099
-  oa:
-    url: http://127.0.0.1:8393
-  mall:
-    url: http://127.0.0.1:8220
-  # 生产 RH2288 当前 ERP 监听 8315（见 plugin-services-repair env）；架构目标端口为 8090
-  erp:
-    url: http://127.0.0.1:8315
   pm:
     url: http://${BFF_FEIGN_PM_ADDR}

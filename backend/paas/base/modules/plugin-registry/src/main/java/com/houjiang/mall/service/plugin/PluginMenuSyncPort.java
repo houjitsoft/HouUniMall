@@ -84,8 +84,18 @@ public class PluginMenuSyncPort implements PluginMenuPort {
             String parentPerms = text(menu.get("parentPerms"));
             String path = normalizePluginPath(pluginCode, text(menu.get("path")));
             boolean directory = "M".equals(value(menu, "type", "C")) && StringUtils.hasText(parentPerms);
-            if (!StringUtils.hasText(perms) || (!StringUtils.hasText(path) && !directory)) {
+            // 操作权限行（type=A）：只承载权限点、没有页面路径，默认不显示在侧栏。
+            // 插件在 @HouRoute 上声明了写权限（plan:write 之类）就必须在 menus 里登记同名 A 行，
+            // 否则该权限点不进 hou_permission_menu，插件路由鉴权永远匹配不到，写接口恒 403
+            // 「无权访问插件接口」（holiday-campaign 2026-11-09 事故：声明 12 个权限点、
+            // menus 只有 7 条，5 个写权限全部缺失）。
+            boolean action = "A".equalsIgnoreCase(value(menu, "type", "C"));
+            if (!StringUtils.hasText(perms) || (!StringUtils.hasText(path) && !directory && !action)) {
                 continue;
+            }
+            if (action && path == null) {
+                // paths 列 NOT NULL，操作权限行没有页面路径，写空串（与手工补的 A 行口径一致）。
+                path = "";
             }
             // 子菜单若与父级共用同一 perms，按 perms 查重会命中父行并 UPDATE 覆盖掉
             // display_pos=plugin 的根入口（组合促销等 order-* 历史 yaml 即此形态）。
@@ -115,6 +125,8 @@ public class PluginMenuSyncPort implements PluginMenuPort {
             }
             String displayPos = pid == 0 ? "plugin" : "left";
             int menuCateId = pid == 0 ? cateId : 0;
+            // 操作权限行默认隐藏（只能被角色勾选授权，不占侧栏）；页面菜单默认显示。
+            int isShow = action ? integer(menu.get("isShow"), 0) : 1;
             if (existing.isEmpty()) {
                 // plugin_code 与 params 双写：params='plugin:{code}' 是历史口径（字符串标记），
                 // plugin_code 是 2026-09-19 新增的一等字段（可索引、可 JOIN）。两者同时写，
@@ -124,12 +136,12 @@ public class PluginMenuSyncPort implements PluginMenuPort {
                                 + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,UNIX_TIMESTAMP(),UNIX_TIMESTAMP())",
                         pid, value(menu, "type", "C"), menuName,
                         value(menu, "icon", "Document"), sortValue, perms, path,
-                        value(menu, "component", ""), value(menu, "selected", ""), owner, pluginCode, 0, 1, 0, displayPos, menuCateId);
+                        value(menu, "component", ""), value(menu, "selected", ""), owner, pluginCode, 0, isShow, 0, displayPos, menuCateId);
             } else {
-                jdbcTemplate.update("UPDATE hou_permission_menu SET pid=?,type=?,name=?,icon=?,sort=IF(pid=0,sort,?),paths=?,component=?,params=?,plugin_code=?,display_pos=IF(pid=0 AND display_pos='hidden','hidden',?),cate_id=?,perms=?,update_time=UNIX_TIMESTAMP() WHERE id=?",
+                jdbcTemplate.update("UPDATE hou_permission_menu SET pid=?,type=?,name=?,icon=?,sort=IF(pid=0,sort,?),paths=?,component=?,params=?,plugin_code=?,display_pos=IF(pid=0 AND display_pos='hidden','hidden',?),cate_id=?,is_show=?,perms=?,update_time=UNIX_TIMESTAMP() WHERE id=?",
                         pid, value(menu, "type", "C"), menuName,
                         value(menu, "icon", "Document"), sortValue, path,
-                        value(menu, "component", ""), owner, pluginCode, displayPos, menuCateId, perms, existing.get(0));
+                        value(menu, "component", ""), owner, pluginCode, displayPos, menuCateId, isShow, perms, existing.get(0));
             }
             declaredPerms.add(perms);
             grantAdminRoles(perms);

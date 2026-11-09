@@ -64,6 +64,9 @@ public final class MallStyleDefaults {
         if (style == null) {
             return all();
         }
+        if (style.get("pc_template_code") == null) {
+            style.put("pc_template_code", "");
+        }
         if (isBlank(style.get("pc_layout"))) {
             style.put("pc_layout", "hybrid");
         }
@@ -157,6 +160,8 @@ public final class MallStyleDefaults {
         item.put("name", name);
         item.put("name_en", nameEn);
         item.put("path", path);
+        item.put("image", "");
+        item.put("target", 0);
         item.put("visible", true);
         return item;
     }

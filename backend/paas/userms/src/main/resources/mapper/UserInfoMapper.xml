@@ -1314,10 +1314,14 @@
           and uui.user_state != 3
     </select>
     <select id="checkPhoneNumberFeign" resultType="java.lang.Integer">
+        <!-- 2026-11-09 修复：原 SQL 过滤条件写成 hou_user_info.shop_id，但会员表从未存在该列
+             （店铺关系在 hou_merchant_mall_shop_admin.shop_id），导致商家入驻第 2 步的
+             手机号校验恒定 SQLSyntaxErrorException，merchant 侧再包成「数据库繁忙，请稍后重试」。
+             改用会员表自身的经营标记：is_business 为 0/空 = 还不是商家，可继续入驻。 -->
         select count(*)
         from ${database.prefix.userms}hou_user_info
         where user_mobile = #{param.userMobile}
-          and shop_id is null
+          and ifnull(is_business, 0) = 0
     </select>
     <select id="getPrimaryAccountId" resultType="java.lang.String">
         select create_user

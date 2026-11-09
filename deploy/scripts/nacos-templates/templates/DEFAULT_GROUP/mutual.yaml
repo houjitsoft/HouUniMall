@@ -37,6 +37,14 @@ feign:
   thirdparty.url: ""
   userms.url: ""
   webpos.url: ""
+# JWT 签名密钥：必须所有服务共用同一个值。
+# 此前只有 auth.yaml 配了 jwt.secret（nacos-init 每次安装随机生成），其余服务
+# 读不到该键，全部回落到 commons JwtUtil 里的硬编码默认串，于是 auth 签发的 token
+# 到了 permission / userms / order / payment 一律 「JWT signature does not match」，
+# 表现为登录成功但每个接口 401。放在 mutual.yaml（所有服务 import）才真正对齐。
+jwt:
+  secret: ${AUTH_JWT_SECRET}
+
 snow:
   workerId: 001
   datacenterId: 002

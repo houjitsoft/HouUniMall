@@ -591,6 +591,7 @@ export const getIndexSlides = (params: { integralType?: number } = { integralTyp
                     return {
                         navTitle,
                         navUrl,
+                        nameEn: String(record.name_en ?? record.nameEn ?? '').trim(),
                         navNewOpen: Number(record.navNewOpen ?? record.target ?? 0) || 0,
                         navImage: String(record.navImage ?? record.image ?? '').trim()
                     }

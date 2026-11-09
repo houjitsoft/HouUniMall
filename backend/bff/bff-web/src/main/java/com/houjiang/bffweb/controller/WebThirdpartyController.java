@@ -96,6 +96,41 @@ public class WebThirdpartyController {
 
     /** ================= 钉钉集成 ================= */
 
+    /**
+     * 获取 OSS 预签名直传地址（前端直传对象存储，不经应用服务器）。
+     *
+     * <p>2026-11-09 修复：商家入驻第 2 步的身份证正反面、合作协议、店铺图全部走这条预签名链路，
+     * 但 BFF 侧此前没有这两个路由，前端 POST 过来一律被兜底成
+     * {@code {"code":20001,"message":"请求的资源不存在"}}，表现是「选了文件、文件名也显示出来了，
+     * 实际没传上去」。这里同时提供 POST（前端当前写法：body 传 fileName）与 GET（thirdparty 原生形态）
+     * 两种入口，返回统一包装 {@code data = {uploadUrl, fileUrl}}，与前端 getPresignedUrl 的取值一致。
+     *
+     * @param body 含 fileName
+     * @return data.uploadUrl 直传地址、data.fileUrl 访问地址
+     */
+    @PostMapping({"/oss/getPresignedUrl", "/web/oss/getPresignedUrl"})
+    public ResponseResult getPresignedUrlByPost(@RequestBody Map<String, String> body) {
+        return presignedUrl(body == null ? null : body.get("fileName"));
+    }
+
+    @GetMapping({"/oss/getPresignedUrl", "/web/oss/getPresignedUrl"})
+    public ResponseResult getPresignedUrl(@RequestParam("fileName") String fileName) {
+        return presignedUrl(fileName);
+    }
+
+    private ResponseResult presignedUrl(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return ResponseResult.error("fileName 不能为空");
+        }
+        try {
+            Map<String, String> data = ossServiceFeign.getPresignedUrl(fileName.trim());
+            return ResponseResult.success(data);
+        } catch (Exception e) {
+            log.error("获取 OSS 预签名地址失败: {}", fileName, e);
+            return ResponseResult.error("获取上传地址失败: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/dingtalk/config")
     public ResponseResult<ThirdPartyConfigDTO> getDingtalkConfig() {
         return dingtalkServiceFeign.getConfig();

@@ -157,4 +157,64 @@ public class UserServiceFeignFallback implements UserServiceFeign {
     public ResponseResult agreementConsentExport(Map<String, Object> params) {
         return ResponseResult.fail("协议同意记录服务暂时不可用");
     }
+
+    @Override
+    public ResponseResult memberPortraitPage(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitDetail(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitRfm(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitSegmentPreview(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitCrowdSave(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitCrowdList(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitCrowdDelete(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitTagList(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitTagSave(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitTagDelete(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitTagAttach(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberPortraitTagDetach(Map<String, Object> params) {
+        return ResponseResult.fail("会员画像服务暂时不可用");
+    }
 }

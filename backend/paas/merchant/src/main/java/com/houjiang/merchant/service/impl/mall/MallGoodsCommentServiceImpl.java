@@ -122,11 +122,28 @@ public class MallGoodsCommentServiceImpl implements IMallGoodsCommentService {
             MallGoodsCommentListedVo vo = new MallGoodsCommentListedVo();
             BeanUtils.copyProperties(item, vo);
             JSONArray imagesArray = new JSONArray();
-            for (Object imageItem : JSONArray.parseArray(item.getImages())) {
-                imagesArray.add(UrlUtils.toShopAbsoluteUrl(imageItem.toString()));
+            // 历史数据里 images / goods_sku_value 可能为 NULL 或纯文本（规格值名称），
+            // 直接 parseArray 会抛异常把整个评价列表兜底成 20010，这里按「无图/无规格」降级。
+            if (item.getImages() != null && !item.getImages().isBlank()) {
+                try {
+                    for (Object imageItem : JSONArray.parseArray(item.getImages())) {
+                        imagesArray.add(UrlUtils.toShopAbsoluteUrl(imageItem.toString()));
+                    }
+                } catch (RuntimeException ignored) {
+                    imagesArray.clear();
+                }
+            }
+            JSONArray skuValues = new JSONArray();
+            if (item.getGoodsSkuValue() != null && !item.getGoodsSkuValue().isBlank()) {
+                try {
+                    JSONArray parsed = JSONArray.parseArray(item.getGoodsSkuValue());
+                    if (parsed != null) skuValues = parsed;
+                } catch (RuntimeException ignored) {
+                    // 非 JSON 规格文本按空数组处理
+                }
             }
             vo.setCreateTime(TimeUtils.timestampToDate(item.getCreateTime()));
-            vo.setGoodsSkuValue(JSONArray.parseArray(item.getGoodsSkuValue()));
+            vo.setGoodsSkuValue(skuValues);
             vo.setImages(imagesArray);
             vo.setLevel(MallGoodsCommentEnum.getLevelAttr(item.getScore()));
             vo.setLevelText(MallGoodsCommentEnum.getLevelTextAttr(item.getScore()));

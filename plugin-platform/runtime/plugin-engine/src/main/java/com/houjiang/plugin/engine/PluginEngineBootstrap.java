@@ -82,6 +82,17 @@ public class PluginEngineBootstrap implements ApplicationRunner {
                         try {
                             lifecycleManager.install(code, jar);
                             log.info("[插件引擎] 已装载插件 {} <- {}", code, jar.getFileName());
+                        } catch (IllegalStateException e) {
+                            // 多宿主共用一个插件卷是默认部署形态（base 与 mall、order 都挂
+                            // ${PLUGINS_DIR}），目录里必然存在别的宿主负责的 jar。那属于
+                            // 正常情况，不该刷 ERROR 日志把真正的装载失败淹没。
+                            String msg = e.getMessage() == null ? "" : e.getMessage();
+                            if (msg.startsWith("Plugin hostService does not match this service")) {
+                                log.info("[插件引擎] 跳过非本服务宿主的插件 {} <- {}（{}）",
+                                        code, jar.getFileName(), msg);
+                                return;
+                            }
+                            log.error("[插件引擎] 装载插件失败 {} <- {}", code, jar.getFileName(), e);
                         } catch (Exception e) {
                             log.error("[插件引擎] 装载插件失败 {} <- {}", code, jar.getFileName(), e);
                         }

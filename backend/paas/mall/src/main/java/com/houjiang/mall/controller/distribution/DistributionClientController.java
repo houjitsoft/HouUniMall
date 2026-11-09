@@ -70,6 +70,13 @@ public class DistributionClientController {
                 intVal(p.get("page"), 1), intVal(p.get("size"), 10)));
     }
 
+    /** 推广物料：客户推广链接 / 邀请分销员链接 / 两张二维码（PC、H5、小程序、ucenter 统一口径） */
+    @PostMapping("/material")
+    public ResponseResult<Map<String, Object>> material(HttpServletRequest request,
+                                                       @RequestBody(required = false) Map<String, Object> params) {
+        return ResponseResult.success(distributionClientService.material(currentUserId(request), params));
+    }
+
     /** 我推广的客户（按买家去重统计） */
     @PostMapping("/customers")
     public ResponseResult<Map<String, Object>> customers(HttpServletRequest request,

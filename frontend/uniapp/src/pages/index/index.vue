@@ -16,6 +16,11 @@
 		</view>
 		<foo-bar/>
 		<BaseTop :scrollTop="scrollTop" text="顶部" />
+		<!-- 🔴 前台 AI 搜索对匿名访客开放：首页常驻入口，点击直达，无需登录 -->
+		<view @click="goAiSearch"
+			style="position:fixed;right:24rpx;bottom:220rpx;z-index:999;display:flex;align-items:center;justify-content:center;width:96rpx;height:96rpx;border-radius:50%;background:#3b6cff;color:#fff;font-size:24rpx;line-height:1.1;text-align:center;box-shadow:0 6rpx 16rpx rgba(0,0,0,.25);">
+			AI<br/>搜索
+		</view>
 	</view>
 	
 </template>
@@ -70,11 +75,31 @@
 		},
 		onLoad(options){
 			if (options && options.tpl) this.previewTpl = String(options.tpl)
-			// 分销推广：客户点开带 shareUserId 的链接（会员中心「推广链接」/ 分销员分享）进入商城首页时，
-			// 立即把分享人落 storage —— 后续加购、下单由 sureorder 读取并回传，否则只在内存里，进商品页就丢了。
-			if (options && options.shareUserId) {
-				uni.setStorageSync('shareUserId', options.shareUserId)
-				this.publicVariable.shareUserId = options.shareUserId
+			// 分销推广归因，兼容三种入口：
+			//  ① H5 / 小程序原生分享链接：query.shareUserId
+			//  ② 微信小程序码：options.scene。1 代 createVkShareQrCode 生成的 scene 是
+			//     "shareUserId=xxx"、page 指向本页；此前本页只认 ①，且 App.vue 只解析
+			//     options.query.q，导致扫该小程序码进商城首页直接丢掉分享人。
+			//  ③ 普通二维码带 ?q= 的入口由 App.vue 解析，这里不重复处理。
+			let shareUserId = options && options.shareUserId ? String(options.shareUserId) : ''
+			if (!shareUserId && options && options.scene) {
+				try {
+					const pairs = decodeURIComponent(options.scene).split('&')
+					for (let i = 0; i < pairs.length; i++) {
+						const idx = pairs[i].indexOf('=')
+						if (idx > 0 && pairs[i].slice(0, idx) === 'shareUserId') {
+							shareUserId = pairs[i].slice(idx + 1)
+							break
+						}
+					}
+				} catch (e) {
+					// scene 非法编码时忽略，不影响首页其它逻辑
+				}
+			}
+			// 后续加购、下单由 sureorder 读取 storage，否则只在内存里，进商品页就丢了。
+			if (shareUserId) {
+				uni.setStorageSync('shareUserId', shareUserId)
+				this.publicVariable.shareUserId = shareUserId
 			}
 		},
 		onPageScroll(e){
@@ -119,6 +144,10 @@
 			applySkin() {
 				const tea = isTeaSkin();
 				if (tea !== this.isTeaLayout) this.isTeaLayout = tea;
+			},
+			/** 前台 AI 搜索对匿名访客开放，直接进，不强制登录 */
+			goAiSearch() {
+				uni.navigateTo({ url: '/aisearch/index/index' });
 			},
 			
 			async init() {

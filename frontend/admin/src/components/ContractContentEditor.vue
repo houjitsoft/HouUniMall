@@ -9,8 +9,9 @@
             :model-value="partyAName"
             class="party-name-input"
             placeholder="请输入甲方名称"
-            maxlength="200"
+            :maxlength="PARTY_NAME_MAX_LENGTH"
             @update:model-value="$emit('update:partyAName', $event)"
+            @blur="handlePartyBlur('A')"
           />
         </div>
       </el-form-item>
@@ -21,8 +22,9 @@
             :model-value="partyBName"
             class="party-name-input"
             placeholder="请输入乙方名称"
-            maxlength="200"
+            :maxlength="PARTY_NAME_MAX_LENGTH"
             @update:model-value="$emit('update:partyBName', $event)"
+            @blur="handlePartyBlur('B')"
           />
         </div>
       </el-form-item>
@@ -48,8 +50,9 @@
 
 <script setup>
 import RichEditor from '@/components/RichEditor.vue'
+import { normalizePartyName, PARTY_NAME_MAX_LENGTH } from '@/utils/contractParties'
 
-defineProps({
+const props = defineProps({
   partyAName: {
     type: String,
     default: ''
@@ -84,7 +87,16 @@ defineProps({
   }
 })
 
-defineEmits(['update:partyAName', 'update:partyBName', 'update:contractContent'])
+const emit = defineEmits(['update:partyAName', 'update:partyBName', 'update:contractContent'])
+
+// 失焦即按统一规则清洗，界面所见与最终保存值保持一致（新增、编辑共用）
+const handlePartyBlur = (side) => {
+  const prop = side === 'A' ? 'partyAName' : 'partyBName'
+  const normalized = normalizePartyName(props[prop])
+  if (normalized !== props[prop]) {
+    emit(`update:${prop}`, normalized)
+  }
+}
 </script>
 
 <style scoped>
@@ -110,6 +122,16 @@ defineEmits(['update:partyAName', 'update:partyBName', 'update:contractContent']
 
 .contract-cover-parties .party-form-item :deep(.el-form-item__content) {
   margin-left: 0 !important;
+}
+
+/* 校验提示改为占位显示，避免绝对定位被封面区裁切 / 与下一行重叠 */
+.contract-cover-parties .party-form-item :deep(.el-form-item__error) {
+  position: static;
+  display: block;
+  padding-top: 2px;
+  line-height: 16px;
+  font-size: 12px;
+  text-align: center;
 }
 
 .contract-cover-parties .party-line {

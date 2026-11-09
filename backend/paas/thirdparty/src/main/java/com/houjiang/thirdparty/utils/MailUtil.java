@@ -34,8 +34,45 @@ public class MailUtil {
     private static String USERNAME = "";
     private static String PASSWORD = "";
 
+    /**
+     * 最近一次发送失败的真实原因。
+     * 调用方（验证码发码接口）据此返回可读提示，不再把所有失败都报成「格式不正确」。
+     */
+    private static volatile String lastError = "";
+
     @Autowired(required = false)
     private BaseServiceClient baseServiceClient;
+
+    public static String getLastError() {
+        return lastError == null ? "" : lastError;
+    }
+
+    /**
+     * 按发件邮箱域名推导 SMTP 服务器。
+     * 原来固定 smtp.exmail.qq.com，遇到个人 QQ 邮箱（@qq.com）就会认证失败。
+     */
+    private static String resolveHost(String username) {
+        String account = username == null ? "" : username.trim().toLowerCase();
+        int at = account.lastIndexOf('@');
+        String domain = at >= 0 ? account.substring(at + 1) : "";
+        if (domain.isEmpty()) {
+            return HOST;
+        }
+        if (domain.equals("qq.com") || domain.equals("vip.qq.com") || domain.equals("foxmail.com")) {
+            return "smtp.qq.com";
+        }
+        if (domain.endsWith("163.com")) {
+            return "smtp.163.com";
+        }
+        if (domain.endsWith("126.com")) {
+            return "smtp.126.com";
+        }
+        if (domain.contains("exmail.qq.com")) {
+            return "smtp.exmail.qq.com";
+        }
+        // 企业自有域名邮箱：仍按腾讯企业邮默认入口
+        return HOST;
+    }
 
     @PostConstruct
     public void init() {
@@ -48,8 +85,15 @@ public class MailUtil {
         NavSortLogoDTO gdbNavSortLogoDTO = new NavSortLogoDTO();
         gdbNavSortLogoDTO.setConfigType(CommonType.configKey.SETTING.getDesc());
         ResponseResult resp = mailUtil.baseServiceClient.quertNavLogo(gdbNavSortLogoDTO);
+        // 配置服务不可用 / 无数据时保持既有静态配置，不再让 NPE 冒泡成 20010
+        if (resp == null || resp.getData() == null) {
+            return;
+        }
         List<Map<String, Object>> list = (List<Map<String, Object>>) resp.getData();
         for (Map<String, Object> stringObjectMap : list) {
+            if (stringObjectMap == null || stringObjectMap.get("configValue") == null) {
+                continue;
+            }
             if(CommonType.configKey.SETTING_EMAIL.getDesc().equals(stringObjectMap.get("configKey"))){
                 USERNAME = stringObjectMap.get("configValue").toString();
                 continue;
@@ -121,14 +165,41 @@ public class MailUtil {
      * @param list      邮件内容
      */
     public static Boolean sendMail(String userEmail,Integer messageId,List<String> list) {
+        return sendMail(userEmail, messageId, list, null);
+    }
+
+    /**
+     * @param subjectOverride 非空时用消息框架里按 template_code 取到的模板名作为邮件标题/抬头。
+     *                        存量按 templateId 查到的行曾出现标题与内容不匹配（验证码邮件标题显示「审批催办通知」）。
+     */
+    public static Boolean sendMail(String userEmail, Integer messageId, List<String> list, String subjectOverride) {
         Boolean start = false;
         String text = null;
+        lastError = "";
         // 初始化 邮件模板信息
         setEmailTemplate();
+        if (StringUtils.isEmpty(USERNAME) || StringUtils.isEmpty(PASSWORD)) {
+            lastError = "发件邮箱未配置（后台 setting_email / setting_email_code 为空）";
+            throw new IllegalStateException(lastError);
+        }
+        HOST = resolveHost(USERNAME);
         ResponseResult resp = mailUtil.baseServiceClient.selectListByTemplateId(messageId);
+        // 旧模板表被新消息框架接管后，缺模板 / 列不兼容都会让 Feign 回落成 data=null。
+        // 这里逐层判空并给出明确提示，避免 NullPointerException 被兜底成含糊的 20010。
+        if (resp == null || resp.getData() == null) {
+            throw new IllegalArgumentException("邮件模板未配置或已失效: templateId=" + messageId);
+        }
         BaseMessageTemplateVO baseMessageTemplateVO = JSON.parseObject(JSON.toJSONString(resp.getData()), BaseMessageTemplateVO.class);
+        if (baseMessageTemplateVO == null || baseMessageTemplateVO.getEmailTemplateContent() == null) {
+            throw new IllegalArgumentException("邮件模板内容为空: templateId=" + messageId);
+        }
         String emailTemplateContent = baseMessageTemplateVO.getEmailTemplateContent();
-        text = setContentEmail(baseMessageTemplateVO.getTemplateName(),emailTemplateContent,list);
+        String templateName = baseMessageTemplateVO.getTemplateName() == null
+                ? "验证码" : baseMessageTemplateVO.getTemplateName();
+        if (subjectOverride != null && !subjectOverride.trim().isEmpty()) {
+            templateName = subjectOverride.trim();
+        }
+        text = setContentEmail(templateName, emailTemplateContent, list);
         try {
             // 创建邮件发送器实例
             JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
@@ -149,7 +220,7 @@ public class MailUtil {
             // 设置发件人
             messageHelper.setFrom(USERNAME);
             // 设置邮件标题
-            messageHelper.setSubject(baseMessageTemplateVO.getTemplateName());
+            messageHelper.setSubject(templateName);
             // 设置邮件内容，true表示开启HTML文本格式
             messageHelper.setText(text, true);
             // 设置发件人邮箱信息，username表示用户邮箱，password表示对应邮件授权码
@@ -171,6 +242,13 @@ public class MailUtil {
             properties.setProperty("mail.smtp.socketFactory.fallback", "false");
             // 设置使用SSL协议的Socket工厂类
             properties.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            // 465 为 SMTPS 隐式加密口：必须显式开启 SSL，否则 AUTH 会在明文连接上失败
+            properties.setProperty("mail.smtp.ssl.enable", "true");
+            properties.setProperty("mail.smtp.ssl.trust", HOST);
+            properties.setProperty("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
+            properties.setProperty("mail.smtp.starttls.enable", "true");
+            properties.setProperty("mail.smtp.connectiontimeout", "15000");
+            properties.setProperty("mail.smtp.writetimeout", "15000");
             // 设置邮件发送器的JavaMail属性
             senderImpl.setJavaMailProperties(properties);
             // 发送邮件
@@ -179,7 +257,10 @@ public class MailUtil {
             System.out.println("邮件发送成功..");
             start = true;
         } catch (MessagingException e) {
-            // 打印异常信息
+            // 记录真实失败原因，供发码接口原样返回，避免被误报成「格式不正确」
+            lastError = "SMTP 发送失败（" + HOST + ":" + PORT + "）：" + e.getClass().getSimpleName()
+                    + (e.getMessage() == null ? "" : " - " + e.getMessage());
+            System.out.println("=== 邮件发送失败: " + lastError);
             e.printStackTrace();
         }finally {
             return start;
