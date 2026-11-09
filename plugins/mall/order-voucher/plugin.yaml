@@ -1,6 +1,6 @@
 code: order-voucher
 name: 优惠券
-version: 1.0.0
+version: 1.0.1
 author: UniMall
 description: 优惠券（activity 拆分，归属 order 宿主）
 category: 营销与客户
@@ -32,4 +32,4 @@ menus:
     path: /plugin/order-voucher/index
     parentPerms: order-voucher:root
 frontend:
-  entry: /plugin-assets/order-voucher/1.0.0/index.mjs
+  entry: /plugin-assets/order-voucher/1.0.1/index.mjs

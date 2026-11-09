@@ -1,6 +1,6 @@
 code: mall-distribution
 name: 分销推广
-version: 1.0.2
+version: 1.0.3
 author: UniMall
 description: Distributor management, levels, goods, orders, commission rules and records
 category: 营销与客户
@@ -100,4 +100,4 @@ menus:
     path: /plugin/mall-distribution/withdraw
     parentPerms: shell:mall-distribution:root
 frontend:
-  entry: /plugin-assets/mall-distribution/1.0.2/index.mjs
+  entry: /plugin-assets/mall-distribution/1.0.3/index.mjs

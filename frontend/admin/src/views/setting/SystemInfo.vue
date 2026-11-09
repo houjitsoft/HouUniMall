@@ -11,7 +11,7 @@
           
           <el-descriptions :column="1" border>
             <el-descriptions-item label="系统名称">{{ systemInfo.systemName || 'HouUniMall管理系统' }}</el-descriptions-item>
-            <el-descriptions-item label="系统版本">{{ systemInfo.systemVersion || 'v1.0.0' }}</el-descriptions-item>
+            <el-descriptions-item label="系统版本">{{ systemInfo.systemVersion || 'v1.0.1' }}</el-descriptions-item>
             <el-descriptions-item label="构建时间">{{ systemInfo.buildTime || '2024-01-08 10:30:00' }}</el-descriptions-item>
             <el-descriptions-item label="运行环境">{{ systemInfo.environment || '生产环境' }}</el-descriptions-item>
             <el-descriptions-item label="操作系统">{{ systemInfo.operatingSystem || 'Linux 5.4.0-80-generic' }}</el-descriptions-item>
@@ -101,6 +101,7 @@ const { t } = useI18n()
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { systemInfoService } from '@/api/setting/setting.js'
+import { getFrameworkVersion } from '@/api/plugin-center/pluginMarket.js'
 
 const currentTime = ref(new Date().toLocaleString())
 const memoryUsage = ref(65)
@@ -155,8 +156,15 @@ const loadSystemInfo = async () => {
       Object.assign(techStack, response.data.techStack || {})
     }
   } catch (error) {
-    console.error('加载系统信息失败:', error)
-    ElMessage.error('加载系统信息失败')
+    // 开源包没有 commons-service 的 /system/info，本页只剩版本号有意义：
+    // 直接读宿主唯一事实源 houcloud.update.framework-version，读不到才留空前端回落。
+    console.warn('加载系统信息失败，回落到框架版本接口:', error)
+    try {
+      const version = (await getFrameworkVersion())?.frameworkVersion
+      if (version) systemInfo.systemVersion = `v${version}`
+    } catch (fallbackError) {
+      console.warn('读取框架版本失败:', fallbackError)
+    }
   } finally {
     loading.value = false
   }

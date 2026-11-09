@@ -9,6 +9,7 @@ import com.houjiang.mall.service.market.PluginMarketCatalogService;
 import com.houjiang.mall.service.market.PluginMarketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -103,6 +104,21 @@ public class PluginMarketController {
             log.error("生成平台市场目录失败", e);
             return ResponseResult.fail(500, "生成平台市场目录失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 宿主框架版本（公开只读）。
+     *
+     * <p>「设置 → 系统信息」要显示系统版本，但该页原先依赖 commons-service 的
+     * {@code /system/info}，开源包里没有对应实现，页面只能落回前端写死的字符串，
+     * 于是系统升了版本、页面还停在旧值。版本号有唯一事实源
+     * （{@code houcloud.update.framework-version}，市场兼容性预检也用它），
+     * 这里直接摊出来给前端，避免第二份会漂移的常量。
+     */
+    @GetMapping("/framework-version")
+    public ResponseResult frameworkVersion() {
+        return ResponseResult.success(Map.of("frameworkVersion",
+                frameworkVersion == null ? "" : frameworkVersion.trim()));
     }
 
     @PostMapping("/detail")

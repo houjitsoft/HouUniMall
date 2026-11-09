@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +51,17 @@ public class PluginMarketController {
     @Operation(summary = "市场分类")
     public ResponseResult categories() {
         return pluginCenterServiceFeign.marketCategories();
+    }
+
+    /**
+     * 宿主框架版本：转发 base 的 {@code /base/plugin-center/market/framework-version}。
+     *
+     * <p>只给「设置 → 系统信息」显示版本用，不参与市场业务判定。
+     */
+    @GetMapping("/framework-version")
+    @Operation(summary = "宿主框架版本")
+    public ResponseResult frameworkVersion() {
+        return pluginCenterServiceFeign.marketFrameworkVersion();
     }
 
     @PostMapping("/detail")

@@ -28,6 +28,29 @@ fi
 # cp -a 保留目录结构；重复执行是覆盖，不产生 <code>/<version>/<code>/<version> 套娃。
 cp -a "$SRC/." "$DEST/"
 
+# ---------------------------------------------------------------- 制品文件名归一
+# maven 产出的 jar 名是 <artifactId>-<pom.version>.jar，而 pom 里的版本是构件版本
+# （1.0.0/1.0.2 这类），跟 plugin.yaml 的发布版本不是一回事：插件升到 1.0.3 之后，
+# 目录是 1.0.3、jar 还叫 xxx-plugin-1.0.2.jar。安装记录（jar_path）与应用启动时的
+# PluginRuntimeBootstrap 都是按路径精确取的，名字一旦漂移就「记录在、包找不到」，
+# 插件静默不加载。
+# 这里统一改名为 <code>-plugin-<plugin.yaml version>.jar，与 register.sql 的登记口径一致。
+renamed=0
+for d in "$DEST"/*/*; do
+  [ -d "$d" ] || continue
+  code=$(basename "$(dirname "$d")")
+  ver=$(basename "$d")
+  for j in "$d"/*.jar; do
+    [ -f "$j" ] || continue
+    case "$j" in *-sources.jar|*-javadoc.jar) continue ;; esac
+    target="$d/$code-plugin-$ver.jar"
+    [ "$j" = "$target" ] && continue
+    mv -f "$j" "$target"
+    renamed=$((renamed + 1))
+  done
+done
+[ "$renamed" -gt 0 ] && echo "[plugin-seed] 制品文件名归一 ${renamed} 个（<code>-plugin-<版本>.jar）"
+
 count=$(find "$DEST" -type f -name '*.jar' | wc -l | tr -d ' ')
 echo "[plugin-seed] 插件卷内共 ${count} 个 jar："
 find "$DEST" -type f -name '*.jar' | sort | sed 's|^|  |'

@@ -1,6 +1,6 @@
 code: userms-lucky-draw
 name: 抽奖转盘
-version: 1.0.0
+version: 1.0.1
 author: UniMall
 description: 抽奖转盘（activity 拆分，归属 userms 宿主）
 category: 营销 / 运营
@@ -73,4 +73,4 @@ menus:
     path: /plugin/userms-lucky-draw/participants
     parentPerms: userms-lucky-draw:root
 frontend:
-  entry: /plugin-assets/userms-lucky-draw/1.0.0/index.mjs
+  entry: /plugin-assets/userms-lucky-draw/1.0.1/index.mjs

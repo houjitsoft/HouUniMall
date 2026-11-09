@@ -1,6 +1,6 @@
 code: goods-discount
 name: 商品折扣
-version: 1.0.0
+version: 1.0.1
 author: UniMall
 description: 商品折扣（activity 拆分，归属 goods 宿主）
 category: 营销 / 运营
@@ -32,4 +32,4 @@ menus:
     path: /plugin/goods-discount/index
     parentPerms: goods-discount:root
 frontend:
-  entry: /plugin-assets/goods-discount/1.0.0/index.mjs
+  entry: /plugin-assets/goods-discount/1.0.1/index.mjs

@@ -1,6 +1,6 @@
 code: order-seckill
 name: 限时秒杀
-version: 1.0.0
+version: 1.0.1
 author: UniMall
 description: 限时秒杀（activity 拆分，归属 order 宿主）
 category: 营销与客户
@@ -49,4 +49,4 @@ menus:
     path: /plugin/order-seckill-price/index
     parentPerms: order-seckill:price
 frontend:
-  entry: /plugin-assets/order-seckill/1.0.0/index.mjs
+  entry: /plugin-assets/order-seckill/1.0.1/index.mjs

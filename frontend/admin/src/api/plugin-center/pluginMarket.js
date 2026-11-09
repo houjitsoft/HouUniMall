@@ -180,3 +180,11 @@ export const getCatalogUpdates = async (instanceId, plugins = []) => {
   const payload = { instanceId, plugins }
   return dataOf(await request.post(`${BASE_URL}/catalog/updates`, payload))
 }
+
+/**
+ * 宿主框架版本：{ frameworkVersion }
+ *
+ * 与市场兼容性预检、houcloud.update.framework-version 同源。
+ * 「设置 → 系统信息」用它显示系统版本，不再依赖开源包缺失的 commons-service。
+ */
+export const getFrameworkVersion = async () => dataOf(await request.get(`${BASE_URL}/framework-version`))

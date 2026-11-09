@@ -1,14 +1,18 @@
 -- 抽奖转盘插件登记（幂等，可重复执行）
 INSERT INTO hou_addon_plugin (cate_id, service_code, plugin_code, name, category, version, description, terminals_json, dependencies_json, entry_path, config_schema, status, sort )
-SELECT 4, 'mall', 'userms-lucky-draw', '抽奖转盘', '营销/运营', '1.0.0',
+SELECT 4, 'mall', 'userms-lucky-draw', '抽奖转盘', '营销/运营', '1.0.1',
        '抽奖转盘（activity 拆分，归属 userms 宿主）',
        '["admin"]', '[]', 'index.mjs', '{}', 1, 0
 FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM hou_addon_plugin WHERE plugin_code = 'userms-lucky-draw' AND deleted = 0);
+-- 上面那条只在首装时插入；已存在的行必须显式 UPDATE，否则升级后版本号永远停在首装值。
+UPDATE hou_addon_plugin SET version = '1.0.1', status = 1, deleted = 0
+WHERE plugin_code = 'userms-lucky-draw' AND deleted = 0;
+
 
 INSERT INTO hou_addon_plugin_install (plugin_code, installed, enabled, version, jar_path, checksum, install_time, update_time)
-VALUES ('userms-lucky-draw', 1, 1, '1.0.0', '/app/plugins/userms-lucky-draw/1.0.0/userms-lucky-draw-plugin-1.0.0.jar',
-        '7fcb2467d1a5be9c7b1d8e3e16d643a99f374198fc7756f85939851a332648d0', NOW(), NOW())
-ON DUPLICATE KEY UPDATE installed = 1, enabled = 1, version = '1.0.0',
+VALUES ('userms-lucky-draw', 1, 1, '1.0.1', '/app/plugins/userms-lucky-draw/1.0.1/userms-lucky-draw-plugin-1.0.1.jar',
+        NULL, NOW(), NOW())
+ON DUPLICATE KEY UPDATE installed = 1, enabled = 1, version = '1.0.1',
     jar_path = VALUES(jar_path), checksum = VALUES(checksum), update_time = NOW(), deleted = 0;
 
 INSERT INTO hou_permission_menu (pid, type, name, icon, sort, perms, paths, component, selected, params,
@@ -23,7 +27,7 @@ INSERT INTO hou_market_plugin (plugin_code, name, author_id, category, cate_id, 
                                dependencies_json, deleted, visibility)
 VALUES ('userms-lucky-draw', '抽奖转盘', 1, '营销/运营', 4,
         '抽奖转盘（activity 拆分，归属 userms 宿主）', '抽奖转盘活动',
-        '1.0.0', 'FREE', 0, 0, 0, 0, 0.00, 0, 2, '1.0.0', '["official"]', '["admin"]', '[]', 0, 1)
+        '1.0.1', 'FREE', 0, 0, 0, 0, 0.00, 0, 2, '1.0.0', '["official"]', '["admin"]', '[]', 0, 1)
 ON DUPLICATE KEY UPDATE name = VALUES(name), status = 2, deleted = 0, visibility = 1,
     latest_version = VALUES(latest_version), update_time = NOW();
 
@@ -31,3 +35,26 @@ INSERT INTO hou_permission_role_menu (role_id, menu_id)
 SELECT 1, m.id FROM hou_permission_menu m
 WHERE m.plugin_code = 'userms-lucky-draw'
   AND NOT EXISTS (SELECT 1 FROM hou_permission_role_menu rm WHERE rm.role_id = 1 AND rm.menu_id = m.id);
+
+-- ---------------------------------------------------------------------------
+-- 市场版本行（1.0.1）
+--
+-- 只登记商品条目、不登记版本行时，市场详情恒显示「共 0 个已审核版本」，
+-- 安装按钮无处可点：后端只认 status=1 的版本行（PluginMarketService.resolveVersion）。
+-- 开源包没有平台制品仓，这里登记的是「随安装包落盘的本地制品」，
+-- 路径与 plugin-seed 投放口径一致：{plugins}/{code}/{version}/{code}-plugin-{version}.jar
+-- ---------------------------------------------------------------------------
+INSERT INTO hou_market_plugin_version (plugin_code, version, status, storage_type, jar_url,
+                                       changelog, publish_time, upload_status, submit_time, create_time)
+VALUES ('userms-lucky-draw', '1.0.1', 1, 'LOCAL',
+        'file:///app/plugins/userms-lucky-draw/1.0.1/userms-lucky-draw-plugin-1.0.1.jar',
+        '开源包内置版本，随安装包发布', NOW(), 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE status = 1, storage_type = VALUES(storage_type),
+    jar_url = VALUES(jar_url), changelog = VALUES(changelog),
+    publish_time = VALUES(publish_time), upload_status = 1,
+    submit_time = VALUES(submit_time), offline_time = NULL, offline_reason = NULL;
+
+-- 旧版本置为已下架：制品目录已被新版本替换，留着可安装的旧行只会点出「安装包地址不可用」。
+UPDATE hou_market_plugin_version SET status = 5,
+    offline_time = NOW(), offline_reason = '已发布新版本，旧制品不再随包提供'
+WHERE plugin_code = 'userms-lucky-draw' AND version <> '1.0.1' AND status = 1;

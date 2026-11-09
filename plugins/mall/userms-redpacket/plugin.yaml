@@ -1,6 +1,6 @@
 code: userms-redpacket
 name: 红包
-version: 1.0.0
+version: 1.0.1
 author: UniMall
 description: 红包（activity 拆分，归属 userms 宿主）
 category: 营销 / 运营
@@ -32,4 +32,4 @@ menus:
     path: /plugin/userms-redpacket/index
     parentPerms: userms-redpacket:root
 frontend:
-  entry: /plugin-assets/userms-redpacket/1.0.0/index.mjs
+  entry: /plugin-assets/userms-redpacket/1.0.1/index.mjs

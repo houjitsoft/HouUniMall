@@ -182,7 +182,7 @@ const paymentFormRef = ref(null)
 // 基础配置
 const basicConfig = reactive({
   systemName: 'HouEOC管理系统',
-  version: '1.0.0',
+  version: '1.0.1',
   companyName: 'HouEOC科技有限公司',
   phone: '400-123-4567',
   email: 'support@houeoc.com',

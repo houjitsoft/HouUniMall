@@ -23,6 +23,7 @@ public class PluginCenterServiceFeignFallback implements PluginCenterServiceFeig
     @Override public ResponseResult marketList(Map<String, Object> p) { return unavailable(); }
     @Override public ResponseResult marketCategories() { return unavailable(); }
     @Override public ResponseResult marketDetail(Map<String, Object> p) { return unavailable(); }
+    @Override public ResponseResult marketFrameworkVersion() { return unavailable(); }
     @Override public ResponseResult marketVersions(Map<String, Object> p) { return unavailable(); }
     @Override public ResponseResult marketCatalogUpdates(Map<String, Object> p) { return unavailable(); }
     @Override public ResponseResult marketInstall(Map<String, Object> p) { return unavailable(); }

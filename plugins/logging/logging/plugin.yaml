@@ -1,6 +1,6 @@
 code: logging
 name: 日志管理
-version: 1.0.0
+version: 1.0.1
 author: UniMall
 description: Operation, access, business and ELK log management
 category: 运维 / 工具
@@ -24,4 +24,4 @@ menus:
     group: ai
     groupSort: 200
 frontend:
-  entry: /plugin-assets/logging/1.0.0/index.mjs
+  entry: /plugin-assets/logging/1.0.1/index.mjs

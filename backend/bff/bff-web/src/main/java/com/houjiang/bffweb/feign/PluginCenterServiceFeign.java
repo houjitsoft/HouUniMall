@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -47,6 +48,16 @@ public interface PluginCenterServiceFeign {
 
     @PostMapping("/base/plugin-center/market/categories")
     ResponseResult marketCategories();
+
+    /**
+     * 宿主框架版本（只读）：{@code {frameworkVersion}}。
+     *
+     * <p>系统信息页要显示系统版本，而 {@code /setting/system/info} 依赖的 commons-service
+     * 在开源包里没有实现，页面只能落回前端写死的字符串。版本号的唯一事实源是
+     * {@code houcloud.update.framework-version}，这里直连 base 摊出来。
+     */
+    @GetMapping("/base/plugin-center/market/framework-version")
+    ResponseResult marketFrameworkVersion();
 
     @PostMapping("/base/plugin-center/market/detail")
     ResponseResult marketDetail(@RequestBody Map<String, Object> params);

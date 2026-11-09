@@ -1,6 +1,6 @@
 code: order-gift
 name: 满赠
-version: 1.0.2
+version: 1.0.3
 author: UniMall
 description: 满额赠品与买赠，支持固定赠品、多选一赠品池与赠品库存控制
 category: 营销与客户
@@ -24,7 +24,7 @@ menus:
     group: growth
     groupSort: 96
 frontend:
-  entry: /plugin-assets/order-gift/1.0.2/index.mjs
+  entry: /plugin-assets/order-gift/1.0.3/index.mjs
 tables:
   prefix: hou_plugin_order_gift_
   migrate:

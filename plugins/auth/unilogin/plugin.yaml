@@ -1,6 +1,6 @@
 code: unilogin
 name: 统一登录
-version: 1.0.2
+version: 1.0.3
 author: UniMall
 description: 统一第三方登录插件。以渠道注册表驱动，当前内置微信开放平台扫码登录，后续可扩展企业微信、钉钉、QQ、飞书等渠道；登录页自动注入各渠道入口。
 category: 运维 / 工具
@@ -23,7 +23,7 @@ menus:
     group: setting
     groupSort: 900
 frontend:
-  entry: /plugin-assets/unilogin/1.0.2/index.mjs
+  entry: /plugin-assets/unilogin/1.0.3/index.mjs
 routes:
   - { method: GET, path: /settings, permission: '', desc: 统一登录配置页（前端页） }
   - { method: GET, path: /callback/{channel}, permission: '', desc: 第三方授权回调页（前端页） }
