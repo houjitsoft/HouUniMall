@@ -3,9 +3,9 @@ import request from '@/utils/request'
 export const SEO_CONFIG_KEY = 'cloud_seo_settings'
 
 const DEFAULT_SEO = {
-  title: 'UniMall 管理系统',
+  title: 'HouUniMall 管理系统',
   keywords: '管理系统,企业应用,业务管理',
-  description: 'UniMall 是一个功能强大的企业级管理系统，提供完整的业务管理解决方案。',
+  description: 'HouUniMall 是一个功能强大的企业级管理系统，提供完整的业务管理解决方案。',
   logo: '',
   favicon: '',
   robots: `User-agent: *

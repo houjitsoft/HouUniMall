@@ -25,7 +25,7 @@
           title="返回首页"
         >
           <span class="logo-mark">H</span>
-          <span v-if="!isCollapse || isMobile" class="logo-text">UniMall</span>
+          <span v-if="!isCollapse || isMobile" class="logo-text">HouUniMall</span>
         </router-link>
         <router-link
           v-else
@@ -613,7 +613,7 @@ const syncAssistantContext = () => {
       .join('&')
 
     updateAssistantContext({
-      系统: 'UniMall 管理后台',
+      系统: 'HouUniMall 管理后台',
       页面: trail.join(' / '),
       路由: route.path,
       标题: heading || '',

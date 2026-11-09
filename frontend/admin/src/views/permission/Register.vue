@@ -9,7 +9,7 @@
               <div class="logo-icon">
                 <el-icon><Platform /></el-icon>
               </div>
-              <h1 class="brand-name">UniMall</h1>
+              <h1 class="brand-name">HouUniMall</h1>
             </div>
             <p class="brand-tagline">企业级数字化管理平台</p>
           </div>

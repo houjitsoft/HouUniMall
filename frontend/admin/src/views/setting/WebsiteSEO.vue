@@ -85,9 +85,9 @@ import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 
 const seoForm = reactive({
-  title: 'UniMall 管理系统',
+  title: 'HouUniMall 管理系统',
   keywords: '管理系统,企业应用,业务管理',
-  description: 'UniMall是一个功能强大的企业级管理系统，提供完整的业务管理解决方案。',
+  description: 'HouUniMall是一个功能强大的企业级管理系统，提供完整的业务管理解决方案。',
   logo: '',
   favicon: '',
   robots: `User-agent: *
@@ -140,9 +140,9 @@ const saveSeo = () => {
 }
 
 const resetSeo = () => {
-  seoForm.title = 'UniMall 管理系统'
+  seoForm.title = 'HouUniMall 管理系统'
   seoForm.keywords = '管理系统,企业应用,业务管理'
-  seoForm.description = 'UniMall是一个功能强大的企业级管理系统，提供完整的业务管理解决方案。'
+  seoForm.description = 'HouUniMall是一个功能强大的企业级管理系统，提供完整的业务管理解决方案。'
   seoForm.logo = ''
   seoForm.favicon = ''
   seoForm.robots = `User-agent: *

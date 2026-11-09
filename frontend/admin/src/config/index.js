@@ -13,7 +13,7 @@
 
 const config = {
   // 应用基础配置
-  APP_TITLE: import.meta.env.VITE_APP_TITLE || 'UniMall 管理后台',
+  APP_TITLE: import.meta.env.VITE_APP_TITLE || 'HouUniMall 管理后台',
   APP_PORT: import.meta.env.VITE_APP_PORT || 13001,
 
   // API基础URL配置 - 直接请求后端接口，不使用代理

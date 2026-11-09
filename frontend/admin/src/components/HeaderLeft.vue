@@ -9,8 +9,8 @@
     >
       <el-icon :size="22"><Menu /></el-icon>
     </el-button>
-    <span class="app-title app-title--full">F2C一站式管理平台</span>
-    <span class="app-title app-title--short">UniMall</span>
+    <span class="app-title app-title--full">HouUniMall 多商户商城系统</span>
+    <span class="app-title app-title--short">HouUniMall</span>
   </div>
 </template>
 

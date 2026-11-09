@@ -1,6 +1,6 @@
 /** 考勤打卡来源（与考勤设置 → 打卡配置、后端 AttendancePlatformSource 一致） */
 export const ATTENDANCE_PLATFORM_OPTIONS = [
-  { value: 'platform', label: '平台', desc: 'UniMall 自带考勤打卡与统计' },
+  { value: 'platform', label: '平台', desc: 'HouUniMall 自带考勤打卡与统计' },
   { value: 'dingtalk', label: '钉钉', desc: '从钉钉考勤同步打卡与审批数据' },
   { value: 'wechat-work', label: '企业微信', desc: '从企业微信考勤应用同步数据' },
   { value: 'feishu', label: '飞书', desc: '从飞书考勤模块同步数据' }

@@ -157,9 +157,9 @@ function extractPluginCodeFromPath(path) {
 export async function beforeEachGuard(to, from, next) {
   // 设置页面标题
   if (to.meta && to.meta.title) {
-    document.title = `${to.meta.title} - UniMall管理后台`
+    document.title = `${to.meta.title} - HouUniMall管理后台`
   } else {
-    document.title = 'UniMall管理后台'
+    document.title = 'HouUniMall管理后台'
   }
 
   // 【老式A级菜单重定向URL纠偏】

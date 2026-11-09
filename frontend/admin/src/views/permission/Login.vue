@@ -39,7 +39,7 @@
               <div class="logo-icon">
                 <el-icon><Platform /></el-icon>
               </div>
-              <h1 class="brand-name">UniMall</h1>
+              <h1 class="brand-name">HouUniMall</h1>
             </div>
             <p class="brand-tagline">{{ t('auth.login.platformTagline') }}</p>
           </div>
@@ -94,7 +94,7 @@
           <div v-if="isMobile" class="mobile-hero">
             <div class="mobile-logo">
               <span class="mobile-logo-icon"><el-icon><Platform /></el-icon></span>
-              <span class="mobile-logo-text">UniMall</span>
+              <span class="mobile-logo-text">HouUniMall</span>
             </div>
             <h2 class="mobile-welcome">{{ t('auth.login.welcomeLogin') }}</h2>
             <p class="mobile-sub">{{ t('auth.login.enterAccountInfo') }}</p>

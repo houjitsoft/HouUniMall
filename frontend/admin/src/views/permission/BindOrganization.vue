@@ -6,7 +6,7 @@
         <div class="bind-org-brand__inner">
           <div class="bind-org-brand__logo">
             <el-icon><OfficeBuilding /></el-icon>
-            <span>UniMall</span>
+            <span>HouUniMall</span>
           </div>
           <h1 class="bind-org-brand__title">创建您的组织空间</h1>
           <p class="bind-org-brand__desc">
