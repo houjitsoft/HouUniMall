@@ -316,8 +316,19 @@ public class MenuServiceImpl implements MenuService {
             // 2. 单次SQL查询用户菜单（user_role → role_menu → menu），已按sort DESC, id排序
             List<PermissionMenu> menus = permissionMenuMapper.selectUserMenusByUserId(userId);
             if (menus == null || menus.isEmpty()) {
-                log.debug("用户无菜单数据，userId={}", userId);
-                return new ArrayList<>();
+                // 🔴 超管兜底：超管（is_admin=1）有意不绑 RBAC 角色——一旦绑角色，auth 侧权限集
+                // 就不再命中 ["*"] fallback（见 auth 的 UserDetailsServiceImpl），超管会被
+                // 精确比对鉴权 403。因此超管按角色查菜单恒空，若不兜底，最高管理员登录后
+                // 左侧菜单全空（2026-10-28 实测）。语义与鉴权层对齐：角色菜单优先，
+                // 超管全量仅作空集兜底（超管真绑了角色时以角色菜单为准）。
+                if (Integer.valueOf(1).equals(permissionMenuMapper.selectIsAdmin(userId))) {
+                    menus = permissionMenuMapper.selectActiveNavMenusForAdmin();
+                    log.info("超管无角色菜单，兜底全部可见导航菜单: userId={}, count={}",
+                            userId, menus == null ? 0 : menus.size());
+                } else {
+                    log.debug("用户无菜单数据，userId={}", userId);
+                    return new ArrayList<>();
+                }
             }
             // 补全父级目录（如仅勾选 OA 子菜单未含 id=7 时，侧栏需补 OA办公 一级菜单）
             menus = MenuAncestorSupport.expandMenusWithAncestors(permissionMenuMapper, menus);

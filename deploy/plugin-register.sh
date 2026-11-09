@@ -25,7 +25,12 @@ DB_PASS="${MYSQL_PWD:-${MYSQL_PASSWORD:-}}"
 export MYSQL_PWD="$DB_PASS"
 
 mysql_exec() {
-  mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" "$DB_NAME" "$@"
+  # 🔴 必须显式指定 utf8mb4：各插件 register.sql 里的插件名/描述/分类都是 UTF-8 中文，
+  #    mysql 客户端在非 UTF-8 locale 的容器里默认按 latin1 协商，会把「统一登录」写成
+  #    「ç»Ÿä¸€ç™»å½•」（双重编码）。整个安装链路没有第二处兜底，漏掉这一处就等于
+  #    每个新装站的插件中心全是乱码。
+  mysql --protocol=TCP --default-character-set=utf8mb4 \
+    -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" "$DB_NAME" "$@"
 }
 
 # 库没初始化完就等：mysql 容器 healthy 只代表进程起得来，704 张表还在灌。
