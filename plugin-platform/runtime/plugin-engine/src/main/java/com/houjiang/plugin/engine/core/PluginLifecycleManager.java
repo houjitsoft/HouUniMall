@@ -285,7 +285,15 @@ public class PluginLifecycleManager {
             } else {
                 pluginRegistry.putStateIfAbsent(code, PluginState.FAILED);
             }
-            log.error("插件安装失败：{}（{}，已开始装载={}）", code, e.getMessage(), installationStarted);
+            // 多宿主共用 ${PLUGINS_DIR}：扫到别家宿主的插件 jar 属正常现象（该 jar 由它自己的
+            // 宿主装载），一律按 ERROR + 堆栈刷屏会把真正的装载失败埋掉。这里只降级这一种
+            // 可预期原因，其它失败仍是 ERROR。
+            String reason = e.getMessage() == null ? "" : e.getMessage();
+            if (reason.startsWith("Plugin hostService does not match this service")) {
+                log.debug("跳过非本宿主插件：{}（{}）", code, reason);
+            } else {
+                log.error("插件安装失败：{}（{}，已开始装载={}）", code, reason, installationStarted);
+            }
             throw e;
         }
     }

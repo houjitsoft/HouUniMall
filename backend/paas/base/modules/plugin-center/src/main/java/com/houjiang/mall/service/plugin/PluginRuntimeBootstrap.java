@@ -94,6 +94,14 @@ public class PluginRuntimeBootstrap {
             }
             log.info("插件运行态恢复完成: code={}, enabled={}", code, install.getEnabled());
         } catch (RuntimeException e) {
+            // 多宿主共用同一个 ${PLUGINS_DIR}：base 也会扫到 mall 宿主的插件 jar，
+            // 这类「宿主不匹配」不是故障（该插件由 mall 自己装载），此前每次启动
+            // 都刷一串 ERROR + 堆栈，把真正的装载失败埋掉了。降级为 DEBUG 跳过。
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.startsWith("Plugin hostService does not match this service")) {
+                log.debug("跳过非本宿主的插件: code={}（{}）", code, msg);
+                return;
+            }
             log.error("插件运行态恢复失败，已隔离该插件: code={}", code, e);
         }
     }
