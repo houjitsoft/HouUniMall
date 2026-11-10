@@ -159,7 +159,7 @@
                   <div class="shtextwrapperfive relative">
                     <span class="shangchuantupiantext">上传图片</span>
                     <UploadImg
-                      class="wp100 hp100 absolute top0 zIndex2"
+                      class="absolute top0 zIndex2"
                       @changeSrc="handleImageChange1"
                     />
                   </div>

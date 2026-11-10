@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="join-upload-cover">
     <el-upload
       ref="uploadRef"
       :http-request="upload"
@@ -14,7 +14,9 @@
       action="''"
       multiple
       accept
-    />
+    >
+      <span class="join-upload-hit" aria-hidden="true"></span>
+    </el-upload>
   </div>
 </template>
 
@@ -112,5 +114,41 @@ function handleRemove() {}
   width: 100px;
   height: 100px;
   line-height: 102px;
+}
+</style>
+
+<!--
+  入驻页（step3 证件 / step6 付款凭证）给本组件透传的是
+  `wp100 hp100 absolute top0 zIndex2`：absolute / top0 生效，但 wp100 / hp100
+  两个原子类在 bcenter 全仓都没有定义，覆盖层宽度恒为 0，
+  el-upload 的点击区也是 0 宽，点「上传图片」自然没有任何反应。
+  这里让组件自带可点尺寸与层级，不依赖页面的原子类。
+-->
+<style lang="scss" scoped>
+/* el-upload 组件根是 .upload-demo 这层包装 div，内层才是 .el-upload 触发区，
+   两层都得撑满；只写内层时父宽收缩为 0，内层 100% 仍等于 0。 */
+.join-upload-cover,
+.join-upload-cover > :deep(.upload-demo),
+.join-upload-cover :deep(.el-upload),
+.join-upload-hit {
+  width: 100%;
+  height: 100%;
+  min-width: 120px;
+  min-height: 28px;
+}
+
+.join-upload-cover {
+  z-index: 2;
+}
+
+.join-upload-cover > :deep(.upload-demo),
+.join-upload-cover :deep(.el-upload) {
+  display: block;
+  line-height: normal;
+  cursor: pointer;
+}
+
+.join-upload-hit {
+  display: block;
 }
 </style>

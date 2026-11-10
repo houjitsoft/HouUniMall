@@ -159,7 +159,7 @@
               >
                 <span class="text_39" style="margin: 0">上传图片</span>
                 <UploadImg
-                  class="wp100 hp100 absolute top0 zIndex2"
+                  class="absolute top0 zIndex2"
                   @changeSrc="handleImageChange1"
                 />
               </div>
@@ -300,7 +300,7 @@
               >
                 <span class="text_39">上传图片</span>
                 <UploadImg
-                  class="wp100 hp100 absolute top0 zIndex2"
+                  class="absolute top0 zIndex2"
                   @changeSrc="handleImageChange2"
                 />
               </div>
@@ -345,7 +345,7 @@
               >
                 <span class="text_39">上传图片</span>
                 <UploadImg
-                  class="wp100 hp100 absolute top0 zIndex2"
+                  class="absolute top0 zIndex2"
                   @changeSrc="handleImageChange4"
                 />
               </div>
@@ -609,7 +609,7 @@
           <el-form-item label="合作协议" prop="corporateAgreement">
             <div>
               <UploadImg2
-                class="hp100 absolute top0 zIndex2"
+                class="absolute top0 zIndex2"
                 @changeSrc="handleImageChange3"
                 @changeSrctow="handleImageChangetow"
               />
