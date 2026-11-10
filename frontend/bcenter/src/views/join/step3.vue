@@ -3,6 +3,12 @@
     <div class="wrap">
       <div ref="step1" class="settle-cont-box">
         <h3>企业店铺入驻流程</h3>
+        <div v-if="draftRestored" class="join-draft-tip">
+          <span class="join-draft-tip__text">
+            已恢复本机上次暂存的登记信息（{{ draftSavedAtText }}），可继续填写；资料仅保存在当前浏览器，提交成功后自动清除。
+          </span>
+          <el-button link type="primary" @click="clearDraftAndReset">清空重填</el-button>
+        </div>
         <el-steps :active="2" align-center style="margin-top: 50px">
           <el-step title="入驻须知" :icon="ElIconDocument"></el-step>
           <el-step title="商家基本信息填写" :icon="ElIconEdit"></el-step>
@@ -818,7 +824,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick, getCurrentInstance, useTemplateRef } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick, getCurrentInstance, useTemplateRef } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
 import {
@@ -856,6 +862,16 @@ import { dateFormat } from '@/utils/joinUtil'
 import { validatePassword } from '@/utils/password'
 import { useAppConfig } from '@/composables/useAppConfig'
 import { setToken } from '@/utils/joinAuth'
+import {
+  draftKey,
+  serializeForm,
+  deserializeForm,
+  hasDraftContent,
+  readDraft,
+  isOwnDraft,
+  writeDraft,
+  removeDraft,
+} from '@/utils/joinDraft'
 
 const { baseUrl, safeOpenUrl } = useAppConfig()
 const router = useRouter()
@@ -1015,6 +1031,161 @@ const agreementtow = reactive({ sign: 'BR_AGREEMENT' })
 const auditStatus = ref(null)
 const src = ref('')
 
+// ===== 登记信息本机草稿 =====
+// 按「当前会员 + 入驻类型」隔离，7 天有效；密码、短信验证码、joinId 不落盘。
+// 键在本次挂载时固定，避免提交成功写入新 token 后清不掉旧草稿。
+const currentDraftKey = draftKey(route.query.shopType)
+const draftRestored = ref(false)
+const draftSavedAtText = ref('')
+const draftTouchedKeys = new Set()
+const initialRuleForm = JSON.parse(JSON.stringify(serializeForm(ruleForm)))
+let draftEnabled = true
+let draftTimer = null
+
+function draftExtra() {
+  return {
+    imgUrl1: imgUrl1.value,
+    fileName: fileName.value,
+    agreementFileName: agreementFileName.value,
+    checked: checked.value,
+    radio: radio.value,
+    originType: originType.value,
+    shopLocation: shopLocation.value,
+    blLocation: blLocation.value,
+  }
+}
+
+function saveDraft() {
+  if (!draftEnabled) return
+  draftTimer = null
+  const form = serializeForm(ruleForm)
+  const extra = draftExtra()
+  if (!hasDraftContent(form, extra)) {
+    removeDraft(currentDraftKey)
+    return
+  }
+  writeDraft(currentDraftKey, {
+    form,
+    extra,
+    joinId: joinId.value,
+    shopType: String(route.query.shopType ?? ''),
+  })
+}
+
+function scheduleSaveDraft() {
+  if (!draftEnabled) return
+  if (draftTimer !== null) window.clearTimeout(draftTimer)
+  draftTimer = window.setTimeout(saveDraft, 400)
+}
+
+function flushDraft() {
+  if (draftTimer !== null) {
+    window.clearTimeout(draftTimer)
+    draftTimer = null
+  }
+  saveDraft()
+}
+
+/** 表单有草稿时，后端异步回填不得覆盖用户刚录入、还没提交的内容 */
+function applyServerField(key, value) {
+  // 入驻主键以当前会话为准；密码与验证码只由用户当场录入
+  if (key === 'joinId' || key === 'settlePW' || key === 'validateCode') return
+  if (draftRestored.value && draftTouchedKeys.has(key)) return
+  ruleForm[key] = value
+}
+
+function applyServerData(data) {
+  Object.keys(data || {}).forEach((key) => applyServerField(key, data[key]))
+}
+
+function restoreDraft() {
+  const data = readDraft(currentDraftKey)
+  if (!data || !isOwnDraft(data)) return false
+  const form = deserializeForm(data.form || {})
+  const touched = Object.keys(form).filter((key) => {
+    const value = form[key]
+    if (Array.isArray(value)) return value.length > 0
+    return value !== '' && value !== null && value !== undefined
+  })
+  if (!touched.length && !hasDraftContent({}, data.extra)) return false
+  // 逐字段覆盖：joinId / 密码 / 验证码不落盘，恢复后仍取服务端与当前会话的值
+  Object.assign(ruleForm, form)
+  touched.forEach((key) => draftTouchedKeys.add(key))
+  const extra = data.extra || {}
+  if (extra.imgUrl1 !== undefined) imgUrl1.value = extra.imgUrl1
+  if (extra.fileName !== undefined) fileName.value = extra.fileName
+  if (extra.agreementFileName !== undefined) agreementFileName.value = extra.agreementFileName
+  if (extra.checked !== undefined) checked.value = !!extra.checked
+  if (extra.radio !== undefined) radio.value = extra.radio
+  if (extra.originType !== undefined) originType.value = extra.originType
+  if (extra.shopLocation !== undefined) shopLocation.value = extra.shopLocation
+  if (extra.blLocation !== undefined) blLocation.value = extra.blLocation
+  const saved = new Date(data.savedAt)
+  draftSavedAtText.value = Number.isNaN(saved.getTime())
+    ? ''
+    : saved.toLocaleString('zh-CN', { hour12: false })
+  draftRestored.value = true
+  return true
+}
+
+/** 提交成功后丢弃草稿；后续 fetchData 回填不应再把它写回来 */
+function discardDraftAfterSubmit() {
+  draftEnabled = false
+  if (draftTimer !== null) {
+    window.clearTimeout(draftTimer)
+    draftTimer = null
+  }
+  removeDraft(currentDraftKey)
+  draftTouchedKeys.clear()
+  draftRestored.value = false
+}
+
+/** 用户再次输入后才恢复自动暂存，避免清空重填被在途的后端回填重建 */
+function enableDraftOnUserInput() {
+  if (draftEnabled) return
+  draftEnabled = true
+  document.removeEventListener('input', enableDraftOnUserInput, true)
+  document.removeEventListener('change', enableDraftOnUserInput, true)
+}
+
+function clearDraftAndReset() {
+  draftEnabled = false
+  if (draftTimer !== null) {
+    window.clearTimeout(draftTimer)
+    draftTimer = null
+  }
+  removeDraft(currentDraftKey)
+  Object.assign(ruleForm, JSON.parse(JSON.stringify(initialRuleForm)))
+  imgUrl1.value = ''
+  fileName.value = ''
+  agreementFileName.value = ''
+  checked.value = false
+  radio.value = ''
+  draftTouchedKeys.clear()
+  draftRestored.value = false
+  document.addEventListener('input', enableDraftOnUserInput, true)
+  document.addEventListener('change', enableDraftOnUserInput, true)
+  ElMessage({ message: '已清空本机暂存的登记信息', type: 'success' })
+}
+
+watch(
+  [
+    () => ruleForm,
+    imgUrl1,
+    fileName,
+    agreementFileName,
+    checked,
+    radio,
+    originType,
+    joinId,
+    shopLocation,
+    blLocation,
+  ],
+  scheduleSaveDraft,
+  { deep: true },
+)
+window.addEventListener('beforeunload', flushDraft)
+
 const validatePass = (rule, value, callback) => {
   ruleForm.productClassId = selectProductIds.value
   if (tableData.value.length == 0) {
@@ -1124,6 +1295,8 @@ onMounted(async () => {
       // 登录态失效等由请求统一拦截器提示，这里保持空值，后续提交会给出明确提示
     }
   }
+  // 先恢复本机草稿，再发起后端异步回填；回填侧会跳过草稿已填字段
+  restoreDraft()
   fetchData()
   fetchquery()
   handleChackFee()
@@ -1136,7 +1309,9 @@ function getCountry() {
       queryCountryAndCurrency().then((res) => {
         if (res.code == 1) {
           countryOptions.value = res.data.baseCountryEntities
+          // 草稿里已有用户选过的区号时保留，别被默认国家覆盖
           ruleForm.internationalDialingCode =
+            (draftRestored.value && ruleForm.internationalDialingCode) ||
             res.data.baseCountryEntities[0].internationalDialingCode
         }
       })
@@ -1208,6 +1383,8 @@ function handleImageChange4(src, key) {
 function reset() {
       disabled.value = false
       btnreset.value = false
+      // 审核失败后重新编辑，继续自动暂存这一轮改动
+      draftEnabled = true
 }
 
 // 删除图片
@@ -1278,9 +1455,11 @@ function fetchData() {
       businessUserisBusiness().then((res) => {
         if (res.code == 1 && res.data) {
           editNo.value = true
-          ruleForm.taxId = res.data.taxId
-          imgUrl1.value = res.data.businessLicense
-          ruleForm.enterpriseName = res.data.companyName
+          applyServerField('taxId', res.data.taxId)
+          applyServerField('enterpriseName', res.data.companyName)
+          if (!draftRestored.value || !imgUrl1.value) {
+            imgUrl1.value = res.data.businessLicense
+          }
         }
       })
       // 初始地址由 AreaCascader 组件内共享缓存加载
@@ -1329,15 +1508,18 @@ function handleshopinfoquery() {
               disabled.value = true
               btnreset.value = true
               auditStatus.value = res.data.auditStatus //审核状态
-              imgUrl1.value = res.data.businessLicencePic //营业执照照片
+              if (!draftRestored.value || !imgUrl1.value) {
+                imgUrl1.value = res.data.businessLicencePic //营业执照照片
+              }
               auditComment.value = res.data.auditComment //平台审核失败原因
-              Object.assign(ruleForm, res.data) //基本信息提交完成返回信息
-              ruleForm.shopLocation = res.data.shopLocation //地址回显
-              ruleForm.blLocation = res.data.blLocation
-              ruleForm.bankLocation = res.data.bankAddress
-              ruleForm.agreementFileName = res.data.agreementFileName //合作协议
-              ruleForm.validateLongTerm = res.data.validateLongTerm //是否长期有效 回显
-              if (ruleForm.validateLongTerm == 1) {
+              // 有本机草稿时保留用户尚未提交的录入，只补草稿里没有的字段
+              applyServerData(res.data) //基本信息提交完成返回信息
+              applyServerField('shopLocation', res.data.shopLocation) //地址回显
+              applyServerField('blLocation', res.data.blLocation)
+              applyServerField('bankLocation', res.data.bankAddress)
+              applyServerField('agreementFileName', res.data.agreementFileName) //合作协议
+              applyServerField('validateLongTerm', res.data.validateLongTerm) //是否长期有效 回显
+              if (!draftRestored.value && ruleForm.validateLongTerm == 1) {
                 checked.value = !checked.value
               }
             } else if (res.data.auditStatus == 1) {
@@ -1581,6 +1763,11 @@ async function handleGetCode() {
 let codeClock = null
 onBeforeUnmount(() => {
   if (codeClock !== null) window.clearInterval(codeClock)
+  window.removeEventListener('beforeunload', flushDraft)
+  document.removeEventListener('input', enableDraftOnUserInput, true)
+  document.removeEventListener('change', enableDraftOnUserInput, true)
+  // 离开页面（含上一步、登录跳转）时立即落盘，不等防抖
+  flushDraft()
 })
 
 //店铺所在地址
@@ -1821,6 +2008,8 @@ function next(formName) {
             .then((res) => {
               if (res.code === 1) {
                 res.data &&  res.data?.token ? setToken(res.data?.token) : '';
+                // 已成功提交，本机暂存立即作废，避免下次打开又回填旧草稿
+                discardDraftAfterSubmit()
                 ElMessage({
                   message: '提交成功',
                   type: 'success',
@@ -1923,6 +2112,7 @@ function nexttow(formName) {
           joininserttowupdate(ruleForm)
             .then((res) => {
               if (res.code === 1) {
+                discardDraftAfterSubmit()
                 ElMessage({
                   message: '提交成功',
                   type: 'warning',
@@ -1954,6 +2144,24 @@ function nexttow(formName) {
 </script>
 
 <style lang="scss" scoped>
+.join-draft-tip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 16px;
+  padding: 10px 14px;
+  border: 1px solid #d9ecff;
+  border-radius: 4px;
+  background: #ecf5ff;
+  color: #303133;
+  font-size: 13px;
+  line-height: 1.6;
+
+  .join-draft-tip__text {
+    flex: 1;
+  }
+}
 .flexrow {
   background-color: rgba(247, 248, 250, 1);
   border-radius: 1px;
