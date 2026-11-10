@@ -676,6 +676,12 @@
                 />
                 <span class="text_71">添加类目</span>
               </div>
+              <span v-if="pendingCatCount" class="join-cat-pending-hint">
+                已选 {{ pendingCatCount }} 个经营类目，点弹窗「确认提交」后生效
+              </span>
+              <span v-else-if="hasSelectedCategories()" class="join-cat-selected-hint">
+                已添加 {{ tableData.length }} 个经营类目
+              </span>
               <div class="image-text_2">
                 <el-button
                   link
@@ -769,6 +775,23 @@
                       placeholder="输入类目名称或上级类目名称搜索"
                       clearable
                     />
+                    <div class="join-cat-selected-panel">
+                      <div class="join-cat-selected-head">
+                        已选 {{ pendingCatCount }} 个经营类目<span v-if="pendingCatCount">（点「确认提交」写入主营类目）</span>
+                      </div>
+                      <div v-if="pendingCatCount" class="join-cat-selected-tags">
+                        <el-tag
+                          v-for="item in pendingCatRows"
+                          :key="item.key"
+                          closable
+                          size="small"
+                          @close="removePendingCat(item.key)"
+                        >{{ item.text }}</el-tag>
+                      </div>
+                      <div v-else class="join-cat-selected-empty">
+                        尚未选择类目，可搜索类目名称或逐级选择
+                      </div>
+                    </div>
                     <template v-if="catSearchKeyword.trim()">
                       <div class="join-cat-search-summary">
                         匹配到 {{ catSearchResults.length }} 个经营类目<span
@@ -1167,6 +1190,74 @@ function filterCatNode(node, keyword) {
   return words.every((word) => text.includes(word))
 }
 
+// ===== 经营类目：已选状态的统一事实源 =====
+// 服务端类目列表可能因为登录态失效、绑定落库延迟等原因返回空，
+// 这只能说明「暂时查不到」，不等于「用户没选类目」。用户点「确认提交」且绑定
+// 接口成功后，本地立即记住这批类目并回显到主营类目表格，不再被空响应抹掉。
+const confirmedCatRows = ref([])
+
+const pendingCatRows = computed(() => {
+  const paths = Array.isArray(catName.value) ? catName.value : []
+  return paths.map((item) => {
+    const path = Array.isArray(item) ? item : [item]
+    const key = path.join('-')
+    const hit = catLeafIndex.value.find((leaf) => leaf.key === key)
+    return { key, path, text: hit?.text ?? path.join(' / ') }
+  })
+})
+
+const pendingCatCount = computed(() => pendingCatRows.value.length)
+
+function removePendingCat(key) {
+  const row = pendingCatRows.value.find((item) => item.key === key)
+  if (row) toggleCatResult({ path: row.path })
+}
+
+function hasSelectedCategories() {
+  return tableData.value.length > 0 || confirmedCatRows.value.length > 0
+}
+
+function mergeConfirmedCatRows(rows) {
+  const map = new Map()
+  for (const row of [...confirmedCatRows.value, ...(rows || [])]) {
+    if (row && row.productClassId != null) {
+      map.set(String(row.productClassId), row)
+    }
+  }
+  confirmedCatRows.value = Array.from(map.values())
+}
+
+function dropConfirmedCatRows(ids) {
+  const removed = new Set((ids || []).map((id) => String(id)))
+  confirmedCatRows.value = confirmedCatRows.value.filter(
+    (row) => !removed.has(String(row.productClassId)),
+  )
+}
+
+function catRowsFromPaths(paths) {
+  return (paths || []).map((item) => {
+    const path = Array.isArray(item) ? item : [item]
+    const hit = catLeafIndex.value.find((leaf) => leaf.key === path.join('-'))
+    return {
+      productClassId: path[path.length - 1],
+      catNames: hit ? hit.text.split(' / ') : path.map(String),
+      commissionRate: 0,
+    }
+  })
+}
+
+/** 表格、计数、提交哨兵统一由「当前可见类目 + 本地已确认类目」推导 */
+function syncCategoryView() {
+  if (!tableData.value.length && confirmedCatRows.value.length) {
+    tableData.value = [...confirmedCatRows.value]
+    total.value = tableData.value.length
+  }
+  productClassIdtow.value = hasSelectedCategories() ? 1 : ''
+  selectProductIds.value = tableData.value
+    .map((row) => row?.productClassId)
+    .filter((id) => id != null)
+}
+
 const agreement = reactive({ sign: 'GEN_COR_AGREEMENT' })
 const agreementtow = reactive({ sign: 'BR_AGREEMENT' })
 const auditStatus = ref(null)
@@ -1329,7 +1420,8 @@ window.addEventListener('beforeunload', flushDraft)
 
 const validatePass = (rule, value, callback) => {
   ruleForm.productClassId = selectProductIds.value
-  if (tableData.value.length == 0) {
+  // 与「提交入驻审核」共用同一份判断，避免表格已回显但表单校验仍误报
+  if (!hasSelectedCategories()) {
     callback(new Error('请添加经营类目'))
   } else {
     callback()
@@ -1422,7 +1514,9 @@ onMounted(async () => {
   if (!joinId.value) {
     try {
       const res = await joinagree()
-      const id = res?.data?.oldJoinId ?? res?.data?.newJoinId
+      // 首次入驻时 oldJoinId 常为空字符串，用 || 才能回退到 newJoinId；
+      // 否则类目绑定与列表查询都会带着空主键，表现为「选了类目不显示」。
+      const id = res?.data?.oldJoinId || res?.data?.newJoinId
       if (res?.code === 1 && id) {
         joinId.value = String(id)
         ruleForm.joinId = joinId.value
@@ -1689,6 +1783,7 @@ function handleDelete(row) {
         .then(() => {
           classbinddelete(binddelete).then((res) => {
             if (res.code == 1) {
+              dropConfirmedCatRows([row.productClassId])
               ElNotification({
                 title: '提示',
                 message: '该类目已删除',
@@ -1744,6 +1839,7 @@ function operationCommonState() {
         })
           .then(() => {
             operationCommon(operationItem).then((res) => {
+              dropConfirmedCatRows([...productClassIds.value])
               ElNotification({
                 title: '提示',
                 message: '类目已删除',
@@ -1795,34 +1891,26 @@ function fetchquery() {
       messagedate.joinId = joinId.value
       messagequery(messagedate).then((res) => {
         // 接口异常（如未登录返回 code=0、data=[]）时 data 里没有 classBindList
-        const list = res?.data?.classBindList ?? []
-        const totalCount = res?.data?.totalCount ?? 0
-        tableData.value = list
-        total.value = totalCount
+        const list = Array.isArray(res?.data?.classBindList) ? res.data.classBindList : []
+        const totalCount = Number(res?.data?.totalCount ?? 0) || 0
+        // 服务端暂时查不到（登录态失效、绑定落库延迟）不等于用户没选类目：
+        // 以本地已确认类目回显；服务端有数据时以其为准并同步进本地事实源。
+        tableData.value = list.length ? list : [...confirmedCatRows.value]
+        total.value = list.length ? totalCount : tableData.value.length
+        if (list.length) mergeConfirmedCatRows(list)
 		productClassIds.value = []
 		nextTick(() => {
 			categoryTableEl.value?.clearSelection?.()
 		})
         // validateField 校验失败会 reject，属正常（类目未选），必须 catch 掉
         ruleFormEl.value?.validateField('productClassId').catch(() => {})
-        if (list.length > 0) {
-          productClassIdtow.value = 1
-        } else {
-          productClassIdtow.value = ''
-        }
-        selectProductIds.value = []
-        if (totalCount > 0) {
-          list.forEach((item) => {
-            selectProductIds.value.push(item.productClassId)
-          })
-        }
+        syncCategoryView()
       }).catch(() => {
-        // 登录态失效 / 接口异常时保持空列表，避免表格残留上一轮数据且没有反馈
-        tableData.value = []
-        total.value = 0
+        // 登录态失效 / 接口异常时不再清空已确认类目，只以本地事实源回显
+        tableData.value = [...confirmedCatRows.value]
+        total.value = tableData.value.length
         productClassIds.value = []
-        selectProductIds.value = []
-        productClassIdtow.value = ''
+        syncCategoryView()
       })
 }
 
@@ -1992,14 +2080,21 @@ function handleConfirm() {
         return
       }
       ruleForm.productClassId = bindupdate.productClassId
+      const confirmedRows = catRowsFromPaths(selected)
       queryGoodsCats(bindupdate)
         .then((res) => {
           if (res?.code == 1) {
+            // 绑定成功后立即把类目写入主营类目表格，不等列表查询；
+            // 后续列表查询即使为空也不会把已选类目抹掉。
+            mergeConfirmedCatRows(confirmedRows)
+            syncCategoryView()
             ElNotification({
               title: '成功',
               message: '添加成功',
               type: 'success',
             })
+            catName.value = []
+            catSearchKeyword.value = ''
             fetchquery()
             addDialogVisible.value = false
           } else {
@@ -2124,7 +2219,17 @@ function next(formName) {
         })
         return false
       }
-      ruleForm.productClassId = productClassIdtow.value
+      // 类目状态以「已回显的表格行 + 本地已确认行」为准，不再依赖列表接口的异步哨兵
+      ruleForm.productClassId = hasSelectedCategories() ? 1 : ''
+      if (!hasSelectedCategories()) {
+        ElMessage({
+          message: pendingCatCount.value > 0
+            ? '已选经营类目尚未保存，请在弹窗中点击「确认提交」'
+            : '请选择经营类目',
+          type: 'warning',
+        })
+        return false
+      }
       if (ruleForm.enterpriseNature == 1) {
         if (ruleForm.enterpriseName.includes('公司')) {
           ElMessage({
@@ -2134,13 +2239,7 @@ function next(formName) {
           return false
         }
       }
-      if (ruleForm.productClassId == '') {
-        ElMessage({
-          message: '请选择经营类目',
-          type: 'warning',
-        })
-        return false
-      }
+      // 类目校验已在上方按统一事实源处理，此处不再重复判定
 
       ruleForm.businessLicencePic = imgUrl1.value //营业执照
       ruleForm.shopArea = ruleForm.tempArray[2] //区
@@ -2241,14 +2340,18 @@ function nexttow(formName) {
         })
         return false
       }
-      ruleForm.productClassId = productClassIdtow.value
-      if (ruleForm.productClassId == '') {
+      // 类目状态以「已回显的表格行 + 本地已确认行」为准，不再依赖列表接口的异步哨兵
+      ruleForm.productClassId = hasSelectedCategories() ? 1 : ''
+      if (!hasSelectedCategories()) {
         ElMessage({
-          message: '请选择经营类目',
+          message: pendingCatCount.value > 0
+            ? '已选经营类目尚未保存，请在弹窗中点击「确认提交」'
+            : '请选择经营类目',
           type: 'warning',
         })
         return false
       }
+      // 类目校验已在上方按统一事实源处理，此处不再重复判定
 
       ruleForm.businessLicencePic = imgUrl1.value //营业执照
       ruleFormEl.value.validate((valid) => {
@@ -2868,5 +2971,47 @@ function nexttow(formName) {
   font-size: 12px;
   line-height: 1.6;
   color: #909399;
+}
+
+/* 新增经营类目：已选类目常驻回显 */
+.join-cat-selected-panel {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+.join-cat-selected-head {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #606266;
+}
+
+.join-cat-selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 110px;
+  overflow-y: auto;
+}
+
+.join-cat-selected-empty {
+  font-size: 12px;
+  color: #909399;
+}
+
+.join-cat-selected-hint,
+.join-cat-pending-hint {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 12px;
+  line-height: 24px;
+  color: #67c23a;
+}
+
+.join-cat-pending-hint {
+  color: #e6a23c;
 }
 </style>
