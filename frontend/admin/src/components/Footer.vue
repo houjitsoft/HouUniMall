@@ -1,14 +1,15 @@
 <template>
-  <el-footer class="footer-container">
-    <p v-if="!isCollapse">© 2023 {{ t('system.name') }}. {{ t('system.allRightsReserved') }}</p>
-    <p v-else>© 2023</p>
-  </el-footer>
+  <div class="footer-container" role="contentinfo">
+    <p v-if="!isCollapse">© {{ currentYear }} {{ t('system.name') }}. {{ t('system.allRightsReserved') }}</p>
+    <p v-else>© {{ currentYear }}</p>
+  </div>
 </template>
 
 <script setup>
 // 使用 Element Plus 国际化系统
 import { useI18n } from '@/i18n-element'
 const { t } = useI18n()
+const currentYear = new Date().getFullYear()
 
 // 定义组件属性
 const props = defineProps({
@@ -21,18 +22,25 @@ const props = defineProps({
 
 <style scoped>
 .footer-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  box-sizing: border-box;
   background-color: #fff;
   text-align: center;
-  padding: 15px;
+  padding: 0 15px;
   font-size: 14px;
   color: #666;
-  box-shadow: 0 -1px 4px rgba(0, 21, 41, 0.08);
-  transition: padding 0.28s;
+}
+
+.footer-container p {
+  margin: 0;
 }
 
 @media screen and (max-width: 768px) {
   .footer-container {
-    padding: 10px;
+    padding: 0 10px;
   }
 }
 </style>

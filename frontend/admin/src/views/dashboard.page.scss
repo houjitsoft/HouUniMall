@@ -427,6 +427,18 @@
       border-radius: var(--dash-radius-sm);
     }
 
+    .widget-empty {
+      grid-column: 1 / -1;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 20px 16px;
+      border: 1px solid var(--dash-border);
+      border-radius: var(--dash-radius);
+      background: var(--dash-surface);
+      box-shadow: var(--dash-shadow);
+    }
+
     .widget-cell {
       min-width: 0;
     }
@@ -1189,7 +1201,7 @@
    */
   .dashboard-top-pair {
     display: grid;
-    grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr) minmax(320px, 1.05fr);
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1.05fr);
     grid-template-areas:
       'hero  hero  hero'
       'stats stats stats'
@@ -1212,6 +1224,12 @@
 
     .dashboard-section--pair[data-id='hero'] {
       grid-area: hero;
+
+      > .hero-section {
+        flex: 1 0 auto;
+        height: auto;
+        align-self: stretch;
+      }
     }
 
     .dashboard-section--pair[data-id='stats'] {
@@ -1469,6 +1487,7 @@
  */
 @media (min-width: 1280px) {
   .dashboard .dashboard-top-pair {
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1.05fr) !important;
     grid-template-areas: 'hero stats stats' 'trend alert rank' !important;
     gap: 14px !important;
   }
@@ -1476,6 +1495,7 @@
 
 @media (min-width: 769px) and (max-width: 1279px) {
   .dashboard .dashboard-top-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     grid-template-areas: 'hero hero' 'stats stats' 'trend alert' 'rank rank' !important;
   }
 }

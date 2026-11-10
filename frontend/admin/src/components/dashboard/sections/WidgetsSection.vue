@@ -8,14 +8,14 @@
       ref="gridRef"
       class="widget-grid"
       :class="{ 'is-edit': editMode }"
-      :style="{ 'grid-template-columns': isMobile ? '1fr' : `repeat(${cols}, minmax(0, 1fr))` }"
+      :style="{ 'grid-template-columns': `repeat(${effectiveCols}, minmax(0, 1fr))` }"
     >
       <div
         v-for="item in items"
         :key="item.moduleId"
         class="widget-cell"
         :data-id="item.moduleId"
-        :style="{ 'grid-column': `span ${Math.min(item.w || 4, cols)}` }"
+        :style="{ 'grid-column': `span ${widgetSpan(item.w)}` }"
       >
         <el-card class="dashboard-card" shadow="hover">
           <template #header>
@@ -50,7 +50,12 @@
           </Suspense>
         </el-card>
       </div>
-      <el-empty v-if="items.length === 0" :description="t('dashboard.editMode.empty')" />
+      <el-empty
+        v-if="items.length === 0"
+        class="widget-empty"
+        :image-size="80"
+        :description="t('dashboard.editMode.empty')"
+      />
     </div>
   </section>
 </template>
@@ -61,7 +66,7 @@
  * 卡片显隐 / 排序 / 列数沿用原有偏好体系，这里只把区块外壳抽出来，
  * 新增「显示区块标题」开关。拖拽仍由 Sortable 承担，handle 是 .drag-handle。
  */
-import { ref, watch, onBeforeUnmount, nextTick } from 'vue'
+import { computed, ref, watch, onBeforeUnmount, nextTick } from 'vue'
 import { Rank, Hide, ArrowRight, Loading } from '@element-plus/icons-vue'
 import Sortable from 'sortablejs'
 import { useI18n } from '@/i18n-element'
@@ -77,6 +82,13 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['hide-item', 'reorder', 'navigate'])
+
+const effectiveCols = computed(() => props.isMobile
+  ? 1
+  : Math.min(24, Math.max(1, Number.isFinite(props.cols) ? Math.floor(props.cols) : 12)))
+
+const widgetSpan = (width) => Math.min(effectiveCols.value,
+  Math.max(1, Number.isFinite(width) ? Math.floor(width) : 4))
 
 const gridRef = ref(null)
 let sortable = null
