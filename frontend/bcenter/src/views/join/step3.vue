@@ -1102,9 +1102,28 @@ const rules = {
 }
 
 
-onMounted(() => {
-  joinId.value = route.query.joinId
+onMounted(async () => {
+  joinId.value = route.query.joinId || ''
   ruleForm.joinId = joinId.value
+  // 直接打开 step3 或链接里 joinId 为空时，从 queryAgree 补一个入驻主键，
+  // 否则经营类目绑定 / 列表查询 / 提交都拿不到 joinId，表现为「添加类目不显示」。
+  if (!joinId.value) {
+    try {
+      const res = await joinagree()
+      const id = res?.data?.oldJoinId ?? res?.data?.newJoinId
+      if (res?.code === 1 && id) {
+        joinId.value = String(id)
+        ruleForm.joinId = joinId.value
+        messagedate.joinId = joinId.value
+        bindupdate.joinId = joinId.value
+        binddelete.joinId = joinId.value
+        operationItem.joinId = joinId.value
+        addParams.joinId = joinId.value
+      }
+    } catch (e) {
+      // 登录态失效等由请求统一拦截器提示，这里保持空值，后续提交会给出明确提示
+    }
+  }
   fetchData()
   fetchquery()
   handleChackFee()
@@ -1452,24 +1471,35 @@ async function handleChackFee() {
 function fetchquery() {
       messagedate.joinId = joinId.value
       messagequery(messagedate).then((res) => {
-        tableData.value = res.data.classBindList
-        total.value = res.data.totalCount
+        // 接口异常（如未登录返回 code=0、data=[]）时 data 里没有 classBindList
+        const list = res?.data?.classBindList ?? []
+        const totalCount = res?.data?.totalCount ?? 0
+        tableData.value = list
+        total.value = totalCount
 		productClassIds.value = []
 		nextTick(() => {
 			categoryTableEl.value?.clearSelection?.()
 		})
-        ruleFormEl.value?.validateField('productClassId')
-        if (res.data.classBindList.length > 0) {
+        // validateField 校验失败会 reject，属正常（类目未选），必须 catch 掉
+        ruleFormEl.value?.validateField('productClassId').catch(() => {})
+        if (list.length > 0) {
           productClassIdtow.value = 1
         } else {
           productClassIdtow.value = ''
         }
         selectProductIds.value = []
-        if (res.data.totalCount > 0) {
-          res.data.classBindList.forEach((item) => {
+        if (totalCount > 0) {
+          list.forEach((item) => {
             selectProductIds.value.push(item.productClassId)
           })
         }
+      }).catch(() => {
+        // 登录态失效 / 接口异常时保持空列表，避免表格残留上一轮数据且没有反馈
+        tableData.value = []
+        total.value = 0
+        productClassIds.value = []
+        selectProductIds.value = []
+        productClassIdtow.value = ''
       })
 }
 
@@ -1614,30 +1644,51 @@ function handleChanges1(val) {
 // 提交经营类目
 function handleConfirm() {
       bindupdate.joinId = joinId.value
-      if (catName.value.length) {
-        for (var i = 0; i < catName.value.length; i++) {
-          bindupdate.productClassId.push(catName.value[i][2])
-        }
+      // 每次提交前清空，避免多次点「确认提交」把上一轮类目重复累加
+      bindupdate.productClassId = []
+      const selected = Array.isArray(catName.value) ? catName.value : []
+      if (!selected.length) {
+        ElMessage({ message: '请先选择经营类目', type: 'warning' })
+        return
+      }
+      if (!joinId.value) {
+        ElMessage({ message: '入驻信息未初始化，请刷新页面或重新登录后再添加类目', type: 'warning' })
+        return
+      }
+      for (const item of selected) {
+        const leaf = item?.[2] ?? item?.[item.length - 1]
+        if (leaf != null) bindupdate.productClassId.push(leaf)
+      }
+      if (!bindupdate.productClassId.length) {
+        ElMessage({ message: '请选择到最末级经营类目', type: 'warning' })
+        return
       }
       ruleForm.productClassId = bindupdate.productClassId
-      queryGoodsCats(bindupdate).then((res) => {
-        if (res.code == 1) {
+      queryGoodsCats(bindupdate)
+        .then((res) => {
+          if (res?.code == 1) {
+            ElNotification({
+              title: '成功',
+              message: '添加成功',
+              type: 'success',
+            })
+            fetchquery()
+            addDialogVisible.value = false
+          } else {
+            // 失败时保留弹窗与已选类目，避免「点了没反应、列表还是空」
+            ElNotification({
+              message: res?.message || '添加失败，请稍后重试',
+              type: 'error',
+            })
+            fetchquery()
+          }
+        })
+        .catch(() => {
           ElNotification({
-            title: '成功',
-            message: '添加成功',
-            type: 'success',
-          })
-          fetchquery()
-          addDialogVisible.value = false
-        } else {
-          ElNotification({
-            message: res.message,
+            message: '添加失败，请检查登录状态或稍后重试',
             type: 'error',
           })
-          fetchquery()
-          addDialogVisible.value = false
-        }
-      })
+        })
 }
 
 function changeCat(val) {
@@ -1647,13 +1698,20 @@ function changeCat(val) {
 //点击经营类目
 async function handleAdd() {
       optionsone.value = []
-      ;(addParams.productClassId = ''), (catName.value = '')
+      addParams.productClassId = ''
+      catName.value = ''
       addDialogVisible.value = true
       catLoading.value = true
       try {
         const res = await catquery(shopId.value)
-        optionsone.value = res.data
+        optionsone.value = Array.isArray(res?.data) ? res.data : []
+        if (optionsone.value.length === 0) {
+          ElMessage({ message: '经营类目数据为空，请稍后重试', type: 'warning' })
+        }
         fetchquery()
+      } catch (e) {
+        optionsone.value = []
+        ElMessage({ message: '经营类目加载失败，请检查登录状态或稍后重试', type: 'error' })
       } finally {
         catLoading.value = false
       }
@@ -1677,34 +1735,16 @@ function back() {
 
 // 提交
 function next(formName) {
-      if (
-        addsEl.value.getCheckedNodes() &&
-        addsEl.value.getCheckedNodes().length > 0
-      ) {
-        let data = addsEl.value.getCheckedNodes()[0].pathLabels.toString()
-        //用for循环遍历获取的数据,并把逗号裁掉
-        for (let i = 0; i < data.length; i++) {
-          if (data[i] === ',') {
-            data = data.replace(data[i], '')
-          }
-        }
-        ruleForm.regAddress = data
+      // 地址级联组件可能因 v-if 未渲染或懒加载未完成而为 null，统一取一次并做空值兜底，
+      // 避免提交时抛 TypeError: Cannot read properties of null (reading 'getCheckedNodes')。
+      const blNodes = addsEl.value?.getCheckedNodes?.() ?? []
+      if (blNodes.length > 0) {
+        ruleForm.regAddress = (blNodes[0]?.pathLabels ?? []).toString().replace(/,/g, '')
       }
 
-      if (
-        addsrEl.value.getCheckedNodes() &&
-        addsrEl.value.getCheckedNodes().length > 0
-      ) {
-        console.log(addsrEl.value.getCheckedNodes()[0])
-
-        let data = addsrEl.value.getCheckedNodes()[0].pathLabels.toString()
-        //用for循环遍历获取的数据,并把逗号裁掉
-        for (let i = 0; i < data.length; i++) {
-          if (data[i] === ',') {
-            data = data.replace(data[i], '')
-          }
-        }
-        ruleForm.bankAddress = data
+      const bankNodes = addsrEl.value?.getCheckedNodes?.() ?? []
+      if (bankNodes.length > 0) {
+        ruleForm.bankAddress = (bankNodes[0]?.pathLabels ?? []).toString().replace(/,/g, '')
       }
       // if (ruleForm.shopClass) {
       // 	for (var i = 0; i < optionsClass.value.length; i++) {
@@ -1796,6 +1836,12 @@ function next(formName) {
                 })
                 return
               }
+            })
+            .catch(() => {
+              ElMessage({
+                message: '提交失败，请检查登录状态或稍后重试',
+                type: 'error',
+              })
             })
             .finally(() => {
               submitLoading.value = false
