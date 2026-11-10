@@ -1,4 +1,4 @@
-UniMall
+HouUniMall
 Copyright 2022-2026 厚匠科技
 
 This product includes software developed at 厚匠科技 (https://github.com/houjitsoft).
@@ -26,7 +26,7 @@ This product includes software developed at 厚匠科技 (https://github.com/hou
 --------------------------------------------------------------------------------
 一、商标声明（Trademarks）
 --------------------------------------------------------------------------------
-“UniMall”“厚匠”“HouCloud”“HouMEOC”以及相关 Logo 均为权利人的商标或注册商标。
+“UniMall”“HouUniMall”“厚匠”“HouCloud”“HouMEOC”以及相关 Logo 均为权利人的商标或注册商标。
 
 本项目采用 Apache License 2.0 授权，**该许可不包含任何商标授权**（见许可证第 6 条）。
 未经书面许可，你不得：
@@ -35,7 +35,7 @@ This product includes software developed at 厚匠科技 (https://github.com/hou
 2. 宣称你的产品由本项目官方出品、背书、认证或隶属本项目；
 3. 在去除本项目版权声明后，将本项目整体或部分以自有产品名义对外分发或销售。
 
-允许的情形：在描述软件来源、说明“基于 UniMall 构建”时，以合理、非误导的方式
+允许的情形：在描述软件来源、说明“基于 HouUniMall 构建”时，以合理、非误导的方式
 使用项目名称文字（不得使用 Logo），并在显著位置标注原始出处与许可证。
 
 --------------------------------------------------------------------------------

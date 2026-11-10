@@ -1,6 +1,6 @@
-# UniMall · 开源多商户电商中台（Core）
+# HouUniMall · 开源多商户电商中台（Core）
 
-> 品牌与商标：本项目对外统一使用 **UniMall** 名称；使用名称与 Logo 的边界以仓库内 `NOTICE` 为准。
+> 品牌与商标：本项目对外统一使用 **HouUniMall** 名称；使用名称与 Logo 的边界以仓库内 `NOTICE` 为准。
 
 微服务架构 + 插件化扩展的**多商户电商中台**：一套后端同时支撑平台后台、商户后台、PC 商城、统一 App 等多端业务；插件按需装载，业务服务独立运行、独立发布。
 
@@ -42,6 +42,8 @@ flowchart LR
 数据库/Redis/Nacos 地址、端口、账号密码，测试连通后部署）；安装完成页展示各服务访问信息。
 
 ```bash
+git clone https://github.com/houjitsoft/HouUniMall.git
+cd HouUniMall
 bash deploy/install.sh --wizard     # 然后浏览器打开 http://<本机IP>:<WEB_PORT>/ 自动进入向导
 ```
 
