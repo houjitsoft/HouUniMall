@@ -1,0 +1,8 @@
+!src/test/
+src/test/**
+!src/test/java/
+!src/test/java/com/
+!src/test/java/com/houjiang/
+!src/test/java/com/houjiang/bffweb/
+!src/test/java/com/houjiang/bffweb/service/
+!src/test/java/com/houjiang/bffweb/service/BugFeedbackRelayTest.java
