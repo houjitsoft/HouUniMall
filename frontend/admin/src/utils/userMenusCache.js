@@ -92,7 +92,8 @@ import request from '@/utils/request'
 // v78：GEO 新增「短视频脚本库」并把「短视频生成」改指 /plugin/geo/content/short-video-studio
 //      （20261109-geo-short-video-script.sql 写主框架与 hou_geo_menu 两套菜单）。
 //      老缓存里「短视频生成」仍指向脚本库地址，必须 bump 强制重拉。
-export const MENU_CACHE_KEY = 'houcloud_user_menus_v78'
+// v79：店铺管理新增「店铺等级」菜单（id=2065，/mall/store/level），旧缓存缺该入口，必须 bump 强制重拉。
+export const MENU_CACHE_KEY = 'houcloud_user_menus_v79'
 /** 跨标签页失效时间戳（localStorage） */
 export const STAMP_KEY = 'houcloud_user_menus_inv'
 /** 旧版 sessionStorage key，迁移后清理 */

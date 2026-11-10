@@ -55,3 +55,15 @@ UPDATE hou_permission_menu
 SELECT id,name,perms,sort FROM hou_permission_menu
  WHERE pid=0 AND display_pos='left' AND type<>'A' AND is_show<>0 AND is_disable=0
  ORDER BY sort DESC;
+
+-- 2026-11-10：补「店铺等级」后台入口。
+--   /mall/store/level 静态路由早已存在，但菜单树缺这一项，左侧导航点不到；
+--   该页维护 hou_shop_level —— 入驻页「店铺等级」下拉与「查看店铺权益和收费标准」
+--   的唯一数据源。本段幂等，授权范围沿用「店铺列表」(2046) 已有的角色。
+--   🔴 菜单树变更后必须同时递增 admin 的 MENU_CACHE_KEY。
+INSERT INTO hou_permission_menu
+(id,pid,type,name,icon,sort,perms,paths,component,selected,params,plugin_code,is_cache,is_show,is_disable,create_time,update_time,display_pos,cate_id)
+SELECT 2065,1009,'C','店铺等级','Star',8500,'shell:mall:store:level','/mall/store/level','mall/store/level','','','',0,1,0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),'left',0
+FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM hou_permission_menu WHERE id=2065 OR paths='/mall/store/level');
+INSERT IGNORE INTO hou_permission_role_menu(role_id,menu_id)
+SELECT DISTINCT role_id,2065 FROM hou_permission_role_menu WHERE menu_id=2046;
