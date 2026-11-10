@@ -145,12 +145,12 @@
       '<div class="ubr-thumbs" id="ubr-thumbs"></div><div class="ubr-context" id="ubr-context"></div>',
       '<label class="ubr-label"><input type="checkbox" id="ubr-privacy" required> 我已确认报错内容和截图不含密码、令牌及个人隐私，同意提交至 unimall.houjit.com。</label>',
       '<div class="ubr-status" id="ubr-status" role="status"></div><div class="ubr-footer"><button type="button" class="ubr-btn" id="ubr-cancel">取消</button><button type="submit" class="ubr-btn ubr-btn-primary" id="ubr-submit">提交</button></div></form></div>',
-      '<div class="ubr-launcher ubr-interactive"><div class="ubr-actions" id="ubr-actions"><button type="button" class="ubr-action" id="ubr-bug"><span class="ubr-dot"></span>Bug 提交</button></div>',
+      '<div class="ubr-launcher ubr-interactive"><div class="ubr-actions" id="ubr-actions"><button type="button" class="ubr-action" id="ubr-knowledge"><span class="ubr-dot"></span>知识库</button><button type="button" class="ubr-action" id="ubr-bug"><span class="ubr-dot"></span>Bug 提交</button></div>',
       '<button type="button" class="ubr-main" id="ubr-main" title="全局 Bug 登记" aria-label="全局 Bug 登记" aria-expanded="false">' + BUG_ICON + '</button></div>',
       '<div class="ubr-toast" id="ubr-toast" role="status" aria-live="polite"></div>'
     ].join('');
     document.body.appendChild(root); el.root = root;
-    ['panel', 'form', 'close', 'cancel', 'submit', 'file', 'drop', 'thumbs', 'context', 'status', 'toast', 'main', 'actions', 'bug', 'privacy', 'reporter'].forEach(function (id) {
+    ['panel', 'form', 'close', 'cancel', 'submit', 'file', 'drop', 'thumbs', 'context', 'status', 'toast', 'main', 'actions', 'bug', 'knowledge', 'privacy', 'reporter'].forEach(function (id) {
       el[id] = root.querySelector('#ubr-' + id);
     });
     el.content = root.querySelector('#ubr-error-content');
@@ -224,7 +224,30 @@
         toast('提交失败或未收到有效回执，表单和截图已保留，请检查后重试');
       }).finally(function () { clearTimeout(timer); setBusy(false); });
   }
+  async function openKnowledge() {
+    el.actions.classList.remove('is-open'); el.main.setAttribute('aria-expanded', 'false');
+    closeKnowledgeError();
+    el.knowledge.disabled = true;
+    try {
+      var opened = false;
+      if (typeof window.__HOU_OPEN_KNOWLEDGE__ === 'function') {
+        opened = await window.__HOU_OPEN_KNOWLEDGE__();
+      } else {
+        // 兼容尚未重建宿主的静态发布：仅复用宿主已初始化的 SDK，不自行注入密钥或 SDK。
+        var sdk = window.WeKnora;
+        var panel = document.querySelector('div[style*="2147482999"]');
+        if (sdk && panel && typeof sdk.open === 'function') {
+          await sdk.open(); opened = true;
+        }
+      }
+      if (!opened) toast('知识库入口已保留，当前宿主尚未配置或挂件未就绪，请稍后重试');
+    } catch (ignored) {
+      toast('知识库挂件暂时无法打开，请稍后重试');
+    } finally { el.knowledge.disabled = false; }
+  }
+  function closeKnowledgeError() { clearTimeout(toastTimer); el.toast.className = 'ubr-toast'; }
   function bindEvents() {
+    el.knowledge.addEventListener('click', openKnowledge);
     function closePanel() { el.panel.classList.remove('is-open'); }
     el.main.addEventListener('click', function () {
       var open = el.actions.classList.toggle('is-open'); el.main.setAttribute('aria-expanded', String(open));

@@ -96,8 +96,8 @@ export function pushAssistantContext(force = false) {
   lastSignature = signature
   try {
     widget.setContext(context)
-  } catch (e) {
-    console.warn('[WeKnora] 注入页面上下文失败', e)
+  } catch {
+    console.warn('[WeKnora] 注入页面上下文失败')
   }
 }
 
@@ -158,32 +158,28 @@ export function resolveMenuTrail(menus, path) {
 }
 
 /**
- * 启动挂件。幂等，重复调用返回同一个 Promise。
+ * 启动挂件。并发调用复用同一个 Promise，仅失败时清除缓存以允许重试。
  * @returns {Promise<object|null>}
  */
 export function initAssistantWidget() {
+  if (typeof window === 'undefined') return Promise.resolve(null)
   if (initPromise) return initPromise
   initPromise = (async () => {
     const config = await loadWidgetConfig()
-    if (!config) return null
+    if (!config?.channel || !config?.token) return null
     const sdk = getSdk()
-    if (!sdk) {
+    if (!sdk || typeof sdk.init !== 'function') {
       console.warn('[WeKnora] SDK 未加载，跳过知识库挂件')
       return null
     }
-    try {
-      widget = sdk.init({
-        channel: config.channel,
-        token: config.token,
-        position: config.position || 'bottom-right',
-        primaryColor: config.primaryColor || config.primary_color || '#07c05f',
-        title: config.title || '小匠',
-        baseUrl: config.baseUrl || ''
-      })
-    } catch (e) {
-      console.warn('[WeKnora] 初始化失败', e)
-      return null
-    }
+    widget = await sdk.init({
+      channel: config.channel,
+      token: config.token,
+      position: config.position || 'bottom-right',
+      primaryColor: config.primaryColor || config.primary_color || '#07c05f',
+      title: config.title || '小匠',
+      baseUrl: config.baseUrl || ''
+    })
     if (!widget) return null
 
     sdk.on('ready', () => {
@@ -196,6 +192,34 @@ export function initAssistantWidget() {
       pushAssistantContext()
     })
     return widget
-  })()
+  })().catch(() => {
+    console.warn('[WeKnora] 初始化失败')
+    return null
+  }).then((result) => {
+    if (!result) initPromise = null
+    return result
+  })
   return initPromise
+}
+
+/** 使用现有运行时配置和 SDK 打开知识库面板，不重复加载 SDK。 */
+export async function openAssistantWidget() {
+  if (typeof window === 'undefined') return false
+  try {
+    const instance = await initAssistantWidget()
+    if (!instance) return false
+    const target = typeof instance.open === 'function' ? instance : getSdk()
+    if (typeof target?.open !== 'function') return false
+    const result = await target.open()
+    if (result === false) return false
+    pushAssistantContext(true)
+    return true
+  } catch {
+    console.warn('[WeKnora] 打开知识库失败')
+    return false
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.__HOU_OPEN_KNOWLEDGE__ = openAssistantWidget
 }

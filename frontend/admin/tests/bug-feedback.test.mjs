@@ -42,6 +42,37 @@ async function setup(response = { code: 1, data: { id: 'central-123' } }, httpOk
   return { dom, window, calls, revoked, writes, get, add, submit }
 }
 
+test('知识库入口与Bug并存，复用宿主桥接，不写入渠道配置', async () => {
+  const app = await setup()
+  try {
+    let opened = 0
+    app.window.__HOU_OPEN_KNOWLEDGE__ = async () => { opened++; return true }
+    app.get('main').click()
+    assert.equal(app.get('knowledge').textContent.includes('知识库'), true)
+    app.get('knowledge').click()
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(opened, 1)
+    assert.equal(app.get('knowledge').disabled, false)
+    assert.equal(app.calls.length, 0)
+    assert.equal(app.writes.length, 0)
+  } finally { app.dom.window.close() }
+})
+
+test('宿主知识库未配置或打开异常时明确提示且保留Bug表单', async () => {
+  for (const bridge of [undefined, async () => false, async () => { throw new Error('private-config') }]) {
+    const app = await setup()
+    try {
+      app.window.__HOU_OPEN_KNOWLEDGE__ = bridge
+      app.get('knowledge').click()
+      await new Promise(resolve => setImmediate(resolve))
+      assert.match(app.get('toast').textContent, /知识库/)
+      assert.doesNotMatch(app.get('toast').textContent, /private-config/)
+      assert.equal(app.get('error-content').value, '错误正文\n第二行')
+      assert.equal(app.get('knowledge').disabled, false)
+    } finally { app.dom.window.close() }
+  }
+})
+
 test('成功必须有平台 code=1 与 id；单次 multipart、显式本域 JWT、无预上传/AI/本地台账', async () => {
   const app = await setup()
   try {
