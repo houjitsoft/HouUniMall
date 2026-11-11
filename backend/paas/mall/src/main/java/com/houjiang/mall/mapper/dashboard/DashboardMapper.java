@@ -1,6 +1,7 @@
 package com.houjiang.mall.mapper.dashboard;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.math.BigDecimal;
@@ -110,18 +111,29 @@ public interface DashboardMapper {
      * @param days 天数
      * @return 每日统计列表 [{date, amount, count}]
      */
-    @Select("SELECT DATE(create_time) AS `date`, " +
-            "COALESCE(SUM(commission_amount), 0) AS amount, " +
-            "COUNT(*) AS `count` " +
-            "FROM hou_mall_commission_record " +
-            "WHERE deleted = 0 AND create_time >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY) " +
-            "GROUP BY DATE(create_time) ORDER BY `date`")
     /**
-     * TODO 补充方法说明
-     * @param days TODO
-     * @return TODO
+     * 最近 N 天每日成交统计（交易趋势）
+     *
+     * 2026-11-11 修正：原读 hou_mall_commission_record（分销佣金），真实业务无数据。
+     * 改为从 hou_order_base 聚合真实订单，并用递归 CTE 生成连续日期序列再左连，
+     * 保证某天没有订单时该天仍返回 0 —— 前端交易趋势按「最后 7 条 / 前 7 条」切片，
+     * 日期断档会让近 7 日与上 7 日的边界整体串位，环比就假了。
+     *
+     * @param days 天数（含今日）
+     * @return 每日统计列表 [{date, amount, count}]
      */
-    List<Map<String, Object>> dailyCommissionStats(int days);
+    @Select("WITH RECURSIVE seq AS (" +
+            "SELECT CURDATE() AS dt " +
+            "UNION ALL " +
+            "SELECT seq.dt - INTERVAL 1 DAY FROM seq WHERE seq.dt > CURDATE() - INTERVAL ${days} DAY) " +
+            "SELECT seq.dt AS `date`, " +
+            "COALESCE(SUM(CASE WHEN o.order_status IN (2,3,4,5,6,11) THEN o.order_payment_amount ELSE 0 END), 0) AS amount, " +
+            "COUNT(o.order_id) AS `count` " +
+            "FROM seq " +
+            "LEFT JOIN hou_order_base o ON DATE(o.order_create_time) = seq.dt " +
+            "AND o.order_del = 0 AND o.order_status IN (1,2,3,4,5,6,11) " +
+            "GROUP BY seq.dt ORDER BY seq.dt")
+    List<Map<String, Object>> dailyCommissionStats(@Param("days") int days);
 
     /**
      * 分销商品按佣金排行TOP N
@@ -165,63 +177,76 @@ public interface DashboardMapper {
      * TODO 补充方法说明
      * @return TODO
      */
-    @Select("SELECT COUNT(*) FROM hou_mall_distribution_order WHERE deleted = 0")
+    /*
+     * ==================== 首页工作台统计口径（2026-11-11 修正） ====================
+     * 原实现读 hou_mall_distribution_order / hou_mall_customer（分销订单、分销客户），
+     * 这两张表在真实商城业务里没有数据，导致首页 8 张卡片恒为 0。
+     * 真实交易数据在 hou_order_base（C 端订单主表），故统一改从该表聚合：
+     *   下单口径（订单量 / 下单用户数）：order_status IN (1,2,3,4,5,6,11)
+     *     —— 即待付款、已付款、待发货、已发货、已签收、确认收货、待自提，
+     *        排除 7 取消 / 8 退款中 / 9 已退款 / 12 已过期
+     *   成交口径（成交额）：order_status IN (2,3,4,5,6,11)，不含待付款
+     *   删除标志：huo_order_base 用 order_del，不是 deleted
+     * 订单状态枚举来源：OrderBaseServiceImpl#orderSellingTransactionExcel
+     */
+
+    @Select("SELECT COUNT(*) FROM hou_order_base WHERE order_del = 0 AND order_status IN (1,2,3,4,5,6,11)")
     int countAllDistributionOrders();
 
     /**
-     * TODO 补充方法说明
-     * @return TODO
+     * 今日下单量（排除取消/退款/过期）
+     * @return 今日订单数
      */
-    @Select("SELECT COUNT(*) FROM hou_mall_distribution_order WHERE deleted = 0 AND DATE(create_time) = CURDATE()")
+    @Select("SELECT COUNT(*) FROM hou_order_base WHERE order_del = 0 AND order_status IN (1,2,3,4,5,6,11) AND DATE(order_create_time) = CURDATE()")
     int countTodayDistributionOrdersByDate();
 
     /**
-     * TODO 补充方法说明
-     * @return TODO
+     * 昨日下单量（排除取消/退款/过期）
+     * @return 昨日订单数
      */
-    @Select("SELECT COUNT(*) FROM hou_mall_distribution_order WHERE deleted = 0 AND DATE(create_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)")
+    @Select("SELECT COUNT(*) FROM hou_order_base WHERE order_del = 0 AND order_status IN (1,2,3,4,5,6,11) AND DATE(order_create_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)")
     int countYesterdayDistributionOrders();
 
     /**
-     * TODO 补充方法说明
-     * @return TODO
+     * 累计成交额（已支付口径）
+     * @return 累计成交金额
      */
-    @Select("SELECT COALESCE(SUM(order_amount), 0) FROM hou_mall_distribution_order WHERE deleted = 0")
+    @Select("SELECT COALESCE(SUM(order_payment_amount), 0) FROM hou_order_base WHERE order_del = 0 AND order_status IN (2,3,4,5,6,11)")
     BigDecimal sumAllOrderAmount();
 
     /**
-     * TODO 补充方法说明
-     * @return TODO
+     * 今日成交额（已支付口径，不含待付款）
+     * @return 今日成交金额
      */
-    @Select("SELECT COALESCE(SUM(order_amount), 0) FROM hou_mall_distribution_order WHERE deleted = 0 AND DATE(create_time) = CURDATE()")
+    @Select("SELECT COALESCE(SUM(order_payment_amount), 0) FROM hou_order_base WHERE order_del = 0 AND order_status IN (2,3,4,5,6,11) AND DATE(order_create_time) = CURDATE()")
     BigDecimal sumTodayOrderAmount();
 
     /**
-     * TODO 补充方法说明
-     * @return TODO
+     * 昨日成交额（已支付口径，不含待付款）
+     * @return 昨日成交金额
      */
-    @Select("SELECT COALESCE(SUM(order_amount), 0) FROM hou_mall_distribution_order WHERE deleted = 0 AND DATE(create_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)")
+    @Select("SELECT COALESCE(SUM(order_payment_amount), 0) FROM hou_order_base WHERE order_del = 0 AND order_status IN (2,3,4,5,6,11) AND DATE(order_create_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)")
     BigDecimal sumYesterdayOrderAmount();
 
     /**
-     * TODO 补充方法说明
-     * @return TODO
+     * 累计下单用户数（按 buyer_user_id 去重）
+     * @return 累计买家数
      */
-    @Select("SELECT COUNT(*) FROM hou_mall_customer WHERE deleted = 0")
+    @Select("SELECT COUNT(DISTINCT buyer_user_id) FROM hou_order_base WHERE order_del = 0 AND order_status IN (1,2,3,4,5,6,11)")
     int countAllCustomers();
 
     /**
-     * TODO 补充方法说明
-     * @return TODO
+     * 今日下单用户数（按 buyer_user_id 去重）
+     * @return 今日买家数
      */
-    @Select("SELECT COUNT(*) FROM hou_mall_customer WHERE deleted = 0 AND DATE(create_time) = CURDATE()")
+    @Select("SELECT COUNT(DISTINCT buyer_user_id) FROM hou_order_base WHERE order_del = 0 AND order_status IN (1,2,3,4,5,6,11) AND DATE(order_create_time) = CURDATE()")
     int countTodayNewCustomers();
 
     /**
-     * TODO 补充方法说明
-     * @return TODO
+     * 昨日下单用户数（按 buyer_user_id 去重）
+     * @return 昨日买家数
      */
-    @Select("SELECT COUNT(*) FROM hou_mall_customer WHERE deleted = 0 AND DATE(create_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)")
+    @Select("SELECT COUNT(DISTINCT buyer_user_id) FROM hou_order_base WHERE order_del = 0 AND order_status IN (1,2,3,4,5,6,11) AND DATE(order_create_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)")
     int countYesterdayNewCustomers();
 
     @Select("SELECT s.id, s.shop_name AS name, COALESCE(SUM(o.order_amount), 0) AS sale_money, " +

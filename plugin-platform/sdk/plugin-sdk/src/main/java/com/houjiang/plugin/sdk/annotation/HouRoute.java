@@ -75,4 +75,21 @@ public @interface HouRoute {
      * {@code false}（默认）= 不限制（历史兼容）；{@code true} = 未声明即拒绝插件间调用。
      */
     String[] allowCallers() default {};
+
+    /**
+     * 是否允许<b>游客（未登录）</b>调用。默认 {@code false}，即必须登录。
+     *
+     * <p><b>只给纯只读展示用</b>：典型场景是首页橱窗、商品推荐这类「登录前就得看到」的数据。
+     * 一旦置 {@code true}：
+     * <ul>
+     *   <li>宿主分发器不再要求登录态；</li>
+     *   <li>{@link #permission()} 会被忽略（没有身份就没有授权可校验），因此
+     *       <b>匿名路由不得依赖任何用户身份</b>——方法里禁止取 userId；</li>
+     *   <li>宿主服务（如 order）的 Spring Security / JWT 过滤器白名单仍需显式放行该路径，
+     *       否则请求在分发器之前就被 30802 拦下。</li>
+     * </ul>
+     *
+     * <p>这是提权面：写操作、占额度、改用户数据的接口一律不得开放匿名。
+     */
+    boolean anonymous() default false;
 }

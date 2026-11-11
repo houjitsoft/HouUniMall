@@ -391,8 +391,12 @@ public class OrderBaseServiceImpl extends ServiceImpl<OrderBaseMapper, OrderBase
         // 检查是否有直接传入的用户ID，如果有，则使用传入的用户ID，否则使用之前获取的用户ID
         userId = map.get("userId") == null ? userId : (String) map.get("userId");
 
-        // 根据订单ID查询订单基本信息，用于进一步处理订单状态等信息
+        // 根据订单ID查询订单基本信息，用于进一步处理订单状态等信息（判空防呆）
         OrderBaseEntity orderBaseEntity = this.baseMapper.selectById(orderId);
+        if (orderBaseEntity == null) {
+            logger.error("[order] 删除订单未找到订单: orderId={}", orderId);
+            return ResponseResult.fail("订单不存在，请刷新后重试");
+        }
 
         // 获取订单的状态，用于判断订单当前所处的状态，如是否已支付、已发货等
         Integer orderStatus = orderBaseEntity.getOrderStatus();
@@ -429,8 +433,12 @@ public class OrderBaseServiceImpl extends ServiceImpl<OrderBaseMapper, OrderBase
             // 3：系统
             List<String> orderIdList = new ArrayList<>();
             orderIdList.add(orderid);
-            // 爆品取消时需求跟绑定商品一起取消
+            // 爆品取消时需求跟绑定商品一起取消（判空防呆：订单不存在时给明确错误而非 NPE）
             OrderBaseEntity orderPayInfo = this.baseMapper.selectById(orderid);
+            if (orderPayInfo == null) {
+                logger.error("[order] 取消订单未找到订单: orderId={}", orderid);
+                return ResponseResult.fail("订单不存在，请刷新后重试");
+            }
 
             if (orderPayInfo.getOrderType().intValue() == CommonType.orderType.HOT_GOODS_TYPE.getCode()) {
                 List<OrderBaseEntity> orderPayInfoList = this.baseMapper.selectList(new LambdaQueryWrapper<OrderBaseEntity>()
@@ -450,13 +458,15 @@ public class OrderBaseServiceImpl extends ServiceImpl<OrderBaseMapper, OrderBase
                     return ResponseResult.fail(BizCodeEnume.ORDER_CANCELED);
 
                 } else {
-                    //获取非数字订单
-                    OrderBaseEntity order = this.baseMapper.selectById(orderid);
-                    String record_payorder = order.getPaymentNumber();
+                    //获取非数字订单（同批订单共用 paymentNumber，直接取首查结果，不再二次查库）
+                    String record_payorder = orderPayInfo.getPaymentNumber();
                     //取消订单 删除当前用户的拼团信息
-                    Map<String, Object> pinTuanMap = new HashMap<>();
-                    pinTuanMap.put("orderId", record_payorder);
-                    activityServiceClient.deletePinTuanInfo(pinTuanMap);
+                    // 仅拼团订单才调 activity 清理拼团（activity 未部署或非拼团单都不应阻断取消）
+                    if (orderPayInfo.getPintuanMarkid() != null && !orderPayInfo.getPintuanMarkid().isBlank()) {
+                        Map<String, Object> pinTuanMap = new HashMap<>();
+                        pinTuanMap.put("orderId", record_payorder);
+                        activityServiceClient.deletePinTuanInfo(pinTuanMap);
+                    }
 
                     List goodsId = new ArrayList();
                     // 查询商品信息中商品id,商品数量
@@ -1299,33 +1309,22 @@ public class OrderBaseServiceImpl extends ServiceImpl<OrderBaseMapper, OrderBase
                 UserInfoVO ui = new UserInfoVO();
                 // 从Redis中获取用户信息
                 ui = ParseTokenUtils.getUserInfoByToken(token);
-                // 当前用户没有 shopId（如云端 SaaS 管理后台用户）：订单中心的统计 SQL 强依赖 shop_id，
-                // 数据模型层面也没有 org_id 维度。这里不再粗暴抛「权限不足」，改为返回全 0 的统计占位，
-                // 避免前端首页卡片报错或弹错误 toast。
-                if (null == ui || null == ui.getShopId() || ui.getShopId().isEmpty()) {
-                    omot.setWaitingForPayment(0);
-                    omot.setWaitForTheDelivery(0);
-                    omot.setShipped(0);
-                    omot.setOffTheStocks(0);
-                    omot.setSalesReturn(0);
-                    omot.setRefund(0);
-                    omot.setAfterSales(0);
-                    omot.setEvaluate(0);
-                    rr.setCode(1);
-                    rr.setData(omot);
-                    return rr;
-                }
-                // 获取店铺ID
-                Integer shopId = Integer.valueOf(ui.getShopId());
+                // 云端 SaaS 管理后台账号往往没有 shopId（平台级视角），而订单统计 SQL 的店铺条件是
+                // 可选片段（orderSource=1/2 时才拼接）。这里把平台级账号的 orderSource 置 0，
+                // 让统计按全平台聚合，而不是直接返回全 0（否则首页「待付款/待发货/退款售后」恒为 0）。
+                Integer shopId = (null != ui && null != ui.getShopId() && !ui.getShopId().isEmpty())
+                        ? Integer.valueOf(ui.getShopId()) : null;
                 // shopGateId 在云端管理后台同样可能为空，做兜底
-                Integer shopGateId = (ui.getShopGateId() != null && !ui.getShopGateId().isEmpty())
+                Integer shopGateId = (null != ui && null != ui.getShopGateId() && !ui.getShopGateId().isEmpty())
                         ? Integer.valueOf(ui.getShopGateId()) : null;
-                // 初始化订单来源，默认为2
-                Integer orderSource = 2;
-                // 如果店铺类型为2，订单来源改为1
-                if (null != ui.getShopType() && 2 == ui.getShopType()) {
-                    //查询待发货订单
-                    orderSource = 1;
+                // 订单来源：有 shopId 时默认 2（普通店铺），店铺类型 2 则改 1；平台级账号置 0 表示不过滤店铺
+                Integer orderSource = 0;
+                if (null != shopId) {
+                    orderSource = 2;
+                    if (null != ui.getShopType() && 2 == ui.getShopType()) {
+                        //查询待发货订单
+                        orderSource = 1;
+                    }
                 }
                 // 分别查询不同状态的订单数量
                 // 待付款

@@ -124,7 +124,10 @@ public final class ExtensionInvoker {
         if (handles.isEmpty()) {
             return;
         }
-        long timeoutMs = properties.getExtensionTimeoutMs();
+        // 上下文可带超时提示（写账本类扩展需要比 200ms 全局默认更长的预算），
+        // 提示 <= 0 时回落全局配置，行为与旧版完全一致
+        long timeoutMs = ctx.getTimeoutHintMs() > 0
+                ? ctx.getTimeoutHintMs() : properties.getExtensionTimeoutMs();
         String pointName = shortPointName(type);
         for (ExtensionRegistry.ExtensionHandle handle : handles) {
             @SuppressWarnings("unchecked")

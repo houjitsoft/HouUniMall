@@ -2,14 +2,31 @@
   <div>
     <div class="wrap">
       <div ref="step1" class="settle-cont-box">
-        <h3>企业店铺入驻流程</h3>
+        <h3 class="join-step-title">
+          <span>{{ Number(route.query.shopType) === 0 ? '个人店铺入驻流程' : '企业店铺入驻流程' }}</span>
+          <el-tooltip
+            v-if="Number(route.query.shopType) === 0"
+            placement="right-start"
+            effect="light"
+            :show-after="80"
+            popper-class="join-note-popper"
+          >
+            <template #content>
+              <div class="join-note-tip">
+                <strong>个人入驻资料说明</strong>
+                <p>当前平台资料采集表单为统一主体信息表。个人经营者请在「企业性质」选择「个体工商户」，并按实际持有的资质材料填写；如尚未办理营业执照，请先联系平台客服确认开通方式，避免审核被退回。</p>
+              </div>
+            </template>
+            <el-icon class="join-note-icon" aria-label="个人入驻资料说明"><InfoFilled /></el-icon>
+          </el-tooltip>
+        </h3>
         <div v-if="draftRestored" class="join-draft-tip">
           <span class="join-draft-tip__text">
             已恢复本机上次暂存的登记信息（{{ draftSavedAtText }}），可继续填写；资料仅保存在当前浏览器，提交成功后自动清除。
           </span>
           <el-button link type="primary" @click="clearDraftAndReset">清空重填</el-button>
         </div>
-        <el-steps :active="2" align-center style="margin-top: 50px">
+        <el-steps :active="2" align-center class="join-steps">
           <el-step title="入驻须知" :icon="ElIconDocument"></el-step>
           <el-step title="商家基本信息填写" :icon="ElIconEdit"></el-step>
           <el-step title="缴纳店铺租金" :icon="ElIconPostcard"></el-step>
@@ -27,7 +44,7 @@
           :model="ruleForm"
           :rules="rules"
           ref="ruleForm"
-          label-width="180px"
+          label-width="144px"
           class="demo-ruleForm"
           :disabled="disabled"
         >
@@ -86,7 +103,12 @@
               placeholder="请输入验证码"
             >
               <template v-slot:suffix>
-                <button class="button fl mrf10" type="button" @click="handleGetCode">
+                <button
+                  class="join-code-btn"
+                  type="button"
+                  :disabled="!canClick"
+                  @click="handleGetCode"
+                >
                   {{ content }}
                 </button>
               </template>
@@ -110,7 +132,7 @@
           </el-form-item>
           <div class="flexrow">
             <div class="flexcol fl"></div>
-            <div class="textwrap fl">公司信息</div>
+            <div class="textwrap fl">{{ isPersonal ? '经营者证件' : '公司信息' }}</div>
             <div class="textwrapperone fl">
               <span class="textword">*</span>
               <span class="texttwo">为必填项</span>
@@ -120,6 +142,7 @@
             label="企业性质:"
             style="width: 550px; margin-top: 50px"
             prop="enterpriseNature"
+            v-if="!isPersonal"
           >
             <el-radio-group v-model="ruleForm.enterpriseNature">
               <el-radio :value="1">个体工商户</el-radio>
@@ -130,6 +153,7 @@
             label="公司名称:"
             style="width: 550px; margin-top: 50px"
             prop="enterpriseName"
+            v-if="!isPersonal"
           >
             <el-input
               v-model="ruleForm.enterpriseName"
@@ -138,7 +162,7 @@
             ></el-input>
             <span class="text_17">请按照营业执照上登记的完成名称填写</span>
           </el-form-item>
-          <el-form-item label="税号:" style="width: 550px" prop="taxId">
+          <el-form-item label="税号:" style="width: 550px" prop="taxId" v-if="!isPersonal">
             <el-input
               v-model="ruleForm.taxId"
               placeholder="请填写公司税号"
@@ -147,7 +171,7 @@
               >请按照营业执照上的统一社会信用代码进行填写</span
             >
           </el-form-item>
-          <el-form-item label="营业执照图片" prop="businessLicencePic">
+          <el-form-item class="fi-full fi-img" label="营业执照图片" prop="businessLicencePic" v-if="!isPersonal">
             <div>
               <div class="fl">
                 <img class="img-size" v-if="imgUrl1" :src="imgUrl1" alt="" />
@@ -180,7 +204,7 @@
               </div>
             </div>
           </el-form-item>
-          <el-form-item style="width: 550px; margin-bottom: 40px">
+          <el-form-item class="fi-full" style="width: 550px; margin-bottom: 40px">
             <div>
               <div class="text-group_55">
                 <span class="text_55"
@@ -201,6 +225,7 @@
             label="营业执照所在地:"
             prop="blLocation"
             style="width: 550px"
+            v-if="!isPersonal"
           >
             <AreaCascader
               ref="adds"
@@ -214,13 +239,14 @@
             label="营业执照详细地址:"
             style="width: 550px"
             prop="blAddress"
+            v-if="!isPersonal"
           >
             <el-input
               v-model="ruleForm.blAddress"
               placeholder="请输入营业执照详细地址"
             ></el-input>
           </el-form-item>
-          <el-form-item label="营业执照有效期:" prop="validateStartTime">
+          <el-form-item class="fi-full" label="营业执照有效期:" prop="validateStartTime" v-if="!isPersonal">
             <el-date-picker
               v-model="ruleForm.validateStartTime"
               @change="deleteTime"
@@ -254,6 +280,7 @@
             label="法人姓名:"
             style="width: 550px"
             prop="legalPersonName"
+            v-if="!isPersonal"
           >
             <el-input
               v-model="ruleForm.legalPersonName"
@@ -264,6 +291,7 @@
             label="法人手机号:"
             style="width: 550px"
             prop="legalPersonMobile"
+            v-if="!isPersonal"
           >
             <el-input
               v-model="ruleForm.legalPersonMobile"
@@ -274,6 +302,7 @@
             label="法人身份证:"
             style="width: 550px"
             prop="legalPersonIdCard"
+            v-if="!isPersonal"
           >
             <el-input
               v-model="ruleForm.legalPersonIdCard"
@@ -281,6 +310,7 @@
             ></el-input>
           </el-form-item>
           <el-form-item
+            class="fi-img"
             label="身份证正面:"
             style="width: 550px"
             prop="idCardFront"
@@ -326,6 +356,7 @@
             </div>
           </el-form-item>
           <el-form-item
+            class="fi-img"
             label="身份证反面:"
             style="width: 550px"
             prop="idCardBack"
@@ -374,6 +405,7 @@
             label="企业电话:"
             style="width: 550px"
             prop="enterprisePhone"
+            v-if="!isPersonal"
           >
             <el-input
               v-model="ruleForm.enterprisePhone"
@@ -385,6 +417,7 @@
             label="员工总数:"
             style="width: 650px"
             prop="employeeNum"
+            v-if="!isPersonal"
           >
             <div class="fl">
               <el-input-number class="wd370 tl"
@@ -403,6 +436,7 @@
             label="注册资金:"
             style="width: 650px"
             prop="registerMoney"
+            v-if="!isPersonal"
           >
             <div class="fl">
               <el-input-number class="wd370 tl"
@@ -457,7 +491,7 @@
               placeholder="请输入店铺详细地址"
             ></el-input>
           </el-form-item>
-          <el-form-item label="店铺等级" prop="shopLevelId">
+          <el-form-item class="fi-full" label="店铺等级" prop="shopLevelId">
             <el-select
               v-model="ruleForm.shopLevelId"
               placeholder="请选择店铺等级"
@@ -467,7 +501,7 @@
               <el-option
                 v-for="item in storeLevelData"
                 :key="item.id"
-                :label="item.id == 4 ? '* ' + item.storeLevel : item.storeLevel"
+                :label="(item.id == 4 ? '* ' : '') + (item.levelName || item.storeLevel)"
                 :value="item.id"
               ></el-option>
             </el-select>
@@ -495,7 +529,7 @@
                       <li>可上传视频数</li>
                     </ul>
                     <ul v-for="item in storeLevelData" :key="item.id">
-                      <li>{{ item.storeLevel }}</li>
+                      <li>{{ item.levelName || item.storeLevel }}</li>
                       <li>{{ item.expenses }}</li>
                       <li>线下公对公</li>
                       <li>{{ item.id == 1 ? '否' : '是' }}</li>
@@ -612,7 +646,7 @@
               地区银行的唯一识别标志，由12位数字组成：3位银行代码，4位城市代码，4位银行编号，1位校验位
             </div>
           </el-form-item>
-          <el-form-item label="合作协议" prop="corporateAgreement">
+          <el-form-item class="fi-full" label="合作协议" prop="corporateAgreement">
             <div>
               <UploadImg2
                 class="absolute top0 zIndex2"
@@ -630,7 +664,7 @@
               >
             </div>
           </el-form-item>
-          <el-form-item style="margin-bottom: 40px; margin-top: 50px">
+          <el-form-item class="fi-full" style="margin-bottom: 40px; margin-top: 50px">
             <div>
               <div class="text-group_55">
                 <p class="ruzhuxieyi">
@@ -662,7 +696,7 @@
               </div>
             </div>
           </el-form-item>
-          <el-form-item
+          <el-form-item class="fi-full"
             label="主营类目"
             prop="productClassId"
             style="margin-bottom: 200px; margin-top: 50px"
@@ -713,13 +747,13 @@
                 }}</template>
               </el-table-column>
               <el-table-column label="一级类目" align="center">
-                <template v-slot="scope">{{ scope.row.catNames[0] }}</template>
+                <template v-slot="scope">{{ scope.row.catNames?.[0] }}</template>
               </el-table-column>
               <el-table-column label="二级类目" align="center">
-                <template v-slot="scope">{{ scope.row.catNames[1] }}</template>
+                <template v-slot="scope">{{ scope.row.catNames?.[1] }}</template>
               </el-table-column>
               <el-table-column label="三级类目" align="center">
-                <template v-slot="scope">{{ scope.row.catNames[2] }}</template>
+                <template v-slot="scope">{{ scope.row.catNames?.[2] }}</template>
               </el-table-column>
               <el-table-column label="平台抽佣" align="center">
                 <template v-slot="scope"
@@ -870,7 +904,7 @@
     <div class="tc settle-bottom-operate">
       <div class="wrap settle-bottom-inner" v-if="auditStatus == null">
         <el-button @click="back">上一步</el-button>
-        <el-button type="danger" :loading="submitLoading" @click="next('ruleForm')">提交入驻审核</el-button>
+        <el-button type="danger" :loading="submitLoading" :disabled="!loggedIn" @click="next('ruleForm')">提交入驻审核</el-button>
       </div>
       <div class="wrap settle-bottom-inner settle-bottom-status" v-if="auditStatus == 0">
         <div class="status-badge is-pending">审核状态：待审核</div>
@@ -907,6 +941,7 @@ import {
   Postcard as ElIconPostcard,
   DocumentChecked as ElIconDocumentChecked,
   Setting as ElIconSetting,
+  InfoFilled,
   Search as ElIconSearch,
 } from '@element-plus/icons-vue'
 import {
@@ -936,7 +971,7 @@ import AreaCascader from '@/views/join/components/AreaCascader/index.vue'
 import { dateFormat } from '@/utils/joinUtil'
 import { validatePassword } from '@/utils/password'
 import { useAppConfig } from '@/composables/useAppConfig'
-import { setToken } from '@/utils/joinAuth'
+import { setToken, hasJoinToken } from '@/utils/joinAuth'
 import {
   draftKey,
   serializeForm,
@@ -952,6 +987,9 @@ const { baseUrl, safeOpenUrl } = useAppConfig()
 const router = useRouter()
 const route = useRoute()
 
+// 入驻接口全部要求登录态；未登录直接去登录页，登录成功后由登录页按 redirect 回跳本页。
+const loggedIn = ref(hasJoinToken())
+
 const currencyRemark = computed(() => {
   const gp = getCurrentInstance()?.appContext.config.globalProperties
   return gp?.currencyRemark ?? '元'
@@ -966,6 +1004,7 @@ const addsrEl = useTemplateRef('addsr')
 const countryOptions = ref([])
 const storeLevelData = ref([])
 const shopType = ref('')
+const isPersonal = computed(() => Number(route.query.shopType) === 0)
 const url = baseUrl
 const selectProductIds = ref([])
 const btnreset = ref(true)
@@ -1454,62 +1493,73 @@ function validatePasswordRule(rule, value, callback) {
   callback()
 }
 
-const rules = {
-  contactName: [{ required: true, message: '请输入运营人员姓名', trigger: 'blur' }],
-  businessLicencePic: [{ required: true, message: '请上传营业执照', trigger: 'blur' }],
-  taxId: [{ required: true, message: '请输入公司税号', trigger: 'blur' }],
-  contactPhone: [{ required: true, message: '请输入联系人手机', trigger: 'blur' }],
-  validateCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
-  settlePW: [
-    {
-      validator: (rule, value, callback) => {
-        if (originType.value != 1) {
-          callback()
-          return
-        }
-        if (!value || !String(value).trim()) {
-          callback(new Error('请输入密码'))
-          return
-        }
-        validatePasswordRule(rule, value, callback)
+const rules = computed(() => {
+  // 个人入驻（shopType=0）仅需经营者身份证，企业专属字段不校验
+  const companyRequired = (msg, trigger = 'blur') =>
+    isPersonal.value ? [] : [{ required: true, message: msg, trigger }]
+  return {
+    contactName: [{ required: true, message: '请输入运营人员姓名', trigger: 'blur' }],
+    contactPhone: [{ required: true, message: '请输入联系人手机', trigger: 'blur' }],
+    validateCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
+    settlePW: [
+      {
+        validator: (rule, value, callback) => {
+          if (originType.value != 1) {
+            callback()
+            return
+          }
+          if (!value || !String(value).trim()) {
+            callback(new Error('请输入密码'))
+            return
+          }
+          validatePasswordRule(rule, value, callback)
+        },
+        trigger: 'blur',
       },
-      trigger: 'blur',
-    },
-  ],
-  blAddress: [{ required: true, message: '请输入营业执照详细地址', trigger: 'blur' }],
-  idNo: [{ required: true, message: '请输入身份证号码', trigger: 'blur' }],
-  validateStartTime: [{ required: true, message: '请选择证件有效期', trigger: 'change' }],
-  shopName: [
-    { required: true, message: '请输入店铺名称', trigger: 'blur' },
-    { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' },
-  ],
-  enterpriseName: [{ required: true, message: '请输入公司名称', trigger: 'blur' }],
-  shopLocation: [{ required: true, trigger: 'change', message: '请选择地区' }],
-  blLocation: [{ required: true, trigger: 'change', message: '请选择地区' }],
-  shopAddress: [{ required: true, message: '请输入店铺详细地址', trigger: 'blur' }],
-  shopClass: [{ required: true, message: '请输入店铺分类', trigger: 'blur' }],
-  enterprisePhone: [{ required: true, message: '请输入企业电话', trigger: 'blur' }],
-  enterpriseNature: [{ required: true, message: '请选择企业性质', trigger: 'change' }],
-  legalPersonName: [{ required: true, message: '请输入法人姓名', trigger: 'blur' }],
-  legalPersonMobile: [{ required: true, message: '请输入法人手机号', trigger: 'blur' }],
-  legalPersonIdCard: [{ required: true, message: '请输入法人身份证', trigger: 'blur' }],
-  idCardFront: [{ required: true, message: '请上传身份证正面', trigger: 'change' }],
-  idCardBack: [{ required: true, message: '请上传身份证反面', trigger: 'change' }],
-  bankName: [{ required: true, message: '请输入银行开户名', trigger: 'blur' }],
-  bankCardNo: [{ required: true, message: '请输入银行卡号', trigger: 'blur' }],
-  bankLocation: [{ required: true, message: '请输入开户银行所在地', trigger: 'change' }],
-  bankBranchName: [{ required: true, message: '请输入开户银行支行名称', trigger: 'blur' }],
-  branchId: [{ required: true, message: '请输入开户银行支行联行号', trigger: 'blur' }],
-  productClassId: [{ required: true, validator: validatePass }],
-  shopLevelId: [{ required: true, message: '请选择店铺等级', trigger: 'change' }],
-  corporateAgreement: [{ required: true, message: '请上传合作协议', trigger: 'change' }],
-}
+    ],
+    shopName: [
+      { required: true, message: '请输入店铺名称', trigger: 'blur' },
+      { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' },
+    ],
+    shopLocation: [{ required: true, trigger: 'change', message: '请选择地区' }],
+    shopAddress: [{ required: true, message: '请输入店铺详细地址', trigger: 'blur' }],
+    shopClass: [{ required: true, message: '请输入店铺分类', trigger: 'blur' }],
+    shopLevelId: [{ required: true, message: '请选择店铺等级', trigger: 'change' }],
+    corporateAgreement: [{ required: true, message: '请上传合作协议', trigger: 'change' }],
+    productClassId: [{ required: true, validator: validatePass }],
+    // 经营者身份证：个人与企业均必填
+    idCardFront: [{ required: true, message: '请上传身份证正面', trigger: 'change' }],
+    idCardBack: [{ required: true, message: '请上传身份证反面', trigger: 'change' }],
+    // 以下为企业专属字段，个人入驻不校验
+    businessLicencePic: companyRequired('请上传营业执照'),
+    taxId: companyRequired('请输入公司税号'),
+    blAddress: companyRequired('请输入营业执照详细地址'),
+    enterpriseName: companyRequired('请输入公司名称'),
+    enterprisePhone: companyRequired('请输入企业电话'),
+    enterpriseNature: companyRequired('请选择企业性质', 'change'),
+    legalPersonName: companyRequired('请输入法人姓名'),
+    legalPersonMobile: companyRequired('请输入法人手机号'),
+    legalPersonIdCard: companyRequired('请输入法人身份证'),
+    validateStartTime: companyRequired('请选择证件有效期', 'change'),
+    bankName: companyRequired('请输入银行开户名'),
+    bankCardNo: companyRequired('请输入银行卡号'),
+    bankLocation: companyRequired('请输入开户银行所在地', 'change'),
+    bankBranchName: companyRequired('请输入开户银行支行名称'),
+    branchId: companyRequired('请输入开户银行支行联行号'),
+  }
+})
 
 
 onMounted(async () => {
   joinId.value = route.query.joinId || ''
+  shopType.value = Number(route.query.shopType)
   ruleForm.joinId = joinId.value
-  // 直接打开 step3 或链接里 joinId 为空时，从 queryAgree 补一个入驻主键，
+  // 没登录就别让用户看到一张填了也提交不了的表单，直接去登录，登录成功后回到本页
+  if (!loggedIn.value) {
+    router.replace({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+  // 直接打开 step3 或链接里 joinId 为空时，从 queryAgree 补一个入驻主键。
   // 否则经营类目绑定 / 列表查询 / 提交都拿不到 joinId，表现为「添加类目不显示」。
   if (!joinId.value) {
     try {
@@ -1696,16 +1746,16 @@ function fetchData() {
             imgUrl1.value = res.data.businessLicense
           }
         }
-      })
+      }).catch(() => {})
       // 初始地址由 AreaCascader 组件内共享缓存加载
       // 查询入驻合作协议
       queryLimitGroup(agreement).then((res) => {
         tableData2.url = res.data.url
-      })
+      }).catch(() => {})
       // 查询入驻品牌协议
       queryLimitGroup(agreementtow).then((res) => {
         tableData2.url2 = res.data.url
-      })
+      }).catch(() => {})
       // 查询是否新号 是否填写信息
       joinagree().then((res) => {
         if (res.code == 1) {
@@ -1713,7 +1763,7 @@ function fetchData() {
             handleshopinfoquery()
           }
         }
-      })
+      }).catch(() => {})
       // 店铺分类
       classquerylist(queryshopType.value).then((res) => {
         for (var i = 0; i < res.data.list.length; i++) {
@@ -1728,7 +1778,7 @@ function fetchData() {
             optionsClass.value[i].label = optionsClass.value[i].label + '★'
           }
         }
-      })
+      }).catch(() => {})
 }
 
 // 基本信息查询
@@ -1880,9 +1930,13 @@ function fetchgridData() {
 }
 
 async function handleChackFee() {
-      let res = await querySelectLevelByShop({ levelType: 1 })
-      if (res && res.code == 1) {
-        storeLevelData.value = res.data
+      try {
+        let res = await querySelectLevelByShop({ levelType: 1 })
+        if (res && res.code == 1) {
+          storeLevelData.value = res.data
+        }
+      } catch (e) {
+        // 未登录/接口异常时不阻断页面，等级下拉保持为空
       }
 }
 
@@ -1890,7 +1944,8 @@ async function handleChackFee() {
 function fetchquery() {
       messagedate.joinId = joinId.value
       messagequery(messagedate).then((res) => {
-        // 接口异常（如未登录返回 code=0、data=[]）时 data 里没有 classBindList
+        // 接口异常（如未登录返回 code=0、data=[]）时 data 里没有 classBindList，
+        // 原写法直接 .length 会抛 Cannot read properties of undefined，整页红字。
         const list = Array.isArray(res?.data?.classBindList) ? res.data.classBindList : []
         const totalCount = Number(res?.data?.totalCount ?? 0) || 0
         // 服务端暂时查不到（登录态失效、绑定落库延迟）不等于用户没选类目：
@@ -1902,7 +1957,8 @@ function fetchquery() {
 		nextTick(() => {
 			categoryTableEl.value?.clearSelection?.()
 		})
-        // validateField 校验失败会 reject，属正常（类目未选），必须 catch 掉
+        // validateField 在字段校验失败时会 reject 字段对象，这里只是刷新校验态，
+        // 失败属正常（类目未选），必须 catch 掉，否则变成 Uncaught (in promise) 抛到控制台。
         ruleFormEl.value?.validateField('productClassId').catch(() => {})
         syncCategoryView()
       }).catch(() => {
@@ -2162,8 +2218,9 @@ function back() {
 
 // 提交
 function next(formName) {
-      // 地址级联组件可能因 v-if 未渲染或懒加载未完成而为 null，统一取一次并做空值兜底，
-      // 避免提交时抛 TypeError: Cannot read properties of null (reading 'getCheckedNodes')。
+      // 个人入驻(shopType=0)时营业执照所在地整块 v-if 不渲染，addsEl.value 为 null；
+      // AreaCascader 也可能在懒加载前返回空值。统一取一次并做空值兜底，避免提交时抛
+      // TypeError: Cannot read properties of null (reading 'getCheckedNodes')。
       const blNodes = addsEl.value?.getCheckedNodes?.() ?? []
       if (blNodes.length > 0) {
         ruleForm.regAddress = (blNodes[0]?.pathLabels ?? []).toString().replace(/,/g, '')
@@ -2180,36 +2237,38 @@ function next(formName) {
       // 		}
       // 	}
       // }
-      if (checked.value) {
-        ruleForm.validateLongTerm = 1
-      } else if (!checked.value) {
-        ruleForm.validateLongTerm = 0
-      }
-      if (ruleForm.validateLongTerm == 0) {
-        if (ruleForm.validateEndTime == '') {
-          ElMessage({
-            message: '证件有效期未填写完成，请继续填写',
-            type: 'warning',
-          })
-          return false
+      if (!isPersonal.value) {
+        if (checked.value) {
+          ruleForm.validateLongTerm = 1
+        } else if (!checked.value) {
+          ruleForm.validateLongTerm = 0
         }
-        if (ruleForm.validateEndTime == null) {
-          ElMessage({
-            message: '证件有效期未填写完成，请继续填写',
-            type: 'warning',
-          })
-          return false
+        if (ruleForm.validateLongTerm == 0) {
+          if (ruleForm.validateEndTime == '') {
+            ElMessage({
+              message: '证件有效期未填写完成，请继续填写',
+              type: 'warning',
+            })
+            return false
+          }
+          if (ruleForm.validateEndTime == null) {
+            ElMessage({
+              message: '证件有效期未填写完成，请继续填写',
+              type: 'warning',
+            })
+            return false
+          }
         }
-      }
-      if (ruleForm.validateLongTerm == 1) {
-        if (ruleForm.validateEndTime) {
-          ElMessage({
-            message: '证件有效期结束与长期只能选择一个，请重新填写',
-            type: 'warning',
-          })
-          ruleForm.validateEndTime = ''
-          checked.value = !checked.value
-          return false
+        if (ruleForm.validateLongTerm == 1) {
+          if (ruleForm.validateEndTime) {
+            ElMessage({
+              message: '证件有效期结束与长期只能选择一个，请重新填写',
+              type: 'warning',
+            })
+            ruleForm.validateEndTime = ''
+            checked.value = !checked.value
+            return false
+          }
         }
       }
       if (ruleForm.corporateAgreement == '') {
@@ -2301,36 +2360,38 @@ function nexttow(formName) {
       if (fileName.value) {
         ruleForm.agreementFileName = fileName.value
       }
-      if (checked.value) {
-        ruleForm.validateLongTerm = 1
-      } else if (!checked.value) {
-        ruleForm.validateLongTerm = 0
-      }
-      if (ruleForm.validateLongTerm == 0) {
-        if (ruleForm.validateEndTime == '') {
-          ElMessage({
-            message: '证件有效期未填写完成，请继续填写',
-            type: 'warning',
-          })
-          return false
+      if (!isPersonal.value) {
+        if (checked.value) {
+          ruleForm.validateLongTerm = 1
+        } else if (!checked.value) {
+          ruleForm.validateLongTerm = 0
         }
-        if (ruleForm.validateEndTime == null) {
-          ElMessage({
-            message: '证件有效期未填写完成，请继续填写',
-            type: 'warning',
-          })
-          return false
+        if (ruleForm.validateLongTerm == 0) {
+          if (ruleForm.validateEndTime == '') {
+            ElMessage({
+              message: '证件有效期未填写完成，请继续填写',
+              type: 'warning',
+            })
+            return false
+          }
+          if (ruleForm.validateEndTime == null) {
+            ElMessage({
+              message: '证件有效期未填写完成，请继续填写',
+              type: 'warning',
+            })
+            return false
+          }
         }
-      }
-      if (ruleForm.validateLongTerm == 1) {
-        if (ruleForm.validateEndTime) {
-          ElMessage({
-            message: '证件有效期结束与长期只能选择一个，请重新填写',
-            type: 'warning',
-          })
-          ruleForm.validateEndTime = ''
-          checked.value = !checked.value
-          return false
+        if (ruleForm.validateLongTerm == 1) {
+          if (ruleForm.validateEndTime) {
+            ElMessage({
+              message: '证件有效期结束与长期只能选择一个，请重新填写',
+              type: 'warning',
+            })
+            ruleForm.validateEndTime = ''
+            checked.value = !checked.value
+            return false
+          }
         }
       }
       if (ruleForm.corporateAgreement == '') {
@@ -2410,6 +2471,52 @@ function nexttow(formName) {
     flex: 1;
   }
 }
+.join-code-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  margin-left: 8px;
+  padding: 0 2px 0 10px;
+  border: 0;
+  border-left: 1px solid #eceaf3;
+  background: transparent;
+  color: var(--brand-500, #ef4f55);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.72;
+  }
+
+  &:disabled {
+    color: #b9bcc4;
+    cursor: not-allowed;
+  }
+}
+
+
+.join-step-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.join-note-icon {
+  margin-top: -10px;
+  color: var(--neutral-400, #b3b7c2);
+  font-size: 15px;
+  cursor: help;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--brand-500, #ef4f55);
+  }
+}
+
 .flexrow {
   background-color: rgba(247, 248, 250, 1);
   border-radius: 1px;
@@ -2897,6 +3004,256 @@ function nexttow(formName) {
   gap: 12px;
 }
 
+/* ────────────────────────────────────────────────────────────────
+   紧凑版式（2026-11-05）
+   原页面是设计稿转的绝对像素布局：每个表单项固定 width:550px 竖排、
+   分区标题 margin-top:50px、图片 160px，整页要滚很久。
+   这里统一改成两列栅格 + 收紧间距，字段一个不删；逻辑与校验不动。
+   ──────────────────────────────────────────────────────────────── */
+
+.join-steps {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--neutral-50, #fafafa);
+
+  :deep(.el-step__title) {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  :deep(.el-step__icon) {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+}
+
+.demo-ruleForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 36px;
+  row-gap: 0;
+  align-items: start;
+  margin-top: 20px;
+
+  /* 两列：短字段并排，避免一屏只有三行 */
+  :deep(.el-form-item) {
+    width: auto !important;
+    margin: 0 0 10px !important;
+    grid-column: span 1;
+  }
+
+  /* 整行：图片上传、日期区间、长说明、表格、协议 */
+  :deep(.fi-full) {
+    grid-column: 1 / -1;
+  }
+
+  :deep(.el-form-item__label) {
+    padding-right: 8px;
+    color: var(--neutral-700, #4b5563);
+    font-size: 12.5px;
+    line-height: 32px;
+    white-space: nowrap;
+  }
+
+  :deep(.el-form-item__content) {
+    min-width: 0;
+    line-height: 32px;
+  }
+
+  /* 输入类统一撑满列宽，压掉 wd370 / 内联 550px */
+  :deep(.el-input),
+  :deep(.el-input-number),
+  :deep(.el-select),
+  :deep(.el-date-editor.el-input),
+  :deep(.el-cascader) {
+    width: 100% !important;
+  }
+
+  :deep(.wd370),
+  :deep(.wd80) {
+    width: 100% !important;
+  }
+
+  :deep(.el-form-item__error) {
+    position: static;
+    padding-top: 2px;
+  }
+
+  /* 「员工总数 人」「注册资金 万」这类输入框 + 单位的组合保持同行 */
+  :deep(.el-form-item:has(.el-input-number) .el-form-item__content) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  :deep(.el-form-item:has(.el-input-number) .el-input-number) {
+    flex: 1 1 auto;
+  }
+}
+
+/* 分区小标题：整行通栏、34px 高、左侧红条 */
+.demo-ruleForm :deep(.flexrow) {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  width: auto !important;
+  height: 34px;
+  margin: 14px 0 10px !important;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--neutral-50, #f7f8fa);
+}
+
+.demo-ruleForm :deep(.flexcol) {
+  width: 3px;
+  height: 12px;
+  margin: 0 8px 0 0;
+  border-radius: 2px;
+  background: var(--brand-500, #db2c2c);
+}
+
+.demo-ruleForm :deep(.textwrap) {
+  width: auto;
+  height: auto;
+  margin: 0;
+  color: var(--neutral-800, #1f2937);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 34px;
+}
+
+.demo-ruleForm :deep(.textwrapperone) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  height: auto;
+  margin: 0 0 0 auto;
+  font-size: 0;
+  line-height: 34px;
+}
+
+/* 提示文字：更小、更淡、贴住输入框 */
+.demo-ruleForm :deep(.text_17) {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* 上传图：160 → 120，图片与「上传图片」按钮上下堆叠 */
+.demo-ruleForm :deep(.img-size) {
+  width: 120px;
+  height: 120px;
+  border: 1px dashed var(--neutral-200, #e5e7eb);
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--neutral-50, #fafafa);
+}
+
+.demo-ruleForm :deep(.fi-img .el-form-item__content) {
+  display: block !important;
+}
+
+/* 上传按钮落到图片正下方：图片是 float，这里清浮动并取消左浮动 */
+.demo-ruleForm :deep(.shtextwrapper) {
+  float: none;
+  clear: both;
+  display: block;
+  width: 120px;
+  height: 28px;
+  margin: 8px 0 0;
+  border-radius: 6px;
+}
+
+.demo-ruleForm :deep(.text_39) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.demo-ruleForm :deep(.text-group_55) {
+  width: auto;
+  margin-top: 0;
+}
+
+.demo-ruleForm :deep(.text_55),
+.demo-ruleForm :deep(.text-wrapper_11) {
+  width: auto;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* 添加类目：按钮与批量删除同一行 */
+.demo-ruleForm :deep(.group_28) {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+}
+
+.demo-ruleForm :deep(.thumbnail_1) {
+  margin: 0 4px 0 0;
+}
+
+.demo-ruleForm :deep(.text_71) {
+  width: auto;
+  height: auto;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.demo-ruleForm :deep(.image-text_2) {
+  float: right;
+  width: auto;
+  height: auto;
+  margin: 6px 0 0;
+}
+
+/* 主营类目表格不再留 200px 空白 */
+.demo-ruleForm :deep(.el-table) {
+  margin: 12px 0 8px !important;
+}
+
+.demo-ruleForm :deep(.el-pagination) {
+  padding: 0 !important;
+  justify-content: flex-end;
+}
+
+/* 店铺等级：下拉独占一行，说明与权益入口移到下一行 */
+.demo-ruleForm :deep(.textdianpushoufei) {
+  display: block;
+  height: auto;
+  margin-left: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* 底部操作栏吸底，长表单滚到底不用来回找按钮 */
+.settle-bottom-operate {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  padding: 12px 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--neutral-100, #f0f0f0);
+}
+
+.settle-bottom-inner {
+  padding-bottom: 0;
+}
+
 /* 新增经营类目：搜索查询区 */
 .join-cat-picker {
   width: 100%;
@@ -3013,5 +3370,29 @@ function nexttow(formName) {
 
 .join-cat-pending-hint {
   color: #e6a23c;
+}
+</style>
+
+<style lang="scss">
+/* Tooltip 内容由 Element Plus teleport 到 body，scoped 选不中，只能走全局层 */
+.join-note-popper.el-popper {
+  max-width: 380px;
+  padding: 12px 14px;
+  line-height: 1.7;
+
+  .join-note-tip {
+    strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #303133;
+    }
+
+    p {
+      margin: 0;
+      font-size: 12.5px;
+      color: #606266;
+    }
+  }
 }
 </style>

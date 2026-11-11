@@ -49,17 +49,22 @@ function beforeAvatarUpload(file) {
 }
 
 async function upload(item) {
-  const compressed = await compressImage(item.file)
-  const isLt2M = compressed.size / 1024 / 1024 < 2
-  if (!isLt2M) {
-    ElMessage.error('上传图片大小不能超过 2MB!')
-    return
+  try {
+    const compressed = await compressImage(item.file)
+    const isLt2M = compressed.size / 1024 / 1024 < 2
+    if (!isLt2M) {
+      ElMessage.error('上传图片大小不能超过 2MB!')
+      return
+    }
+    uploadParams.value.uploadSize = compressed.size
+    const newFileName = generateNewFileName(compressed.name)
+    const fileUrl = await getPresignedUrl(compressed, newFileName)
+    fileList.value = []
+    emit('changeSrc', fileUrl, fileUrl)
+  } catch (e) {
+    console.error('上传失败:', e)
+    ElMessage.error((e && e.message) || '上传失败，请稍后再试')
   }
-  uploadParams.value.uploadSize = compressed.size
-  const newFileName = generateNewFileName(compressed.name)
-  const fileUrl = await getPresignedUrl(compressed, newFileName)
-  fileList.value = []
-  emit('changeSrc', fileUrl, fileUrl)
 }
 
 function handleSuccess() {}

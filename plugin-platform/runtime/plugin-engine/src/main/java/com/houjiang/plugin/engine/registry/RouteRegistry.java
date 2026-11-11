@@ -34,6 +34,14 @@ public class RouteRegistry {
          * {@link com.houjiang.plugin.engine.core.PluginDispatcher}。
          */
         public java.util.Set<String> allowCallers;
+
+        /**
+         * 是否允许游客（未登录）调用，由 {@code @HouRoute(anonymous = true)} 填充。
+         *
+         * <p>默认 {@code false}：所有插件路由都要求登录态（历史行为）。
+         * 置 {@code true} 后分发器跳过登录校验与权限校验，只用于纯只读展示接口。
+         */
+        public boolean anonymous;
     }
 
     /**
@@ -139,6 +147,7 @@ public class RouteRegistry {
         target.allowCallers = source.allowCallers == null || source.allowCallers.isEmpty()
                 ? null
                 : java.util.Set.copyOf(source.allowCallers);
+        target.anonymous = source.anonymous;
         return target;
     }
 

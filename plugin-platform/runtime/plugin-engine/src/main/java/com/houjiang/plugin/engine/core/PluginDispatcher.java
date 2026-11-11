@@ -218,7 +218,7 @@ public class PluginDispatcher {
         if (!pluginRegistry.isActive(code)) {
             return ResponseEntity.status(423).body(Map.of("error", "插件未启用"));
         }
-        if (!permissionEvaluator.isAuthenticated()) {
+        if (!entry.anonymous && !permissionEvaluator.isAuthenticated()) {
             return ResponseEntity.status(401).body(Map.of("error", "未登录或登录已过期"));
         }
         if (!callerAllowed(entry, request)) {
@@ -229,7 +229,14 @@ public class PluginDispatcher {
             return ResponseEntity.status(403).body(Map.of("error", "该插件接口不允许当前调用方访问"));
         }
         String permission = entry.permission;
-        if (permission == null || permission.isBlank()) {
+        if (entry.anonymous) {
+            // 匿名展示接口：没有身份就没有授权可校验，permission 一律忽略。
+            // 这是显式提权（@HouRoute(anonymous = true)），只应出现在纯只读橱窗类接口上。
+            if (permission != null && !permission.isBlank()) {
+                log.debug("插件 {} 匿名路由 {} {} 忽略声明的权限 {}",
+                        code, request.getMethod(), path, permission);
+            }
+        } else if (permission == null || permission.isBlank()) {
             // 未声明权限：默认保持历史兼容（仅校验登录态），可由配置收敛为 fail-closed。
             // 注意不能把它交给权限求值器——求值器对空权限是拒绝的（fail-closed）。
             if (requireDeclaredRoutePermission) {

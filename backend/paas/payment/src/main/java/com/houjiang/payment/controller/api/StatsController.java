@@ -2,9 +2,11 @@ package com.houjiang.payment.controller.api;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.houjiang.commons.util.ResponseResult;
+import com.houjiang.payment.entity.PayConsumeRecordEntity;
 import com.houjiang.payment.entity.PayConsumeTradeEntity;
 import com.houjiang.payment.entity.PayMerchantEntity;
 import com.houjiang.payment.entity.PayRefundOrderEntity;
+import com.houjiang.payment.mapper.PayConsumeRecordMapper;
 import com.houjiang.payment.mapper.PayConsumeTradeMapper;
 import com.houjiang.payment.mapper.PayMerchantMapper;
 import com.houjiang.payment.mapper.PayRefundOrderMapper;
@@ -45,6 +47,7 @@ public class StatsController {
     private final PayConsumeTradeMapper tradeMapper;
     private final PayMerchantMapper merchantMapper;
     private final PayRefundOrderMapper refundOrderMapper;
+    private final PayConsumeRecordMapper consumeRecordMapper;
 
     /** 订单状态：支付成功 */
     private static final int STATE_PAID = 2;
@@ -67,25 +70,37 @@ public class StatsController {
             int month = today.getMonthValue();
             int day = today.getDayOfMonth();
 
-            // 今日全部订单
+            // 今日支付尝试数（成功率分母）：沿用交易流水表
             LambdaQueryWrapper<PayConsumeTradeEntity> todayWrapper = new LambdaQueryWrapper<>();
             todayWrapper.eq(PayConsumeTradeEntity::getTradeYear, year)
                     .eq(PayConsumeTradeEntity::getTradeMonth, month)
                     .eq(PayConsumeTradeEntity::getTradeDay, day);
-            List<PayConsumeTradeEntity> todayOrders = tradeMapper.selectList(todayWrapper);
+            long todayTradeTotal = tradeMapper.selectCount(todayWrapper);
 
-            // 今日成功订单
-            long todaySuccessCount = todayOrders.stream()
-                    .filter(o -> o.getOrderStateId() != null && o.getOrderStateId() == STATE_PAID)
+            // 今日成交流水：改用买家侧消费记录（plus_or_minus = 0）。
+            // 原实现要求 hou_pay_consume_trade.order_state_id = 2，但真实支付链路落库的是 1，
+            // 于是今日收入/成功率恒为 0。消费记录只在支付成功时写入，笔数即成功笔数。
+            LambdaQueryWrapper<PayConsumeRecordEntity> todayRecWrapper = new LambdaQueryWrapper<>();
+            todayRecWrapper.eq(PayConsumeRecordEntity::getRecordYear, year)
+                    .eq(PayConsumeRecordEntity::getRecordMonth, month)
+                    .eq(PayConsumeRecordEntity::getRecordDay, day)
+                    .eq(PayConsumeRecordEntity::getPlusOrMinus, 0)
+                    .eq(PayConsumeRecordEntity::getRecordDelete, 0);
+            List<PayConsumeRecordEntity> todayRecs = consumeRecordMapper.selectList(todayRecWrapper);
+
+            long todaySuccessCount = todayRecs.stream()
+                    .map(PayConsumeRecordEntity::getOrderId)
+                    .filter(Objects::nonNull)
+                    .distinct()
                     .count();
-            BigDecimal todayIncome = todayOrders.stream()
-                    .filter(o -> o.getOrderStateId() != null && o.getOrderStateId() == STATE_PAID)
-                    .map(o -> o.getTradePaymentAmount() != null ? o.getTradePaymentAmount() : BigDecimal.ZERO)
+            BigDecimal todayIncome = todayRecs.stream()
+                    .map(r -> r.getRecordMoney() == null ? BigDecimal.ZERO : BigDecimal.valueOf(r.getRecordMoney()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            // 成功率
-            double successRate = todayOrders.isEmpty() ? 100.0
-                    : Math.round(todaySuccessCount * 10000.0 / todayOrders.size()) / 100.0;
+            // 成功率：成功笔数 / 今日支付尝试数，上限 100%
+            double successRate = todayTradeTotal > 0
+                    ? Math.min(100.0, Math.round(todaySuccessCount * 10000.0 / todayTradeTotal) / 100.0)
+                    : 100.0;
 
             // 本月收入
             LambdaQueryWrapper<PayConsumeTradeEntity> monthWrapper = new LambdaQueryWrapper<>();
@@ -114,8 +129,12 @@ public class StatsController {
 
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("todayIncome", todayIncome);
+            // admin 首页「今日成交额」读 todayAmount，与 todayIncome 同值，避免前端改字段
+            result.put("todayAmount", todayIncome);
             result.put("monthIncome", monthIncome);
-            result.put("todayOrders", todayOrders.size());
+            result.put("todayOrders", todaySuccessCount);
+            // admin 首页「支付转化率」读 todayCount，与 todayOrders 同值
+            result.put("todayCount", todaySuccessCount);
             result.put("todaySuccessOrders", todaySuccessCount);
             result.put("successRate", successRate);
             result.put("todayRefund", todayRefund);

@@ -128,6 +128,7 @@ public final class PluginRouteScanner {
                             entry.method = method;
                             entry.permission = spec.permission();
                             entry.allowCallers = spec.allowCallers();
+                            entry.anonymous = spec.anonymous();
                             entries.add(entry);
                         }
                     }
@@ -243,7 +244,7 @@ public final class PluginRouteScanner {
             // method is only an implementation detail and must not add a
             // second entry that could overwrite its explicit permission.
             specs.add(new RouteSpec(houRoute.path(), houRoute.method(), houRoute.permission(),
-                    mergeCallers(toCallerSet(houRoute.allowCallers()), callers)));
+                    mergeCallers(toCallerSet(houRoute.allowCallers()), callers), houRoute.anonymous()));
             return stripAll(specs, stripPrefixes);
         }
         for (String prefix : prefixes) {
@@ -276,7 +277,7 @@ public final class PluginRouteScanner {
         return specs.stream()
                 .distinct()
                 .map(spec -> new RouteSpec(stripPrefix(spec.path(), stripPrefixes), spec.method(),
-                        spec.permission(), spec.allowCallers()))
+                        spec.permission(), spec.allowCallers(), spec.anonymous()))
                 .toList();
     }
 
@@ -314,7 +315,8 @@ public final class PluginRouteScanner {
         for (String path : safePaths) {
             String full = normalizeRoutePath(prefix + "/" + (path == null ? "" : path));
             for (String method : methods) {
-                specs.add(new RouteSpec(full, method, permission, callers));
+                // Spring 映射没有匿名声明入口：匿名只能通过 @HouRoute(anonymous = true) 显式开放。
+                specs.add(new RouteSpec(full, method, permission, callers, false));
             }
         }
     }
@@ -367,7 +369,7 @@ public final class PluginRouteScanner {
     }
 
     private record RouteSpec(String path, String method, String permission,
-                             java.util.Set<String> allowCallers) { }
+                             java.util.Set<String> allowCallers, boolean anonymous) { }
 
     /**
      * 扫描插件中的 {@link HouExtension} 实现类，返回可直接实例化的扩展点类。

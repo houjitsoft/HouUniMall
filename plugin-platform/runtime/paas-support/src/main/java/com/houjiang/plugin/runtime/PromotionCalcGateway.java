@@ -78,6 +78,24 @@ public class PromotionCalcGateway {
                        List<Map<String, Object>> items,
                        BigDecimal baseAmount,
                        Map<String, Object> extra) {
+        return calc(promotionType, userId, items, baseAmount, extra, 0L);
+    }
+
+    /**
+     * 执行促销算价（带超时提示的重载）。
+     *
+     * <p>占用额度等<b>写账本</b>类调用必须传 {@code timeoutHintMs}（建议 2000）：
+     * 引擎默认 200ms 会把真实成功的写库掐成超时，宿主以为失败中断下单，
+     * 插件线程却继续落库，造成额度泄漏（2026-11-11 E2E 实测）。
+     *
+     * @param timeoutHintMs 本次调用超时提示毫秒数；&le;0 用引擎全局默认
+     */
+    public Result calc(String promotionType,
+                       Long userId,
+                       List<Map<String, Object>> items,
+                       BigDecimal baseAmount,
+                       Map<String, Object> extra,
+                       long timeoutHintMs) {
         PromotionCalcExtension.Context ctx = new PromotionCalcExtension.Context();
         ctx.promotionType = promotionType;
         ctx.userId = userId;
@@ -88,6 +106,9 @@ public class PromotionCalcGateway {
         ctx.baseAmount = base;
         if (extra != null) {
             ctx.extra = extra;
+        }
+        if (timeoutHintMs > 0) {
+            ctx.setTimeoutHintMs(timeoutHintMs);
         }
 
         support.invoke(PromotionCalcExtension.class, ctx);

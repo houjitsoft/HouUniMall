@@ -211,7 +211,7 @@ public class DashboardService {
 
             Map<String, Object> order = new LinkedHashMap<>();
             order.put("today", orderSlice(todayCount, todayMoney));
-            order.put("yesterday", orderSlice(yesterdayCount, yesterdayMoney));
+            order.put("yesterday", orderSlice(yesterdayCount, yesterdayMoney, LocalDate.now().minusDays(1)));
             order.put("all", orderSlice(allCount, allMoney));
             order.put("business15", business15);
             data.put("order", order);
@@ -227,7 +227,7 @@ public class DashboardService {
 
             Map<String, Object> indexVisit = new LinkedHashMap<>();
             indexVisit.put("today", visitSlice(todayUsers));
-            indexVisit.put("yesterday", visitSlice(yesterdayUsers));
+            indexVisit.put("yesterday", visitSlice(yesterdayUsers, LocalDate.now().minusDays(1)));
             indexVisit.put("all", visitSlice(allUsers));
             indexVisit.put("business15", business15);
             data.put("index_visit", indexVisit);
@@ -256,7 +256,7 @@ public class DashboardService {
         Map<String, Object> business15 = emptyBusiness15();
         Map<String, Object> order = new LinkedHashMap<>();
         order.put("today", orderSlice(0, BigDecimal.ZERO));
-        order.put("yesterday", orderSlice(0, BigDecimal.ZERO));
+        order.put("yesterday", orderSlice(0, BigDecimal.ZERO, LocalDate.now().minusDays(1)));
         order.put("all", orderSlice(0, BigDecimal.ZERO));
         order.put("business15", business15);
         data.put("order", order);
@@ -267,7 +267,7 @@ public class DashboardService {
         data.put("user_add_detail", userAdd);
         Map<String, Object> indexVisit = new LinkedHashMap<>();
         indexVisit.put("today", visitSlice(0));
-        indexVisit.put("yesterday", visitSlice(0));
+        indexVisit.put("yesterday", visitSlice(0, LocalDate.now().minusDays(1)));
         indexVisit.put("all", visitSlice(0));
         indexVisit.put("business15", business15);
         data.put("index_visit", indexVisit);
@@ -312,17 +312,25 @@ public class DashboardService {
     }
 
     private Map<String, Object> orderSlice(int count, BigDecimal money) {
+        return orderSlice(count, money, LocalDate.now());
+    }
+
+    private Map<String, Object> orderSlice(int count, BigDecimal money, LocalDate date) {
         Map<String, Object> slice = new LinkedHashMap<>();
         slice.put("count", count);
         slice.put("money", money != null ? money : BigDecimal.ZERO);
-        slice.put("date", LocalDate.now().toString());
+        slice.put("date", date.toString());
         return slice;
     }
 
     private Map<String, Object> visitSlice(int count) {
+        return visitSlice(count, LocalDate.now());
+    }
+
+    private Map<String, Object> visitSlice(int count, LocalDate date) {
         Map<String, Object> slice = new LinkedHashMap<>();
         slice.put("count", count);
-        slice.put("date", LocalDate.now().toString());
+        slice.put("date", date.toString());
         slice.put("money", 0);
         return slice;
     }

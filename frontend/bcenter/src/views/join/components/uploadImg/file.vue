@@ -47,7 +47,10 @@ const props = defineProps({
 const emit = defineEmits(['changeSrc', 'changeRemove'])
 
 const uploadRef = ref(null)
-const uploadUrl = process.env.MALL_THIRDPARTY + '/web/oss/uploadFile'
+// bcenter 走 Vite，不再有 process.env；直传(minio)分支用的 OSS 上传地址按三方服务路由拼装。
+// ossType 当前恒为空，此分支未启用，这里仅保证不引用未定义的 process 而崩溃。
+const base = (import.meta.env.VITE_APP_BASE_URL || '').replace(/\/+$/, '')
+const uploadUrl = `${base}/web/thirdparty/web/oss/uploadFile`
 const ossType = ref('')
 const fileList = ref([])
 const dialogImageUrl = ref('')
@@ -93,11 +96,16 @@ function beforeAvatarUpload(file) {
 }
 
 async function upload(item) {
-  const newFileName = generateNewFileName(item.file.name)
-  const fileUrl = await getPresignedUrl(item.file, newFileName)
-  fileName.value = newFileName
-  fileList.value = []
-  emit('changeSrc', fileUrl, fileUrl, fileName.value)
+  try {
+    const newFileName = generateNewFileName(item.file.name)
+    const fileUrl = await getPresignedUrl(item.file, newFileName)
+    fileName.value = newFileName
+    fileList.value = []
+    emit('changeSrc', fileUrl, fileUrl, fileName.value)
+  } catch (e) {
+    console.error('上传失败:', e)
+    ElMessage.error((e && e.message) || '上传失败，请稍后再试')
+  }
 }
 
 function handleSuccess() {}
