@@ -16,6 +16,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -32,8 +34,14 @@ import java.util.*;
 @Aspect
 public class SensitiveCheckAspect {
 
+    private static final Logger log = LoggerFactory.getLogger(SensitiveCheckAspect.class);
+
     @Value("${domainName}")
     private String domainName;
+
+    /** 敏感词服务内部地址；留空时沿用 domainName + /goods/es/esSeachSensitive。 */
+    @Value("${sensitive.check.url:}")
+    private String sensitiveCheckUrl;
 
     @Around("@annotation(sensitiveCheck)")
     public Object around(ProceedingJoinPoint joinPoint, SensitiveCheck sensitiveCheck) throws Throwable {
@@ -535,15 +543,59 @@ public class SensitiveCheckAspect {
         return list;
     }
 
+    /**
+     * 调用敏感词服务；该服务只是入驻/发布等业务的辅助校验，不可用时不阻断主流程。
+     *
+     * <p>2026-11-12：domainName 配置指向站点域名时，/goods/es/esSeachSensitive 会返回
+     * 「发生错误」HTML 页，旧实现直接按 JSON 解析，异常冒泡到全局兜底后，「提交入驻审核」
+     * 就变成 code=0 系统错误。这里只接受正常 JSON 对象响应，其它情况记日志并降级放行。
+     */
     private void postResponse(List<String> list, Map<String, Object> result) {
         String studentJsonObject = JSON.toJSONString(result);
-        HttpResponse post = HttpRequest.post(domainName + "/goods/es/esSeachSensitive").body(studentJsonObject)
-                .contentType("application/json;charset=UTF-8").execute();
-        ResponseResult responseBody = JSON.parseObject(post.body(), ResponseResult.class);
-        if (responseBody.getCode() == BizCodeEnume.EXIST_SENSITIVE.getCode()) {
-            List<String> data = (List<String>) responseBody.getData();
-            list.addAll(data);
+        String url = (sensitiveCheckUrl == null || sensitiveCheckUrl.isBlank())
+                ? domainName + "/goods/es/esSeachSensitive"
+                : sensitiveCheckUrl.trim();
+        HttpResponse post = null;
+        try {
+            post = HttpRequest.post(url).body(studentJsonObject)
+                    .contentType("application/json;charset=UTF-8")
+                    .timeout(3000)
+                    .execute();
+            String body = post.body();
+            int status = post.getStatus();
+            if (status < 200 || status >= 300 || body == null || !body.trim().startsWith("{")) {
+                log.warn("敏感词服务不可用，本次跳过校验: url={}, status={}, bodyPrefix={}",
+                        url, status, brief(body));
+                return;
+            }
+            ResponseResult responseBody = JSON.parseObject(body, ResponseResult.class);
+            if (responseBody == null || responseBody.getCode() != BizCodeEnume.EXIST_SENSITIVE.getCode()) {
+                return;
+            }
+            Object data = responseBody.getData();
+            if (data instanceof List) {
+                for (Object item : (List<?>) data) {
+                    if (item != null) {
+                        list.add(item.toString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("敏感词校验异常，本次跳过校验: url={}, error={}", url, e.toString());
+        } finally {
+            if (post != null) {
+                post.close();
+            }
         }
+    }
+
+    /** 只把响应开头一小段写进日志，避免 HTML 错误页整页刷屏。 */
+    private static String brief(String body) {
+        if (body == null) {
+            return "";
+        }
+        String text = body.trim().replaceAll("\\s+", " ");
+        return text.substring(0, Math.min(80, text.length()));
     }
 
 //    public String queryNacosServerHost(String serverName){
