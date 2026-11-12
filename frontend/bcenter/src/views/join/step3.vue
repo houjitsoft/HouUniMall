@@ -2037,6 +2037,34 @@ function back() {
       router.back()
 }
 
+// 入驻提交失败统一提示：验证码会话已过期必须明确说「已过期」并直接引导重新获取，
+// 不再用「提交失败，请检查登录状态或稍后重试」这类与真实原因无关的兜底文案覆盖后端原文。
+function showJoinSubmitFailure(res) {
+  const msg = String(res?.message || '').trim()
+  const expired = msg.includes('验证码已过期')
+  const mismatch = msg.includes('手机号或邮箱不匹配')
+  const incorrect = msg.includes('验证码不正确')
+  if (expired || mismatch || incorrect) {
+    // 验证码已不可用：结束倒计时并恢复「重新获取验证码」按钮，让用户一步就能重取
+    if (codeClock !== null) {
+      window.clearInterval(codeClock)
+      codeClock = null
+    }
+    canClick.value = true
+    totalTime.value = 60
+    content.value = '重新获取验证码'
+    ruleForm.validateCode = ''
+  }
+  const text = expired
+    ? '验证码已过期，请点击「重新获取验证码」后重新填写'
+    : mismatch
+      ? '获取验证码时的手机号/邮箱与当前填写不一致，请确认后重新获取验证码'
+      : incorrect
+        ? '验证码不正确，请重新输入或重新获取验证码'
+        : (msg || '提交未完成，请稍后重试')
+  ElMessage({ message: text, type: 'warning', duration: 4000, showClose: true })
+}
+
 // 提交
 function next(formName) {
       // 个人入驻(shopType=0)时营业执照所在地整块 v-if 不渲染，addsEl.value 为 null；
@@ -2143,16 +2171,15 @@ function next(formName) {
                 fetchquery()
                 handleshopinfoquery()
               } else {
-                ElMessage({
-                  message: res.message,
-                  type: 'warning',
-                })
+                showJoinSubmitFailure(res)
                 return
               }
             })
-            .catch(() => {
+            .catch((err) => {
+              // 请求通道已展示过错误时不再重复弹；静默错误（未登录等）也不打扰用户
+              if (err?.silent) return
               ElMessage({
-                message: '提交失败，请检查登录状态或稍后重试',
+                message: '提交未完成，请稍后重试',
                 type: 'error',
               })
             })
@@ -2252,10 +2279,7 @@ function nexttow(formName) {
                 fetchquery()
                 handleshopinfoquery()
               } else {
-                ElMessage({
-                  message: res.message,
-                  type: 'warning',
-                })
+                showJoinSubmitFailure(res)
                 return
               }
             })
