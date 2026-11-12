@@ -570,15 +570,15 @@
                 </el-table-column>
               </el-table>
               <div v-if="!tagList.length" class="empty-hint">
-                标签字典目前为空（<code>hou_user_tag_info</code> 0 行）。先在左侧新建标签，再到「会员列表」勾选会员批量打标。
+                标签字典目前为空（<code>hou_user_tag_info</code> 0 行）。先在左侧新建标签，再到「会员行为明细」勾选会员批量打标。
               </div>
             </el-card>
           </el-col>
         </el-row>
       </el-tab-pane>
 
-      <!-- ==================== 会员列表 ==================== -->
-      <el-tab-pane label="会员列表" name="member">
+      <!-- ==================== 会员行为明细 ==================== -->
+      <el-tab-pane label="会员行为明细" name="member">
 
     <!-- 搜索筛选 -->
     <el-card class="search-card">
@@ -644,10 +644,10 @@
       </el-row>
     </el-card>
 
-    <!-- 会员画像列表 -->
+    <!-- 会员行为明细 -->
     <el-card class="table-card">
       <div class="table-header">
-        <span class="table-title">会员画像列表</span>
+        <span class="table-title">会员行为明细</span>
         <div class="table-controls">
           <el-button size="small" @click="refreshAll">
             <el-icon><Refresh /></el-icon>
