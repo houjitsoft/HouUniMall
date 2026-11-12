@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.houjiang.userms.mapper.BehaviorAnalyticsMapper">
+
+    <!--
+      用户行为与留存分析 · 真实数据源（全部库内数据，无模拟）：
+        hou_user_behavior_event     统一埋点（搜索/加购/分享等无源事件，也允许六类统一上报）
+        hou_log_login              成功登录（login_status = 1）
+        hou_goods_user_footprint   商品浏览足迹
+        hou_order_base             下单（全部状态，含待付款/取消）
+        hou_user_info              注册时间与全量会员
+
+      跨域关联字段字符集不同（hou_order_base.buyer_user_id 为 utf8mb3_general_ci、
+      足迹 user_id 为 utf8mb4_0900_ai_ci），统一 CONVERT 到 utf8mb4_general_ci 后按字符串比较，
+      避免 ERROR 1267 Illegal mix of collations。
+    -->
+
+    <!-- 事件统一视图：四类来源 UNION ALL，交回 Service 做四维度聚合 -->
+    <select id="selectEvents" resultType="java.util.Map">
+        SELECT x.user_id AS userId,
+               x.event_type AS eventType,
+               DATE_FORMAT(x.event_time, '%Y-%m-%d %H:%i:%s') AS eventTime
+        FROM (
+            SELECT CONVERT(CAST(e.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci AS user_id,
+                   CONVERT(e.event_type USING utf8mb4) COLLATE utf8mb4_general_ci AS event_type,
+                   e.event_time AS event_time
+            FROM ${database.prefix.userms}hou_user_behavior_event e
+            WHERE e.event_time &gt;= #{from} AND e.event_time &lt; #{to}
+
+            UNION ALL
+
+            SELECT CONVERT(CAST(l.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci,
+                   CONVERT('login' USING utf8mb4) COLLATE utf8mb4_general_ci,
+                   l.create_time
+            FROM hou_log_login l
+            WHERE l.login_status = 1
+              AND l.user_id IS NOT NULL AND l.user_id &lt;&gt; ''
+              AND l.create_time &gt;= #{from} AND l.create_time &lt; #{to}
+
+            UNION ALL
+
+            SELECT CONVERT(CAST(f.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci,
+                   CONVERT('view' USING utf8mb4) COLLATE utf8mb4_general_ci,
+                   f.footprint_time
+            FROM ${database.prefix.goods}hou_goods_user_footprint f
+            WHERE f.user_id IS NOT NULL AND f.user_id &lt;&gt; ''
+              AND f.footprint_time IS NOT NULL
+              AND f.footprint_time &gt;= #{from} AND f.footprint_time &lt; #{to}
+
+            UNION ALL
+
+            SELECT CONVERT(CAST(o.buyer_user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci,
+                   CONVERT('order' USING utf8mb4) COLLATE utf8mb4_general_ci,
+                   o.order_create_time
+            FROM ${database.prefix.order}hou_order_base o
+            WHERE o.buyer_user_id IS NOT NULL AND o.buyer_user_id &lt;&gt; '0'
+              AND o.order_create_time &gt;= #{from} AND o.order_create_time &lt; #{to}
+        ) x
+        ORDER BY x.event_time
+        LIMIT 200000
+    </select>
+
+    <!-- 时间范围内新增注册会员 -->
+    <select id="selectRegistrations" resultType="java.util.Map">
+        SELECT CONVERT(CAST(u.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci AS userId,
+               DATE_FORMAT(u.create_time, '%Y-%m-%d') AS registerDay,
+               DATE_FORMAT(u.create_time, '%Y-%m-%d %H:%i:%s') AS registerTime
+        FROM ${database.prefix.userms}hou_user_info u
+        WHERE u.create_time IS NOT NULL
+          AND u.create_time &gt;= #{from} AND u.create_time &lt; #{to}
+          AND (u.is_delete = 0 OR u.is_delete IS NULL)
+        ORDER BY u.create_time
+        LIMIT 100000
+    </select>
+
+    <!-- 订单明细：有效成交＝order_status NOT IN (1 待付款, 7 已取消) -->
+    <select id="selectOrders" resultType="java.util.Map">
+        SELECT CONVERT(CAST(o.buyer_user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci AS userId,
+               o.order_status AS orderStatus,
+               DATE_FORMAT(o.order_create_time, '%Y-%m-%d') AS orderDay,
+               DATE_FORMAT(o.order_create_time, '%Y-%m-%d %H:%i:%s') AS orderTime,
+               o.order_payment_amount AS amount
+        FROM ${database.prefix.order}hou_order_base o
+        WHERE o.order_create_time &gt;= #{from} AND o.order_create_time &lt; #{to}
+        ORDER BY o.order_create_time
+        LIMIT 200000
+    </select>
+
+    <!-- 全量有效会员：注册到首购漏斗的基准 -->
+    <select id="selectAllMembers" resultType="java.util.Map">
+        SELECT CONVERT(CAST(u.user_id AS CHAR) USING utf8mb4) COLLATE utf8mb4_general_ci AS userId,
+               DATE_FORMAT(u.create_time, '%Y-%m-%d') AS registerDay
+        FROM ${database.prefix.userms}hou_user_info u
+        WHERE (u.is_delete = 0 OR u.is_delete IS NULL)
+        LIMIT 100000
+    </select>
+
+    <!-- 既有真实表行数：判定维度是「已采集但本区间为 0」还是「未采集」 -->
+    <select id="selectLegacyCounts" resultType="java.util.Map">
+        SELECT CONVERT('login' USING utf8mb4) COLLATE utf8mb4_general_ci AS src, COUNT(*) AS cnt FROM hou_log_login
+        UNION ALL
+        SELECT CONVERT('view' USING utf8mb4) COLLATE utf8mb4_general_ci, COUNT(*) FROM ${database.prefix.goods}hou_goods_user_footprint
+        UNION ALL
+        SELECT CONVERT('order' USING utf8mb4) COLLATE utf8mb4_general_ci, COUNT(*) FROM ${database.prefix.order}hou_order_base
+    </select>
+
+    <!-- 埋点表按类型行数 -->
+    <select id="selectEventTypeCounts" resultType="java.util.Map">
+        SELECT CONCAT('event_', e.event_type) AS src, COUNT(*) AS cnt
+        FROM ${database.prefix.userms}hou_user_behavior_event e
+        GROUP BY e.event_type
+    </select>
+
+    <!-- 埋点上报：eventTime 由 Service 兜底为当前时间 -->
+    <insert id="insertEvent" parameterType="com.houjiang.userms.dto.BehaviorTrackDTO">
+        INSERT INTO ${database.prefix.userms}hou_user_behavior_event
+            (user_id, event_type, event_time, source, ref_id, ext)
+        VALUES
+            (#{userId}, #{eventType}, #{eventTime}, #{source}, #{refId}, #{ext})
+    </insert>
+
+</mapper>

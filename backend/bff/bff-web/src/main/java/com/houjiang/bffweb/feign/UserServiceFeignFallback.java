@@ -217,4 +217,14 @@ public class UserServiceFeignFallback implements UserServiceFeign {
     public ResponseResult memberPortraitTagDetach(Map<String, Object> params) {
         return ResponseResult.fail("会员画像服务暂时不可用");
     }
+
+    @Override
+    public ResponseResult memberBehaviorAnalytics(Map<String, Object> params) {
+        return ResponseResult.fail("用户行为分析服务暂时不可用");
+    }
+
+    @Override
+    public ResponseResult memberBehaviorTrack(Map<String, Object> params) {
+        return ResponseResult.fail("用户行为分析服务暂时不可用");
+    }
 }

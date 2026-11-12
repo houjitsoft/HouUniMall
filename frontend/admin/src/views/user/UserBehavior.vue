@@ -103,6 +103,204 @@
 
       </el-tab-pane>
 
+      <!-- ==================== 用户行为与留存分析：行为 / 留存 / 活跃 / 转化 ==================== -->
+      <el-tab-pane label="行为与留存分析" name="analytics">
+        <el-alert
+          type="warning"
+          :closable="false"
+          show-icon
+          class="dq-alert"
+          title="四维度实时聚合：行为 / 留存 / 活跃 / 转化（全部来自真实库表，非模拟数据）"
+        >
+          <div class="dq-line">
+            时间范围 <b>{{ analyticsRangeText }}</b> · 区间事件 <b>{{ analyticsData?.dataQuality?.rangeEventRows ?? 0 }}</b> 条 ·
+            已采集 <b>{{ collectedTypeText }}</b> · 未采集 <b>{{ missingTypeText }}</b>
+          </div>
+          <div class="dq-line dq-sub">
+            {{ analyticsData?.dataQuality?.note }} 生成时间 {{ analyticsData?.dataQuality?.generatedAt || '-' }}。
+            未采集维度显示「未采集」，不补 0、不编数。
+          </div>
+        </el-alert>
+
+        <el-card class="analytics-filter" shadow="never" v-loading="analyticsLoading">
+          <el-form :inline="true" class="analytics-form">
+            <el-form-item label="时间范围">
+              <el-date-picker
+                v-model="analyticsDateRange"
+                type="daterange"
+                value-format="YYYY-MM-DD"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                :clearable="false"
+                style="width: 250px"
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-button-group>
+                <el-button size="small" @click="setAnalyticsRange(7)">近 7 天</el-button>
+                <el-button size="small" @click="setAnalyticsRange(30)">近 30 天</el-button>
+                <el-button size="small" @click="setAnalyticsRange(90)">近 90 天</el-button>
+              </el-button-group>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="loadAnalytics">查询</el-button>
+              <el-button @click="resetAnalyticsRange">重置</el-button>
+              <el-button type="success" :disabled="!analyticsData" @click="exportAnalytics">
+                <el-icon><Download /></el-icon> 导出
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
+
+        <el-row :gutter="16" class="stats-cards">
+          <el-col :span="6">
+            <el-card class="stat-card active-users"><div class="stat-content">
+              <div class="stat-icon"><el-icon><TrendCharts /></el-icon></div>
+              <div class="stat-info">
+                <div class="stat-value">{{ analyticsData?.active?.summary?.latestDau ?? '-' }}</div>
+                <div class="stat-label">DAU（当日活跃）</div>
+                <div class="stat-sub">区间日均 {{ analyticsData?.active?.summary?.avgDau ?? '-' }} · 峰值 {{ analyticsData?.active?.summary?.peakDau ?? '-' }}</div>
+              </div>
+            </div></el-card>
+          </el-col>
+          <el-col :span="6">
+            <el-card class="stat-card total-visits"><div class="stat-content">
+              <div class="stat-icon"><el-icon><User /></el-icon></div>
+              <div class="stat-info">
+                <div class="stat-value">{{ analyticsData?.active?.summary?.latestWau ?? '-' }}</div>
+                <div class="stat-label">WAU（近 7 日活跃）</div>
+                <div class="stat-sub">滚动窗口去重会员数</div>
+              </div>
+            </div></el-card>
+          </el-col>
+          <el-col :span="6">
+            <el-card class="stat-card today-visits"><div class="stat-content">
+              <div class="stat-icon"><el-icon><View /></el-icon></div>
+              <div class="stat-info">
+                <div class="stat-value">{{ analyticsData?.active?.summary?.latestMau ?? '-' }}</div>
+                <div class="stat-label">MAU（近 30 日活跃）</div>
+                <div class="stat-sub">区间活跃会员 {{ analyticsData?.active?.summary?.rangeActiveUsers ?? '-' }} 人</div>
+              </div>
+            </div></el-card>
+          </el-col>
+          <el-col :span="6">
+            <el-card class="stat-card avg-duration"><div class="stat-content">
+              <div class="stat-icon"><el-icon><PriceTag /></el-icon></div>
+              <div class="stat-info">
+                <div class="stat-value">{{ retentionD1Text }}</div>
+                <div class="stat-label">次日留存</div>
+                <div class="stat-sub">{{ retentionCohort === 'byActive' ? '活跃用户口径' : '新增注册用户口径' }} · 观察期未满记「观察中」</div>
+              </div>
+            </div></el-card>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16" class="chart-row">
+          <el-col :span="12">
+            <el-card class="chart-card">
+              <div class="chart-header">
+                <span class="chart-title">行为频次趋势</span>
+                <el-tag size="small" type="info">仅绘制已采集维度</el-tag>
+              </div>
+              <div ref="behaviorTrendChartRef" class="chart-container"></div>
+            </el-card>
+          </el-col>
+          <el-col :span="12">
+            <el-card class="chart-card">
+              <div class="chart-header"><span class="chart-title">DAU / WAU / MAU 活跃趋势</span></div>
+              <div ref="activeTrendChartRef" class="chart-container"></div>
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16" class="chart-row">
+          <el-col :span="12">
+            <el-card class="chart-card">
+              <div class="chart-header">
+                <span class="chart-title">留存分析（次日 / 7 日 / 30 日）</span>
+                <el-select v-model="retentionCohort" size="small" style="width: 150px" @change="renderRetentionChart">
+                  <el-option label="活跃用户留存" value="byActive" />
+                  <el-option label="新增注册留存" value="byRegister" />
+                </el-select>
+              </div>
+              <div ref="retentionChartRef" class="chart-container"></div>
+            </el-card>
+          </el-col>
+          <el-col :span="12">
+            <el-card class="chart-card">
+              <div class="chart-header"><span class="chart-title">注册到首购转化漏斗</span></div>
+              <div ref="funnelChartRef" class="chart-container"></div>
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <el-card class="analytics-table-card" shadow="never">
+          <div class="chart-header">
+            <span class="chart-title">行为频次汇总</span>
+            <span class="analytics-hint">频次＝事件次数；人数＝去重会员；占比＝占区间全部事件</span>
+          </div>
+          <el-table :data="behaviorSummary" size="small" border stripe>
+            <el-table-column prop="label" label="行为类型" width="110" />
+            <el-table-column prop="count" label="频次" width="110" />
+            <el-table-column prop="users" label="涉及会员" width="110" />
+            <el-table-column label="人均频次" width="110">
+              <template #default="{ row }">{{ row.avgPerUser ?? '-' }}</template>
+            </el-table-column>
+            <el-table-column label="占比" width="110">
+              <template #default="{ row }">{{ row.share === null || row.share === undefined ? '-' : row.share + '%' }}</template>
+            </el-table-column>
+            <el-table-column label="采集状态">
+              <template #default="{ row }">
+                <el-tag size="small" :type="row.collected ? 'success' : 'info'">{{ row.collected ? '已采集' : '未采集' }}</el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+
+        <el-card class="analytics-table-card" shadow="never">
+          <div class="chart-header">
+            <span class="chart-title">留存分群明细（按基准日）</span>
+            <span class="analytics-hint">{{ analyticsData?.retention?.rule }}</span>
+          </div>
+          <el-table :data="retentionCohorts" size="small" border stripe max-height="320">
+            <el-table-column prop="date" label="基准日" width="120" />
+            <el-table-column prop="baseUsers" label="基准人数" width="100" />
+            <el-table-column label="次日留存">
+              <template #default="{ row }">{{ retentionCell(row, 1) }}</template>
+            </el-table-column>
+            <el-table-column label="7 日留存">
+              <template #default="{ row }">{{ retentionCell(row, 7) }}</template>
+            </el-table-column>
+            <el-table-column label="30 日留存">
+              <template #default="{ row }">{{ retentionCell(row, 30) }}</template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+
+        <el-card class="analytics-table-card" shadow="never">
+          <div class="chart-header">
+            <span class="chart-title">注册到首购漏斗明细</span>
+            <span class="analytics-hint">{{ analyticsData?.funnel?.rule }}</span>
+          </div>
+          <el-table :data="funnelLevels" size="small" border stripe>
+            <el-table-column prop="name" label="环节" width="160" />
+            <el-table-column label="人数">
+              <template #default="{ row }">{{ row.collected ? row.count : '未采集' }}</template>
+            </el-table-column>
+            <el-table-column label="上一级转化">
+              <template #default="{ row }">{{ row.stepRate === null || row.stepRate === undefined ? '-' : row.stepRate + '%' }}</template>
+            </el-table-column>
+            <el-table-column label="注册整体转化">
+              <template #default="{ row }">{{ row.totalRate === null || row.totalRate === undefined ? '-' : row.totalRate + '%' }}</template>
+            </el-table-column>
+          </el-table>
+          <div class="analytics-foot">
+            区间新增注册 <b>{{ analyticsData?.funnel?.newRegistered ?? 0 }}</b> 人 · 区间下单 <b>{{ analyticsData?.funnel?.rangeOrderRows ?? 0 }}</b> 笔 ·
+            有效成交 <b>{{ analyticsData?.funnel?.rangePaidRows ?? 0 }}</b> 笔 · 注册到首购平均 <b>{{ analyticsData?.funnel?.avgDaysToFirstOrder ?? '-' }}</b> 天
+          </div>
+        </el-card>
+      </el-tab-pane>
+
       <!-- ==================== RFM 八分群 ==================== -->
       <el-tab-pane label="RFM 八分群" name="rfm">
         <el-alert type="info" :closable="false" show-icon class="dq-alert"
@@ -796,6 +994,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import * as XLSX from 'xlsx'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, TrendCharts, Download, View, User, Warning, PriceTag } from '@element-plus/icons-vue'
 import {
@@ -812,6 +1011,7 @@ import {
   attachMemberTag,
   detachMemberTag
 } from '@/api/user/portrait'
+import { fetchBehaviorAnalytics } from '@/api/user/behaviorAnalytics'
 
 const activeTab = ref('overview')
 const loading = ref(false)
@@ -936,6 +1136,7 @@ const refreshAll = () => fetchData()
 // ==================== Tab 切换 ====================
 
 const handleTabChange = (name) => {
+  if (name === 'analytics' && !analyticsData.value) loadAnalytics()
   if (name === 'rfm' && !rfmData.value) loadRfm()
   if (name === 'segment' && !crowdList.value.length) refreshCrowds()
   if (['tag', 'segment', 'member'].includes(name)) refreshTags()
@@ -1247,6 +1448,258 @@ const layerCards = computed(() => {
   })
 })
 
+// ==================== 用户行为与留存分析（行为 / 留存 / 活跃 / 转化） ====================
+
+const EVENT_LABELS = { login: '登录', view: '浏览', search: '搜索', cart: '加购', order: '下单', share: '分享' }
+const EVENT_COLORS = { login: '#409eff', view: '#67c23a', search: '#e6a23c', cart: '#909399', order: '#f56c6c', share: '#9b59b6' }
+const EVENT_TYPES = Object.keys(EVENT_LABELS)
+const FUNNEL_COLORS = ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#9b59b6', '#16a085']
+
+const dateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const defaultAnalyticsRange = () => {
+  const end = new Date()
+  const start = new Date()
+  start.setDate(end.getDate() - 29)
+  return [dateStr(start), dateStr(end)]
+}
+
+const analyticsDateRange = ref(defaultAnalyticsRange())
+const analyticsData = ref(null)
+const analyticsLoading = ref(false)
+const retentionCohort = ref('byActive')
+
+const behaviorTrendChartRef = ref()
+const activeTrendChartRef = ref()
+const retentionChartRef = ref()
+const funnelChartRef = ref()
+let behaviorTrendChart = null
+let activeTrendChart = null
+let retentionChart = null
+let funnelChart = null
+
+const analyticsRangeText = computed(() => (analyticsDateRange.value || []).join(' ~ '))
+const collectedTypeText = computed(() => (analyticsData.value?.dataQuality?.collectedTypes || []).map((t) => EVENT_LABELS[t] || t).join('、') || '无')
+const missingTypeText = computed(() => (analyticsData.value?.dataQuality?.missingTypes || []).map((t) => EVENT_LABELS[t] || t).join('、') || '无')
+const behaviorSummary = computed(() => analyticsData.value?.behavior?.summary || [])
+const behaviorTrend = computed(() => analyticsData.value?.behavior?.trend || [])
+const activeTrend = computed(() => analyticsData.value?.active?.trend || [])
+const currentRetention = computed(() => analyticsData.value?.retention?.[retentionCohort.value] || null)
+const retentionCohorts = computed(() => currentRetention.value?.cohorts || [])
+const funnelLevels = computed(() => analyticsData.value?.funnel?.levels || [])
+const retentionD1Text = computed(() => {
+  const cell = currentRetention.value?.summary?.d1
+  if (!cell || cell.eligible === 0) return '观察中'
+  return cell.rate === null || cell.rate === undefined ? '-' : `${cell.rate}%`
+})
+
+const setAnalyticsRange = (days) => {
+  const end = new Date()
+  const start = new Date()
+  start.setDate(end.getDate() - (days - 1))
+  analyticsDateRange.value = [dateStr(start), dateStr(end)]
+  loadAnalytics()
+}
+
+const resetAnalyticsRange = () => {
+  analyticsDateRange.value = defaultAnalyticsRange()
+  loadAnalytics()
+}
+
+const loadAnalytics = async () => {
+  analyticsLoading.value = true
+  try {
+    const [startDate, endDate] = analyticsDateRange.value || defaultAnalyticsRange()
+    const res = await fetchBehaviorAnalytics({ startDate, endDate })
+    if (!isSuccess(res)) {
+      ElMessage.error(res?.message || '行为分析加载失败')
+      return
+    }
+    analyticsData.value = res.data || null
+    await nextTick()
+    renderAnalyticsCharts()
+  } catch (e) {
+    ElMessage.error('行为分析加载失败：' + (e?.message || '网络异常'))
+  } finally {
+    analyticsLoading.value = false
+  }
+}
+
+const retentionCell = (row, n) => {
+  if (row[`d${n}Pending`]) return '观察中'
+  const rate = row[`d${n}Rate`]
+  if (rate === null || rate === undefined) return '-'
+  return `${row[`d${n}Users`]} 人 / ${rate}%`
+}
+
+const renderBehaviorTrendChart = () => {
+  if (!behaviorTrendChartRef.value) return
+  if (!behaviorTrendChart) behaviorTrendChart = echarts.init(behaviorTrendChartRef.value)
+  const rows = behaviorTrend.value
+  const collected = new Set(analyticsData.value?.dataQuality?.collectedTypes || [])
+  const series = EVENT_TYPES.filter((t) => collected.has(t)).map((t) => ({
+    name: EVENT_LABELS[t],
+    type: 'line',
+    smooth: true,
+    showSymbol: false,
+    itemStyle: { color: EVENT_COLORS[t] },
+    data: rows.map((r) => Number(r[t]) || 0)
+  }))
+  behaviorTrendChart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: series.map((s) => s.name), bottom: 0, left: 'center' },
+    grid: { left: 48, right: 20, top: 26, bottom: 56 },
+    xAxis: {
+      type: 'category',
+      data: rows.map((r) => r.date.slice(5)),
+      axisLabel: { interval: Math.max(0, Math.floor(rows.length / 8)) }
+    },
+    yAxis: { type: 'value', name: '次数', minInterval: 1 },
+    graphic: series.length === 0
+      ? [{ type: 'text', left: 'center', top: 'middle', style: { text: '暂无已采集行为数据', fill: '#909399' } }]
+      : [],
+    series
+  }, true)
+}
+
+const renderActiveTrendChart = () => {
+  if (!activeTrendChartRef.value) return
+  if (!activeTrendChart) activeTrendChart = echarts.init(activeTrendChartRef.value)
+  const rows = activeTrend.value
+  const line = (name, key, color) => ({
+    name,
+    type: 'line',
+    smooth: true,
+    showSymbol: false,
+    itemStyle: { color },
+    data: rows.map((r) => Number(r[key]) || 0)
+  })
+  activeTrendChart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['DAU', 'WAU', 'MAU'], bottom: 0, left: 'center' },
+    grid: { left: 48, right: 20, top: 26, bottom: 56 },
+    xAxis: {
+      type: 'category',
+      data: rows.map((r) => r.date.slice(5)),
+      axisLabel: { interval: Math.max(0, Math.floor(rows.length / 8)) }
+    },
+    yAxis: { type: 'value', name: '去重会员', minInterval: 1 },
+    series: [line('DAU', 'dau', '#409eff'), line('WAU', 'wau', '#67c23a'), line('MAU', 'mau', '#e6a23c')]
+  }, true)
+}
+
+const renderRetentionChart = () => {
+  if (!retentionChartRef.value) return
+  if (!retentionChart) retentionChart = echarts.init(retentionChartRef.value)
+  const summary = currentRetention.value?.summary || {}
+  const keys = ['d1', 'd7', 'd30']
+  const labels = ['次日留存', '7 日留存', '30 日留存']
+  const colors = ['#409eff', '#67c23a', '#e6a23c']
+  const rates = keys.map((k) => summary[k]?.rate ?? 0)
+  const eligible = keys.map((k) => summary[k]?.eligible ?? 0)
+  retentionChart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 56, right: 20, top: 30, bottom: 38 },
+    xAxis: { type: 'category', data: labels },
+    yAxis: { type: 'value', name: '留存率 %', min: 0, max: 100 },
+    series: [{
+      type: 'bar',
+      barMaxWidth: 54,
+      label: {
+        show: true,
+        position: 'top',
+        formatter: (p) => (eligible[p.dataIndex] > 0 ? `${p.value}%` : '观察中')
+      },
+      data: rates.map((v, i) => ({ value: v, itemStyle: { color: eligible[i] > 0 ? colors[i] : '#c0c4cc' } }))
+    }]
+  }, true)
+}
+
+const renderFunnelChart = () => {
+  if (!funnelChartRef.value) return
+  if (!funnelChart) funnelChart = echarts.init(funnelChartRef.value)
+  const levels = funnelLevels.value
+  funnelChart.setOption({
+    tooltip: { trigger: 'item', formatter: (p) => `${p.name}：${p.data.display} 人` },
+    series: [{
+      type: 'funnel',
+      left: '6%',
+      top: 18,
+      bottom: 18,
+      width: '88%',
+      min: 0,
+      max: Math.max(1, Number(levels[0]?.count) || 1),
+      minSize: '20%',
+      maxSize: '100%',
+      sort: 'descending',
+      gap: 2,
+      label: { show: true, position: 'inside', formatter: (p) => `${p.name} ${p.data.display}` },
+      data: levels.map((l, i) => ({
+        name: l.name,
+        value: l.collected ? Number(l.count) || 0 : 0,
+        display: l.collected ? l.count : '未采集',
+        itemStyle: { color: FUNNEL_COLORS[i % FUNNEL_COLORS.length] }
+      }))
+    }]
+  }, true)
+}
+
+const renderAnalyticsCharts = () => {
+  renderBehaviorTrendChart()
+  renderActiveTrendChart()
+  renderRetentionChart()
+  renderFunnelChart()
+}
+
+const exportAnalytics = () => {
+  const d = analyticsData.value
+  if (!d) return
+  const wb = XLSX.utils.book_new()
+  const sheet = (rows, name) => {
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows.length ? rows : [{ 提示: '暂无数据' }]), name)
+  }
+  sheet([
+    { 项目: '时间范围', 值: `${d.range.start} ~ ${d.range.end}` },
+    { 项目: '生成时间', 值: d.dataQuality?.generatedAt || '' },
+    { 项目: '区间事件数', 值: d.dataQuality?.rangeEventRows || 0 },
+    { 项目: '已采集维度', 值: collectedTypeText.value },
+    { 项目: '未采集维度', 值: missingTypeText.value },
+    { 项目: '数据口径', 值: d.dataQuality?.note || '' },
+    { 项目: '活跃口径', 值: d.active?.rule || '' },
+    { 项目: '留存口径', 值: d.retention?.rule || '' },
+    { 项目: '漏斗口径', 值: d.funnel?.rule || '' }
+  ], '口径')
+  sheet(behaviorSummary.value.map((r) => ({
+    行为类型: r.label,
+    频次: r.count,
+    涉及会员: r.users,
+    人均频次: r.avgPerUser ?? '-',
+    占比: r.share === null || r.share === undefined ? '-' : `${r.share}%`,
+    采集状态: r.collected ? '已采集' : '未采集'
+  })), '行为频次')
+  sheet(behaviorTrend.value.map((r) => {
+    const row = { 日期: r.date }
+    EVENT_TYPES.forEach((t) => { row[EVENT_LABELS[t]] = r[t] })
+    row.合计 = r.total
+    return row
+  }), '行为趋势')
+  sheet(activeTrend.value.map((r) => ({ 日期: r.date, DAU: r.dau, WAU: r.wau, MAU: r.mau })), '活跃趋势')
+  sheet(retentionCohorts.value.map((r) => ({
+    基准日: r.date,
+    基准人数: r.baseUsers,
+    次日留存: retentionCell(r, 1),
+    '7日留存': retentionCell(r, 7),
+    '30日留存': retentionCell(r, 30)
+  })), '留存明细')
+  sheet(funnelLevels.value.map((l) => ({
+    环节: l.name,
+    人数: l.collected ? l.count : '未采集',
+    上一级转化: l.stepRate === null || l.stepRate === undefined ? '-' : `${l.stepRate}%`,
+    注册整体转化: l.totalRate === null || l.totalRate === undefined ? '-' : `${l.totalRate}%`
+  })), '转化漏斗')
+  XLSX.writeFile(wb, `用户行为与留存分析_${d.range.start}_${d.range.end}.xlsx`)
+  ElMessage.success('已导出六张明细表（口径 / 行为频次 / 行为趋势 / 活跃趋势 / 留存明细 / 转化漏斗）')
+}
+
 // ==================== 图表 ====================
 
 const trendChartRef = ref()
@@ -1363,6 +1816,10 @@ const renderCharts = () => {
 const handleResize = () => {
   if (trendChart) trendChart.resize()
   if (layerChart) layerChart.resize()
+  if (behaviorTrendChart) behaviorTrendChart.resize()
+  if (activeTrendChart) activeTrendChart.resize()
+  if (retentionChart) retentionChart.resize()
+  if (funnelChart) funnelChart.resize()
 }
 
 // ==================== 导出 ====================
@@ -1467,6 +1924,10 @@ onBeforeUnmount(() => {
     layerChart.dispose()
     layerChart = null
   }
+  if (behaviorTrendChart) { behaviorTrendChart.dispose(); behaviorTrendChart = null }
+  if (activeTrendChart) { activeTrendChart.dispose(); activeTrendChart = null }
+  if (retentionChart) { retentionChart.dispose(); retentionChart = null }
+  if (funnelChart) { funnelChart.dispose(); funnelChart = null }
 })
 </script>
 
@@ -2142,5 +2603,42 @@ onBeforeUnmount(() => {
 .tl-detail {
   font-size: 12px;
   color: #909399;
+}
+
+.analytics-filter {
+  margin-bottom: 16px;
+}
+
+.analytics-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.analytics-form :deep(.el-form-item) {
+  margin-bottom: 8px;
+  margin-right: 12px;
+}
+
+.analytics-table-card {
+  margin-bottom: 16px;
+}
+
+.analytics-hint {
+  font-size: 12px;
+  color: #909399;
+  max-width: 62%;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.analytics-foot {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #606266;
+}
+
+.analytics-foot b {
+  color: #303133;
 }
 </style>

@@ -366,4 +366,16 @@ public interface UserServiceFeign {
      */
     @PostMapping("/portrait/tag/detach")
     ResponseResult memberPortraitTagDetach(@RequestBody Map<String, Object> params);
+
+    /**
+     * 用户行为与留存分析（行为 / 留存 / 活跃 / 转化四维度）
+     *
+     * @param params startDate / endDate，空则近 30 天
+     */
+    @PostMapping("/behavior/analytics")
+    ResponseResult memberBehaviorAnalytics(@RequestBody Map<String, Object> params);
+
+    /** 统一埋点上报 */
+    @PostMapping("/behavior/track")
+    ResponseResult memberBehaviorTrack(@RequestBody Map<String, Object> params);
 }
