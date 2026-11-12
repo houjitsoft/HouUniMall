@@ -20,12 +20,6 @@
             <el-icon class="join-note-icon" aria-label="个人入驻资料说明"><InfoFilled /></el-icon>
           </el-tooltip>
         </h3>
-        <div v-if="draftRestored" class="join-draft-tip">
-          <span class="join-draft-tip__text">
-            已恢复本机上次暂存的登记信息（{{ draftSavedAtText }}），可继续填写；资料仅保存在当前浏览器，提交成功后自动清除。
-          </span>
-          <el-button link type="primary" @click="clearDraftAndReset">清空重填</el-button>
-        </div>
         <el-steps :active="2" align-center class="join-steps">
           <el-step title="入驻须知" :icon="ElIconDocument"></el-step>
           <el-step title="商家基本信息填写" :icon="ElIconEdit"></el-step>
@@ -1233,9 +1227,7 @@ const src = ref('')
 // 键在本次挂载时固定，避免提交成功写入新 token 后清不掉旧草稿。
 const currentDraftKey = draftKey(route.query.shopType)
 const draftRestored = ref(false)
-const draftSavedAtText = ref('')
 const draftTouchedKeys = new Set()
-const initialRuleForm = JSON.parse(JSON.stringify(serializeForm(ruleForm)))
 let draftEnabled = true
 let draftTimer = null
 
@@ -1317,10 +1309,6 @@ function restoreDraft() {
   if (extra.originType !== undefined) originType.value = extra.originType
   if (extra.shopLocation !== undefined) shopLocation.value = extra.shopLocation
   if (extra.blLocation !== undefined) blLocation.value = extra.blLocation
-  const saved = new Date(data.savedAt)
-  draftSavedAtText.value = Number.isNaN(saved.getTime())
-    ? ''
-    : saved.toLocaleString('zh-CN', { hour12: false })
   draftRestored.value = true
   return true
 }
@@ -1335,34 +1323,6 @@ function discardDraftAfterSubmit() {
   removeDraft(currentDraftKey)
   draftTouchedKeys.clear()
   draftRestored.value = false
-}
-
-/** 用户再次输入后才恢复自动暂存，避免清空重填被在途的后端回填重建 */
-function enableDraftOnUserInput() {
-  if (draftEnabled) return
-  draftEnabled = true
-  document.removeEventListener('input', enableDraftOnUserInput, true)
-  document.removeEventListener('change', enableDraftOnUserInput, true)
-}
-
-function clearDraftAndReset() {
-  draftEnabled = false
-  if (draftTimer !== null) {
-    window.clearTimeout(draftTimer)
-    draftTimer = null
-  }
-  removeDraft(currentDraftKey)
-  Object.assign(ruleForm, JSON.parse(JSON.stringify(initialRuleForm)))
-  imgUrl1.value = ''
-  fileName.value = ''
-  agreementFileName.value = ''
-  checked.value = false
-  radio.value = ''
-  draftTouchedKeys.clear()
-  draftRestored.value = false
-  document.addEventListener('input', enableDraftOnUserInput, true)
-  document.addEventListener('change', enableDraftOnUserInput, true)
-  ElMessage({ message: '已清空本机暂存的登记信息', type: 'success' })
 }
 
 watch(
@@ -1975,8 +1935,6 @@ let codeClock = null
 onBeforeUnmount(() => {
   if (codeClock !== null) window.clearInterval(codeClock)
   window.removeEventListener('beforeunload', flushDraft)
-  document.removeEventListener('input', enableDraftOnUserInput, true)
-  document.removeEventListener('change', enableDraftOnUserInput, true)
   // 离开页面（含上一步、登录跳转）时立即落盘，不等防抖
   flushDraft()
 })
@@ -2379,24 +2337,6 @@ function nexttow(formName) {
 </script>
 
 <style lang="scss" scoped>
-.join-draft-tip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 12px 0 16px;
-  padding: 10px 14px;
-  border: 1px solid #d9ecff;
-  border-radius: 4px;
-  background: #ecf5ff;
-  color: #303133;
-  font-size: 13px;
-  line-height: 1.6;
-
-  .join-draft-tip__text {
-    flex: 1;
-  }
-}
 .join-code-btn {
   display: inline-flex;
   align-items: center;
