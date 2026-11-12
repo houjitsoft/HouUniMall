@@ -165,13 +165,15 @@ public class BehaviorAnalyticsServiceImpl implements BehaviorAnalyticsService {
             long count = countByType.getOrDefault(t, 0L);
             int users = usersByType.getOrDefault(t, Collections.emptySet()).size();
             Map<String, Object> item = new LinkedHashMap<>();
+            boolean collected = eventSourceRows(coverage, t) > 0;
             item.put("type", t);
             item.put("label", EVENT_LABELS.get(t));
             item.put("count", count);
             item.put("users", users);
             item.put("avgPerUser", users == 0 ? null : round2((double) count / users));
-            item.put("share", rangeEventTotal == 0 ? null : round2(count * 100.0 / rangeEventTotal));
-            item.put("collected", eventSourceRows(coverage, t) > 0);
+            // 未采集维度不参与占比：它的 0 不是「发生 0 次」，而是「没有采集来源」
+            item.put("share", (rangeEventTotal == 0 || !collected) ? null : round2(count * 100.0 / rangeEventTotal));
+            item.put("collected", collected);
             behaviorSummary.add(item);
         }
         List<Map<String, Object>> behaviorTrend = new ArrayList<>();
