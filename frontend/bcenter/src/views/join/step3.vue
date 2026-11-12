@@ -795,38 +795,21 @@
                 :model="addParams"
               >
                 <el-form-item label="经营类目:" prop="typeId">
-                  <div class="join-cat-picker">
-                    <el-select
-                      v-model="catSelectValue"
-                      class="join-cat-select"
-                      multiple
-                      filterable
-                      clearable
-                      collapse-tags
-                      collapse-tags-tooltip
-                      :max-collapse-tags="3"
-                      :filter-method="filterCatOption"
-                      placeholder="输入类目名称搜索，或点击下拉选择经营类目"
-                      no-match-text="未找到匹配类目，请更换关键词"
-                      no-data-text="经营类目加载中或暂无数据"
-                      @change="changeCat"
-                    >
-                      <el-option
-                        v-for="item in catFilteredOptions"
-                        :key="item.key"
-                        :label="item.text"
-                        :value="item.path[item.path.length - 1]"
-                      />
-                      <template #empty>
-                        <div class="join-cat-search-empty">
-                          未找到匹配类目，请更换关键词
-                        </div>
-                      </template>
-                    </el-select>
-                    <div class="join-cat-picker-tip">
-                      可输入末级类目名或上级类目名搜索（空格分隔多个词），支持多选；点「确认提交」后生效。
-                    </div>
-                  </div>
+                  <el-cascader
+                    v-model="catName"
+                    :options="optionsone"
+                    style="width: 80%"
+                    :props="{
+                      expandTrigger: 'hover',
+                      value: 'catId',
+                      label: 'catName',
+                      children: 'childMenu',
+                      multiple: true,
+                    }"
+                    clearable
+                    @change="changeCat"
+                    :collapse-tags="true"
+                  ></el-cascader>
                 </el-form-item>
               </el-form>
               <div class="mgt20">
@@ -1083,20 +1066,9 @@ const optionsClass = ref([])
 const optionsone = ref([])
 const catLoading = ref(false)
 
-// ===== 经营类目：Element UI 风格下拉搜索 =====
-// 类目树由 /goods/cat/cat/query 一次性返回，摊平成末级类目全路径选项；
-// 直接在下拉输入框里输入关键词过滤并多选，不再额外叠加一层独立搜索框。
-const catFilterKeyword = ref('')
-
-function normalizeCatKeyword(value) {
-  return String(value ?? '').trim().toLowerCase().replace(/\s+/g, ' ')
-}
-
-function filterCatOption(query) {
-  catFilterKeyword.value = query ?? ''
-}
-
-// 摊平类目树，只保留可提交的末级类目，携带全路径文本便于按上级类目名检索
+// ===== 经营类目：已选类目的全路径索引 =====
+// 类目树由 /goods/cat/cat/query 一次性返回；摊平索引只用于把已选路径
+// 还原成「一级 / 二级 / 三级」文本，供待确认提示与主营类目表格回显使用。
 const catLeafIndex = computed(() => {
   const leaves = []
   const walk = (nodes, path, labels) => {
@@ -1119,39 +1091,6 @@ const catLeafIndex = computed(() => {
   }
   walk(optionsone.value, [], [])
   return leaves
-})
-
-// 空格分隔多个关键词时须同时命中；默认最多展开 200 条，输入关键词后先过滤再截断
-const catFilteredOptions = computed(() => {
-  const words = normalizeCatKeyword(catFilterKeyword.value).split(' ').filter(Boolean)
-  const leaves = catLeafIndex.value
-  const matched = words.length
-    ? leaves.filter((item) => {
-        const text = item.text.toLowerCase()
-        return words.every((word) => text.includes(word))
-      })
-    : leaves
-  return matched.slice(0, 200)
-})
-
-// 下拉的 v-model 是末级类目 id 数组；catName 仍保持「完整路径数组」结构，
-// 供 handleConfirm / catRowsFromPaths / 提交校验沿用，避免改动审核流程。
-const catSelectValue = computed({
-  get() {
-    const paths = Array.isArray(catName.value) ? catName.value : []
-    return paths
-      .map((item) => (Array.isArray(item) ? item[item.length - 1] : item))
-      .filter((id) => id != null && id !== '')
-  },
-  set(ids) {
-    const list = Array.isArray(ids) ? ids : []
-    catName.value = list.map((id) => {
-      const hit = catLeafIndex.value.find(
-        (leaf) => String(leaf.path[leaf.path.length - 1]) === String(id),
-      )
-      return hit ? hit.path.slice() : [id]
-    })
-  },
 })
 
 // ===== 经营类目：已选状态的统一事实源 =====
@@ -2034,7 +1973,6 @@ function handleConfirm() {
               type: 'success',
             })
             catName.value = []
-            catFilterKeyword.value = ''
             fetchquery()
             addDialogVisible.value = false
           } else {
@@ -2055,7 +1993,7 @@ function handleConfirm() {
 }
 
 function changeCat() {
-      // 下拉模型的 setter 会先把选中项还原成完整路径数组写入 catName
+      // 多选级联的每一项是完整路径数组，这里只记录末级类目 id
       const list = Array.isArray(catName.value) ? catName.value : []
       const last = list[list.length - 1]
       addParams.productClassId = Array.isArray(last) ? last[last.length - 1] : (last ?? '')
@@ -2066,7 +2004,6 @@ async function handleAdd() {
       optionsone.value = []
       addParams.productClassId = ''
       catName.value = []
-      catFilterKeyword.value = ''
       addDialogVisible.value = true
       catLoading.value = true
       try {
@@ -3118,29 +3055,6 @@ function nexttow(formName) {
 
 .settle-bottom-inner {
   padding-bottom: 0;
-}
-
-/* 新增经营类目：下拉内输入搜索 */
-.join-cat-picker {
-  width: 100%;
-}
-
-.join-cat-select {
-  width: 100%;
-}
-
-.join-cat-search-empty {
-  padding: 12px;
-  font-size: 13px;
-  color: #909399;
-  text-align: center;
-}
-
-.join-cat-picker-tip {
-  margin-top: 6px;
-  font-size: 12px;
-  line-height: 1.6;
-  color: #909399;
 }
 
 /* 主营类目区：已选 / 待确认数量提示 */
