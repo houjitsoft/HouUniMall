@@ -11,7 +11,7 @@
           
           <el-descriptions :column="1" border>
             <el-descriptions-item label="系统名称">{{ systemInfo.systemName || 'HouUniMall管理系统' }}</el-descriptions-item>
-            <el-descriptions-item label="系统版本">{{ systemInfo.systemVersion || 'v1.0.17' }}</el-descriptions-item>
+            <el-descriptions-item label="系统版本">{{ systemInfo.systemVersion || 'v1.0.18' }}</el-descriptions-item>
             <el-descriptions-item label="构建时间">{{ systemInfo.buildTime || '2024-01-08 10:30:00' }}</el-descriptions-item>
             <el-descriptions-item label="运行环境">{{ systemInfo.environment || '生产环境' }}</el-descriptions-item>
             <el-descriptions-item label="操作系统">{{ systemInfo.operatingSystem || 'Linux 5.4.0-80-generic' }}</el-descriptions-item>
