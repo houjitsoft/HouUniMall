@@ -1437,16 +1437,24 @@ function loadPasswordConfig() {
   })
 }
 
-// 提交成功后移除 origin，隐藏密码字段
+// 提交成功后清理一次性字段；页面跳转统一交给 goToNextStep()，避免两次路由操作互相覆盖
 function clearOriginAfterSubmit() {
-  if (originType.value != 1 && !route.query.origin) {
-    return
-  }
   originType.value = 0
   ruleForm.settlePW = ''
-  const query = { ...route.query }
-  delete query.origin
-  router.replace({ path: route.path, query })
+}
+
+// 提交成功即推进到入驻流程的下一步「缴纳店铺租金」。
+// 旧实现只在 shopinfoquery 异步返回资料审核通过(auditStatus=1)时才跳 step6，
+// 新提交通常是待审核(0)、查询也可能返回空，表现为「提示提交成功但还停在当前页」，
+// 甚至仍保留「提交入驻审核」按钮可重复提交。这里以本次提交结果为准直接推进。
+function goToNextStep() {
+  router.push({
+    path: '/join/step6',
+    query: {
+      joinId: joinId.value || ruleForm.joinId || '',
+      shopType: ruleForm.shopType ?? route.query.shopType ?? 0,
+    },
+  })
 }
 
 //店铺等级改变
@@ -2167,9 +2175,7 @@ function next(formName) {
                   type: 'success',
                 })
                 clearOriginAfterSubmit()
-                fetchData()
-                fetchquery()
-                handleshopinfoquery()
+                goToNextStep()
               } else {
                 showJoinSubmitFailure(res)
                 return
@@ -2275,9 +2281,7 @@ function nexttow(formName) {
                   type: 'warning',
                 })
                 clearOriginAfterSubmit()
-                fetchData()
-                fetchquery()
-                handleshopinfoquery()
+                goToNextStep()
               } else {
                 showJoinSubmitFailure(res)
                 return
