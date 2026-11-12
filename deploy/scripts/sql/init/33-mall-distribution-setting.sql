@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `hou_mall_distribution_setting` (
   `settle_days`        int              NOT NULL DEFAULT 7     COMMENT '佣金结算周期：订单完成后 T+N 天可提现',
   `min_withdraw_amount` decimal(10,2)   NOT NULL DEFAULT 10.00 COMMENT '单笔最低提现金额（元）',
   `auto_upgrade`       tinyint          NOT NULL DEFAULT 1     COMMENT '分销员等级自动升级：1=自动 0=仅手动',
+  `auto_payout_balance` tinyint         NOT NULL DEFAULT 1     COMMENT '余额提现自动到账：1=审核通过后余额入账并完结 0=人工已打款',
   `create_time`        datetime         NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time`        datetime         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -33,6 +34,6 @@ CREATE TABLE IF NOT EXISTS `hou_mall_distribution_setting` (
 -- 平台默认配置：默认关闭，后台显式开启后才生效（避免历史店铺被静默开通分佣）
 INSERT INTO `hou_mall_distribution_setting`
   (`shop_id`, `enabled`, `max_level`, `apply_mode`, `bind_mode`, `bind_protect_days`,
-   `settle_days`, `min_withdraw_amount`, `auto_upgrade`)
-VALUES (0, 0, 2, 2, 1, 15, 7, 10.00, 1)
+   `settle_days`, `min_withdraw_amount`, `auto_upgrade`, `auto_payout_balance`)
+VALUES (0, 0, 2, 2, 1, 15, 7, 10.00, 1, 1)
 ON DUPLICATE KEY UPDATE `id` = `id`;

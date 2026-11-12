@@ -8,6 +8,8 @@ import com.houjiang.mall.entity.distribution.DistributionSetting;
 import com.houjiang.mall.entity.distribution.DistributionWithdraw;
 import com.houjiang.mall.entity.distribution.Distributor;
 import com.houjiang.mall.mapper.distribution.DistributionWithdrawMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,23 +20,33 @@ import java.util.Map;
 /**
  * 分销提现服务类
  *
- * 资金口径（与结算任务严格配对，避免账实不符）：
+ * 资金口径（与结算任务严格配对，避免账实相符）：
  *   申请 → 冻结：available -= amount
  *   驳回 → 退回：available += amount
  *   完成 → 归档：withdrawn += amount
  *
+ * 余额自动到账（payType=4 + autoPayoutBalance=1）：审核通过时写入
+ * {@code hou_pay_user_resource.user_money} 并直接完结为已打款。
+ *
  * @author Amos
  */
+@Slf4j
 @Service
 public class DistributionWithdrawService extends ServiceImpl<DistributionWithdrawMapper, DistributionWithdraw> {
 
+    /** 到账方式：余额 */
+    public static final int PAY_TYPE_BALANCE = 4;
+
     private final DistributionSettingService distributionSettingService;
     private final DistributorService distributorService;
+    private final JdbcTemplate jdbcTemplate;
 
     public DistributionWithdrawService(DistributionSettingService distributionSettingService,
-                                       DistributorService distributorService) {
+                                       DistributorService distributorService,
+                                       JdbcTemplate jdbcTemplate) {
         this.distributionSettingService = distributionSettingService;
         this.distributorService = distributorService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -58,9 +70,6 @@ public class DistributionWithdrawService extends ServiceImpl<DistributionWithdra
 
     /**
      * 申请提现：校验开关、门槛、可提现余额，通过后冻结余额
-     *
-     * @param withdraw 提现单（distributorId/amount 必填）
-     * @return 提现单
      */
     @Transactional(rollbackFor = Exception.class)
     public DistributionWithdraw apply(DistributionWithdraw withdraw) {
@@ -98,7 +107,6 @@ public class DistributionWithdrawService extends ServiceImpl<DistributionWithdra
         withdraw.setUpdateTime(LocalDateTime.now());
         this.save(withdraw);
 
-        // 冻结：可提现余额扣减
         distributorService.lambdaUpdate()
                 .eq(Distributor::getId, distributorId)
                 .setSql("available_commission = available_commission - " + amount.toPlainString())
@@ -108,12 +116,7 @@ public class DistributionWithdrawService extends ServiceImpl<DistributionWithdra
 
     /**
      * 审核提现：1=通过（待打款） 2=驳回（余额退回） 3=已打款（归档）
-     *
-     * @param id        提现单ID
-     * @param status    目标状态
-     * @param auditor   审核人
-     * @param remark    审核备注
-     * @return 是否成功
+     * 当 status=1 且 payType=余额 且开启 autoPayoutBalance 时，自动入账并完结为 3。
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean audit(Long id, Integer status, String auditor, String remark) {
@@ -124,14 +127,23 @@ public class DistributionWithdrawService extends ServiceImpl<DistributionWithdra
         if (status == null || (status != 1 && status != 2 && status != 3)) {
             throw new IllegalArgumentException("审核状态不合法");
         }
-        // 幂等：已驳回/已打款不可再改
         if (withdraw.getStatus() != null && (withdraw.getStatus() == 2 || withdraw.getStatus() == 3)) {
             return false;
         }
         int from = withdraw.getStatus() == null ? 0 : withdraw.getStatus();
-        withdraw.setStatus(status);
+        Integer targetStatus = status;
+        String auditRemark = remark;
+
+        if (status == 1 && shouldAutoPayoutBalance(withdraw)) {
+            creditUserBalance(withdraw);
+            targetStatus = 3;
+            String autoNote = "余额自动到账";
+            auditRemark = (remark == null || remark.isBlank()) ? autoNote : remark + "；" + autoNote;
+        }
+
+        withdraw.setStatus(targetStatus);
         withdraw.setAuditor(auditor);
-        withdraw.setAuditRemark(remark);
+        withdraw.setAuditRemark(auditRemark);
         withdraw.setAuditTime(LocalDateTime.now());
         withdraw.setUpdateTime(LocalDateTime.now());
         boolean ok = this.updateById(withdraw);
@@ -140,20 +152,66 @@ public class DistributionWithdrawService extends ServiceImpl<DistributionWithdra
         }
 
         BigDecimal amount = withdraw.getAmount() == null ? BigDecimal.ZERO : withdraw.getAmount();
-        if (status == 2 && from != 2) {
-            // 驳回：退回冻结金额
+        if (targetStatus == 2 && from != 2) {
             distributorService.lambdaUpdate()
                     .eq(Distributor::getId, withdraw.getDistributorId())
                     .setSql("available_commission = available_commission + " + amount.toPlainString())
                     .update();
-        } else if (status == 3 && from != 3) {
-            // 已打款：归档到已提现
+        } else if (targetStatus == 3 && from != 3) {
             distributorService.lambdaUpdate()
                     .eq(Distributor::getId, withdraw.getDistributorId())
                     .setSql("withdrawn_commission = withdrawn_commission + " + amount.toPlainString())
                     .update();
         }
         return true;
+    }
+
+    private boolean shouldAutoPayoutBalance(DistributionWithdraw withdraw) {
+        if (withdraw.getPayType() == null || withdraw.getPayType() != PAY_TYPE_BALANCE) {
+            return false;
+        }
+        DistributionSetting setting = distributionSettingService.getSetting(withdraw.getShopId());
+        return setting.getAutoPayoutBalance() == null || setting.getAutoPayoutBalance() == 1;
+    }
+
+    /**
+     * 把实际到账金额写入用户购物余额，并记一笔资产明细（detail_type=13）。
+     */
+    private void creditUserBalance(DistributionWithdraw withdraw) {
+        Long userId = withdraw.getUserId();
+        BigDecimal credit = withdraw.getActualAmount() == null ? BigDecimal.ZERO : withdraw.getActualAmount();
+        if (userId == null || credit.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalStateException("余额到账失败：用户或金额无效");
+        }
+        String userIdStr = String.valueOf(userId);
+        Integer exists = jdbcTemplate.queryForObject(
+                "SELECT COUNT(1) FROM hou_pay_user_resource WHERE user_id = ?",
+                Integer.class, userIdStr);
+        if (exists == null || exists == 0) {
+            jdbcTemplate.update(
+                    "INSERT INTO hou_pay_user_resource (user_id, user_money, is_delete) VALUES (?, ?, 0)",
+                    userIdStr, credit);
+        } else {
+            jdbcTemplate.update(
+                    "UPDATE hou_pay_user_resource SET user_money = user_money + ? WHERE user_id = ?",
+                    credit, userIdStr);
+        }
+        try {
+            jdbcTemplate.update(
+                    "INSERT INTO hou_pay_asset_details "
+                            + "(detail_type, asset_type, asset_amount, asset_direction, order_id, pay_type, user_id, detail_comment) "
+                            + "VALUES (13, 1, ?, ?, ?, 1, ?, ?)",
+                    credit,
+                    "分销佣金提现余额",
+                    withdraw.getWithdrawNo(),
+                    userIdStr,
+                    "分销提现自动到账 " + withdraw.getWithdrawNo());
+        } catch (Exception e) {
+            // 明细写入失败不阻断主账：余额已加，记日志即可
+            log.warn("分销提现余额明细写入失败 withdrawNo={}: {}", withdraw.getWithdrawNo(), e.getMessage());
+        }
+        log.info("分销提现余额自动到账: withdrawNo={}, userId={}, amount={}",
+                withdraw.getWithdrawNo(), userId, credit);
     }
 
     private String generateWithdrawNo() {

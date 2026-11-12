@@ -44,6 +44,13 @@ describe('数据库分类与搜索', () => {
     expect(groups.map(g => g.name)).toEqual(['常用', '全部应用', '未分类'])
     expect(groups[0].items.map(x => x.code)).toEqual(['erp'])
   })
+  it('已安装清单可含无菜单项；右上角入口只列有权限可进的应用', () => {
+    const catalog = [product('erp'), product('pm')]
+    const tree = [menu('erp')]
+    expect(buildInstalledApplicationItems(tree, catalog).map(item => item.code).sort()).toEqual(['erp', 'pm'])
+    expect(buildApplicationItems(tree, catalog).map(item => item.code)).toEqual(['erp'])
+  })
+
   it('已安装清单与插件中心同一分类，菜单入口和空分类插件都按目录归类', () => {
     const catalog = [
       product('erp', { cateId: 2 }),

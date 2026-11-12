@@ -39,13 +39,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.Locale;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -844,6 +844,8 @@ public class PluginMarketService {
         Map<String, Object> result = new LinkedHashMap<>();
         MarketPluginItem pluginItem = toItem(plugin, installMap(List.of(plugin)).get(pluginCode), licenseMap(instanceId).get(pluginCode));
         applyRemoteCounts(List.of(pluginItem));
+        // 详情与列表同口径：把本站宿主可用性写回，购买/安装入口才能拦截并引导去宿主货架。
+        applyHostAvailability(pluginItem);
         result.put("plugin", pluginItem);
         result.put("versions", versionItems);
         return result;
@@ -868,6 +870,7 @@ public class PluginMarketService {
         }
         MarketPluginItem item = decorate(base, installMapOf(List.of(pluginCode)).get(pluginCode),
                 licenseMap(instanceId).get(pluginCode), remoteCateNames(catalog));
+        applyHostAvailability(item);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("plugin", item);
         result.put("versions", catalog.getVersions().getOrDefault(pluginCode, List.of()));
@@ -1217,6 +1220,17 @@ public class PluginMarketService {
         if (!StringUtils.hasText(downloadUrl)) {
             throw new IllegalStateException("平台换票未返回下载地址: " + pluginCode + "@" + resolvedVersion);
         }
+        // 平台制品表若漏写 host_service，acquire 会返回空；从 pluginYaml 回落，禁止误装到 base。
+        if (!StringUtils.hasText(declaredHost) && StringUtils.hasText(pluginYaml)) {
+            Map<String, Object> declaration = parsePluginDeclaration(pluginYaml);
+            Object yamlHost = declaration.get("hostService");
+            if (yamlHost == null) {
+                yamlHost = declaration.get("host");
+            }
+            if (yamlHost != null && StringUtils.hasText(String.valueOf(yamlHost))) {
+                declaredHost = String.valueOf(yamlHost).trim();
+            }
+        }
         String hostService = StringUtils.hasText(declaredHost) ? declaredHost.trim() : HOST_SERVICE_BASE;
         boolean localInstall = HOST_SERVICE_BASE.equalsIgnoreCase(hostService);
         // 宿主可用性预检（2026-10-30）：acquire 已拿到宿主声明，下载前确认宿主在线；
@@ -1327,6 +1341,35 @@ public class PluginMarketService {
     private static String textOf(Map<String, Object> map, String key) {
         Object value = map == null ? null : map.get(key);
         return value == null ? null : String.valueOf(value).trim();
+    }
+
+    /**
+     * 用换票/版本表带回的 plugin.yaml 文本同步权限菜单。
+     * 失败只记日志：安装态已写入，菜单可后续对账补齐，不能把整次安装打成失败。
+     */
+    private void syncMenusFromPluginYaml(String pluginCode, String pluginYaml) {
+        if (pluginMenuPort == null || !StringUtils.hasText(pluginCode) || !StringUtils.hasText(pluginYaml)) {
+            return;
+        }
+        Path dir = null;
+        try {
+            dir = Files.createTempDirectory("plugin-menu-" + pluginCode + "-");
+            Path yaml = dir.resolve("plugin.yaml");
+            Files.writeString(yaml, pluginYaml, StandardCharsets.UTF_8);
+            pluginMenuPort.sync(pluginCode, dir);
+        } catch (Exception e) {
+            log.warn("插件 {} 安装后菜单同步失败（安装态已保留，右上角可能暂不可见）: {}",
+                    pluginCode, e.getMessage());
+        } finally {
+            if (dir != null) {
+                try {
+                    Files.deleteIfExists(dir.resolve("plugin.yaml"));
+                    Files.deleteIfExists(dir);
+                } catch (IOException ignored) {
+                    // temp cleanup best-effort
+                }
+            }
+        }
     }
 
     private String normalizeInstallProfile(String installProfile) {
@@ -1593,35 +1636,6 @@ public class PluginMarketService {
         return target;
     }
 
-    /**
-     * 用换票/版本表带回的 plugin.yaml 文本同步权限菜单。
-     * 失败只记日志：安装态已写入，菜单可后续对账补齐，不能把整次安装打成失败。
-     */
-    private void syncMenusFromPluginYaml(String pluginCode, String pluginYaml) {
-        if (pluginMenuPort == null || !StringUtils.hasText(pluginCode) || !StringUtils.hasText(pluginYaml)) {
-            return;
-        }
-        Path dir = null;
-        try {
-            dir = Files.createTempDirectory("plugin-menu-" + pluginCode + "-");
-            Path yaml = dir.resolve("plugin.yaml");
-            Files.writeString(yaml, pluginYaml, StandardCharsets.UTF_8);
-            pluginMenuPort.sync(pluginCode, dir);
-        } catch (Exception e) {
-            log.warn("插件 {} 安装后菜单同步失败（安装态已保留，右上角可能暂不可见）: {}",
-                    pluginCode, e.getMessage());
-        } finally {
-            if (dir != null) {
-                try {
-                    Files.deleteIfExists(dir.resolve("plugin.yaml"));
-                    Files.deleteIfExists(dir);
-                } catch (IOException ignored) {
-                    // temp cleanup best-effort
-                }
-            }
-        }
-    }
-
     private void upsertInstall(String pluginCode, String version, String jarPath, String checksum) {
         MallPluginInstall install = findInstall(pluginCode);
         LocalDateTime now = LocalDateTime.now();
@@ -1738,10 +1752,30 @@ public class PluginMarketService {
         if (licenseService == null) {
             return Map.of();
         }
-        List<MarketPluginLicense> licenses = StringUtils.hasText(instanceId)
-                ? licenseService.listMine(instanceId)
-                : licenseService.listValid();
-        if (licenses == null) {
+        List<MarketPluginLicense> licenses = new ArrayList<>();
+        LinkedHashSet<String> ids = new LinkedHashSet<>();
+        if (StringUtils.hasText(instanceId)) {
+            ids.add(instanceId.trim());
+        }
+        ids.addAll(com.houjiang.commons.util.SiteInstanceResolver.resolveLookupIds());
+        if (ids.isEmpty()) {
+            licenses = licenseService.listValid();
+        } else {
+            for (String id : ids) {
+                List<MarketPluginLicense> mine = licenseService.listMine(id);
+                if (mine != null) {
+                    licenses.addAll(mine);
+                }
+            }
+        }
+        Long userBuyerId = com.houjiang.commons.util.SiteInstanceResolver.resolveUserIdOrNull();
+        if (userBuyerId != null) {
+            List<MarketPluginLicense> byBuyer = licenseService.listMineByBuyer(userBuyerId);
+            if (byBuyer != null) {
+                licenses.addAll(byBuyer);
+            }
+        }
+        if (licenses == null || licenses.isEmpty()) {
             return Map.of();
         }
         return licenses.stream()
@@ -1928,12 +1962,15 @@ public class PluginMarketService {
         // 不能在共用 decorate 里做——平台目录的 items 是给全部站点消费的公开基线，
         // 平台自己的宿主可用性结论混进去会误导缺宿主的站点。
         item.setHostService(baseline.getHostService());
-        item.setInstalled(install != null && Integer.valueOf(1).equals(install.getInstalled()));
-        item.setInstalledVersion(install != null && Integer.valueOf(1).equals(install.getInstalled())
-                ? install.getVersion() : null);
-        item.setEnabled(install != null && Integer.valueOf(1).equals(install.getEnabled()));
-        // 授权状态：FREE 恒为已授权；PAID / TRIAL 以是否命中有效授权为准
-        item.setLicensed(!PluginLicenseService.requiresLicense(baseline.getLicenseType()) || license != null);
+        // 授权状态：FREE 恒为已授权；PAID / TRIAL 以是否命中当前会员有效授权为准
+        boolean licensed = !PluginLicenseService.requiresLicense(baseline.getLicenseType()) || license != null;
+        item.setLicensed(licensed);
+        // 「已安装」按会员视角：站点有制品 + 当前会员已授权（付费未买不能把整站安装态当成我的）
+        boolean siteInstalled = install != null && Integer.valueOf(1).equals(install.getInstalled());
+        boolean installedForMember = siteInstalled && licensed;
+        item.setInstalled(installedForMember);
+        item.setInstalledVersion(installedForMember ? install.getVersion() : null);
+        item.setEnabled(installedForMember && Integer.valueOf(1).equals(install.getEnabled()));
         item.setLicenseExpireTime(license == null || license.getExpireTime() == null
                 ? null
                 : license.getExpireTime().format(TIME_FORMATTER));

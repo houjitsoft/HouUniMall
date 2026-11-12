@@ -291,29 +291,43 @@ public class DistributionOrderHookService {
     }
 
     /**
-     * 解析本单的一级受益人，优先级从高到低：
-     * <ol>
-     *   <li>有分享人（shareUserId）且其是有效分销员 → 该分销员（实时分享，直接归属）；</li>
-     *   <li>否则查「绑定保护期」：买家在保护期内被谁推广过，本单仍归那位分销员；</li>
-     *   <li>否则若买家本人是分销员 → 自购返佣给其上级（parentId）；</li>
-     *   <li>否则无有效分销关系。</li>
-     * </ol>
-     *
-     * <p>绑定保护期（{@code bind_protect_days}）解决的是「客户点过 A 的链接，之后自己进小程序
-     * 下单」这类场景：只要在保护期内，复购仍算 A 的业绩。保护期由后台「分销设置」配置。
+     * 解析本单的一级受益人，结合 {@code bindMode}：
+     * <ul>
+     *   <li>bindMode=1 永久绑定：买家一旦有过有效分销归属，后续即便换分享人也不改绑；</li>
+     *   <li>bindMode=2 保护期后可换绑：有分享人时以分享人为准；无分享人时在保护期内沿用最近归属。</li>
+     * </ul>
+     * 其它回落：自购返佣给上级；否则无有效分销关系。
      */
     private Distributor resolveDistributor(DistributionSetting setting, Long shareUserId, Long buyerId) {
+        int bindMode = setting.getBindMode() == null ? 1 : setting.getBindMode();
+        Distributor shared = null;
         if (shareUserId != null && shareUserId > 0) {
-            Distributor d = findActiveByUserId(setting.getShopId(), shareUserId);
-            if (d != null) {
-                return d;
+            shared = findActiveByUserId(setting.getShopId(), shareUserId);
+        }
+
+        if (buyerId != null && buyerId > 0) {
+            // 永久绑定：已有历史归属则锁定，不再被新分享人改绑
+            if (bindMode == 1) {
+                Distributor permanent = resolveExistingBind(buyerId, null);
+                if (permanent != null) {
+                    return permanent;
+                }
+            } else {
+                // 保护期模式：无新分享人时，保护期内沿用最近归属
+                if (shared == null) {
+                    Distributor protectedBind = resolveExistingBind(buyerId, setting.getBindProtectDays());
+                    if (protectedBind != null) {
+                        return protectedBind;
+                    }
+                }
             }
         }
+
+        if (shared != null) {
+            return shared;
+        }
+
         if (buyerId != null && buyerId > 0) {
-            Distributor bound = resolveByBindProtect(setting, buyerId);
-            if (bound != null) {
-                return bound;
-            }
             Distributor self = findActiveByUserId(setting.getShopId(), buyerId);
             if (self != null && self.getParentId() != null && self.getParentId() > 0) {
                 Distributor parent = distributorService.getById(self.getParentId());
@@ -326,24 +340,22 @@ public class DistributionOrderHookService {
     }
 
     /**
-     * 绑定保护期归属：取买家在保护期内最近一笔有效分销订单的分销员。
+     * 查买家已有分销归属。
      *
-     * @return 归属的分销员，无保护期配置或保护期内无记录时返回 null
+     * @param protectDays null=不限时间（永久绑定）；&gt;0=仅取保护期内最近一笔；&lt;=0=不查
      */
-    private Distributor resolveByBindProtect(DistributionSetting setting, Long buyerId) {
-        Integer days = setting.getBindProtectDays();
-        if (days == null || days <= 0) {
+    private Distributor resolveExistingBind(Long buyerId, Integer protectDays) {
+        if (protectDays != null && protectDays <= 0) {
             return null;
         }
-        LocalDateTime since = LocalDateTime.now().minusDays(days);
-        DistributionOrder recent = distributionOrderService.lambdaQuery()
+        var query = distributionOrderService.lambdaQuery()
                 .eq(DistributionOrder::getBuyerId, buyerId)
                 .ne(DistributionOrder::getOrderStatus, STATUS_INVALID)
-                .eq(DistributionOrder::getDeleted, 0)
-                .ge(DistributionOrder::getCreateTime, since)
-                .orderByDesc(DistributionOrder::getId)
-                .last("limit 1")
-                .one();
+                .eq(DistributionOrder::getDeleted, 0);
+        if (protectDays != null) {
+            query.ge(DistributionOrder::getCreateTime, LocalDateTime.now().minusDays(protectDays));
+        }
+        DistributionOrder recent = query.orderByDesc(DistributionOrder::getId).last("limit 1").one();
         if (recent == null || recent.getDistributorId() == null) {
             return null;
         }

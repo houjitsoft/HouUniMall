@@ -76,6 +76,11 @@ public class DistributionSetting implements Serializable {
     private Integer autoUpgrade;
 
     /**
+     * 余额提现自动到账：1=审核通过后 payType=余额 自动入账并完结；0=仍需人工点「已打款」
+     */
+    private Integer autoPayoutBalance;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createTime;

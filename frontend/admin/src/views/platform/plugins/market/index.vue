@@ -161,17 +161,25 @@
 
           <div class="card-foot" @click.stop>
             <template v-if="!item.installed">
-              <!-- 付费未授权：给「购买」入口。若同时缺宿主，点击会先引导去买/装宿主，
-                   而不是静默进 checkout（买了也装不上）。 -->
-              <button
-                v-if="installBlocked(item)"
-                type="button"
-                class="foot-btn foot-btn--primary"
-                :disabled="!!installing"
-                @click="onPurchaseClick(item)"
-              >
-                购买
-              </button>
+              <!-- 付费未授权：购买 + 授权码安装并排，避免小白只看到「去管理」却无处下手。 -->
+              <template v-if="installBlocked(item)">
+                <button
+                  type="button"
+                  class="foot-btn foot-btn--primary"
+                  :disabled="!!installing"
+                  @click="onPurchaseClick(item)"
+                >
+                  购买
+                </button>
+                <button
+                  type="button"
+                  class="foot-btn foot-btn--outline-license"
+                  :disabled="!!installing || activating === item.code"
+                  @click="onActivateLicenseClick(item)"
+                >
+                  {{ activating === item.code ? '激活中…' : '授权码安装' }}
+                </button>
+              </template>
               <!-- 宿主不可用：左侧仍显示正常「安装」（禁止「不可安装」灰按钮）；
                    点安装或点右侧红字依赖提示，都会弹窗引导先买/装宿主。 -->
               <button
@@ -282,9 +290,9 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Download, Grid, Key, Plus, Refresh, Search, Tickets } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { isStandaloneService, installServiceAndWait } from '@/api/plugin-center/service'
-import { getMarketList, installFromMarket } from '@/api/plugin-center/pluginMarket'
+import { activateLicense, getMarketList, installFromMarket } from '@/api/plugin-center/pluginMarket'
 import { getSiteInstanceId } from '@/utils/site'
 import { getPluginCategories } from '@/api/plugin-center/pluginCenter'
 import PluginTypeDialog from '../components/PluginTypeDialog.vue'
@@ -305,6 +313,7 @@ const plugins = ref([])
 const categories = ref([])
 const categoryCounts = ref([])
 const installing = ref('')
+const activating = ref('')
 const installTarget = ref(null)
 const installVersion = ref('')
 /** 安装过程弹窗：步骤文案随请求推进，并保证最短展示时间 */
@@ -539,6 +548,43 @@ const guardHostThen = async (item, next) => {
 
 const onPurchaseClick = (item) => {
   guardHostThen(item, () => goCheckout(item))
+}
+
+const onActivateLicenseClick = (item) => {
+  if (!item?.code || activating.value || installing.value) return
+  guardHostThen(item, () => handleActivateLicense(item))
+}
+
+const handleActivateLicense = async (item) => {
+  let input
+  try {
+    input = await ElMessageBox.prompt(
+      `请输入「${item.name || item.code}」的授权码。激活成功后会自动进入安装。`,
+      '授权码安装',
+      {
+        confirmButtonText: '确认激活并安装',
+        cancelButtonText: '取消',
+        inputPlaceholder: 'HOU-XXXXXXXX-XXXXXXXXXXXXXXXX',
+        inputValidator: (value) => (String(value || '').trim() ? true : '请输入授权码')
+      }
+    )
+  } catch {
+    return
+  }
+  activating.value = item.code
+  try {
+    const res = await activateLicense(String(input.value).trim(), item.code, siteInstanceId)
+    const data = res?.data ?? {}
+    const expireText = data.permanent ? '永久有效' : `有效期至 ${data.expireTime || '-'}`
+    ElMessage.success(`授权已激活（${expireText}），开始安装…`)
+    await loadList()
+    const refreshed = plugins.value.find(row => row.code === item.code) || { ...item, licensed: true, installed: false }
+    await handleInstall(refreshed)
+  } catch (error) {
+    ElMessage.error(error?.message || '激活失败，请核对授权码')
+  } finally {
+    activating.value = ''
+  }
 }
 
 const onInstallClick = (item) => {
@@ -950,6 +996,7 @@ onMounted(() => {
 .card-foot {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 9px 14px;
   border-top: 1px solid var(--pl-line-soft);
@@ -1010,6 +1057,16 @@ onMounted(() => {
 .foot-hint { margin-left: auto; color: var(--pl-text-mute); font-size: 12px; white-space: nowrap; }
 .foot-hint.is-ok { color: var(--pl-ok); }
 .foot-hint.is-blocked { color: var(--pl-danger, #d03050); }
+.foot-btn--outline-license {
+  border-color: #b3d8ff;
+  color: #337ecc;
+  background: #fff;
+}
+.foot-btn--outline-license:hover {
+  border-color: #409eff;
+  color: #409eff;
+  background: #ecf5ff;
+}
 /* 缺宿主：镂空/描边按钮，视觉上明确可点，避免被当成灰字 */
 .foot-btn--outline-host {
   margin-left: auto;

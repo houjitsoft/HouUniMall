@@ -24,11 +24,14 @@ public class DistributionSettleTask {
 
     private final DistributionSettleService distributionSettleService;
     private final DistributionOrderHookService distributionOrderHookService;
+    private final DistributorLevelUpgradeService distributorLevelUpgradeService;
 
     public DistributionSettleTask(DistributionSettleService distributionSettleService,
-                                  DistributionOrderHookService distributionOrderHookService) {
+                                  DistributionOrderHookService distributionOrderHookService,
+                                  DistributorLevelUpgradeService distributorLevelUpgradeService) {
         this.distributionSettleService = distributionSettleService;
         this.distributionOrderHookService = distributionOrderHookService;
+        this.distributorLevelUpgradeService = distributorLevelUpgradeService;
     }
 
     /** 启动后 3 分钟首次执行，之后每 30 分钟一次 */
@@ -44,6 +47,15 @@ public class DistributionSettleTask {
         } catch (Exception e) {
             // 结算失败不能影响商城主流程，只记录日志，下个周期重试
             log.error("分销佣金自动结算失败: {}", e.getMessage(), e);
+        }
+        try {
+            Map<String, Object> upgrade = distributorLevelUpgradeService.upgradeAll(null);
+            Object upgraded = upgrade.get("upgraded");
+            if (upgraded instanceof Integer count && count > 0) {
+                log.info("分销员等级自动升级完成: upgraded={}, checked={}", count, upgrade.get("checked"));
+            }
+        } catch (Exception e) {
+            log.error("分销员等级自动升级失败: {}", e.getMessage(), e);
         }
     }
 

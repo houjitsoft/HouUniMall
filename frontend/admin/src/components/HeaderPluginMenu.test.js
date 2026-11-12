@@ -86,4 +86,34 @@ describe('application launcher permissions and retry', () => {
     wrapper.unmount()
   })
 
+  it('only lists applications the account can enter and never opens market detail from the launcher', async () => {
+    getPluginList.mockResolvedValue([
+      { code: 'erp', name: 'ERP', cateId: 42, installed: true, enabled: true },
+      { code: 'pm', name: '项目管理', cateId: 42, installed: true, enabled: true }
+    ])
+    const wrapper = mountPanel()
+    await flushPromises()
+
+    expect(wrapper.findAll('.plugin-menu-panel__item')).toHaveLength(1)
+    expect(wrapper.get('.plugin-menu-panel__item').text()).toContain('ERP')
+    expect(wrapper.text()).toContain('仅展示本账号已安装可进入的应用')
+
+    await wrapper.get('.plugin-menu-panel__item').trigger('click')
+    expect(navigateFromMenuNode).toHaveBeenCalledTimes(1)
+    expect(fixtures.router.push).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('guides empty accounts to the plugin market instead of a blank panel', async () => {
+    fixtures.app.baseMenus = []
+    getPluginList.mockResolvedValue([])
+    const wrapper = mountPanel()
+    await flushPromises()
+    expect(wrapper.text()).toContain('还没有可使用的应用')
+    expect(wrapper.text()).toContain('去插件市场安装')
+    await wrapper.get('.plugin-menu-panel__guide-btn').trigger('click')
+    expect(fixtures.router.push).toHaveBeenCalledWith('/platform/plugins/market')
+    wrapper.unmount()
+  })
+
 })

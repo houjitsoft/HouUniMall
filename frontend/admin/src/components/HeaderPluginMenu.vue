@@ -32,15 +32,21 @@
               <el-icon><component :is="favorites.includes(item.code) ? StarFilled : Star" /></el-icon>
             </button>
           </div>
-          <p v-if="!activeItems.length && !loading" class="plugin-menu-panel__empty">
-            {{ search ? '未找到匹配的应用' : '暂无可访问的已安装应用' }}
-          </p>
+          <div v-if="!activeItems.length && !loading" class="plugin-menu-panel__guide" role="status">
+            <p class="plugin-menu-panel__guide-title">{{ search ? '未找到匹配的应用' : '还没有可使用的应用' }}</p>
+            <p class="plugin-menu-panel__guide-desc">
+              {{ search ? '换个关键词再试，或到插件市场查看全部应用。' : '应用按账号安装。请先去插件市场购买或用授权码安装，装好后会出现在这里。' }}
+            </p>
+            <button type="button" class="plugin-menu-panel__guide-btn" @click="openPluginMarket">
+              去插件市场安装
+            </button>
+          </div>
         </div>
       </div>
       <div class="plugin-menu-panel__footer">
         <span v-if="loadError || appStore.pluginCategoriesError" role="status">{{ loadError ? '应用状态' : '应用分类' }}加载失败，<button type="button" @click="refreshApplications">重试</button></span>
-        <span v-else>与插件中心「已安装」是同一份清单</span>
-        <el-button v-if="pluginCenterMenu" link type="primary" @click="openPluginCenter">前往插件中心</el-button>
+        <span v-else>仅展示本账号已安装可进入的应用</span>
+        <el-button link type="primary" @click="openPluginMarket">插件市场</el-button>
       </div>
     </el-popover>
     <span class="hc-header-divider" aria-hidden="true"></span>
@@ -60,7 +66,7 @@ import { getSiteInstanceId } from '@/utils/site'
 import { getPluginList } from '@/api/plugin-center/pluginCenter'
 import { normalizeMenuTree, navigateFromMenuNode } from '@/utils/firstLevelMenuNav.js'
 import { ALL_CATE_ID, pathWithinMenu, findMenuById } from '@/utils/menuDisplay.js'
-import { buildInstalledApplicationItems, groupApplicationItems, filterApplicationItems, FAVORITES_CATE_ID } from '@/utils/pluginApplicationNav'
+import { buildApplicationItems, groupApplicationItems, filterApplicationItems, FAVORITES_CATE_ID } from '@/utils/pluginApplicationNav'
 import { registerPluginApplicationRefresher } from '@/utils/pluginApplicationRefresh'
 
 const route = useRoute()
@@ -79,10 +85,10 @@ const loading = ref(false)
 const loadError = ref(false)
 const favorites = ref([])
 let requestSequence = 0
-// 清单与插件中心「已安装」一致；菜单只决定能不能直接点进应用。
+// 右上角只展示当前账号权限树里能直接进入的应用；介绍/详情只走插件中心。
 const permissionTree = computed(() => normalizeMenuTree(authStore.token ? (appStore.baseMenus || []) : []))
-const items = computed(() => buildInstalledApplicationItems(permissionTree.value, catalog.value))
-const pluginGroups = computed(() => groupApplicationItems(items.value, appStore.pluginCategories, favorites.value, { includeEmpty: true }))
+const items = computed(() => buildApplicationItems(permissionTree.value, catalog.value))
+const pluginGroups = computed(() => groupApplicationItems(items.value, appStore.pluginCategories, favorites.value, { includeEmpty: false }))
 const activeItems = computed(() => search.value.trim()
   ? filterApplicationItems(items.value, search.value)
   : (pluginGroups.value.find(group => group.id === activeGroupId.value)?.items || items.value))
@@ -120,13 +126,17 @@ const handleSelect = item => {
     ElMessage.warning(item.unavailableReason === 'disabled' ? '该应用已停用，请先在插件中心启用' : '该应用暂不可用，请联系管理员查看运行状态')
     return
   }
-  if (item.menu) { navigate(item.menu); return }
-  panelVisible.value = false
-  const path = String(item.entryPath || '').trim()
-  if (path.startsWith('/')) { router.push(path); return }
-  router.push({ path: '/platform/plugins/market/detail', query: { code: item.code } })
+  if (!item.menu) {
+    ElMessage.warning('暂无该应用使用权限，请联系管理员分配菜单')
+    return
+  }
+  navigate(item.menu)
 }
 const openPluginCenter = () => { if (pluginCenterMenu.value) navigate(pluginCenterMenu.value) }
+const openPluginMarket = () => {
+  panelVisible.value = false
+  router.push('/platform/plugins/market')
+}
 const loadCatalog = async () => {
   const sequence = ++requestSequence
   loading.value = true
@@ -335,13 +345,44 @@ onBeforeUnmount(() => stopApplicationRefresh())
   white-space: nowrap;
 }
 
-.plugin-menu-panel__empty {
+.plugin-menu-panel__guide {
   grid-column: 1 / -1;
-  margin: 24px 0;
+  margin: 8px 4px 12px;
+  padding: 18px 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #edf5ff 0%, #f7fbff 100%);
+  border: 1px solid #c6e0ff;
   text-align: center;
-  font-size: 13px;
-  color: #a8abb2;
 }
+.plugin-menu-panel__guide-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2a37;
+}
+.plugin-menu-panel__guide-desc {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #4b5565;
+}
+.plugin-menu-panel__guide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 168px;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #409eff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.plugin-menu-panel__guide-btn:hover { background: #337ecc; }
 .plugin-menu-panel { margin-top: 12px; }
 .plugin-menu-panel__cate { width: 100%; border: 0; background: transparent; text-align: left; font-family: inherit; }
 .plugin-menu-panel__card { position: relative; }

@@ -274,6 +274,25 @@ public class PluginLicenseService {
     }
 
     /**
+     * 按购买方合并历史授权：早期有的记录 {@code instance_id} 为空、只写了 {@code buyer_id=用户ID}。
+     */
+    public List<MarketPluginLicense> listMineByBuyer(Long buyerId) {
+        if (buyerId == null || buyerId <= 0) {
+            return new ArrayList<>();
+        }
+        LocalDateTime now = LocalDateTime.now();
+        return licenseMapper.selectList(new LambdaQueryWrapper<MarketPluginLicense>()
+                .eq(MarketPluginLicense::getStatus, STATUS_VALID)
+                .eq(MarketPluginLicense::getBuyerId, buyerId)
+                .and(w -> w.isNull(MarketPluginLicense::getInstanceId)
+                        .or().eq(MarketPluginLicense::getInstanceId, ""))
+                .and(w -> w.eq(MarketPluginLicense::getLicenseType, TYPE_PAID)
+                        .or(q -> q.isNull(MarketPluginLicense::getExpireTime)
+                                .or().gt(MarketPluginLicense::getExpireTime, now)))
+                .orderByDesc(MarketPluginLicense::getId));
+    }
+
+    /**
      * ★记录首次成功安装时间并起算试用期（M5，方案 §7.3）。
      *
      * <p>为什么试用期不能从「签发」起算：租户买了没装、或者装了又卸载，

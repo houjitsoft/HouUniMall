@@ -47,6 +47,7 @@ public class DistributionSettleService {
     private final DistributorLevelService distributorLevelService;
     private final DistributorService distributorService;
     private final DistributionGoodsService distributionGoodsService;
+    private final DistributorLevelUpgradeService distributorLevelUpgradeService;
 
     public DistributionSettleService(DistributionSettingService distributionSettingService,
                                      DistributionOrderService distributionOrderService,
@@ -54,7 +55,8 @@ public class DistributionSettleService {
                                      CommissionRuleService commissionRuleService,
                                      DistributorLevelService distributorLevelService,
                                      DistributorService distributorService,
-                                     DistributionGoodsService distributionGoodsService) {
+                                     DistributionGoodsService distributionGoodsService,
+                                     DistributorLevelUpgradeService distributorLevelUpgradeService) {
         this.distributionSettingService = distributionSettingService;
         this.distributionOrderService = distributionOrderService;
         this.commissionRecordService = commissionRecordService;
@@ -62,6 +64,7 @@ public class DistributionSettleService {
         this.distributorLevelService = distributorLevelService;
         this.distributorService = distributorService;
         this.distributionGoodsService = distributionGoodsService;
+        this.distributorLevelUpgradeService = distributorLevelUpgradeService;
     }
 
     /**
@@ -103,6 +106,9 @@ public class DistributionSettleService {
             generated += one.generated;
             skipped += one.skipped;
             amount = amount.add(one.amount);
+            if (one.generated > 0 && distributionOrder.getDistributorId() != null) {
+                tryUpgrade(distributionOrder.getDistributorId());
+            }
         }
 
         stat.put("generated", generated);
@@ -213,11 +219,28 @@ public class DistributionSettleService {
             return empty;
         }
         GenerateStat one = generateOne(distributionOrder);
+        if (one.generated > 0 && distributionOrder.getDistributorId() != null) {
+            tryUpgrade(distributionOrder.getDistributorId());
+            if (distributionOrder.getDistributorId() != null) {
+                Distributor d = distributorService.getById(distributionOrder.getDistributorId());
+                if (d != null && d.getParentId() != null && d.getParentId() > 0) {
+                    tryUpgrade(d.getParentId());
+                }
+            }
+        }
         Map<String, Object> stat = new HashMap<>();
         stat.put("generated", one.generated);
         stat.put("generatedAmount", one.amount.setScale(2, RoundingMode.HALF_UP));
         stat.put("skipped", one.skipped);
         return stat;
+    }
+
+    private void tryUpgrade(Long distributorId) {
+        try {
+            distributorLevelUpgradeService.upgradeOne(distributorId);
+        } catch (Exception ignored) {
+            // 升级失败不影响佣金主链路
+        }
     }
 
     /**

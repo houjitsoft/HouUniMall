@@ -408,9 +408,17 @@ public class DistributionClientService {
         if (defaultLevel != null) {
             distributor.setLevelId(defaultLevel.getId());
         }
+        Integer applyMode = setting.getApplyMode() == null ? 1 : setting.getApplyMode();
         // 上级：按邀请码（分销员编号）绑定
         String inviteCode = str(params.get("inviteCode"));
-        if (inviteCode != null && !inviteCode.isBlank()) {
+        boolean inviteBlank = inviteCode == null || inviteCode.isBlank();
+        // applyMode=3 仅邀请：必须带有效邀请码，否则拒绝
+        if (applyMode == 3 && inviteBlank) {
+            res.put("ok", false);
+            res.put("reason", "当前仅支持邀请加入，请填写邀请码");
+            return res;
+        }
+        if (!inviteBlank) {
             LambdaQueryWrapper<Distributor> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(Distributor::getDistributorNo, inviteCode.trim());
             wrapper.eq(Distributor::getDeleted, 0);
@@ -418,11 +426,14 @@ public class DistributionClientService {
             Distributor parent = distributorService.getOne(wrapper);
             if (parent != null && parent.getStatus() != null && parent.getStatus() == DISTRIBUTOR_STATUS_NORMAL) {
                 distributor.setParentId(parent.getId());
+            } else if (applyMode == 3) {
+                res.put("ok", false);
+                res.put("reason", "邀请码无效或邀请人未通过审核");
+                return res;
             }
         }
-        // 无门槛（applyMode = 1 或未配置）直接通过，否则待审核
-        Integer applyMode = setting.getApplyMode();
-        boolean needAudit = applyMode != null && applyMode == 2;
+        // 无门槛(1) / 仅邀请(3) 直接通过；需审核(2) 进入待审
+        boolean needAudit = applyMode == 2;
         distributorService.apply(distributor);
         if (!needAudit) {
             distributor.setStatus(DISTRIBUTOR_STATUS_NORMAL);

@@ -44,8 +44,8 @@ export function buildApplicationItems(tree = [], catalog = []) {
 }
 
 /**
- * 右上角「插件应用」与插件中心默认「已安装」是同一份目录。
- * 菜单只负责点进去之后的跳转；没有菜单的已安装插件仍要计入分类数量。
+ * 插件中心「已安装」口径：按目录列出已安装项（含无菜单权限的项）。
+ * 右上角「插件应用」入口不要用这份清单，应走 buildApplicationItems（只列可进功能的应用）。
  */
 export function buildInstalledApplicationItems(tree = [], catalog = []) {
   const menus = new Map()

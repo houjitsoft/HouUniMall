@@ -93,14 +93,27 @@ public class DistributorLevelController {
     }
 
     /**
-     * 获取默认分销等级
-     *
-     * @param params 参数（包含 shopId）
-     * @return 默认分销等级
+     * 获取默认分销等级（shopId 缺省按平台 0）
      */
     @PostMapping("/default")
     public ResponseResult<DistributorLevel> getDefault(@RequestBody Map<String, Object> params) {
-        Long shopId = Long.parseLong(params.get("shopId").toString());
+        Long shopId = 0L;
+        if (params != null && params.get("shopId") != null && !"".equals(params.get("shopId").toString())) {
+            shopId = Long.parseLong(params.get("shopId").toString());
+        }
         return ResponseResult.success(distributorLevelService.getDefaultLevel(shopId));
+    }
+
+    /**
+     * 设为默认等级
+     */
+    @PostMapping("/setDefault")
+    public ResponseResult<Boolean> setDefault(@RequestBody Map<String, Object> params) {
+        Long id = Long.parseLong(params.get("id").toString());
+        Long shopId = null;
+        if (params.get("shopId") != null && !"".equals(params.get("shopId").toString())) {
+            shopId = Long.parseLong(params.get("shopId").toString());
+        }
+        return ResponseResult.success(distributorLevelService.setDefault(id, shopId));
     }
 }

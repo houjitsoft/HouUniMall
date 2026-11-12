@@ -47,6 +47,7 @@ vi.mock('@/api/plugin-center/pluginMarket', () => ({
   getMarketList: vi.fn(),
   installFromMarket: vi.fn(async () => ({ data: { version: '1.0.0' } })),
   activateLicense: vi.fn(async () => ({ data: { permanent: true } })),
+  activateLicense: vi.fn(async () => ({ data: { permanent: true } })),
   getMarketDetail: vi.fn(async () => ({})),
   getMarketVersions: vi.fn(async () => [])
 }))
@@ -204,16 +205,14 @@ describe('插件市场页面', () => {
     expect(ribbons[1].classes()).toContain('hot')
   })
 
-  it('未安装：付费未授权给「购买」，免费给「安装」，已安装给「去插件中心管理」', async () => {
+  it('未安装：付费未授权给「购买」和「授权码安装」，免费给「安装」，已安装给「去插件中心管理」', async () => {
     const wrapper = await mountPage()
     const feet = wrapper.findAll('.market-card .card-foot')
     expect(texts(feet[0], '.foot-btn')).toEqual(['去插件中心管理'])
-    // 付费未授权不再是「激活授权」——那是把用户推去找平台要码，线上自助购买已打通
-    expect(texts(feet[1], '.foot-btn')).toEqual(['购买'])
+    expect(texts(feet[1], '.foot-btn')).toEqual(['购买', '授权码安装'])
     expect(texts(feet[2], '.foot-btn')).toEqual(['安装'])
-    // 购买是主行动，用 primary 而不是 warning 样式
     expect(feet[1].find('.foot-btn--primary').exists()).toBe(true)
-    expect(feet[1].find('.foot-btn--warn').exists()).toBe(false)
+    expect(feet[1].find('.foot-btn--outline-license').exists()).toBe(true)
   })
 
   it('点「购买」直接进 checkout 并带上插件编码', async () => {

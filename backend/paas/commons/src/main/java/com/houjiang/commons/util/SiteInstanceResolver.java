@@ -5,7 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 站点实例标识（{@code instanceId}）的<b>服务端解析</b>——插件市场 / 插件授权 / 插件订单的身份收口。
@@ -18,8 +22,8 @@ import java.util.Map;
  *
  * <p><b>解析顺序（身份归属类字段必须单一事实来源）</b>：
  * <ol>
- *   <li>登录态有 {@code orgId} → 直接用它（一个组织 = 一个站点实例）；</li>
- *   <li>否则退化为 {@code u-{userId}}；</li>
+ *   <li>登录态有 {@code userId} → {@code u-{userId}}（插件购买/安装按会员隔离，优先）；</li>
+ *   <li>否则有 {@code orgId} → 用它（单租户开源站「一个组织 = 一个站点实例」）；</li>
  *   <li>{@link SecurityContextUtils} 不认商城管理员的 {@code Map} principal，
  *       这里兜底取 {@code id} 派生 {@code mall-{id}}——不兜底会让商城管理员调用插件侧
  *       接口时整片 500（principal 是 Map 时 {@code getCurrentUserOrNull()} 恒返回 null）；</li>
@@ -27,6 +31,8 @@ import java.util.Map;
  * </ol>
  * 退化到用户级（{@code u-} / {@code mall-}）而不是返回 null，是为了避免空标识让
  * 授权查询退化成「不限实例」——那等于把别人的授权也查出来。
+ * 读授权时可用 {@link #resolveLookupIds()} 同时覆盖用户实例与组织实例，避免历史
+ * 「绑在 orgId 上」的授权在改成按会员优先后突然消失。
  *
  * <p><b>为什么不是「有传就用、没传才解析」</b>：那种兼容写法等于漏洞还在，只是加了个默认值。
  * 请求体里带身份字段一律丢弃并记 warn（{@code log.warn}，不是硬拒 400）——
@@ -47,18 +53,34 @@ public final class SiteInstanceResolver {
      * @return 实例标识；未登录或无法识别时返回 {@code null}
      */
     public static String resolveOrNull() {
+        List<String> ids = resolveLookupIds();
+        return ids.isEmpty() ? null : ids.get(0);
+    }
+
+    /**
+     * 当前登录可用来查授权的全部实例标识（去重、保序）。
+     *
+     * <p>顺序：{@code u-{userId}} → {@code orgId} → 商城管理员 {@code mall-{id}}。
+     * 新签发/绑码写回只用首项（按会员）；列表合并授权时遍历全部，兼容历史 org 绑定。
+     */
+    public static List<String> resolveLookupIds() {
+        Set<String> ids = new LinkedHashSet<>();
         UserInfoVO user = SecurityContextUtils.getCurrentUserOrNull();
         if (user != null) {
-            String orgId = user.getOrgId();
-            if (orgId != null && !orgId.isBlank()) {
-                return orgId.trim();
-            }
             String userId = user.getUserId();
             if (userId != null && !userId.isBlank()) {
-                return "u-" + userId.trim();
+                ids.add("u-" + userId.trim());
+            }
+            String orgId = user.getOrgId();
+            if (orgId != null && !orgId.isBlank()) {
+                ids.add(orgId.trim());
             }
         }
-        return fromPrincipalMap();
+        String fromMap = fromPrincipalMap();
+        if (fromMap != null && !fromMap.isBlank()) {
+            ids.add(fromMap.trim());
+        }
+        return new ArrayList<>(ids);
     }
 
     /**
@@ -128,18 +150,7 @@ public final class SiteInstanceResolver {
      * 站点身份诊断链路依赖它——恢复 API 面，不改现有解析行为。）
      */
     public static String resolveRawOrNull() {
-        UserInfoVO user = SecurityContextUtils.getCurrentUserOrNull();
-        if (user != null) {
-            String orgId = user.getOrgId();
-            if (orgId != null && !orgId.isBlank()) {
-                return orgId.trim();
-            }
-            String userId = user.getUserId();
-            if (userId != null && !userId.isBlank()) {
-                return "u-" + userId.trim();
-            }
-        }
-        return fromPrincipalMap();
+        return resolveOrNull();
     }
 
     /**
@@ -177,6 +188,29 @@ public final class SiteInstanceResolver {
         }
         value = value.trim().toLowerCase();
         return value.isEmpty() ? null : value;
+    }
+
+    /**
+     * 当前登录用户 ID（数字）。用于合并 {@code buyer_id=用户} 且 {@code instance_id} 为空的历史授权。
+     */
+    public static Long resolveUserIdOrNull() {
+        UserInfoVO user = SecurityContextUtils.getCurrentUserOrNull();
+        String userId = user == null ? null : user.getUserId();
+        if (userId == null || userId.isBlank()) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof Map<?, ?> map) {
+                Object value = map.get("userId") == null ? map.get("uid") : map.get("userId");
+                userId = value == null ? null : String.valueOf(value);
+            }
+        }
+        if (userId == null || userId.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(userId.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**

@@ -1349,7 +1349,10 @@ public class PluginCenterService {
         item.setConfigSchema(catalogItem.getConfigSchema());
         applyMarketState(item, catalogItem.getCode(), marketPlugin, license);
         // 独立服务来自实例容器回执；内嵌扩展来自插件安装表，不以目录存在假装已安装。
-        boolean installed = install != null && Integer.valueOf(1).equals(install.getInstalled());
+        // 「已安装」按会员：站点有制品 + 当前会员已授权（付费未买不算我的已装）。
+        boolean siteInstalled = install != null && Integer.valueOf(1).equals(install.getInstalled());
+        boolean licensed = Boolean.TRUE.equals(item.getLicensed());
+        boolean installed = siteInstalled && licensed;
         item.setInstalled(installed);
         item.setEnabled(installed && Integer.valueOf(1).equals(install.getEnabled()));
         item.setConfigJson(install != null && StringUtils.hasText(install.getConfigJson()) ? install.getConfigJson() : "{}");
@@ -1409,10 +1412,30 @@ public class PluginCenterService {
         if (licenseService == null) {
             return Map.of();
         }
-        List<MarketPluginLicense> licenses = StringUtils.hasText(instanceId)
-                ? licenseService.listMine(instanceId)
-                : licenseService.listValid();
-        if (licenses == null) {
+        List<MarketPluginLicense> licenses = new ArrayList<>();
+        LinkedHashSet<String> ids = new LinkedHashSet<>();
+        if (StringUtils.hasText(instanceId)) {
+            ids.add(instanceId.trim());
+        }
+        ids.addAll(com.houjiang.commons.util.SiteInstanceResolver.resolveLookupIds());
+        if (ids.isEmpty()) {
+            licenses = licenseService.listValid();
+        } else {
+            for (String id : ids) {
+                List<MarketPluginLicense> mine = licenseService.listMine(id);
+                if (mine != null) {
+                    licenses.addAll(mine);
+                }
+            }
+        }
+        Long userBuyerId = com.houjiang.commons.util.SiteInstanceResolver.resolveUserIdOrNull();
+        if (userBuyerId != null) {
+            List<MarketPluginLicense> byBuyer = licenseService.listMineByBuyer(userBuyerId);
+            if (byBuyer != null) {
+                licenses.addAll(byBuyer);
+            }
+        }
+        if (licenses == null || licenses.isEmpty()) {
             return Map.of();
         }
         return licenses.stream()

@@ -54,6 +54,7 @@ public class DistributionSettingService extends ServiceImpl<DistributionSettingM
         current.setSettleDays(input.getSettleDays() != null ? input.getSettleDays() : current.getSettleDays());
         current.setMinWithdrawAmount(input.getMinWithdrawAmount() != null ? input.getMinWithdrawAmount() : current.getMinWithdrawAmount());
         current.setAutoUpgrade(input.getAutoUpgrade() != null && input.getAutoUpgrade() == 1 ? 1 : 0);
+        current.setAutoPayoutBalance(input.getAutoPayoutBalance() != null && input.getAutoPayoutBalance() == 1 ? 1 : 0);
         current.setUpdateTime(LocalDateTime.now());
         saveOrUpdate(current);
         return current;
@@ -86,6 +87,7 @@ public class DistributionSettingService extends ServiceImpl<DistributionSettingM
         setting.setSettleDays(7);
         setting.setMinWithdrawAmount(new java.math.BigDecimal("10.00"));
         setting.setAutoUpgrade(1);
+        setting.setAutoPayoutBalance(1);
         return setting;
     }
 }
