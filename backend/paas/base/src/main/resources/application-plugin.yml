@@ -90,7 +90,7 @@ houcloud:
   update:
     # 宿主框架版本：与 hou_market_plugin.min_framework_version 比较，
     # 低于插件要求时安装被 3014 拦下（不是装完再炸）。宿主升级后由部署方维护此值。
-    framework-version: 1.0.15
+    framework-version: 1.0.16
     # 制品体积上限（字节），与 houcloud.plugin.max-artifact-bytes 对齐，默认 64MB。
     max-artifact-bytes: 67108864
     # 是否强制要求制品签名（fail-closed）：开启后未签名或 kid 未登记的制品一律 3011。
