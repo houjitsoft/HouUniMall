@@ -2,8 +2,8 @@
   <div class="store-edit-page">
     <div class="page-heading">
       <div>
-        <h2>编辑店铺</h2>
-        <p>修改店铺基础资料、经营状态和平台展示信息</p>
+        <h2>{{ readOnly ? '查看店铺' : '编辑店铺' }}</h2>
+        <p>{{ readOnly ? '查看店铺基础资料与经营状态' : '修改店铺基础资料、经营状态和平台展示信息' }}</p>
       </div>
       <el-button @click="backToList">返回店铺列表</el-button>
     </div>
@@ -25,6 +25,7 @@
         v-else
         ref="formRef"
         :model="form"
+        :disabled="readOnly"
         :rules="rules"
         label-width="110px"
         class="store-form"
@@ -47,6 +48,21 @@
                 <el-radio :value="0">官方自营</el-radio>
                 <el-radio :value="1">商家入驻</el-radio>
               </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :md="12">
+            <el-form-item label="入驻类型">
+              <el-select v-model="form.entryType" class="w-full" placeholder="未记录">
+                <el-option label="个人入驻" :value="1" />
+                <el-option label="企业入驻" :value="2" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :md="12">
+            <el-form-item label="店铺等级">
+              <el-select v-model="form.shopLevelId" class="w-full" placeholder="未记录">
+                <el-option v-for="level in levels" :key="level.id" :label="level.storeLevel || level.levelName" :value="level.id" />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :md="12">
@@ -93,7 +109,7 @@
           </el-col>
         </el-row>
 
-        <div class="form-actions">
+        <div v-if="!readOnly" class="form-actions">
           <el-button @click="backToList">取消</el-button>
           <el-button type="primary" :loading="saving" @click="submit">保存修改</el-button>
         </div>
@@ -103,20 +119,23 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 
-import { mallShopDetail, mallShopProvisionOptions, mallShopSave } from '@/api/mall/shopAdmin'
+import { mallShopDetail, mallShopProvisionOptions, mallShopSave, mallShopLevelOptions } from '@/api/mall/shopAdmin'
 import { buildStoreUpdatePayload, normalizeStoreDetail } from './storeEditModel'
 
 const route = useRoute()
 const router = useRouter()
+const readOnly = computed(() => route.query.mode === 'view')
 const formRef = ref()
 const loading = ref(false)
 const saving = ref(false)
 const loadError = ref('')
 const categories = ref([])
+const levels = ref([])
+let pageRequestId = 0
 const form = reactive(normalizeStoreDetail())
 
 const rules = {
@@ -134,32 +153,41 @@ const rules = {
 const backToList = () => router.push('/mall/store/list')
 
 const loadPage = async () => {
+  const requestId = ++pageRequestId
   const id = Number(route.query.id)
   if (!Number.isInteger(id) || id <= 0) {
     loadError.value = '店铺ID不正确，请返回列表后重新选择'
+    loading.value = false
     return
   }
 
   loading.value = true
   loadError.value = ''
   try {
-    const [detailRes, optionsRes] = await Promise.all([
+    const [detailRes, optionsRes, levelsRes] = await Promise.all([
       mallShopDetail({ id }),
-      mallShopProvisionOptions()
+      mallShopProvisionOptions(),
+      mallShopLevelOptions()
     ])
+    if (requestId !== pageRequestId) return
     if (detailRes?.code !== 1 || !detailRes.data) {
       throw new Error(detailRes?.msg || detailRes?.message || '店铺资料加载失败')
     }
+    if (optionsRes?.code !== 1 || levelsRes?.code !== 1) {
+      throw new Error('店铺选项加载失败，请重新加载')
+    }
     Object.assign(form, normalizeStoreDetail(detailRes.data))
-    categories.value = optionsRes?.code === 1 && Array.isArray(optionsRes.data) ? optionsRes.data : []
+    categories.value = Array.isArray(optionsRes.data) ? optionsRes.data : []
+    levels.value = Array.isArray(levelsRes.data) ? levelsRes.data : []
   } catch (error) {
-    loadError.value = error?.message || '店铺资料加载失败，请稍后重试'
+    if (requestId === pageRequestId) loadError.value = error?.message || '店铺资料加载失败，请稍后重试'
   } finally {
-    loading.value = false
+    if (requestId === pageRequestId) loading.value = false
   }
 }
 
 const submit = async () => {
+  if (readOnly.value || saving.value || loading.value || loadError.value || !formRef.value) return
   try {
     await formRef.value?.validate()
   } catch {
@@ -179,7 +207,7 @@ const submit = async () => {
   }
 }
 
-onMounted(loadPage)
+watch(() => route.query.id, loadPage, { immediate: true })
 </script>
 
 <style scoped>

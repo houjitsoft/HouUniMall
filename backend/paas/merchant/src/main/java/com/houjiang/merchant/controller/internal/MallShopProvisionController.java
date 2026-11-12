@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -44,6 +45,12 @@ public class MallShopProvisionController {
     @PostMapping("/options")
     public AjaxResult<List<Map<String, Object>>> options() {
         return AjaxResult.success(provisionService.options());
+    }
+
+    @PostMapping("/level-options")
+    public AjaxResult<List<Map<String, Object>>> levelOptions(
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return AjaxResult.success(provisionService.levelOptions(authorization));
     }
 
     @PostMapping("/account-options")

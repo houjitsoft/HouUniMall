@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest'
 import { buildStoreUpdatePayload, normalizeStoreDetail } from './storeEditModel'
 
 describe('店铺编辑数据转换', () => {
+  it('入驻类型与等级保留真实值，未记录不填默认等级', () => {
+    expect(normalizeStoreDetail()).toMatchObject({ entryType: null, shopLevelId: null })
+    const form = normalizeStoreDetail({ id: 9, entryType: 2, shopLevelId: 3 })
+    expect(buildStoreUpdatePayload(form)).toMatchObject({ entryType: 2, shopLevelId: 3 })
+    const unknown = buildStoreUpdatePayload(normalizeStoreDetail({ id: 8 }))
+    expect(unknown).not.toHaveProperty('entryType')
+    expect(unknown).not.toHaveProperty('shopLevelId')
+  })
   it('将 merchant 详情转换为编辑表单', () => {
     expect(normalizeStoreDetail({
       id: 1,

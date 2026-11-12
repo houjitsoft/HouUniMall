@@ -9,6 +9,12 @@ import java.util.Map;
 @Data
 public class MallShopProvisionListedVo implements Serializable {
     private Integer id;
+    private Long createTime;
+    private Integer entryType;
+    private Integer shopLevelId;
+    private String levelName;
+    private String previousName;
+    private Integer auditStatus;
     private String name;
     private String logo;
     private Integer type;

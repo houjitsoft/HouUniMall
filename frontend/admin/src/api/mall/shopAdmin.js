@@ -41,6 +41,9 @@ export const mallShopProvisionCreate = (data) => request.post('/web/mall/merchan
 /** 获取新增商家表单选项 */
 export const mallShopProvisionOptions = () => request.post('/web/mall/merchant/options')
 
+/** 平台店铺列表筛选和资料表单的只读等级选项。 */
+export const mallShopLevelOptions = () => request.post('/web/mall/merchant/level-options')
+
 /** 获取新增店铺时可绑定的统一账号 */
 export const mallShopProvisionAccountOptions = (data) => request.post('/web/mall/merchant/account-options', data || {})
 

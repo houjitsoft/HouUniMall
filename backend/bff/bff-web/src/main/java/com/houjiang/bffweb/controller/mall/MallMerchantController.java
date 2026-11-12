@@ -37,6 +37,11 @@ public class MallMerchantController {
         return merchantServiceFeign.provisionShopOptions();
     }
 
+    @PostMapping("/level-options")
+    public Object levelOptions() {
+        return merchantServiceFeign.provisionShopLevelOptions();
+    }
+
     @PostMapping("/account-options")
     public Object accountOptions(@RequestBody(required = false) Map<String, Object> params) {
         return merchantServiceFeign.provisionShopAccountOptions(params == null ? Map.of() : params);

@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MallShopProvisionService {
 
+    private static final String PROFILE_TYPE = "store_profile";
     private static final Pattern MOBILE_PATTERN = Pattern.compile("^1\\d{10}$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
@@ -60,6 +61,7 @@ public class MallShopProvisionService {
                 .select("id").eq("id", request.getShopCategoryId()).eq("delete_time", 0).eq("status", 1)
                 .last("limit 1")) == null) throw new OperateException("主营类目不存在或已停用");
 
+        validateProfile(request.getEntryType(), request.getShopLevelId());
         long now = System.currentTimeMillis() / 1000;
         MallShop shop = new MallShop();
         shop.setCreateTime(now); shop.setUpdateTime(now); shop.setDeleteTime(0L);
@@ -77,6 +79,10 @@ public class MallShopProvisionService {
         shopMapper.insert(shop);
 
         AccountGrant grant = resolveAccount(request, shop.getId());
+        // 新插入的店铺行由本事务持有排他锁；编辑时显式 FOR UPDATE 使用同一锁协议。
+        writeProfile(shop.getId(), "entry_type", request.getEntryType(), now);
+        writeProfile(shop.getId(), "shop_level_id", request.getShopLevelId(), now);
+        writeProfile(shop.getId(), "audit_status", 1, now);
         return new MallShopProvisionResultVo(shop.getId(), grant.loginAccount());
     }
 
@@ -89,6 +95,35 @@ public class MallShopProvisionService {
         Integer status = nullableInt(params.get("status")); if (status != null) query.eq("shop_status", status);
         Integer categoryId = nullableInt(params.get("shopCategoryId")); if (categoryId != null) query.eq("shop_category_id", categoryId);
         Integer businessStatus = nullableInt(params.get("businessStatus")); if (businessStatus != null) query.eq("business_status", businessStatus);
+        if (hasText(params.get("ownerAccount"))) {
+            List<Integer> ids = jdbcTemplate.queryForList(
+                    "SELECT a.shop_id FROM hou_merchant_mall_shop_admin a "
+                            + "JOIN hou_user_info u ON u.user_id = a.user_id "
+                            + "WHERE a.delete_time = 0 AND a.super = 1 "
+                            + "AND a.id = (SELECT MIN(a2.id) FROM hou_merchant_mall_shop_admin a2 "
+                            + "WHERE a2.shop_id = a.shop_id AND a2.delete_time = 0 AND a2.super = 1) "
+                            + "AND COALESCE(NULLIF(TRIM(u.user_mobile), ''), TRIM(u.user_name)) LIKE ?",
+                    Integer.class, "%" + text(params.get("ownerAccount")) + "%");
+            if (ids.isEmpty()) return PageResult.iPageHandle(0L, (long) pageNo, (long) pageSize, Collections.emptyList());
+            query.in("id", ids);
+        }
+        for (String field : List.of("entryType", "shopLevelId")) {
+            if (!hasText(params.get(field))) continue;
+            Integer value = nullableInt(params.get(field));
+            if (value == null || value <= 0 || ("entryType".equals(field) && value > 2)) {
+                throw new OperateException("筛选参数不正确");
+            }
+            String configName = "entryType".equals(field) ? "entry_type" : "shop_level_id";
+            List<Integer> ids = jdbcTemplate.queryForList(
+                    "SELECT c.shop_id FROM hou_merchant_mall_shop_config c "
+                            + ("shopLevelId".equals(field) ? "JOIN hou_shop_level l ON c.value COLLATE utf8mb4_general_ci = CAST(l.id AS CHAR CHARACTER SET utf8mb4) COLLATE utf8mb4_general_ci " : "")
+                            + "WHERE c.type = ? AND c.name = ? AND c.delete_time = 0 AND c.value = ? "
+                            + "AND c.id = (SELECT MAX(c2.id) FROM hou_merchant_mall_shop_config c2 "
+                            + "WHERE c2.shop_id = c.shop_id AND c2.type = c.type AND c2.name = c.name AND c2.delete_time = 0)",
+                    Integer.class, PROFILE_TYPE, configName, value.toString());
+            if (ids.isEmpty()) return PageResult.iPageHandle(0L, (long) pageNo, (long) pageSize, Collections.emptyList());
+            query.in("id", ids);
+        }
         Page<MallShop> result = shopMapper.selectPage(new Page<>(pageNo, pageSize), query);
         List<MallShopProvisionListedVo> rows = result.getRecords().stream().map(this::toListedVo).collect(Collectors.toList());
         return PageResult.iPageHandle(result.getTotal(), result.getCurrent(), result.getSize(), rows);
@@ -105,8 +140,8 @@ public class MallShopProvisionService {
     @Transactional(rollbackFor = Exception.class)
     public void update(MallShopProvisionUpdateValidate request) {
         MallShop current = shopMapper.selectOne(new QueryWrapper<MallShop>()
-                .select("id", "shop_status").eq("id", request.getId())
-                .eq("delete_time", 0).last("limit 1"));
+                .select("id", "name", "shop_status").eq("id", request.getId())
+                .eq("delete_time", 0).last("limit 1 FOR UPDATE"));
         if (current == null) throw new OperateException("店铺不存在");
 
         String name = requiredText(request.getName(), "请输入店铺名称");
@@ -120,6 +155,7 @@ public class MallShopProvisionService {
             throw new OperateException("主营类目不存在或已停用");
         }
 
+        validateProfile(request.getEntryType(), request.getShopLevelId());
         long now = System.currentTimeMillis() / 1000;
         UpdateWrapper<MallShop> update = new UpdateWrapper<MallShop>()
                 .eq("id", request.getId()).eq("delete_time", 0)
@@ -135,6 +171,11 @@ public class MallShopProvisionService {
                 .set("business_status", request.getBusinessStatus())
                 .set("update_time", now);
         shopMapper.update(null, update);
+        writeProfile(request.getId(), "entry_type", request.getEntryType(), now);
+        writeProfile(request.getId(), "shop_level_id", request.getShopLevelId(), now);
+        if (!name.equals(current.getName())) {
+            writeProfile(request.getId(), "previous_name", current.getName(), now);
+        }
 
         if (!request.getShopStatus().equals(current.getShopStatus())) {
             MallShopAdmin admin = adminMapper.selectOne(new QueryWrapper<MallShopAdmin>().select("id")
@@ -154,6 +195,34 @@ public class MallShopProvisionService {
         return categoryMapper.selectList(new QueryWrapper<MallShopCategory>().select("id", "name")
                         .eq("delete_time", 0).eq("status", 1).orderByAsc("sort", "id"))
                 .stream().map(c -> Map.<String, Object>of("id", c.getId(), "name", c.getName())).collect(Collectors.toList());
+    }
+
+    /** 平台列表筛选只读选项，不经过商家单店拦截器，也不开放等级管理写操作。 */
+    public List<Map<String, Object>> levelOptions(String authorization) {
+        String token = text(authorization);
+        if (token.regionMatches(true, 0, "Bearer ", 0, 7)) token = token.substring(7).trim();
+        if (token.isEmpty()) throw new OperateException("请先登录平台管理端");
+        // 会话在 Redis 中既有 JSON 对象也有 JSON 字符串，避免经 RedisCache 强转 String。
+        String raw = com.houjiang.commons.util.RedisUtil.getNoExpire(
+                com.houjiang.commons.config.HouConfig.HOU_USER_TOKEN_USER + token);
+        if (!hasText(raw)) throw new OperateException("登录状态已失效");
+        Object session = com.alibaba.fastjson2.JSON.parse(raw);
+        if (session instanceof String encoded) session = com.alibaba.fastjson2.JSON.parse(encoded);
+        if (!(session instanceof com.alibaba.fastjson2.JSONObject root)) throw new OperateException("登录状态已失效");
+        Object userData = root.getOrDefault("user", root);
+        if (userData instanceof String encoded) userData = com.alibaba.fastjson2.JSON.parse(encoded);
+        if (!(userData instanceof com.alibaba.fastjson2.JSONObject user) || !hasText(user.get("userId"))) {
+            throw new OperateException("登录状态已失效");
+        }
+        String userId = user.getString("userId");
+        Long allowed = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM hou_user_info u WHERE u.user_id = ? "
+                + "AND COALESCE(u.is_delete,0)=0 AND (u.is_admin=1 OR EXISTS (SELECT 1 "
+                + "FROM hou_permission_user_role ur JOIN hou_permission_role_menu rm ON rm.role_id=ur.role_id "
+                + "JOIN hou_permission_menu m ON m.id=rm.menu_id WHERE ur.user_id=u.user_id "
+                + "AND m.perms IN ('shell:mall:store:list','shell:mall:store:level') AND m.is_disable=0))",
+                Long.class, userId);
+        if (allowed == null || allowed == 0) throw new OperateException("无店铺列表访问权限");
+        return jdbcTemplate.queryForList("SELECT id,store_level AS storeLevel FROM hou_shop_level ORDER BY id");
     }
 
     public List<Map<String, Object>> accountOptions(Map<String, Object> params) {
@@ -251,6 +320,27 @@ public class MallShopProvisionService {
         vo.setTypeText(Integer.valueOf(0).equals(shop.getType()) ? "官方自营" : "商家入驻"); vo.setShopStatus(shop.getShopStatus()); vo.setBusinessStatus(shop.getBusinessStatus());
         vo.setContact(shop.getContact()); vo.setMobile(firstMobile(shop.getMobile())); vo.setAddressInfo(shop.getAddressInfo());
         vo.setLat(shop.getLat()); vo.setLng(shop.getLng());
+        vo.setCreateTime(shop.getCreateTime());
+        Map<String, Object> profile = new LinkedHashMap<>();
+        for (Map<String, Object> row : jdbcTemplate.queryForList(
+                "SELECT name, value FROM hou_merchant_mall_shop_config "
+                        + "WHERE shop_id = ? AND type = ? AND delete_time = 0 ORDER BY id ASC",
+                shop.getId(), PROFILE_TYPE)) {
+            profile.put(text(row.get("name")), row.get("value"));
+        }
+        Integer entryType = nullableInt(profile.get("entry_type"));
+        vo.setEntryType(entryType != null && entryType >= 1 && entryType <= 2 ? entryType : null);
+        Integer levelId = nullableInt(profile.get("shop_level_id"));
+        if (levelId != null && levelId > 0) {
+            List<Map<String, Object>> levels = jdbcTemplate.queryForList(
+                    "SELECT id, store_level FROM hou_shop_level WHERE id = ?", levelId);
+            if (!levels.isEmpty()) {
+                vo.setShopLevelId(((Number) levels.getFirst().get("id")).intValue());
+                vo.setLevelName((String) levels.getFirst().get("store_level"));
+            }
+        }
+        vo.setPreviousName(profile.get("previous_name") == null ? null : String.valueOf(profile.get("previous_name")));
+        vo.setAuditStatus(nullableInt(profile.get("audit_status")));
         MallShopAdmin admin = adminMapper.selectOne(new QueryWrapper<MallShopAdmin>().select("id", "user_id", "status").eq("shop_id", shop.getId()).eq("delete_time", 0).eq("super", 1).orderByAsc("id").last("limit 1"));
         if (admin == null) vo.setAccount(Map.of("loginAccount", "-", "status", 0));
         else {
@@ -260,6 +350,30 @@ public class MallShopProvisionService {
         MallShopCategory category = shop.getShopCategoryId() == null ? null : categoryMapper.selectById(shop.getShopCategoryId());
         vo.setShopCategory(category == null ? Map.of("name", "-") : Map.of("id", category.getId(), "name", category.getName()));
         return vo;
+    }
+
+    private void validateProfile(Integer entryType, Integer shopLevelId) {
+        if (entryType != null && (entryType < 1 || entryType > 2)) throw new OperateException("入驻类型不正确");
+        if (shopLevelId == null) return;
+        if (shopLevelId <= 0) throw new OperateException("店铺等级不正确");
+        List<Integer> levels = jdbcTemplate.queryForList("SELECT id FROM hou_shop_level WHERE id = ?", Integer.class, shopLevelId);
+        if (levels.isEmpty()) throw new OperateException("店铺等级不存在");
+    }
+
+    // 调用方必须在事务中持有店铺行排他锁；不传值时保留原配置。
+    private void writeProfile(Integer shopId, String name, Object value, long now) {
+        if (value == null) return;
+        List<Map<String, Object>> configs = jdbcTemplate.queryForList(
+                "SELECT id FROM hou_merchant_mall_shop_config WHERE shop_id = ? AND type = ? AND name = ? AND delete_time = 0 FOR UPDATE",
+                shopId, PROFILE_TYPE, name);
+        if (configs.size() > 1) throw new OperateException("店铺资料配置存在重复记录，请先处理数据冲突");
+        if (configs.isEmpty()) {
+            jdbcTemplate.update("INSERT INTO hou_merchant_mall_shop_config (shop_id, type, name, value, create_time, update_time, delete_time) VALUES (?, ?, ?, ?, ?, ?, 0)",
+                    shopId, PROFILE_TYPE, name, String.valueOf(value), now, now);
+        } else {
+            jdbcTemplate.update("UPDATE hou_merchant_mall_shop_config SET value = ?, update_time = ? WHERE id = ?",
+                    String.valueOf(value), now, configs.getFirst().get("id"));
+        }
     }
 
     private String preferredLoginAccount(Map<String, Object> account) { String mobile = text(account.get("userMobile")); return hasText(mobile) ? mobile : text(account.get("userName")); }

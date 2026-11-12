@@ -25,6 +25,13 @@ public class MallShopProvisionCreateValidate implements Serializable {
 
     private Integer shopCategoryId;
 
+    @Min(value = 1, message = "入驻类型不正确")
+    @Max(value = 2, message = "入驻类型不正确")
+    private Integer entryType;
+
+    @Min(value = 1, message = "店铺等级不正确")
+    private Integer shopLevelId;
+
     @NotBlank(message = "联系人不能为空")
     @Size(max = 30, message = "联系人不能超过30个字符")
     private String contact;

@@ -4,6 +4,8 @@ export function normalizeStoreDetail(data = {}) {
     name: data.name || '',
     type: Number(data.type ?? 1),
     shopCategoryId: data.shopCategory?.id ?? data.shopCategoryId ?? null,
+    entryType: data.entryType ?? null,
+    shopLevelId: data.shopLevelId ?? null,
     contact: data.contact || '',
     mobile: data.mobile || '',
     addressInfo: data.addressInfo || '',
@@ -16,7 +18,7 @@ export function normalizeStoreDetail(data = {}) {
 }
 
 export function buildStoreUpdatePayload(form) {
-  return {
+  const payload = {
     id: Number(form.id),
     name: form.name.trim(),
     type: Number(form.type),
@@ -29,4 +31,7 @@ export function buildStoreUpdatePayload(form) {
     shopStatus: Number(form.shopStatus),
     businessStatus: Number(form.businessStatus)
   }
+  if (form.entryType) payload.entryType = Number(form.entryType)
+  if (form.shopLevelId) payload.shopLevelId = Number(form.shopLevelId)
+  return payload
 }

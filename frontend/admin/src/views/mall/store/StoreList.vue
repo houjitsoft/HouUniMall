@@ -1,131 +1,104 @@
 <template>
-  <div class="goods-lists">
-    <el-card class="!border-none" shadow="never">
-      <el-alert
-        type="info"
-        title="新增店铺会同步开通店铺管理主账号，创建后可直接登录店铺管理端"
-        :closable="false"
-        show-icon
-      />
+  <div class="store-list-page">
+    <nav class="store-tabs" aria-label="店铺管理页签">
+      <button class="store-tab is-active" type="button" aria-current="page">店铺设置</button>
+      <button v-for="tab in pendingTabs" :key="tab" class="store-tab" type="button" disabled :title="`${tab}待补充参考截图和交互规则`">{{ tab }}</button>
+    </nav>
 
-      <el-form ref="formRef" class="mb-[-16px] mt-[16px]" :model="queryParams" :inline="true">
-        <el-form-item label="店铺名称">
-          <el-input
-            class="w-[280px]"
-            v-model="queryParams.name"
-            placeholder="请输入店铺名称"
-            clearable
-            @keyup.enter="handleSearch"
-          />
-        </el-form-item>
-        <el-form-item label="店铺类型">
-          <el-select class="w-[280px]" v-model="queryParams.type" placeholder="选择">
-            <el-option label="全部" value="" />
-            <el-option label="官方自营" value="1" />
-            <el-option label="商家入驻" value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="主营类目">
-          <el-select class="w-[320px]" v-model="queryParams.shop_category_id">
-            <el-option label="全部" value="" />
-            <el-option
-              v-for="item in shopCategoryList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="营业状态">
-          <el-select class="w-[280px]" v-model="queryParams.business_status" placeholder="选择">
-            <el-option label="全部" value="" />
-            <el-option label="营业中" value="1" />
-            <el-option label="暂停营业" value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="店铺状态">
-          <el-select class="w-[280px]" v-model="queryParams.shop_status" placeholder="选择">
-            <el-option label="全部" value="" />
-            <el-option label="正常" value="1" />
-            <el-option label="冻结" value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
+    <div class="store-list-content">
+      <el-form class="store-search" :model="queryParams" label-width="70px" @submit.prevent="handleSearch">
+        <div class="store-search-fields">
+          <el-form-item label="店主账号：">
+            <el-input v-model="queryParams.ownerAccount" placeholder="请输入店主账号" clearable @keyup.enter="handleSearch" />
+          </el-form-item>
+          <el-form-item label="店铺名称：">
+            <el-input v-model="queryParams.name" placeholder="请输入店铺名称" clearable @keyup.enter="handleSearch" />
+          </el-form-item>
+          <el-form-item label="店铺类型：">
+            <el-select v-model="queryParams.entryType" placeholder="请选择" clearable>
+              <el-option label="个人入驻" :value="1" />
+              <el-option label="企业入驻" :value="2" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="店铺状态：">
+            <el-select v-model="queryParams.shop_status" placeholder="全部">
+              <el-option label="全部" value="" />
+              <el-option label="正常" :value="1" />
+              <el-option label="冻结" :value="0" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="店铺等级：">
+            <el-select v-model="queryParams.shopLevelId" placeholder="请选择" clearable :loading="levelLoading">
+              <el-option v-for="level in levels" :key="level.id" :label="level.storeLevel || level.levelName" :value="level.id" />
+            </el-select>
+          </el-form-item>
+        </div>
+        <div class="store-search-actions">
+          <el-button type="primary" size="small" native-type="submit" :loading="loading">查询</el-button>
+          <el-button type="primary" size="small" @click="handleReset">重置</el-button>
+        </div>
       </el-form>
-    </el-card>
 
-    <el-card class="!border-none mt-4" :body-style="{ 'padding-top': '10px' }" shadow="never">
-      <!-- 新增店铺 -->
-      <el-button type="primary" class="mt-2" @click="handleAdd">+ 新增店铺</el-button>
-
-      <!-- 表格 -->
-      <el-table size="large" v-loading="loading" :data="list" class="mt-4">
-        <el-table-column type="selection" width="55" />
-        <el-table-column label="ID" prop="id" width="55" show-overflow-tooltip />
-        <el-table-column label="店铺名称" min-width="200">
+      <div class="store-toolbar">
+        <el-button type="primary" link :icon="Plus" @click="handleAdd">创建店铺</el-button>
+        <el-button type="primary" link :icon="Download" :loading="exporting" @click="handleExport">导出</el-button>
+        <el-button type="primary" link :icon="Refresh" :loading="loading" @click="fetchList">刷新</el-button>
+      </div>
+      <el-alert v-if="listError" class="store-list-error" type="error" :title="listError" :closable="false" show-icon />
+      <el-table v-loading="loading" :data="list" class="store-table" empty-text="暂无店铺数据" :row-style="{ height: '76px' }" :header-row-style="{ height: '44px' }">
+        <el-table-column label="操作" width="160" fixed="left" align="center">
           <template #default="{ row }">
-            <div class="store-name-cell">
-              <el-image
-                v-if="row.logo"
-                fit="cover"
-                :src="row.logo"
-                class="store-logo flex-none"
-                @error="row.logo = ''"
-              />
-              <div v-else class="store-logo store-logo-placeholder flex-none">
-                {{ row.name?.trim().charAt(0) || '商' }}
-              </div>
-              <div class="store-name-cell__text">
-                <el-tooltip effect="dark" :content="row.name" placement="top">
-                  <div class="store-name-cell__name">{{ row.name }}</div>
-                </el-tooltip>
-              </div>
+            <div class="store-row-actions">
+              <el-button type="primary" link @click="handleView(row)">查看</el-button>
+              <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+              <el-button type="primary" link @click="handleEdit(row)">修改</el-button>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="统一账号" prop="account.loginAccount" min-width="120" />
-        <el-table-column label="主营类目" prop="shop_category.name" min-width="90" />
-        <el-table-column label="店铺类型" prop="type_text" min-width="90" />
-        <el-table-column label="营业状态" min-width="90">
+        <el-table-column label="店铺id" prop="id" min-width="80" align="center" />
+        <el-table-column label="店主账号" min-width="140" align="center">
+          <template #default="{ row }">{{ maskStoreAccount(row.account?.loginAccount) }}</template>
+        </el-table-column>
+        <el-table-column label="店铺名称" prop="name" min-width="140" align="center" show-overflow-tooltip />
+        <el-table-column label="店铺logo" min-width="110" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row?.business_status == 1" type="success">营业中</el-tag>
-            <el-tag type="info" v-else>暂停营业</el-tag>
+            <el-image v-if="row.logo" :src="row.logo" fit="contain" class="store-logo">
+              <template #error><span class="store-empty-value">—</span></template>
+            </el-image>
+            <span v-else class="store-empty-value">—</span>
           </template>
         </el-table-column>
-        <el-table-column label="店铺状态" min-width="90">
-          <template #default="{ row }">
-            <el-switch
-              v-model="row.shop_status"
-              :active-value="1"
-              :inactive-value="0"
-              @change="handleChangeStatus($event, row.id)"
-            />
-          </template>
+        <el-table-column label="店铺类型" prop="entry_type_text" min-width="120" align="center" />
+        <el-table-column label="店铺等级" prop="level_name" min-width="120" align="center" />
+        <el-table-column label="商家电话" min-width="120" align="center">
+          <template #default="{ row }">{{ row.mobile || '—' }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column label="开店时间" min-width="120" align="center">
+          <template #default="{ row }">{{ formatStoreDate(row.createTime) }}</template>
+        </el-table-column>
+        <el-table-column label="店铺曾用名" min-width="140" align="center" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.previousName || '—' }}</template>
+        </el-table-column>
+        <el-table-column label="审核状态" min-width="130" align="center">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="primary" link @click="handleAccount(row)">账号管理</el-button>
-            <el-button type="danger" link @click="handleDelete(row.id)">删除</el-button>
+            <span class="store-audit-state" :class="`is-${storeAuditState(row.auditStatus).tone}`">
+              <i aria-hidden="true" />{{ storeAuditState(row.auditStatus).label }}
+            </span>
           </template>
         </el-table-column>
       </el-table>
-
-      <div class="flex justify-end mt-4">
+      <div class="store-pagination">
         <el-pagination
           v-model:current-page="pagination.pageNo"
           v-model:page-size="pagination.pageSize"
           :page-sizes="[10, 15, 20, 50]"
           :total="pagination.total"
           layout="total, sizes, prev, pager, next, jumper"
-          @size-change="fetchList"
+          @size-change="handleSearch"
           @current-change="fetchList"
         />
       </div>
-    </el-card>
+    </div>
 
     <el-dialog
       v-model="createVisible"
@@ -161,6 +134,21 @@
               <el-select v-model="createForm.type" class="w-full">
                 <el-option label="商家入驻" :value="1" />
                 <el-option label="官方自营" :value="0" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12">
+            <el-form-item label="入驻类型" prop="entryType">
+              <el-select v-model="createForm.entryType" class="w-full" clearable placeholder="请选择">
+                <el-option label="个人入驻" :value="1" />
+                <el-option label="企业入驻" :value="2" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12">
+            <el-form-item label="店铺等级" prop="shopLevelId">
+              <el-select v-model="createForm.shopLevelId" class="w-full" clearable placeholder="请选择" :loading="levelLoading">
+                <el-option v-for="level in levels" :key="level.id" :label="level.storeLevel || level.levelName" :value="level.id" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -279,23 +267,33 @@
 
 <script setup>
 import { ref, reactive, onMounted, nextTick, onBeforeUnmount } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { Download, Plus, Refresh } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-import request from '@/utils/request'
+import { mallShopLevelOptions } from '@/api/mall/shopAdmin'
 import {
   mallShopLists,
   mallShopProvisionAccountOptions,
   mallShopProvisionCreate,
-  mallShopProvisionOptions,
-  mallShopStatus
+  mallShopProvisionOptions
 } from '@/api/mall/shopAdmin'
 import {
   buildCreateStorePayload,
   buildStoreListParams,
-  normalizeStorePage
+  buildStoreExportCsv,
+  formatStoreDate,
+  maskStoreAccount,
+  normalizeStorePage,
+  storeAuditState
 } from './storeListModel'
 
 const router = useRouter()
+const pendingTabs = ['审核店铺名', '审核资质信息', '结算管理', '审核经营类目']
+const levels = ref([])
+const levelLoading = ref(false)
+const exporting = ref(false)
+const listError = ref('')
+let listRequestId = 0
 
 /** 加载状态 */
 const loading = ref(false)
@@ -324,6 +322,8 @@ const createDefaults = () => ({
   name: '',
   type: 1,
   shopCategoryId: null,
+  entryType: null,
+  shopLevelId: null,
   contact: '',
   mobile: '',
   addressInfo: '',
@@ -367,13 +367,8 @@ const createRules = {
   ]
 }
 
-const queryParams = reactive({
-  name: '',
-  type: '',
-  shop_category_id: '',
-  business_status: '',
-  shop_status: ''
-})
+const queryDefaults = () => ({ ownerAccount: '', name: '', entryType: '', shop_status: '', shopLevelId: '' })
+const queryParams = reactive(queryDefaults())
 
 /** 分页信息 */
 const pagination = reactive({ pageNo: 1, pageSize: 15, total: 0 })
@@ -382,21 +377,71 @@ const pagination = reactive({ pageNo: 1, pageSize: 15, total: 0 })
  * 获取店铺列表数据
  */
 const fetchList = async () => {
+  const requestId = ++listRequestId
   loading.value = true
+  listError.value = ''
   try {
     const res = await mallShopLists(buildStoreListParams(queryParams, pagination))
-    if (res && res.code === 1 && res.data) {
-      const page = normalizeStorePage(res.data)
-      list.value = page.list
-      pagination.total = page.total
-    } else {
-      list.value = []
-      pagination.total = 0
-    }
-  } catch (e) {
+    if (requestId !== listRequestId) return
+    if (res?.code !== 1 || !res.data) throw new Error(res?.message || res?.msg || '店铺列表加载失败')
+    const page = normalizeStorePage(res.data)
+    list.value = page.list
+    pagination.total = page.total
+  } catch (error) {
+    if (requestId !== listRequestId) return
     list.value = []
+    pagination.total = 0
+    listError.value = error?.message || '店铺列表加载失败，请刷新重试'
   } finally {
-    loading.value = false
+    if (requestId === listRequestId) loading.value = false
+  }
+}
+
+const fetchLevels = async () => {
+  levelLoading.value = true
+  try {
+    const res = await mallShopLevelOptions()
+    if (res?.code !== 1 || !Array.isArray(res.data)) throw new Error(res?.message || '店铺等级加载失败')
+    levels.value = res.data
+  } catch (error) {
+    ElMessage.error(error?.message || '店铺等级加载失败')
+  } finally {
+    levelLoading.value = false
+  }
+}
+
+// 与当前筛选保持一致，逐页导出，绝不把当前页冒充全部结果。
+const handleExport = async () => {
+  if (exporting.value) return
+  exporting.value = true
+  const filters = { ...queryParams }
+  try {
+    const rows = []
+    let total = null
+    for (let pageNo = 1; ; pageNo++) {
+      const res = await mallShopLists(buildStoreListParams(filters, { pageNo, pageSize: 100 }))
+      if (res?.code !== 1 || !res.data) throw new Error(res?.message || res?.msg || '导出失败')
+      const page = normalizeStorePage(res.data)
+      if (total === null) total = page.total
+      if (page.total !== total) throw new Error('导出期间店铺数量发生变化，请重试')
+      rows.push(...page.list)
+      if (rows.length >= total) break
+      if (!page.list.length || pageNo >= 100) throw new Error('结果过多或分页数据不完整，请缩小筛选范围后导出')
+    }
+    if (!rows.length) { ElMessage.info('当前筛选条件下没有可导出的店铺'); return }
+    const url = URL.createObjectURL(new Blob([buildStoreExportCsv(rows)], { type: 'text/csv;charset=utf-8;' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `店铺列表-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    ElMessage.success(`已导出 ${rows.length} 家店铺`)
+  } catch (error) {
+    ElMessage.error(error?.message || '导出失败，请重试')
+  } finally {
+    exporting.value = false
   }
 }
 
@@ -432,11 +477,7 @@ const handleSearch = () => {
  * 重置查询参数
  */
 const handleReset = () => {
-  queryParams.name = ''
-  queryParams.type = ''
-  queryParams.shop_category_id = ''
-  queryParams.business_status = ''
-  queryParams.shop_status = ''
+  Object.assign(queryParams, queryDefaults())
   handleSearch()
 }
 
@@ -607,100 +648,83 @@ const handleEdit = (row) => {
   router.push({ path: '/mall/store/edit', query: { id: row.id } })
 }
 
-/**
- * 账号管理
- * @param {object} row - 当前店铺行
- */
-const handleAccount = (row) => {
-  ElMessage.info('账号管理：' + row.name)
-}
-
-/**
- * 删除店铺
- * @param {number} id - 店铺ID
- */
-const handleDelete = async (id) => {
-  try {
-    await ElMessageBox.confirm('确定要删除？', '提示', { type: 'warning' })
-    const res = await request.post('/web/mall/admin/shop/del', { id })
-    if (res && res.code === 1) {
-      ElMessage.success('删除成功')
-      fetchList()
-    } else {
-      ElMessage.error(res?.message || '删除失败')
-    }
-  } catch (e) {
-    // 取消操作
-  }
-}
-
-/**
- * 切换店铺状态（正常/冻结）
- * @param {number} status - 状态值 1/0
- * @param {number} id - 店铺ID
- */
-const handleChangeStatus = async (status, id) => {
-  try {
-    const res = await mallShopStatus({ id, status })
-    if (res && res.code === 1) {
-      ElMessage.success('状态已更新')
-    } else {
-      ElMessage.error(res?.msg || res?.message || '操作失败')
-      fetchList()
-    }
-  } catch (e) {
-    fetchList()
-  }
+const handleView = (row) => {
+  router.push({ path: '/mall/store/edit', query: { id: row.id, mode: 'view' } })
 }
 
 onMounted(() => {
   fetchList()
-  fetchShopCategoryList()
+  fetchLevels()
 })
 
 onBeforeUnmount(destroyMapPicker)
 </script>
 
 <style scoped>
-.store-name-cell {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 12px;
-}
-
-.store-logo {
-  width: 58px;
-  height: 58px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.store-logo-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--el-color-primary);
-  font-size: 22px;
-  font-weight: 600;
-  background: var(--el-color-primary-light-9);
-  border: 1px solid var(--el-color-primary-light-7);
-}
-
-.store-name-cell__text {
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
-}
-
-.store-name-cell__name {
-  overflow: hidden;
-  color: var(--el-text-color-primary);
+.store-list-page {
+  --store-blue: #1684ff;
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  min-height: 640px;
+  color: #303133;
   font-size: 14px;
-  line-height: 22px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
+
+.store-tabs {
+  display: flex;
+  overflow-x: auto;
+  background: #f5f7fa;
+  border-bottom: 1px solid #dce3ef;
+  min-height: 40px;
+}
+
+.store-tab {
+  flex: none;
+  padding: 10px 21px;
+  border: 0;
+  border-right: 1px solid transparent;
+  background: transparent;
+  color: #909399;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 18px;
+}
+
+.store-tab:disabled { cursor: not-allowed; }
+.store-tab.is-active {
+  background: #fff;
+  color: var(--store-blue);
+  border-right-color: #dce3ef;
+}
+
+.store-list-content { padding: 35px 35px 24px; }
+.store-search { padding: 23px 15px; background: #ecf5ff; border-radius: 11px; }
+.store-search-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 44px; row-gap: 10px; }
+.store-search :deep(.el-form-item) { margin: 0; align-items: center; }
+.store-search :deep(.el-form-item__label) { padding-right: 0; color: #111; line-height: 28px; font-size: 14px; }
+.store-search :deep(.el-input__wrapper), .store-search :deep(.el-select__wrapper) { min-height: 28px; height: 28px; border-radius: 4px; }
+.store-search :deep(.el-input__inner) { height: 26px; font-size: 12px; }
+.store-search :deep(.el-select) { width: 100%; font-size: 12px; }
+.store-search-actions { display: flex; margin-top: 20px; gap: 15px; }
+.store-search-actions :deep(.el-button) { margin: 0; min-height: 26px; padding: 5px 12px; border-radius: 2px; background: #137be0; border-color: #137be0; }
+.store-toolbar { display: flex; justify-content: flex-end; gap: 28px; padding: 17px 10px 15px; }
+.store-toolbar :deep(.el-button) { margin: 0; color: var(--store-blue); font-size: 14px; }
+.store-list-error { margin-bottom: 12px; }
+.store-table { --el-table-header-bg-color: #f7f8fa; --el-table-header-text-color: #111; --el-table-border-color: #e8edf6; --el-table-text-color: #444; }
+.store-table :deep(.el-table__header th) { font-size: 14px; font-weight: 600; }
+.store-table :deep(.cell) { line-height: 23px; padding: 0 10px; }
+.store-row-actions { display: flex; justify-content: center; gap: 14px; }
+.store-row-actions :deep(.el-button) { margin: 0; color: var(--store-blue); font-size: 14px; }
+.store-logo { display: inline-flex; width: 62px; height: 52px; vertical-align: middle; background: #fff; }
+.store-empty-value { color: #909399; }
+.store-audit-state { display: inline-flex; gap: 5px; align-items: center; white-space: nowrap; }
+.store-audit-state i { width: 6px; height: 6px; border-radius: 50%; background: #909399; }
+.store-audit-state.is-success i { background: #67c23a; }
+.store-audit-state.is-warning i { background: #e6a23c; }
+.store-audit-state.is-danger i { background: #f56c6c; }
+.store-pagination { display: flex; justify-content: flex-end; overflow-x: auto; margin-top: 20px; }
+@media (max-width: 900px) { .store-search-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 30px; } }
+@media (max-width: 640px) { .store-list-content { padding: 20px 12px; } .store-search-fields { grid-template-columns: minmax(0, 1fr); } .store-toolbar { gap: 18px; } }
 
 .map-picker-toolbar {
   display: flex;

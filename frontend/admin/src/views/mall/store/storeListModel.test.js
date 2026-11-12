@@ -2,11 +2,45 @@ import { describe, expect, it } from 'vitest'
 import {
   buildCreateStorePayload,
   buildStoreListParams,
+  buildStoreExportCsv,
+  formatStoreDate,
+  maskStoreAccount,
+  storeAuditState,
   normalizeShopCategoryPage,
   normalizeStorePage
 } from './storeListModel'
 
 describe('商城店铺列表接口适配', () => {
+  it('缺失字段不生成 NaN 筛选', () => {
+    expect(buildStoreListParams({}, { pageNo: 1, pageSize: 15 })).toEqual({ page: 1, size: 15 })
+  })
+  it('个人企业筛选不复用自营入驻字段', () => {
+    expect(buildStoreListParams({ ownerAccount: ' 138 ', entryType: 2, shopLevelId: 3 }, { pageNo: 1, pageSize: 15 }))
+      .toEqual({ page: 1, size: 15, ownerAccount: '138', entryType: 2, shopLevelId: 3 })
+    expect(normalizeStorePage({ lists: [{ type: 1 }], count: 1 }).list[0].entry_type_text).toBe('—')
+  })
+  it('脱敏店主账号且不会将缺失审核信息伪装成开店成功', () => {
+    expect(maskStoreAccount('13800138000')).toBe('138****8000')
+    expect(maskStoreAccount('a@example.com')).toBe('a***@example.com')
+    expect(maskStoreAccount('')).toBe('—')
+    expect(storeAuditState(null).label).toBe('未记录')
+    expect(storeAuditState(1)).toEqual({ label: '开店成功', tone: 'success' })
+  })
+  it('开店日期支持秒、毫秒和日期字符串，缺失时间不补造', () => {
+    expect(formatStoreDate(0)).toBe('—')
+    expect(formatStoreDate('2026-11-12 12:00:00')).toBe('2026-11-12')
+    expect(formatStoreDate('invalid')).toBe('—')
+    expect(formatStoreDate(Date.parse('2026-11-12T00:00:00Z'))).toBe('2026-11-12')
+    expect(formatStoreDate(Date.parse('2026-11-12T00:00:00Z') / 1000)).toBe('2026-11-12')
+  })
+  it('导出字段与表格一致，转义引号、换行和表格公式', () => {
+    const csv = buildStoreExportCsv([{ id: 1, name: '=HYPERLINK("x")', account: { loginAccount: '13800138000' }, previousName: '旧名,\n"店"' }])
+    expect(csv.startsWith('\uFEFF')).toBe(true)
+    expect(csv).toContain('138****8000')
+    expect(csv).not.toContain('13800138000')
+    expect(csv).toContain('"\'=HYPERLINK(""x"")"')
+    expect(csv).toContain('"旧名,\n""店"""')
+  })
   it('把页面筛选字段转换为当前 mall 服务参数', () => {
     expect(buildStoreListParams({
       name: ' 厚匠 ',

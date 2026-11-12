@@ -57,6 +57,10 @@ public interface MerchantServiceFeign {
     @PostMapping("/merchant/internal/shop-provision/options")
     Object provisionShopOptions();
 
+    /** 平台列表筛选用的只读等级选项，不经过商家业务菜单。 */
+    @PostMapping("/merchant/internal/shop-provision/level-options")
+    Object provisionShopLevelOptions();
+
     /** 平台后台新增店铺时可绑定的已有统一账号。 */
     @PostMapping("/merchant/internal/shop-provision/account-options")
     Object provisionShopAccountOptions(@RequestBody(required = false) Map<String, Object> params);

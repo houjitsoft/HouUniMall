@@ -74,6 +74,11 @@ public class MerchantServiceFeignFallback implements MerchantServiceFeign {
     }
 
     @Override
+    public Object provisionShopLevelOptions() {
+        return fallbackResponse(FALLBACK_MSG);
+    }
+
+    @Override
     public Object provisionShopAccountOptions(Map<String, Object> params) {
         return fallbackResponse(FALLBACK_MSG);
     }
