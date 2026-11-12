@@ -802,86 +802,35 @@
               >
                 <el-form-item label="经营类目:" prop="typeId">
                   <div class="join-cat-picker">
-                    <el-input
-                      v-model="catSearchKeyword"
-                      class="join-cat-search-input"
-                      :prefix-icon="ElIconSearch"
-                      placeholder="输入类目名称或上级类目名称搜索"
-                      clearable
-                    />
-                    <div class="join-cat-selected-panel">
-                      <div class="join-cat-selected-head">
-                        已选 {{ pendingCatCount }} 个经营类目<span v-if="pendingCatCount">（点「确认提交」写入主营类目）</span>
-                      </div>
-                      <div v-if="pendingCatCount" class="join-cat-selected-tags">
-                        <el-tag
-                          v-for="item in pendingCatRows"
-                          :key="item.key"
-                          closable
-                          size="small"
-                          @close="removePendingCat(item.key)"
-                        >{{ item.text }}</el-tag>
-                      </div>
-                      <div v-else class="join-cat-selected-empty">
-                        尚未选择类目，可搜索类目名称或逐级选择
-                      </div>
-                    </div>
-                    <template v-if="catSearchKeyword.trim()">
-                      <div class="join-cat-search-summary">
-                        匹配到 {{ catSearchResults.length }} 个经营类目<span
-                          v-if="catSearchResults.length === 50"
-                          >（最多显示 50 条，可继续细化关键词）</span
-                        >
-                      </div>
-                      <div class="join-cat-search-list">
-                        <div
-                          v-if="!catSearchResults.length"
-                          class="join-cat-search-empty"
-                        >
-                          未找到匹配类目，请更换关键词
-                        </div>
-                        <div
-                          v-for="item in catSearchResults"
-                          :key="item.key"
-                          class="join-cat-search-item"
-                          :class="{ 'is-checked': catResultSelected(item) }"
-                          @click="toggleCatResult(item)"
-                        >
-                          <el-checkbox
-                            :model-value="catResultSelected(item)"
-                            class="join-cat-search-checkbox"
-                          />
-                          <span class="join-cat-search-path">{{ item.text }}</span>
-                        </div>
-                      </div>
-                    </template>
-                    <el-cascader
-                      v-model="catName"
-                      :options="optionsone"
-                      class="join-cat-cascader"
-                      :props="{
-                        expandTrigger: 'hover',
-                        value: 'catId',
-                        label: 'catName',
-                        children: 'childMenu',
-                        multiple: true,
-                      }"
-                      clearable
+                    <el-select
+                      v-model="catSelectValue"
+                      class="join-cat-select"
+                      multiple
                       filterable
-                      :filter-method="filterCatNode"
-                      :debounce="200"
-                      placeholder="可逐级选择，也可直接输入类目名称搜索"
+                      clearable
+                      collapse-tags
+                      collapse-tags-tooltip
+                      :max-collapse-tags="3"
+                      :filter-method="filterCatOption"
+                      placeholder="输入类目名称搜索，或点击下拉选择经营类目"
+                      no-match-text="未找到匹配类目，请更换关键词"
+                      no-data-text="经营类目加载中或暂无数据"
                       @change="changeCat"
-                      :collapse-tags="true"
                     >
+                      <el-option
+                        v-for="item in catFilteredOptions"
+                        :key="item.key"
+                        :label="item.text"
+                        :value="item.path[item.path.length - 1]"
+                      />
                       <template #empty>
                         <div class="join-cat-search-empty">
                           未找到匹配类目，请更换关键词
                         </div>
                       </template>
-                    </el-cascader>
+                    </el-select>
                     <div class="join-cat-picker-tip">
-                      支持按末级类目名或上级类目名搜索，可多选；点「确认提交」后生效。
+                      可输入末级类目名或上级类目名搜索（空格分隔多个词），支持多选；点「确认提交」后生效。
                     </div>
                   </div>
                 </el-form-item>
@@ -942,7 +891,6 @@ import {
   DocumentChecked as ElIconDocumentChecked,
   Setting as ElIconSetting,
   InfoFilled,
-  Search as ElIconSearch,
 } from '@element-plus/icons-vue'
 import {
   sendPhoneCode,
@@ -1141,17 +1089,17 @@ const optionsClass = ref([])
 const optionsone = ref([])
 const catLoading = ref(false)
 
-// ===== 经营类目搜索查询 =====
-// 类目树由 /goods/cat/cat/query 一次性返回，搜索在本机完成，无需新增后端接口；
-// 搜索结果直接写入与级联相同的 v-model（末级类目完整路径数组），提交逻辑不变。
-const catSearchKeyword = ref('')
+// ===== 经营类目：Element UI 风格下拉搜索 =====
+// 类目树由 /goods/cat/cat/query 一次性返回，摊平成末级类目全路径选项；
+// 直接在下拉输入框里输入关键词过滤并多选，不再额外叠加一层独立搜索框。
+const catFilterKeyword = ref('')
 
 function normalizeCatKeyword(value) {
   return String(value ?? '').trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
-function catKeywordWords() {
-  return normalizeCatKeyword(catSearchKeyword.value).split(' ').filter(Boolean)
+function filterCatOption(query) {
+  catFilterKeyword.value = query ?? ''
 }
 
 // 摊平类目树，只保留可提交的末级类目，携带全路径文本便于按上级类目名检索
@@ -1179,55 +1127,38 @@ const catLeafIndex = computed(() => {
   return leaves
 })
 
-const catSearchResults = computed(() => {
-  const words = catKeywordWords()
-  if (!words.length) return []
-  return catLeafIndex.value
-    .filter((item) => {
-      const text = item.text.toLowerCase()
-      return words.every((word) => text.includes(word))
-    })
-    .slice(0, 50)
+// 空格分隔多个关键词时须同时命中；默认最多展开 200 条，输入关键词后先过滤再截断
+const catFilteredOptions = computed(() => {
+  const words = normalizeCatKeyword(catFilterKeyword.value).split(' ').filter(Boolean)
+  const leaves = catLeafIndex.value
+  const matched = words.length
+    ? leaves.filter((item) => {
+        const text = item.text.toLowerCase()
+        return words.every((word) => text.includes(word))
+      })
+    : leaves
+  return matched.slice(0, 200)
 })
 
-const catSelectedLeafIds = computed(() => {
-  const paths = Array.isArray(catName.value) ? catName.value : []
-  return new Set(
-    paths
+// 下拉的 v-model 是末级类目 id 数组；catName 仍保持「完整路径数组」结构，
+// 供 handleConfirm / catRowsFromPaths / 提交校验沿用，避免改动审核流程。
+const catSelectValue = computed({
+  get() {
+    const paths = Array.isArray(catName.value) ? catName.value : []
+    return paths
       .map((item) => (Array.isArray(item) ? item[item.length - 1] : item))
       .filter((id) => id != null && id !== '')
-      .map((id) => String(id))
-  )
+  },
+  set(ids) {
+    const list = Array.isArray(ids) ? ids : []
+    catName.value = list.map((id) => {
+      const hit = catLeafIndex.value.find(
+        (leaf) => String(leaf.path[leaf.path.length - 1]) === String(id),
+      )
+      return hit ? hit.path.slice() : [id]
+    })
+  },
 })
-
-function catResultSelected(item) {
-  const path = item.path
-  return catSelectedLeafIds.value.has(String(path[path.length - 1]))
-}
-
-function toggleCatResult(item) {
-  const leafId = String(item.path[item.path.length - 1])
-  const paths = (Array.isArray(catName.value) ? catName.value : []).filter((p) =>
-    Array.isArray(p)
-  )
-  const exists = paths.some((p) => String(p[p.length - 1]) === leafId)
-  catName.value = exists
-    ? paths.filter((p) => String(p[p.length - 1]) !== leafId)
-    : [...paths, item.path.slice()]
-  const list = Array.isArray(catName.value) ? catName.value : []
-  const last = list[list.length - 1]
-  addParams.productClassId = Array.isArray(last) ? last[last.length - 1] : ''
-}
-
-// 级联自带搜索框的匹配规则：按「一级 / 二级 / 三级」全路径匹配，
-// 支持空格分隔的多个关键词（同时满足），忽略大小写与首尾空格。
-function filterCatNode(node, keyword) {
-  const words = normalizeCatKeyword(keyword).split(' ').filter(Boolean)
-  if (!words.length) return true
-  const labels = Array.isArray(node?.pathLabels) ? node.pathLabels : []
-  const text = normalizeCatKeyword(node?.text || labels.join(' / '))
-  return words.every((word) => text.includes(word))
-}
 
 // ===== 经营类目：已选状态的统一事实源 =====
 // 服务端类目列表可能因为登录态失效、绑定落库延迟等原因返回空，
@@ -1246,11 +1177,6 @@ const pendingCatRows = computed(() => {
 })
 
 const pendingCatCount = computed(() => pendingCatRows.value.length)
-
-function removePendingCat(key) {
-  const row = pendingCatRows.value.find((item) => item.key === key)
-  if (row) toggleCatResult({ path: row.path })
-}
 
 function hasSelectedCategories() {
   return tableData.value.length > 0 || confirmedCatRows.value.length > 0
@@ -2150,7 +2076,7 @@ function handleConfirm() {
               type: 'success',
             })
             catName.value = []
-            catSearchKeyword.value = ''
+            catFilterKeyword.value = ''
             fetchquery()
             addDialogVisible.value = false
           } else {
@@ -2170,10 +2096,10 @@ function handleConfirm() {
         })
 }
 
-function changeCat(val) {
-      const list = Array.isArray(val) ? val : []
+function changeCat() {
+      // 下拉模型的 setter 会先把选中项还原成完整路径数组写入 catName
+      const list = Array.isArray(catName.value) ? catName.value : []
       const last = list[list.length - 1]
-      // 多选级联的每一项是完整路径数组，这里只记录末级类目 id
       addParams.productClassId = Array.isArray(last) ? last[last.length - 1] : (last ?? '')
 }
 
@@ -2182,7 +2108,7 @@ async function handleAdd() {
       optionsone.value = []
       addParams.productClassId = ''
       catName.value = []
-      catSearchKeyword.value = ''
+      catFilterKeyword.value = ''
       addDialogVisible.value = true
       catLoading.value = true
       try {
@@ -3254,62 +3180,13 @@ function nexttow(formName) {
   padding-bottom: 0;
 }
 
-/* 新增经营类目：搜索查询区 */
+/* 新增经营类目：下拉内输入搜索 */
 .join-cat-picker {
   width: 100%;
 }
 
-.join-cat-search-input {
-  margin-bottom: 8px;
-}
-
-.join-cat-search-summary {
-  margin-bottom: 6px;
-  font-size: 12px;
-  line-height: 1.6;
-  color: #909399;
-}
-
-.join-cat-search-list {
-  max-height: 190px;
-  margin-bottom: 10px;
-  overflow-y: auto;
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-}
-
-.join-cat-search-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  color: #606266;
-  cursor: pointer;
-  border-bottom: 1px solid #f5f7fa;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: #f5f7fa;
-  }
-
-  &.is-checked {
-    color: #409eff;
-  }
-
-  /* 整行点击统一由外层处理，避免复选框与行点击各触发一次 */
-  :deep(.el-checkbox) {
-    pointer-events: none;
-    margin-right: 0;
-  }
-}
-
-.join-cat-search-path {
-  line-height: 1.5;
-  word-break: break-all;
+.join-cat-select {
+  width: 100%;
 }
 
 .join-cat-search-empty {
@@ -3319,10 +3196,6 @@ function nexttow(formName) {
   text-align: center;
 }
 
-.join-cat-cascader {
-  width: 100%;
-}
-
 .join-cat-picker-tip {
   margin-top: 6px;
   font-size: 12px;
@@ -3330,35 +3203,7 @@ function nexttow(formName) {
   color: #909399;
 }
 
-/* 新增经营类目：已选类目常驻回显 */
-.join-cat-selected-panel {
-  margin-bottom: 10px;
-  padding: 8px 10px;
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-  background: #fafafa;
-}
-
-.join-cat-selected-head {
-  margin-bottom: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #606266;
-}
-
-.join-cat-selected-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  max-height: 110px;
-  overflow-y: auto;
-}
-
-.join-cat-selected-empty {
-  font-size: 12px;
-  color: #909399;
-}
-
+/* 主营类目区：已选 / 待确认数量提示 */
 .join-cat-selected-hint,
 .join-cat-pending-hint {
   display: inline-block;
