@@ -6,38 +6,45 @@
       <!-- 搜索表单 -->
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="店铺名称">
-          <el-input v-model="searchForm.name" placeholder="请输入店铺名称" clearable />
+          <el-input v-model="searchForm.name" placeholder="请输入店铺名称" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="审核状态">
           <el-select v-model="searchForm.status" placeholder="请选择" clearable>
-            <el-option label="待审核" value="0" />
-            <el-option label="审核通过" value="1" />
-            <el-option label="审核拒绝" value="2" />
+            <el-option label="待审核" :value="0" />
+            <el-option label="审核通过" :value="1" />
+            <el-option label="审核拒绝" :value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
+          <el-button @click="fetchData">刷新</el-button>
         </el-form-item>
       </el-form>
 
-      <!-- 数据表格 -->
-      <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="id" label="申请ID" width="80" />
-        <el-table-column prop="storeName" label="店铺名称" min-width="150" />
-        <el-table-column prop="owner" label="申请人" width="100" />
-        <el-table-column prop="phone" label="联系电话" width="130" />
-        <el-table-column prop="applyTime" label="申请时间" width="160" />
-        <el-table-column label="审核状态" width="100">
+      <el-alert v-if="listError" class="search-form" type="error" :title="listError" :closable="false" show-icon />
+
+      <!-- 数据表格：只展示 hou_shop_join_base 的真实入驻申请 -->
+      <el-table :data="tableData" v-loading="loading" border stripe empty-text="暂无入驻申请">
+        <el-table-column prop="joinId" label="申请ID" width="170" show-overflow-tooltip />
+        <el-table-column prop="name" label="店铺名称" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="contact" label="申请人" width="110" />
+        <el-table-column prop="mobile" label="联系电话" width="140" />
+        <el-table-column label="申请时间" width="160">
+          <template #default="{ row }">{{ formatTime(row.createTime) }}</template>
+        </el-table-column>
+        <el-table-column label="审核状态" width="110">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
+            <el-tag :type="getStatusType(row.auditStatus)">{{ getStatusText(row.auditStatus) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="auditTime" label="审核时间" width="160" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="审核时间" width="160">
+          <template #default="{ row }">{{ formatTime(row.auditTime) }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="210" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="row.status === 0" text type="success" size="small" @click="handlePass(row)">通过</el-button>
-            <el-button v-if="row.status === 0" text type="danger" size="small" @click="handleReject(row)">拒绝</el-button>
+            <el-button v-if="row.auditStatus === 0" text type="success" size="small" @click="handlePass(row)">通过</el-button>
+            <el-button v-if="row.auditStatus === 0" text type="danger" size="small" @click="handleReject(row)">拒绝</el-button>
             <el-button text type="primary" size="small" @click="handleView(row)">查看详情</el-button>
           </template>
         </el-table-column>
@@ -50,7 +57,7 @@
         :total="pagination.total"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="fetchData"
+        @size-change="handleSearch"
         @current-change="fetchData"
         class="pagination"
       />
@@ -61,7 +68,7 @@
       <el-input v-model="rejectReason" type="textarea" :rows="4" placeholder="请输入拒绝理由" />
       <template #footer>
         <el-button @click="rejectDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmReject">确定</el-button>
+        <el-button type="primary" :loading="auditing" @click="confirmReject">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -70,8 +77,11 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { mallShopApplyLists, mallShopApplyFollow } from '@/api/mall/shopAdmin'
 
 const loading = ref(false)
+const auditing = ref(false)
+const listError = ref('')
 const rejectDialogVisible = ref(false)
 const rejectReason = ref('')
 const currentRow = ref(null)
@@ -87,18 +97,42 @@ const pagination = reactive({
   total: 0
 })
 
-const tableData = ref([
-  { id: 1, storeName: '新店申请1', owner: '张三', phone: '13800138001', applyTime: '2024-01-01 10:00:00', status: 0, auditTime: '-' },
-  { id: 2, storeName: '新店申请2', owner: '李四', phone: '13800138002', applyTime: '2024-01-02 11:00:00', status: 1, auditTime: '2024-01-02 15:00:00' },
-  { id: 3, storeName: '新店申请3', owner: '王五', phone: '13800138003', applyTime: '2024-01-03 12:00:00', status: 2, auditTime: '2024-01-03 16:00:00' }
-])
+// 不设演示数据：列表完全来自后端真实入驻申请，刷新后重新查询。
+const tableData = ref([])
+
+const formatTime = (value) => {
+  if (value === null || value === undefined || value === '' || Number(value) <= 0) return '-'
+  const numeric = Number(value)
+  const date = new Date(numeric < 1e12 ? numeric * 1000 : numeric)
+  if (Number.isNaN(date.getTime())) return '-'
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
 
 const fetchData = async () => {
   loading.value = true
-  setTimeout(() => {
-    pagination.total = tableData.value.length
+  listError.value = ''
+  try {
+    const params = {
+      page: pagination.page,
+      size: pagination.size,
+      includeApproved: 1,
+      shopName: searchForm.name.trim()
+    }
+    if (searchForm.status !== '' && searchForm.status !== null && searchForm.status !== undefined) {
+      params.auditStatus = Number(searchForm.status)
+    }
+    const res = await mallShopApplyLists(params)
+    if (res?.code !== 1 || !res.data) throw new Error(res?.message || res?.msg || '入驻申请加载失败')
+    tableData.value = res.data.lists || []
+    pagination.total = Number(res.data.count || 0)
+  } catch (error) {
+    tableData.value = []
+    pagination.total = 0
+    listError.value = error?.message || '入驻申请加载失败，请刷新重试'
+  } finally {
     loading.value = false
-  }, 500)
+  }
 }
 
 const handleSearch = () => {
@@ -109,19 +143,32 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.name = ''
   searchForm.status = ''
-  fetchData()
+  handleSearch()
+}
+
+const submitAudit = async (row, auditStatus, auditComment = '') => {
+  if (!row?.joinId || auditing.value) return false
+  auditing.value = true
+  try {
+    const res = await mallShopApplyFollow({ joinId: row.joinId, auditStatus, auditComment })
+    if (res?.code !== 1) throw new Error(res?.message || res?.msg || '审核失败')
+    ElMessage.success(auditStatus === 1 ? '审核通过' : '已拒绝申请')
+    await fetchData()
+    return true
+  } catch (error) {
+    ElMessage.error(error?.message || '审核失败')
+    return false
+  } finally {
+    auditing.value = false
+  }
 }
 
 const handlePass = (row) => {
-  ElMessageBox.confirm('确认通过该店铺的审核申请？', '提示', {
+  ElMessageBox.confirm('确认通过该店铺的入驻申请？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'success'
-  }).then(() => {
-    ElMessage.success('审核通过')
-    row.status = 1
-    row.auditTime = new Date().toLocaleString()
-  })
+  }).then(() => submitAudit(row, 1)).catch(() => {})
 }
 
 const handleReject = (row) => {
@@ -130,19 +177,30 @@ const handleReject = (row) => {
   rejectDialogVisible.value = true
 }
 
-const confirmReject = () => {
-  if (!rejectReason.value) {
+const confirmReject = async () => {
+  if (!rejectReason.value.trim()) {
     ElMessage.warning('请输入拒绝理由')
     return
   }
-  currentRow.value.status = 2
-  currentRow.value.auditTime = new Date().toLocaleString()
-  ElMessage.success('已拒绝申请')
-  rejectDialogVisible.value = false
+  const done = await submitAudit(currentRow.value, 2, rejectReason.value.trim())
+  if (done) rejectDialogVisible.value = false
 }
 
 const handleView = (row) => {
-  ElMessage.info('查看申请详情：' + row.storeName)
+  const lines = [
+    `申请ID：${row.joinId || '-'}`,
+    `店铺名称：${row.name || '-'}`,
+    `店铺类型：${row.typeText || '-'}`,
+    `店铺等级：${row.levelName || '-'}`,
+    `联系人：${row.contact || '-'}`,
+    `联系电话：${row.mobile || '-'}`,
+    `经营地址：${row.addressInfo || '-'}`,
+    `申请时间：${formatTime(row.createTime)}`,
+    `审核状态：${getStatusText(row.auditStatus)}`,
+    `审核时间：${formatTime(row.auditTime)}`,
+    `审核备注：${row.auditComment || '-'}`
+  ]
+  ElMessageBox.alert(lines.join('\n'), '入驻申请详情', { confirmButtonText: '关闭' })
 }
 
 const getStatusType = (status) => {

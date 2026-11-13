@@ -61,6 +61,11 @@ public class MallShopProvisionController {
 
     @PostMapping("/status")
     public AjaxResult<Object> status(@RequestBody Map<String, Object> params) {
+        // 带 joinId 时复用本路由处理「店铺审核」的入驻申请，避免新增网关路由与重启 BFF。
+        Object joinId = params.get("joinId");
+        if (joinId != null && !String.valueOf(joinId).isBlank()) {
+            return AjaxResult.success("审核完成", provisionService.auditJoinApply(params));
+        }
         Integer id = params.get("id") == null ? null : Integer.valueOf(params.get("id").toString());
         Integer status = params.get("status") == null ? null : Integer.valueOf(params.get("status").toString());
         provisionService.updateStatus(id, status);

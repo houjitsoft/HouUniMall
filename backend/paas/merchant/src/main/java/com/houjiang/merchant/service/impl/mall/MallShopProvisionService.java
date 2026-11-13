@@ -86,7 +86,95 @@ public class MallShopProvisionService {
         return new MallShopProvisionResultVo(shop.getId(), grant.loginAccount());
     }
 
+    /**
+     * 平台后台「店铺审核」与「店铺列表-入驻申请」共用的真实数据源。
+     * 只读取 hou_shop_join_base，不返回任何演示数据；已开店（hou_shop_base_biz）的申请自动排除。
+     * 历史数据中 audit_status 可能为 NULL，统一按 0（待审核）处理，避免记录被条件过滤掉。
+     */
+    public PageResult<MallShopProvisionListedVo> joinApplyList(Map<String, Object> params) {
+        int pageNo = positiveInt(params.get("page"), 1);
+        int pageSize = Math.min(positiveInt(params.get("size"), 15), 100);
+        StringBuilder from = new StringBuilder(
+                " FROM hou_shop_join_base a "
+                        + " LEFT JOIN hou_shop_base_biz b ON a.user_id = b.user_id "
+                        + " LEFT JOIN hou_shop_level sl ON a.shop_level_id = sl.id "
+                        + " WHERE b.shop_id IS NULL ");
+        List<Object> args = new ArrayList<>();
+        Integer auditStatus = nullableInt(params.get("auditStatus"));
+        if (auditStatus != null) {
+            from.append(" AND COALESCE(a.audit_status, 0) = ? ");
+            args.add(auditStatus);
+        } else {
+            String includeApproved = text(params.get("includeApproved"));
+            boolean all = "1".equals(includeApproved) || "true".equalsIgnoreCase(includeApproved);
+            if (!all) from.append(" AND COALESCE(a.audit_status, 0) <> 1 ");
+        }
+        if (hasText(params.get("shopName"))) {
+            from.append(" AND a.shop_name LIKE ? ");
+            args.add("%" + text(params.get("shopName")) + "%");
+        }
+        Long total = jdbcTemplate.queryForObject("SELECT COUNT(*)" + from, Long.class, args.toArray());
+        long count = total == null ? 0L : total;
+        List<Object> pageArgs = new ArrayList<>(args);
+        pageArgs.add(pageSize);
+        pageArgs.add((long) (pageNo - 1) * pageSize);
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                "SELECT a.join_id AS join_id, a.shop_name AS shop_name, a.contact_name AS contact_name, "
+                        + " a.contact_phone AS contact_phone, COALESCE(a.audit_status, 0) AS audit_status, "
+                        + " UNIX_TIMESTAMP(a.create_time) AS create_time, UNIX_TIMESTAMP(a.last_update_time) AS audit_time, "
+                        + " a.audit_comment AS audit_comment, a.shop_type AS shop_type, a.shop_address AS shop_address, "
+                        + " a.shop_level_id AS shop_level_id, sl.store_level AS level_name "
+                        + from + " ORDER BY a.create_time DESC, a.join_id DESC LIMIT ? OFFSET ?",
+                pageArgs.toArray());
+        List<MallShopProvisionListedVo> result = new ArrayList<>();
+        for (Map<String, Object> row : rows) {
+            MallShopProvisionListedVo vo = new MallShopProvisionListedVo();
+            vo.setJoinId(text(row.get("join_id")));
+            vo.setSource("joinApply");
+            vo.setName(text(row.get("shop_name")));
+            vo.setContact(text(row.get("contact_name")));
+            vo.setMobile(text(row.get("contact_phone")));
+            vo.setAuditStatus(nullableInt(row.get("audit_status")));
+            vo.setCreateTime(row.get("create_time") == null ? null : ((Number) row.get("create_time")).longValue());
+            vo.setAuditTime(row.get("audit_time") == null ? null : ((Number) row.get("audit_time")).longValue());
+            vo.setAuditComment(row.get("audit_comment") == null ? "" : text(row.get("audit_comment")));
+            Integer type = nullableInt(row.get("shop_type"));
+            vo.setType(type);
+            vo.setTypeText(Integer.valueOf(0).equals(type) ? "官方自营" : "商家入驻");
+            vo.setShopStatus(0);
+            vo.setBusinessStatus(0);
+            vo.setAddressInfo(text(row.get("shop_address")));
+            vo.setShopLevelId(nullableInt(row.get("shop_level_id")));
+            vo.setLevelName(row.get("level_name") == null ? null : text(row.get("level_name")));
+            vo.setAccount(Map.of("loginAccount", text(row.get("contact_phone"))));
+            vo.setShopCategory(Map.of("name", "-"));
+            result.add(vo);
+        }
+        return PageResult.iPageHandle(count, (long) pageNo, (long) pageSize, result);
+    }
+
+    /** 平台后台审核入驻申请：真实更新主表与临时表，刷新后仍可查询。 */
+    @Transactional(rollbackFor = Exception.class)
+    public String auditJoinApply(Map<String, Object> params) {
+        String joinId = requiredText(params.get("joinId"), "入驻申请ID不能为空");
+        Integer auditStatus = nullableInt(params.get("auditStatus"));
+        if (auditStatus == null || (auditStatus != 1 && auditStatus != 2)) {
+            throw new OperateException("审核状态不正确");
+        }
+        String comment = text(params.get("auditComment"));
+        if (auditStatus == 2 && !hasText(comment)) throw new OperateException("请填写拒绝理由");
+        Long exists = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM hou_shop_join_base WHERE join_id = ?", Long.class, joinId);
+        if (exists == null || exists == 0) throw new OperateException("入驻申请不存在");
+        jdbcTemplate.update("UPDATE hou_shop_join_base SET audit_status = ?, audit_comment = ?, last_update_time = NOW() WHERE join_id = ?",
+                auditStatus, comment, joinId);
+        jdbcTemplate.update("UPDATE hou_shop_join_base_temp SET audit_status = ?, audit_comment = ?, last_update_time = NOW() WHERE join_id = ?",
+                auditStatus, comment, joinId);
+        return auditStatus == 1 ? "审核通过" : "已拒绝申请";
+    }
+
     public PageResult<MallShopProvisionListedVo> list(Map<String, Object> params) {
+        if ("joinApply".equals(text(params.get("source")))) return joinApplyList(params);
         int pageNo = positiveInt(params.get("page"), 1);
         int pageSize = Math.min(positiveInt(params.get("size"), 15), 100);
         QueryWrapper<MallShop> query = new QueryWrapper<MallShop>().eq("delete_time", 0).orderByDesc("id");

@@ -68,14 +68,16 @@ export const mallShopStatus = (data) => request.post('/web/mall/merchant/status'
  * @param {object} data - 查询参数
  * @returns {Promise}
  */
-export const mallShopApplyLists = (data) => request.post('/web/mall/store/audit/list', data)
+/** 入驻申请列表：复用已开通店铺列表路由，source=joinApply 走 hou_shop_join_base 真实数据。 */
+export const mallShopApplyLists = (data) => request.post('/web/mall/merchant/list', { source: 'joinApply', ...(data || {}) })
 
 /**
  * 跟进/审核入驻申请
  * @param {object} data - { id, status, remark }
  * @returns {Promise}
  */
-export const mallShopApplyFollow = (data) => request.post('/web/mall/store/audit', data)
+/** 审核入驻申请：复用商家状态路由，带 joinId 时走入驻申请审核。 */
+export const mallShopApplyFollow = (data) => request.post('/web/mall/merchant/status', data)
 
 /* ============ 经营类目 ============ */
 /**

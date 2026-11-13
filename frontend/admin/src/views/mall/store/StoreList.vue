@@ -45,6 +45,28 @@
         <el-button type="primary" link :icon="Refresh" :loading="loading" @click="fetchList">刷新</el-button>
       </div>
       <el-alert v-if="listError" class="store-list-error" type="error" :title="listError" :closable="false" show-icon />
+      <div class="store-join-apply">
+        <div class="store-join-apply__head">
+          <span>入驻申请（尚未开通店铺，按审核状态展示真实记录）</span>
+          <el-button type="primary" link @click="router.push('/mall/store/audit')">前往店铺审核</el-button>
+        </div>
+        <el-table v-loading="applyLoading" :data="applyList" size="small" empty-text="暂无入驻申请">
+          <el-table-column label="申请ID" prop="joinId" min-width="160" show-overflow-tooltip />
+          <el-table-column label="店铺名称" prop="name" min-width="140" show-overflow-tooltip />
+          <el-table-column label="联系人" prop="contact" width="110" />
+          <el-table-column label="联系电话" prop="mobile" width="130" />
+          <el-table-column label="申请时间" width="120">
+            <template #default="{ row }">{{ formatStoreDate(row.createTime) }}</template>
+          </el-table-column>
+          <el-table-column label="审核状态" width="120">
+            <template #default="{ row }">
+              <span class="store-audit-state" :class="`is-${storeAuditState(row.auditStatus).tone}`">
+                <i aria-hidden="true" />{{ storeAuditState(row.auditStatus).label }}
+              </span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
       <el-table v-loading="loading" :data="list" class="store-table" empty-text="暂无店铺数据" :row-style="{ height: '76px' }" :header-row-style="{ height: '44px' }">
         <el-table-column label="操作" width="160" fixed="left" align="center">
           <template #default="{ row }">
@@ -273,6 +295,7 @@ import { useRouter } from 'vue-router'
 import { mallShopLevelOptions } from '@/api/mall/shopAdmin'
 import {
   mallShopLists,
+  mallShopApplyLists,
   mallShopProvisionAccountOptions,
   mallShopProvisionCreate,
   mallShopProvisionOptions
@@ -376,7 +399,22 @@ const pagination = reactive({ pageNo: 1, pageSize: 15, total: 0 })
 /**
  * 获取店铺列表数据
  */
+const applyList = ref([])
+const applyLoading = ref(false)
+const fetchApplyList = async () => {
+  applyLoading.value = true
+  try {
+    const res = await mallShopApplyLists({ page: 1, size: 10, shopName: queryParams.name?.trim() || '' })
+    applyList.value = res?.code === 1 && res.data ? (res.data.lists || []) : []
+  } catch {
+    applyList.value = []
+  } finally {
+    applyLoading.value = false
+  }
+}
+
 const fetchList = async () => {
+  fetchApplyList()
   const requestId = ++listRequestId
   loading.value = true
   listError.value = ''
@@ -752,4 +790,7 @@ onBeforeUnmount(destroyMapPicker)
   color: var(--el-text-color-secondary);
   font-size: 13px;
 }
+
+.store-join-apply { margin-bottom: 16px; border: 1px solid #ebeef5; border-radius: 4px; padding: 10px 12px; }
+.store-join-apply__head { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 </style>
