@@ -42,8 +42,10 @@
           class="demo-ruleForm"
           :disabled="disabled"
         >
+          <div class="join-contact-row">
           <el-form-item
             label="联系人姓名:"
+            label-width="96px"
             style="width: 550px"
             prop="contactName"
           >
@@ -89,6 +91,7 @@
           </el-form-item>
           <el-form-item
             label="验证码:"
+            label-width="64px"
             style="width: 550px"
             prop="validateCode"
           >
@@ -110,6 +113,7 @@
 
             <span class="text_17">运营者手机号/邮箱接收验证码</span>
           </el-form-item>
+          </div>
           <el-form-item label="密码:" v-if="originType == 1" style="width: 550px" prop="settlePW">
             <el-input
               v-model="ruleForm.settlePW"
@@ -2921,6 +2925,26 @@ function nexttow(formName) {
 
   :deep(.el-form-item:has(.el-input-number) .el-input-number) {
     flex: 1 1 auto;
+  }
+}
+
+/* 联系人三项独立成行，其余资料沿用两列布局。 */
+.join-contact-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr) minmax(0, 1.1fr);
+  column-gap: 24px;
+  align-items: start;
+  min-width: 0;
+}
+
+@media (max-width: 1000px) {
+  .join-contact-row {
+    grid-template-columns: minmax(0, 1fr);
+
+    :deep(.el-form-item__label) {
+      width: 144px !important;
+    }
   }
 }
 
