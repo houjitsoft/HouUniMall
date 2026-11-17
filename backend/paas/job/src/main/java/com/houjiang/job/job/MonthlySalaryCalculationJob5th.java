@@ -22,11 +22,15 @@ public class MonthlySalaryCalculationJob5th implements BaseJob {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
+        Map<String, Object> resp;
         try {
-            Map<String, Object> resp = oaServiceClient.triggerMonthlySalary(Collections.emptyMap());
-            log.info("每月5号工资定时任务完成: {}", resp);
+            resp = oaServiceClient.triggerMonthlySalary(Collections.emptyMap());
         } catch (Exception e) {
-            log.warn("每月5号工资定时任务失败", e);
+            // 必须向上抛出，否则 Quartz 一律记 success，hou_job_execution_log 看不出失败
+            log.error("每月5号工资定时任务失败", e);
+            throw new JobExecutionException("每月5号工资定时任务失败: " + e.getMessage(), e, false);
         }
+        log.info("每月5号工资定时任务完成: {}", resp);
+        SalaryJobResultSupport.warnIfNothingProcessed("每月5号工资定时任务", resp);
     }
 }
