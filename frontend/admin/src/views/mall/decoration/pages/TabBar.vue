@@ -18,7 +18,7 @@
                 :class="{ active: previewIndex === index }"
                 @click="previewIndex = index"
               >
-                <template v-if="form.showIcon">
+                <template v-if="previewShowIcon">
                   <img
                     v-if="isImageIcon(item)"
                     class="tabbar-icon"
@@ -184,7 +184,7 @@
                 <el-form-item label="显示图标">
                   <el-switch v-model="form.showIcon" />
                   <span class="form-tip">
-                    关闭 = 纯文字导航；标品版式建议打开，茶站版式默认关闭
+                    只要任一项在「导航项」里配了图标，H5 就会显示图标；本开关用于一项图标都没配时的兜底（开=显示默认图标，关=纯文字）
                   </span>
                 </el-form-item>
 
@@ -346,9 +346,29 @@ function toEditorItem(raw = {}) {
 
 const visibleList = computed(() => form.list.filter((item) => item.show !== false))
 
+// 与 H5 保持一致：任一项配了图标就整栏显示图标；未配的项按名称兜底，避免「有字无图」。
+const hasConfiguredIcon = computed(() =>
+  visibleList.value.some((item) => (item.icon && String(item.icon).trim()) || (item.selectedIcon && String(item.selectedIcon).trim()))
+)
+const previewShowIcon = computed(() => hasConfiguredIcon.value || !!form.showIcon)
+
+const defaultIconOf = (item) => {
+  const s = String(((item && item.navTitle) || '') + ' ' + ((item && item.navUrl) || '')).toLowerCase()
+  if (/home|首页|index/.test(s)) return 'icon-home-s1'
+  if (/shop|cart|购物|商城/.test(s)) return 'icon-cart-s1'
+  if (/class|cate|分类|search|搜索/.test(s)) return 'icon-class-s1'
+  if (/video|视频/.test(s)) return 'icon-content-s1'
+  if (/activ|活动|activity/.test(s)) return 'icon-activity-s1'
+  if (/msg|message|tongzhi|消息|通知/.test(s)) return 'icon-tongzhi1'
+  if (/user|mine|我的|personal/.test(s)) return 'icon-user-s1'
+  return 'icon-dingdanzhuangtai'
+}
+
 const previewIcon = (item, index) => {
   if (index === previewIndex.value && item.selectedIcon) return item.selectedIcon
-  return item.icon
+  if (item.icon && String(item.icon).trim()) return item.icon
+  if (previewShowIcon.value) return defaultIconOf(item)
+  return ''
 }
 
 const previewColor = (index) => {

@@ -53,10 +53,11 @@
 	 *   color: '#B8976A',        // 选中色
 	 *   defaultColor: '#8A8578', // 未选色
 	 *   background: '#F7F5F0',   // 底色（留空跟主题）
-	 *   showIcon: false,         // 是否显示图标（tea 版式默认 false = 纯文字）
+	 *   showIcon: false,         // 全局兜底开关；只要任一项配了 icon/selectedIcon 就强制图文模式
 	 *   items: [{ navTitle, navUrl, icon, selectedIcon, show, navIndex }]
 	 * }
 	 * icon 既可以是字体图标类名（icon-home-s1），也可以是图片地址（/static/... 或 http(s)://）。
+	 * 逐项配了图标就会被显示（不被 showIcon=false 藏掉）；整栏图文模式时未配的项按名称兜底图标。
 	 */
 	const TEA_SELECTED = '#b8976a'
 	const TEA_DEFAULT = '#8a8578'
@@ -92,7 +93,18 @@
 				const cur = this.curUrl || ''
 				return this.visibleNav.findIndex(item => item.navUrl && cur && item.navUrl.includes(cur))
 			},
+			/**
+			 * 只要后台给任意一项配了图标，就整栏进入「图文模式」，让配过的图标都显示出来。
+			 * 这样就不会出现「后台逐项配了图标、前端却被全局开关一刀切藏掉」的问题；
+			 * 一项图标都没配时仍按老口径走（后台开关优先，tea 版式默认纯文字）。
+			 */
+			hasConfiguredIcon() {
+				return this.visibleNav.some(item =>
+					(item.icon && String(item.icon).trim()) || (item.selectedIcon && String(item.selectedIcon).trim())
+				)
+			},
 			showIcon() {
+				if (this.hasConfiguredIcon) return true
 				if (this.showIconConfig !== null) return !!this.showIconConfig
 				return !this.isTeaLayout
 			},
@@ -176,10 +188,28 @@
 				this.navBackground = cfg.background || ''
 				this.showIconConfig = typeof cfg.showIcon === 'boolean' ? cfg.showIcon : null
 			},
-			/** 选中项用 selectedIcon（配置了才换），其余用 icon */
+			/**
+			 * 选中项用 selectedIcon（配置了才换），其余用 icon。
+			 * 整栏已进入图文模式但本项没配图标时，按 navUrl/navTitle 推断一个语义图标兜底，
+			 * 保证每一格都有图标、高度一致，不会出现「有字无图」的塌缩/错位。
+			 */
 			iconOf(item, index) {
-				if (index === this.activeIndex && item.selectedIcon) return item.selectedIcon
-				return item.icon || ''
+				const active = index === this.activeIndex
+				const configured = (active && item.selectedIcon) || item.icon || ''
+				if (String(configured).trim()) return configured
+				return this.defaultIconOf(item)
+			},
+			/** 未配图标的兜底：让整栏视觉对齐，语义贴近日程/首页/我的等常见入口 */
+			defaultIconOf(item) {
+				const s = String(((item && item.navTitle) || '') + ' ' + ((item && item.navUrl) || '')).toLowerCase()
+				if (/home|首页|index/.test(s)) return 'icon-home-s1'
+				if (/shop|cart|购物|商城/.test(s)) return 'icon-cart-s1'
+				if (/class|cate|分类|search|搜索/.test(s)) return 'icon-class-s1'
+				if (/video|视频/.test(s)) return 'icon-content-s1'
+				if (/activ|活动|activity/.test(s)) return 'icon-activity-s1'
+				if (/msg|message|tongzhi|消息|通知/.test(s)) return 'icon-tongzhi1'
+				if (/user|mine|我的|personal/.test(s)) return 'icon-user-s1'
+				return 'icon-dingdanzhuangtai'
 			},
 			isImageIcon(item, index) {
 				const v = this.iconOf(item, index) || ''
